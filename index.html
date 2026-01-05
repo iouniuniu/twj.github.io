@@ -57,10 +57,9 @@
             background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);
         }
 
-        /* 封面容器：适配杂志封面 */
         .artwork-container {
             width: 140px;
-            height: 185px; /* 长方形比例 */
+            height: 185px; /* 适配杂志比例 */
             border-radius: 8px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.6);
             margin-bottom: 15px;
@@ -70,7 +69,6 @@
             position: relative;
         }
 
-        /* 封面图片 */
         .artwork-img {
             width: 100%;
             height: 100%;
@@ -78,45 +76,14 @@
             display: block;
         }
 
-        /* 如果没有封面图时的文字占位 */
-        .artwork-placeholder {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 40px;
-        }
-
         .track-info {
             text-align: center;
             transition: opacity 0.3s;
         }
 
-        .track-title { 
-            font-size: 20px; 
-            font-weight: 800; 
-            margin: 0; 
-            text-shadow: 0 2px 10px rgba(0,0,0,0.5); 
-        }
-        
-        .track-artist { 
-            font-size: 14px; 
-            color: rgba(255,255,255,0.9); 
-            margin-top: 6px; 
-            font-weight: 600; 
-            text-transform: uppercase; 
-            letter-spacing: 1px;
-        }
-
-        /* 您的需求：新增的副标题 */
-        .track-subtitle {
-            font-size: 12px;
-            color: rgba(255,255,255,0.5);
-            margin-top: 4px;
-            font-weight: 400;
-            letter-spacing: 0.5px;
-            font-family: monospace; /* 稍微增加一点科技感 */
-        }
+        .track-title { font-size: 20px; font-weight: 800; margin: 0; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .track-artist { font-size: 14px; color: rgba(255,255,255,0.9); margin-top: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        .track-subtitle { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 4px; font-weight: 400; letter-spacing: 0.5px; }
 
         /* UI控件 */
         .ui-controls {
@@ -150,8 +117,8 @@
         .transcript-container::-webkit-scrollbar { display: none; }
 
         .transcript-item {
-            margin-bottom: 25px; 
-            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); /* 加快动画响应速度 */
+            margin-bottom: 25px;
+            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
             opacity: 0.3;
             filter: blur(1.5px);
             transform: scale(0.98);
@@ -228,8 +195,7 @@
 
 <div class="player-header">
     <div class="artwork-container">
-        <img src="cover.jpg" alt="Magazine Cover" class="artwork-img" onerror="this.style.display='none'; document.querySelector('.artwork-placeholder').style.display='block';">
-        <div class="artwork-placeholder" style="display:none;">📖</div>
+        <img src="cover.jpg" alt="Magazine Cover" class="artwork-img" onerror="this.style.display='none';">
     </div>
     <div class="track-info">
         <h1 class="track-title">Secrets of the San José</h1>
@@ -251,20 +217,20 @@
 
     <div class="transcript-item" data-time="0">
         <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">Hello curious minds, welcome to the Week Junior.</p>
+        <p class="text-content">Hello curious minds, welcome to the Week Junior, the podcast where we explore the news and practice English.</p>
     </div>
-    <div class="transcript-item" data-time="4">
+    <div class="transcript-item" data-time="6">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">Today we are diving deep into a story that feels like it's straight out of a movie.</p>
     </div>
-    <div class="transcript-item" data-time="9">
+    <div class="transcript-item" data-time="10">
         <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">It's got a sunken ship, a massive treasure, and a mystery that's been unsolved for over 300 years.</p>
+        <p class="text-content">It's got a sunken ship, a massive treasure, and a mystery that's been unsolved for over 300 years. We're talking about the secrets of the San José.</p>
     </div>
     
     <div class="transcript-item" data-time="13">
         <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">Yes, I've been so excited for this one. A legendary treasure ship—I mean, what's not to love?</p>
+        <p class="text-content">Yes, I've been so excited for this one. A legendary treasure ship—I mean, what's not to love? It's just incredible.</p>
     </div>
     
     <div class="transcript-item" data-time="20">
@@ -303,7 +269,7 @@
     
     <div class="transcript-item" data-time="56">
         <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">It did, but not in the way you might think. During the fight, the ship's powder magazines just exploded.</p>
+        <p class="text-content">It did, but not in the way you might think. During the fight, the ship's powder magazines—that's where they stored all the gunpowder—they just exploded.</p>
     </div>
     
     <div class="transcript-item" data-time="60">
@@ -343,7 +309,7 @@
     
     <div class="transcript-item" data-time="89">
         <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">Well, to give you an idea, 200 tons is about the same weight as 40 fully grown male African elephants.</p>
+        <p class="text-content">Well, to give you an idea, 200 tons is about the same weight as 40, uh, fully grown male African elephants.</p>
     </div>
     
     <div class="transcript-item" data-time="98">
@@ -363,11 +329,7 @@
     
     <div class="transcript-item" data-time="109">
         <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">No, no, just the very first pieces. They've recovered a cannon, three old coins...</p>
-    </div>
-    <div class="transcript-item" data-time="115">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">...and—this is my favorite part—a delicate little china cup that somehow survived.</p>
+        <p class="text-content">No, no, just the very first pieces. They've recovered a cannon, three old coins, and—this is my favorite part—a delicate little china cup that somehow survived.</p>
     </div>
     
     <div class="transcript-item" data-time="118">
@@ -387,15 +349,11 @@
     
     <div class="transcript-item" data-time="128">
         <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">Right, that's the next incredible part of this story. It's all about the science.</p>
+        <p class="text-content">Right, that's the next incredible part of this story. It's all about the science. The wreck was first spotted back in 2015 by a Colombian Navy research ship...</p>
     </div>
-    <div class="transcript-item" data-time="132">
+    <div class="transcript-item" data-time="138">
         <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">The wreck was first spotted back in 2015 by a Colombian Navy research ship, but the location is incredibly deep.</p>
-    </div>
-    <div class="transcript-item" data-time="140">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">It's about 600 meters under the water.</p>
+        <p class="text-content">...but the location is, um, incredibly deep. It's about 600 meters under the water.</p>
     </div>
     
     <div class="transcript-item" data-time="142">
@@ -405,11 +363,7 @@
     
     <div class="transcript-item" data-time="145">
         <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">Exactly. Way too deep for human divers. The pressure would be immense.</p>
-    </div>
-    <div class="transcript-item" data-time="150">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">And that's why the location is still a top secret, you know, to stop people from trying to steal the treasure.</p>
+        <p class="text-content">Exactly. Way too deep for human divers. The pressure would be immense. And that's why the location is still a top secret, you know, to stop people from trying to steal the treasure.</p>
     </div>
     
     <div class="transcript-item" data-time="155">
@@ -429,11 +383,7 @@
     
     <div class="transcript-item" data-time="166">
         <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">Kind of, yeah. They sent them down to scout the area, and the images they sent back were just stunning.</p>
-    </div>
-    <div class="transcript-item" data-time="171">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">They could see bronze cannons and coins just scattered all over the seabed.</p>
+        <p class="text-content">Kind of, yeah. They sent them down to scout the area, and the images they sent back were just stunning. They could see bronze cannons and coins just scattered all over the seabed.</p>
     </div>
     
     <div class="transcript-item" data-time="175">
@@ -443,11 +393,7 @@
     
     <div class="transcript-item" data-time="179">
         <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">Uh, that's the clever part. The proof came from those three little coins they brought up.</p>
-    </div>
-    <div class="transcript-item" data-time="184">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">You see, the coins had what are called "mint marks" on them.</p>
+        <p class="text-content">Uh, that's the clever part. The proof came from those three little coins they brought up. You see, the coins had what are called "mint marks" on them.</p>
     </div>
     
     <div class="transcript-item" data-time="187">
@@ -458,6 +404,11 @@
     <div class="transcript-item" data-time="189">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">They're like little stamps that show exactly where and, more importantly, when they were made.</p>
+    </div>
+    
+    <div class="transcript-item" data-time="193">
+        <span class="speaker-tag speaker-male">Male</span>
+        <p class="text-content">Okay.</p>
     </div>
     
     <div class="transcript-item" data-time="194">
@@ -515,11 +466,7 @@
     
     <div class="transcript-item" data-time="247">
         <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">Macuquinas. Cool word. Okay, so this ship is called the world's richest shipwreck.</p>
-    </div>
-    <div class="transcript-item" data-time="253">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">But if the scientists have the pieces now, who actually gets to keep all that money?</p>
+        <p class="text-content">Macuquinas. Cool word. Okay, so this ship is called the world's richest shipwreck. But if the scientists have the pieces now, who actually gets to keep all that money?</p>
     </div>
     
     <div class="transcript-item" data-time="258">
@@ -548,11 +495,7 @@
     
     <div class="transcript-item" data-time="277">
         <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">Claimant number one is Colombia. Their argument is pretty simple.</p>
-    </div>
-    <div class="transcript-item" data-time="281">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">The wreck is in their territory, in Colombian waters, so they say it's part of their national heritage, it's theirs.</p>
+        <p class="text-content">Claimant number one is Colombia. Their argument is pretty simple: the wreck is in their territory, in Colombian waters, so they say it's part of their national heritage, it's theirs.</p>
     </div>
     
     <div class="transcript-item" data-time="286">
@@ -572,11 +515,7 @@
     
     <div class="transcript-item" data-time="294">
         <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">Because the San José was a Spanish ship. It was part of the Spanish Navy, flying a Spanish flag.</p>
-    </div>
-    <div class="transcript-item" data-time="299">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">They argue that even though it sank, it never stopped being the property of Spain.</p>
+        <p class="text-content">Because the San José was a Spanish ship. It was part of the Spanish Navy, flying a Spanish flag. They argue that even though it sank, it never stopped being the property of Spain.</p>
     </div>
     
     <div class="transcript-item" data-time="303">
@@ -636,11 +575,7 @@
     
     <div class="transcript-item" data-time="347">
         <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">It's an astonishing amount of money. And it raises this really important question about, you know, who should benefit from history?</p>
-    </div>
-    <div class="transcript-item" data-time="354">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">A country? Or a private company?</p>
+        <p class="text-content">It's an astonishing amount of money. And it raises this really important question about, you know, who should benefit from history? A country? Or a private company?</p>
     </div>
     
     <div class="transcript-item" data-time="356">
