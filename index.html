@@ -57,7 +57,6 @@
             background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);
         }
 
-        /* 封面容器 */
         .artwork-container {
             width: 140px;
             height: 185px;
@@ -76,8 +75,7 @@
             object-fit: cover;
             display: block;
         }
-        
-        /* 占位符 */
+
         .artwork-placeholder {
             width: 100%;
             height: 100%;
@@ -85,7 +83,7 @@
             align-items: center;
             justify-content: center;
             font-size: 40px;
-            background: linear-gradient(135deg, #333, #555);
+            background: #444;
         }
 
         .track-info {
@@ -113,7 +111,7 @@
             margin: 0;
         }
 
-        .progress-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; margin-bottom: 20px; cursor: pointer;}
+        .progress-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; margin-bottom: 20px; cursor: pointer; }
         .progress-fill { height: 100%; background: white; border-radius: 2px; width: 0%; transition: width 0.1s linear; }
 
         /* 歌词区域 */
@@ -130,7 +128,7 @@
 
         .transcript-item {
             margin-bottom: 25px;
-            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1); /* 响应更快 */
             opacity: 0.3;
             filter: blur(1.5px);
             transform: scale(0.98);
@@ -198,7 +196,6 @@
             margin-top: 30px; 
         }
         body.recording-mode .transcript-item.active .text-content { text-shadow: 0 0 15px rgba(255,255,255,0.5); }
-
     </style>
 </head>
 <body>
@@ -232,464 +229,462 @@
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">Hello curious minds, welcome to the Week Junior, the podcast where we explore the news and practice English.</p>
     </div>
-    <div class="transcript-item" data-time="6">
+    <div class="transcript-item" data-time="5.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">Today we are diving deep into a story that feels like it's straight out of a movie.</p>
     </div>
-    <div class="transcript-item" data-time="11">
+    <div class="transcript-item" data-time="9.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">It's got a sunken ship, a massive treasure, and a mystery that's been unsolved for over 300 years.</p>
     </div>
-    <div class="transcript-item" data-time="19">
+    <div class="transcript-item" data-time="13.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">We're talking about the secrets of the San José.</p>
     </div>
     
-    <div class="transcript-item" data-time="22">
+    <div class="transcript-item" data-time="14.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">Yes, I've been so excited for this one. A legendary treasure ship—I mean, what's not to love? It's just incredible.</p>
     </div>
     
-    <div class="transcript-item" data-time="29">
+    <div class="transcript-item" data-time="21">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">It really is. And things are happening right now. Colombian scientists just announced they've recovered the very first pieces of this treasure.</p>
     </div>
     
-    <div class="transcript-item" data-time="37">
+    <div class="transcript-item" data-time="28.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">Okay, so let's start there. What actually happened? This ship sank such a long time ago, right?</p>
     </div>
     
-    <div class="transcript-item" data-time="43">
+    <div class="transcript-item" data-time="34.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">A very long time ago, yeah. We're going all the way back to 1708. The ship was the San José, which was a Spanish Galleon.</p>
     </div>
     
-    <div class="transcript-item" data-time="50">
+    <div class="transcript-item" data-time="40.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">A galleon. So that's like one of those huge, old-timey sailing ships.</p>
     </div>
     
-    <div class="transcript-item" data-time="54">
+    <div class="transcript-item" data-time="44.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">Exactly. A really big ship used for both fighting and, you know, for carrying valuable goods.</p>
     </div>
-    
-    <div class="transcript-item" data-time="60">
+    <div class="transcript-item" data-time="49.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">And it was off the coast of Cartagena, in modern-day Colombia, when it was attacked by the British Navy.</p>
     </div>
     
-    <div class="transcript-item" data-time="65">
+    <div class="transcript-item" data-time="54.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">Okay, so it sank in a battle.</p>
     </div>
     
-    <div class="transcript-item" data-time="67">
+    <div class="transcript-item" data-time="56.5">
         <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">It did, but not in the way you might think. During the fight, the ship's powder magazines just exploded.</p>
+        <p class="text-content">It did, but not in the way you might think. During the fight, the ship's powder magazines—that's where they stored all the gunpowder—they just exploded.</p>
     </div>
     
-    <div class="transcript-item" data-time="72">
+    <div class="transcript-item" data-time="61">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">Whoa. So it blew up from the inside.</p>
     </div>
     
-    <div class="transcript-item" data-time="74">
+    <div class="transcript-item" data-time="63">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">Pretty much. A catastrophic explosion. The ship sank almost immediately.</p>
     </div>
     
-    <div class="transcript-item" data-time="79">
+    <div class="transcript-item" data-time="67.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">And the treasure. The numbers I've heard are just mind-boggling. What was it actually carrying?</p>
     </div>
     
-    <div class="transcript-item" data-time="85">
+    <div class="transcript-item" data-time="73.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">Okay, get ready for this. The San José was carrying almost 200 tons of gold, silver, and gems.</p>
     </div>
     
-    <div class="transcript-item" data-time="90">
+    <div class="transcript-item" data-time="77.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">200 tons? That can't be right.</p>
     </div>
     
-    <div class="transcript-item" data-time="94">
+    <div class="transcript-item" data-time="81.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">It is. That includes something like 11 million gold and silver coins.</p>
     </div>
     
-    <div class="transcript-item" data-time="99">
+    <div class="transcript-item" data-time="86.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">That's... I can't even picture that. What's that equivalent to?</p>
     </div>
     
-    <div class="transcript-item" data-time="102">
+    <div class="transcript-item" data-time="89.5">
         <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">Well, to give you an idea, 200 tons is about the same weight as 40 fully grown male African elephants.</p>
+        <p class="text-content">Well, to give you an idea, 200 tons is about the same weight as 40, uh, fully grown male African elephants.</p>
     </div>
     
-    <div class="transcript-item" data-time="111">
+    <div class="transcript-item" data-time="98.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">40 elephants worth of gold. Wow.</p>
     </div>
     
-    <div class="transcript-item" data-time="113">
+    <div class="transcript-item" data-time="100.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">And in today's money, that's worth around 15 billion.</p>
     </div>
     
-    <div class="transcript-item" data-time="117">
+    <div class="transcript-item" data-time="104.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">15 billion. Okay. So what did the scientists actually bring up recently? It wasn't all of it, right?</p>
     </div>
     
-    <div class="transcript-item" data-time="122">
+    <div class="transcript-item" data-time="109.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">No, no, just the very first pieces. They've recovered a cannon, three old coins...</p>
     </div>
-    <div class="transcript-item" data-time="128">
+    <div class="transcript-item" data-time="114">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">...and—this is my favorite part—a delicate little china cup that somehow survived.</p>
     </div>
     
-    <div class="transcript-item" data-time="133">
+    <div class="transcript-item" data-time="118.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">A teacup.</p>
     </div>
     
-    <div class="transcript-item" data-time="134">
+    <div class="transcript-item" data-time="119.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">Yeah.</p>
     </div>
     
-    <div class="transcript-item" data-time="135">
+    <div class="transcript-item" data-time="120">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">After 300 years at the bottom of the ocean? That's amazing. Wow.</p>
     </div>
-    
-    <div class="transcript-item" data-time="139">
+    <div class="transcript-item" data-time="124.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">So how did they even find a ship that sank 300 years ago and so deep?</p>
     </div>
     
-    <div class="transcript-item" data-time="144">
+    <div class="transcript-item" data-time="129">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">Right, that's the next incredible part of this story. It's all about the science.</p>
     </div>
-    <div class="transcript-item" data-time="148">
+    <div class="transcript-item" data-time="133">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">The wreck was first spotted back in 2015 by a Colombian Navy research ship, but the location is incredibly deep.</p>
     </div>
-    <div class="transcript-item" data-time="155">
+    <div class="transcript-item" data-time="140">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">It's about 600 meters under the water.</p>
     </div>
     
-    <div class="transcript-item" data-time="158">
+    <div class="transcript-item" data-time="143">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">600 meters. That's more than half a kilometer straight down.</p>
     </div>
     
-    <div class="transcript-item" data-time="161">
+    <div class="transcript-item" data-time="146">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">Exactly. Way too deep for human divers. The pressure would be immense.</p>
     </div>
-    <div class="transcript-item" data-time="165">
+    <div class="transcript-item" data-time="150.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">And that's why the location is still a top secret, you know, to stop people from trying to steal the treasure.</p>
     </div>
     
-    <div class="transcript-item" data-time="170">
+    <div class="transcript-item" data-time="155.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">So if people can't go down, how did they know it was the right ship? How did they confirm it?</p>
     </div>
     
-    <div class="transcript-item" data-time="175">
+    <div class="transcript-item" data-time="159.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">They used technology. Specifically, remote-controlled underwater vehicles. Little robots, basically.</p>
     </div>
     
-    <div class="transcript-item" data-time="181">
+    <div class="transcript-item" data-time="165.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">Like underwater drones?</p>
     </div>
     
-    <div class="transcript-item" data-time="182">
+    <div class="transcript-item" data-time="166.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">Kind of, yeah. They sent them down to scout the area, and the images they sent back were just stunning.</p>
     </div>
-    <div class="transcript-item" data-time="187">
+    <div class="transcript-item" data-time="171.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">They could see bronze cannons and coins just scattered all over the seabed.</p>
     </div>
     
-    <div class="transcript-item" data-time="191">
+    <div class="transcript-item" data-time="175.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">But there were lots of Spanish ships back then. How did they know for sure it was the famous San José?</p>
     </div>
     
-    <div class="transcript-item" data-time="196">
+    <div class="transcript-item" data-time="179.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">Uh, that's the clever part. The proof came from those three little coins they brought up.</p>
     </div>
-    <div class="transcript-item" data-time="201">
+    <div class="transcript-item" data-time="184.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">You see, the coins had what are called "mint marks" on them.</p>
     </div>
     
-    <div class="transcript-item" data-time="204">
+    <div class="transcript-item" data-time="187.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">Mint marks? What are those?</p>
     </div>
     
-    <div class="transcript-item" data-time="206">
+    <div class="transcript-item" data-time="189.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">They're like little stamps that show exactly where and, more importantly, when they were made.</p>
     </div>
     
-    <div class="transcript-item" data-time="210">
+    <div class="transcript-item" data-time="193.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">Okay.</p>
     </div>
     
-    <div class="transcript-item" data-time="211">
+    <div class="transcript-item" data-time="194.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">And the marks on these coins showed they were made in the year 1707.</p>
     </div>
     
-    <div class="transcript-item" data-time="215">
+    <div class="transcript-item" data-time="198.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">1707. And the ship sank in 1708.</p>
     </div>
     
-    <div class="transcript-item" data-time="218">
+    <div class="transcript-item" data-time="201.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">Exactly. It was carrying brand new money. That was the definitive proof. It had to be the San José.</p>
     </div>
     
-    <div class="transcript-item" data-time="224">
+    <div class="transcript-item" data-time="207.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">That is brilliant. It's like a tiny timestamp solving a giant mystery.</p>
     </div>
     
-    <div class="transcript-item" data-time="228">
+    <div class="transcript-item" data-time="211.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">It is. And the Colombian government has been very clear about something. They say this recovery is actually part of an investigation.</p>
     </div>
     
-    <div class="transcript-item" data-time="235">
+    <div class="transcript-item" data-time="218.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">An investigation? Not just a treasure hunt.</p>
     </div>
     
-    <div class="transcript-item" data-time="238">
+    <div class="transcript-item" data-time="221.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">Right. They want to understand why the galleon sank and what these items can teach us.</p>
     </div>
-    <div class="transcript-item" data-time="243">
+    <div class="transcript-item" data-time="227.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">Scientists are going to study the cannon, the china cup, and especially the coins, to learn about how things were made and traded 300 years ago.</p>
     </div>
     
-    <div class="transcript-item" data-time="251">
+    <div class="transcript-item" data-time="234.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">So it's about history, not just the money.</p>
     </div>
     
-    <div class="transcript-item" data-time="253">
+    <div class="transcript-item" data-time="236.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">That's the official goal. Those coins, by the way, have a special name. They're called Macuquinas, or sometimes Cobs.</p>
     </div>
-    <div class="transcript-item" data-time="259">
+    <div class="transcript-item" data-time="243.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">They were, like, the main type of money in the Americas for over 200 years.</p>
     </div>
     
-    <div class="transcript-item" data-time="263">
+    <div class="transcript-item" data-time="247.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">Macuquinas. Cool word. Okay, so this ship is called the world's richest shipwreck.</p>
     </div>
-    <div class="transcript-item" data-time="269">
+    <div class="transcript-item" data-time="253.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">But if the scientists have the pieces now, who actually gets to keep all that money?</p>
     </div>
     
-    <div class="transcript-item" data-time="274">
+    <div class="transcript-item" data-time="258.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">And that, right there, is the huge, complicated question. This is where the story gets really intense.</p>
     </div>
-    <div class="transcript-item" data-time="280">
+    <div class="transcript-item" data-time="264.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">The San José is a treasure trove, no doubt about it, but the treasure is now at the center of this massive legal fight.</p>
     </div>
     
-    <div class="transcript-item" data-time="286">
+    <div class="transcript-item" data-time="270.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">I can imagine. Who's involved?</p>
     </div>
     
-    <div class="transcript-item" data-time="288">
+    <div class="transcript-item" data-time="272.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">Well, there are three main groups, or claimants, fighting for it.</p>
     </div>
     
-    <div class="transcript-item" data-time="292">
+    <div class="transcript-item" data-time="276.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">Okay, claimant number one.</p>
     </div>
     
-    <div class="transcript-item" data-time="293">
+    <div class="transcript-item" data-time="277.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">Claimant number one is Colombia. Their argument is pretty simple.</p>
     </div>
-    <div class="transcript-item" data-time="297">
+    <div class="transcript-item" data-time="281.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">The wreck is in their territory, in Colombian waters, so they say it's part of their national heritage, it's theirs.</p>
     </div>
     
-    <div class="transcript-item" data-time="302">
+    <div class="transcript-item" data-time="286.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">That makes sense. Finders keepers, but for a country.</p>
     </div>
     
-    <div class="transcript-item" data-time="304">
+    <div class="transcript-item" data-time="288.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">Sort of, yeah. But then you have claimant number two: Spain.</p>
     </div>
     
-    <div class="transcript-item" data-time="308">
+    <div class="transcript-item" data-time="292.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">Spain. Why them?</p>
     </div>
     
-    <div class="transcript-item" data-time="310">
+    <div class="transcript-item" data-time="294.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">Because the San José was a Spanish ship. It was part of the Spanish Navy, flying a Spanish flag.</p>
     </div>
-    <div class="transcript-item" data-time="315">
+    <div class="transcript-item" data-time="299.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">They argue that even though it sank, it never stopped being the property of Spain.</p>
     </div>
     
-    <div class="transcript-item" data-time="319">
+    <div class="transcript-item" data-time="303.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">So they're saying it's still technically theirs, even after 300 years at the bottom of the sea.</p>
     </div>
     
-    <div class="transcript-item" data-time="324">
+    <div class="transcript-item" data-time="308.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">Exactly. It's a complex legal idea, but that's their claim. And then, there's a third party.</p>
     </div>
     
-    <div class="transcript-item" data-time="329">
+    <div class="transcript-item" data-time="313.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">Well this gets even more complicated. Who else?</p>
     </div>
     
-    <div class="transcript-item" data-time="331">
+    <div class="transcript-item" data-time="315.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">An American company. A marine salvage company called Sea Search Armada.</p>
     </div>
     
-    <div class="transcript-item" data-time="336">
+    <div class="transcript-item" data-time="320.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">And what's their story?</p>
     </div>
     
-    <div class="transcript-item" data-time="337">
+    <div class="transcript-item" data-time="321.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">Well, they claim that they actually found the wreck first, more than 40 years ago.</p>
     </div>
     
-    <div class="transcript-item" data-time="342">
+    <div class="transcript-item" data-time="326.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">40 years ago?</p>
     </div>
     
-    <div class="transcript-item" data-time="343">
+    <div class="transcript-item" data-time="327.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">Yes. And they say they told the Colombian government where it was. They allege that in return, the government promised them a share of the treasure.</p>
     </div>
     
-    <div class="transcript-item" data-time="351">
+    <div class="transcript-item" data-time="335.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">A share. How much of a share?</p>
     </div>
     
-    <div class="transcript-item" data-time="353">
+    <div class="transcript-item" data-time="337.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">A huge one. And now they're asking for what they say they were promised, which is about 7.6 billion pounds.</p>
     </div>
     
-    <div class="transcript-item" data-time="359">
+    <div class="transcript-item" data-time="343.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">7.6 billion pounds... for finding it. Wow.</p>
     </div>
     
-    <div class="transcript-item" data-time="363">
+    <div class="transcript-item" data-time="347.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">It's an astonishing amount of money. And it raises this really important question about, you know, who should benefit from history?</p>
     </div>
-    <div class="transcript-item" data-time="370">
+    <div class="transcript-item" data-time="354.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">A country? Or a private company?</p>
     </div>
     
-    <div class="transcript-item" data-time="372">
+    <div class="transcript-item" data-time="356.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">And I heard there were others too.</p>
     </div>
     
-    <div class="transcript-item" data-time="373">
+    <div class="transcript-item" data-time="357.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">That's right. To make it even more complex, communities in Bolivia have also made a claim.</p>
     </div>
     
-    <div class="transcript-item" data-time="377">
+    <div class="transcript-item" data-time="361.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">Bolivia. How are they connected?</p>
     </div>
     
-    <div class="transcript-item" data-time="379">
+    <div class="transcript-item" data-time="363.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">They argue that much of the silver and gold on that ship was originally taken from mines in their land, under, well, very harsh colonial rule.</p>
     </div>
-    <div class="transcript-item" data-time="386">
+    <div class="transcript-item" data-time="370.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">They feel they have a historical right to it. So you can see it's... it's a huge tangled mess of history, law, and an incredible amount of money.</p>
     </div>
     
-    <div class="transcript-item" data-time="395">
+    <div class="transcript-item" data-time="379.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">So, just to recap. We've talked about this incredible Spanish galleon, the San José, sinking in 1708.</p>
     </div>
-    <div class="transcript-item" data-time="402">
+    <div class="transcript-item" data-time="386.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">It went down with 200 tons of treasure, which is now worth about 15 billion.</p>
     </div>
     
-    <div class="transcript-item" data-time="406">
+    <div class="transcript-item" data-time="390.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">And after 300 years, scientists have found it 600 meters deep and are starting to bring up the first pieces.</p>
     </div>
     
-    <div class="transcript-item" data-time="412">
+    <div class="transcript-item" data-time="396.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">Right. And now there's this huge international fight between Colombia, Spain, an American company, and even Bolivian communities over who really owns this amazing piece of history.</p>
     </div>
     
-    <div class="transcript-item" data-time="422">
+    <div class="transcript-item" data-time="406.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">It's an amazing story. You know, if you want to practice your English more, you should go back and read the text again.</p>
     </div>
-    <div class="transcript-item" data-time="428">
+    <div class="transcript-item" data-time="412.5">
         <span class="speaker-tag speaker-male">Male</span>
         <p class="text-content">Try to find some of the new words we used, like "Galleon," "Macuquinas," or "Mint marks." It's a great way to learn.</p>
     </div>
     
-    <div class="transcript-item" data-time="434">
+    <div class="transcript-item" data-time="418.5">
         <span class="speaker-tag speaker-female">Female</span>
         <p class="text-content">Keep reading, and keep exploring the world.</p>
     </div>
@@ -730,9 +725,8 @@
         }
     });
 
-    // 暂停控制 (点击任意位置)
+    // 暂停控制
     document.addEventListener('click', (e) => {
-        // 如果是点击了进度条或录制按钮，则不触发全屏暂停
         if (e.target === recordBtn || progressBarContainer.contains(e.target) || e.target.closest('.transcript-item')) return;
         
         if (isRecordingMode) {
@@ -744,10 +738,10 @@
         }
     });
 
-    // 交互式点击跳转
+    // 点击跳转
     items.forEach(item => {
         item.addEventListener('click', (e) => {
-            e.stopPropagation(); // 防止触发全局暂停
+            e.stopPropagation(); 
             const time = parseFloat(item.getAttribute('data-time'));
             audio.currentTime = time;
             if (audio.paused) {
@@ -756,7 +750,7 @@
         });
     });
 
-    // 点击进度条跳转
+    // 点击进度条
     progressBarContainer.addEventListener('click', (e) => {
         const rect = progressBarContainer.getBoundingClientRect();
         const pos = (e.clientX - rect.left) / rect.width;
@@ -774,11 +768,9 @@
         const currentTime = audio.currentTime;
         let activeItemIndex = -1;
 
-        // 查找当前应该高亮的那一句
-        // 核心逻辑：必须严格满足 currentTime >= 自己的startTime 且 < 下一句的startTime
+        // 核心校验逻辑：只高亮当前正在读的这一句
         for (let i = 0; i < items.length; i++) {
             const time = parseFloat(items[i].getAttribute('data-time'));
-            // 如果是最后一句，nextTime 设为音频总时长或无限大
             const nextTime = items[i+1] ? parseFloat(items[i+1].getAttribute('data-time')) : Infinity;
             
             if (currentTime >= time && currentTime < nextTime) {
@@ -787,26 +779,24 @@
             }
         }
 
-        // 只有当高亮的行发生变化时，才进行 DOM 操作
         if (activeItemIndex !== -1 && activeItemIndex !== currentActiveIndex) {
             
-            // 1. 移除旧的高亮
+            // 移除旧高亮
             const previousActive = document.querySelector('.transcript-item.active');
             if (previousActive) {
                 previousActive.classList.remove('active');
             }
 
-            // 2. 添加新的高亮
+            // 添加新高亮
             const currentItem = items[activeItemIndex];
             currentItem.classList.add('active');
             
-            // 3. 滚动到视图中心
+            // 滚动
             currentItem.scrollIntoView({
                 behavior: 'smooth',
                 block: 'center'
             });
 
-            // 4. 更新状态索引
             currentActiveIndex = activeItemIndex;
         }
     }
