@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>The Week Junior Podcast - Ep 523</title>
+    <title>The Week Junior Podcast - Precise Sync</title>
     <style>
         :root {
             --bg-color: #000000;
@@ -11,6 +11,7 @@
             --female-color: #ec4899;
             --male-color: #2dd4bf;
             --text-active: #ffffff;
+            --word-highlight: #ff9f0a; /* 苹果风格的亮橘色 */
             --font-stack: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
         }
 
@@ -76,16 +77,6 @@
             display: block;
         }
 
-        .artwork-placeholder {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
-            background: #444;
-        }
-
         .track-info {
             text-align: center;
             transition: opacity 0.3s;
@@ -126,9 +117,10 @@
         
         .transcript-container::-webkit-scrollbar { display: none; }
 
+        /* 句子样式 */
         .transcript-item {
             margin-bottom: 25px;
-            transition: all 0.2s ease-out; /* 快速切换，无拖泥带水 */
+            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
             opacity: 0.3;
             filter: blur(1.5px);
             transform: scale(0.98);
@@ -136,6 +128,7 @@
             cursor: pointer;
         }
 
+        /* 句子激活状态 */
         .transcript-item.active {
             opacity: 1;
             filter: blur(0);
@@ -165,6 +158,19 @@
             text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
 
+        /* 单词样式 */
+        .word-span {
+            transition: color 0.1s ease, text-shadow 0.1s ease;
+            display: inline-block; /* 允许 transform */
+        }
+
+        /* 单词激活状态：橘色高亮 */
+        .word-active {
+            color: var(--word-highlight);
+            text-shadow: 0 0 15px rgba(255, 159, 10, 0.6);
+            transform: scale(1.05);
+        }
+
         /* 录制按钮 */
         .overlay-btn {
             position: fixed;
@@ -189,19 +195,39 @@
         
         .overlay-btn:active { transform: translateX(-50%) scale(0.95); }
 
+        /* 调试时间显示 */
+        #debugTime {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #0f0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            z-index: 2000;
+            pointer-events: none;
+        }
+
         /* 录制模式调整 */
         body.recording-mode .artwork-container { 
             width: 200px;
             height: 265px;
             margin-top: 30px; 
         }
-        body.recording-mode .transcript-item.active .text-content { text-shadow: 0 0 15px rgba(255,255,255,0.5); }
+        body.recording-mode .transcript-item.active .text-content { 
+            /* 录制模式下，非高亮单词稍微暗一点，为了突出橘色 */
+            color: rgba(255,255,255,0.9);
+        }
+        body.recording-mode #debugTime { display: none; }
 
     </style>
 </head>
 <body>
 
 <div class="ambient-bg"></div>
+<div id="debugTime">0.000</div>
 
 <div class="player-header">
     <div class="artwork-container">
@@ -225,473 +251,7 @@
 </div>
 
 <div class="transcript-container" id="transcriptContainer">
-
-    <div class="transcript-item" data-time="0">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">Hello curious minds, welcome to the Week Junior, the podcast where we explore the news and practice English.</p>
     </div>
-    <div class="transcript-item" data-time="4">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">Today we are diving deep into a story that feels like it's straight out of a movie.</p>
-    </div>
-    <div class="transcript-item" data-time="8">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">It's got a sunken ship, a massive treasure, and a mystery that's been unsolved for over 300 years.</p>
-    </div>
-    <div class="transcript-item" data-time="11.5">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">We're talking about the secrets of the San José.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="13">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">Yes, I've been so excited for this one. A legendary treasure ship—I mean, what's not to love? It's just incredible.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="20">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">It really is. And things are happening right now. Colombian scientists just announced they've recovered the very first pieces of this treasure.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="28">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">Okay, so let's start there. What actually happened? This ship sank such a long time ago, right?</p>
-    </div>
-    
-    <div class="transcript-item" data-time="34">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">A very long time ago, yeah. We're going all the way back to 1708. The ship was the San José, which was a Spanish Galleon.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="40">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">A galleon. So that's like one of those huge, old-timey sailing ships.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="44">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">Exactly. A really big ship used for both fighting and, you know, for carrying valuable goods.</p>
-    </div>
-    <div class="transcript-item" data-time="49">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">And it was off the coast of Cartagena, in modern-day Colombia, when it was attacked by the British Navy.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="54">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">Okay, so it sank in a battle.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="56">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">It did, but not in the way you might think. During the fight, the ship's powder magazines—that's where they stored all the gunpowder—they just exploded.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="60">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">Whoa. So it blew up from the inside.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="62">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">Pretty much. A catastrophic explosion. The ship sank almost immediately.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="67">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">And the treasure. The numbers I've heard are just mind-boggling. What was it actually carrying?</p>
-    </div>
-    
-    <div class="transcript-item" data-time="73">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">Okay, get ready for this. The San José was carrying almost 200 tons of gold, silver, and gems.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="77">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">200 tons? That can't be right.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="81">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">It is. That includes something like 11 million gold and silver coins.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="86">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">That's... I can't even picture that. What's that equivalent to?</p>
-    </div>
-    
-    <div class="transcript-item" data-time="89">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">Well, to give you an idea, 200 tons is about the same weight as 40, uh, fully grown male African elephants.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="98">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">40 elephants worth of gold. Wow.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="100">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">And in today's money, that's worth around 15 billion.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="104">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">15 billion. Okay. So what did the scientists actually bring up recently? It wasn't all of it, right?</p>
-    </div>
-    
-    <div class="transcript-item" data-time="109">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">No, no, just the very first pieces. They've recovered a cannon, three old coins...</p>
-    </div>
-    <div class="transcript-item" data-time="114">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">...and—this is my favorite part—a delicate little china cup that somehow survived.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="118">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">A teacup.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="119">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">Yeah.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="119.5">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">After 300 years at the bottom of the ocean? That's amazing. Wow.</p>
-    </div>
-    <div class="transcript-item" data-time="124">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">So how did they even find a ship that sank 300 years ago and so deep?</p>
-    </div>
-    
-    <div class="transcript-item" data-time="128">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">Right, that's the next incredible part of this story. It's all about the science.</p>
-    </div>
-    <div class="transcript-item" data-time="132">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">The wreck was first spotted back in 2015 by a Colombian Navy research ship, but the location is incredibly deep.</p>
-    </div>
-    <div class="transcript-item" data-time="138">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">It's about 600 meters under the water.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="142">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">600 meters. That's more than half a kilometer straight down.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="145">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">Exactly. Way too deep for human divers. The pressure would be immense.</p>
-    </div>
-    <div class="transcript-item" data-time="150">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">And that's why the location is still a top secret, you know, to stop people from trying to steal the treasure.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="155">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">So if people can't go down, how did they know it was the right ship? How did they confirm it?</p>
-    </div>
-    
-    <div class="transcript-item" data-time="159">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">They used technology. Specifically, remote-controlled underwater vehicles. Little robots, basically.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="165">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">Like underwater drones?</p>
-    </div>
-    
-    <div class="transcript-item" data-time="166">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">Kind of, yeah. They sent them down to scout the area, and the images they sent back were just stunning.</p>
-    </div>
-    <div class="transcript-item" data-time="171">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">They could see bronze cannons and coins just scattered all over the seabed.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="175">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">But there were lots of Spanish ships back then. How did they know for sure it was the famous San José?</p>
-    </div>
-    
-    <div class="transcript-item" data-time="179">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">Uh, that's the clever part. The proof came from those three little coins they brought up.</p>
-    </div>
-    <div class="transcript-item" data-time="184">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">You see, the coins had what are called "mint marks" on them.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="187">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">Mint marks? What are those?</p>
-    </div>
-    
-    <div class="transcript-item" data-time="189">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">They're like little stamps that show exactly where and, more importantly, when they were made.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="193">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">Okay.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="194">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">And the marks on these coins showed they were made in the year 1707.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="198">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">1707. And the ship sank in 1708.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="201">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">Exactly. It was carrying brand new money. That was the definitive proof. It had to be the San José.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="207">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">That is brilliant. It's like a tiny timestamp solving a giant mystery.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="211">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">It is. And the Colombian government has been very clear about something. They say this recovery is actually part of an investigation.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="218">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">An investigation? Not just a treasure hunt.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="221">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">Right. They want to understand why the galleon sank and what these items can teach us.</p>
-    </div>
-    <div class="transcript-item" data-time="227">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">Scientists are going to study the cannon, the china cup, and especially the coins, to learn about how things were made and traded 300 years ago.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="234">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">So it's about history, not just the money.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="236">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">That's the official goal. Those coins, by the way, have a special name. They're called Macuquinas, or sometimes Cobs.</p>
-    </div>
-    <div class="transcript-item" data-time="243">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">They were, like, the main type of money in the Americas for over 200 years.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="247">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">Macuquinas. Cool word. Okay, so this ship is called the world's richest shipwreck.</p>
-    </div>
-    <div class="transcript-item" data-time="253">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">But if the scientists have the pieces now, who actually gets to keep all that money?</p>
-    </div>
-    
-    <div class="transcript-item" data-time="258">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">And that, right there, is the huge, complicated question. This is where the story gets really intense.</p>
-    </div>
-    <div class="transcript-item" data-time="264">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">The San José is a treasure trove, no doubt about it, but the treasure is now at the center of this massive legal fight.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="270">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">I can imagine. Who's involved?</p>
-    </div>
-    
-    <div class="transcript-item" data-time="272">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">Well, there are three main groups, or claimants, fighting for it.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="276">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">Okay, claimant number one.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="277">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">Claimant number one is Colombia. Their argument is pretty simple.</p>
-    </div>
-    <div class="transcript-item" data-time="281">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">The wreck is in their territory, in Colombian waters, so they say it's part of their national heritage, it's theirs.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="286">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">That makes sense. Finders keepers, but for a country.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="288">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">Sort of, yeah. But then you have claimant number two: Spain.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="292">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">Spain. Why them?</p>
-    </div>
-    
-    <div class="transcript-item" data-time="294">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">Because the San José was a Spanish ship. It was part of the Spanish Navy, flying a Spanish flag.</p>
-    </div>
-    <div class="transcript-item" data-time="299">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">They argue that even though it sank, it never stopped being the property of Spain.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="303">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">So they're saying it's still technically theirs, even after 300 years at the bottom of the sea.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="308">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">Exactly. It's a complex legal idea, but that's their claim. And then, there's a third party.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="313">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">Well this gets even more complicated. Who else?</p>
-    </div>
-    
-    <div class="transcript-item" data-time="315">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">An American company. A marine salvage company called Sea Search Armada.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="320">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">And what's their story?</p>
-    </div>
-    
-    <div class="transcript-item" data-time="321">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">Well, they claim that they actually found the wreck first, more than 40 years ago.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="326">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">40 years ago?</p>
-    </div>
-    
-    <div class="transcript-item" data-time="327">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">Yes. And they say they told the Colombian government where it was. They allege that in return, the government promised them a share of the treasure.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="335">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">A share. How much of a share?</p>
-    </div>
-    
-    <div class="transcript-item" data-time="337">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">A huge one. And now they're asking for what they say they were promised, which is about 7.6 billion pounds.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="343">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">7.6 billion pounds... for finding it. Wow.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="347">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">It's an astonishing amount of money. And it raises this really important question about, you know, who should benefit from history?</p>
-    </div>
-    <div class="transcript-item" data-time="354">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">A country? Or a private company?</p>
-    </div>
-    
-    <div class="transcript-item" data-time="356">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">And I heard there were others too.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="357">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">That's right. To make it even more complex, communities in Bolivia have also made a claim.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="361">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">Bolivia. How are they connected?</p>
-    </div>
-    
-    <div class="transcript-item" data-time="363">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">They argue that much of the silver and gold on that ship was originally taken from mines in their land, under, well, very harsh colonial rule.</p>
-    </div>
-    <div class="transcript-item" data-time="370">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">They feel they have a historical right to it. So you can see it's... it's a huge tangled mess of history, law, and an incredible amount of money.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="379">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">So, just to recap. We've talked about this incredible Spanish galleon, the San José, sinking in 1708.</p>
-    </div>
-    <div class="transcript-item" data-time="386">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">It went down with 200 tons of treasure, which is now worth about 15 billion.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="390">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">And after 300 years, scientists have found it 600 meters deep and are starting to bring up the first pieces.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="396">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">Right. And now there's this huge international fight between Colombia, Spain, an American company, and even Bolivian communities over who really owns this amazing piece of history.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="406">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">It's an amazing story. You know, if you want to practice your English more, you should go back and read the text again.</p>
-    </div>
-    <div class="transcript-item" data-time="412">
-        <span class="speaker-tag speaker-male">Male</span>
-        <p class="text-content">Try to find some of the new words we used, like "Galleon," "Macuquinas," or "Mint marks." It's a great way to learn.</p>
-    </div>
-    
-    <div class="transcript-item" data-time="418">
-        <span class="speaker-tag speaker-female">Female</span>
-        <p class="text-content">Keep reading, and keep exploring the world.</p>
-    </div>
-
-    <div style="height: 60vh;"></div>
-</div>
 
 <button class="overlay-btn" id="recordBtn">
     🎥 开始录制模式
@@ -703,22 +263,206 @@
 </audio>
 
 <script>
+    // ==========================================
+    // ⬇️ 请在此处替换您的 JSON 数据 ⬇️
+    // 数据结构说明：
+    // 每个对象代表一个句子 (segment)
+    // "start": 句子开始时间
+    // "end": 句子结束时间
+    // "speaker": "Female" 或 "Male"
+    // "words": 单词数组，每个单词包含 word, start, end
+    // ==========================================
+    
+    const transcriptData = [
+        {
+            "start": 0.00,
+            "end": 6.00,
+            "speaker": "Female",
+            "words": [
+                {"word": "Hello", "start": 0.00, "end": 0.50},
+                {"word": "curious", "start": 0.50, "end": 1.00},
+                {"word": "minds,", "start": 1.00, "end": 1.50},
+                {"word": "welcome", "start": 1.50, "end": 2.00},
+                {"word": "to", "start": 2.00, "end": 2.20},
+                {"word": "the", "start": 2.20, "end": 2.40},
+                {"word": "Week", "start": 2.40, "end": 2.80},
+                {"word": "Junior,", "start": 2.80, "end": 3.30},
+                {"word": "the", "start": 3.30, "end": 3.50},
+                {"word": "podcast", "start": 3.50, "end": 4.00},
+                {"word": "where", "start": 4.00, "end": 4.20},
+                {"word": "we", "start": 4.20, "end": 4.40},
+                {"word": "explore", "start": 4.40, "end": 4.90},
+                {"word": "the", "start": 4.90, "end": 5.10},
+                {"word": "news", "start": 5.10, "end": 5.50},
+                {"word": "and", "start": 5.50, "end": 5.70},
+                {"word": "practice", "start": 5.70, "end": 6.20},
+                {"word": "English.", "start": 6.20, "end": 6.80}
+            ]
+        },
+        {
+            "start": 6.80,
+            "end": 10.50,
+            "speaker": "Female",
+            "words": [
+                {"word": "Today", "start": 6.80, "end": 7.20},
+                {"word": "we", "start": 7.20, "end": 7.40},
+                {"word": "are", "start": 7.40, "end": 7.60},
+                {"word": "diving", "start": 7.60, "end": 8.00},
+                {"word": "deep", "start": 8.00, "end": 8.40},
+                {"word": "into", "start": 8.40, "end": 8.70},
+                {"word": "a", "start": 8.70, "end": 8.90},
+                {"word": "story", "start": 8.90, "end": 9.40},
+                {"word": "that", "start": 9.40, "end": 9.60},
+                {"word": "feels", "start": 9.60, "end": 9.90},
+                {"word": "like", "start": 9.90, "end": 10.10},
+                {"word": "it's", "start": 10.10, "end": 10.30},
+                {"word": "straight", "start": 10.30, "end": 10.70},
+                {"word": "out", "start": 10.70, "end": 10.90},
+                {"word": "of", "start": 10.90, "end": 11.00},
+                {"word": "a", "start": 11.00, "end": 11.10},
+                {"word": "movie.", "start": 11.10, "end": 11.50}
+            ]
+        },
+        // ⚠️ 重要：这里只是演示数据！请复制您的完整 JSON 替换上面的数组内容。
+        // 为了确保代码运行，我只放了前两句。您需要放入完整的 WhisperX JSON。
+    ];
+
+    // ==========================================
+    // ⬆️ 替换结束 ⬆️
+    // ==========================================
+
     const audio = document.getElementById('audioPlayer');
+    const container = document.getElementById('transcriptContainer');
     const recordBtn = document.getElementById('recordBtn');
     const uiControls = document.getElementById('uiControls');
     const progressFill = document.getElementById('progressFill');
-    const items = document.querySelectorAll('.transcript-item');
-    const body = document.body;
     const progressBarContainer = document.getElementById('progressBarContainer');
+    const debugTime = document.getElementById('debugTime');
 
     let isRecordingMode = false;
-    let currentActiveIndex = -1;
+    let currentActiveSentenceIndex = -1;
+    let currentActiveWordElement = null;
 
-    // 切换录制模式
+    // 1. 初始化 DOM：根据 JSON 生成 HTML
+    function initTranscript() {
+        container.innerHTML = '';
+        transcriptData.forEach((segment, index) => {
+            const div = document.createElement('div');
+            div.className = 'transcript-item';
+            div.dataset.start = segment.start;
+            div.dataset.end = segment.end;
+            div.dataset.index = index;
+
+            // 角色标签
+            const speakerSpan = document.createElement('span');
+            speakerSpan.className = `speaker-tag speaker-${segment.speaker.toLowerCase()}`;
+            speakerSpan.textContent = segment.speaker;
+            div.appendChild(speakerSpan);
+
+            // 文本容器
+            const p = document.createElement('p');
+            p.className = 'text-content';
+
+            // 生成单词 Span
+            segment.words.forEach(wordObj => {
+                const wordSpan = document.createElement('span');
+                wordSpan.className = 'word-span';
+                wordSpan.textContent = wordObj.word + " "; // 补空格
+                wordSpan.dataset.start = wordObj.start;
+                wordSpan.dataset.end = wordObj.end;
+                p.appendChild(wordSpan);
+            });
+
+            div.appendChild(p);
+            container.appendChild(div);
+
+            // 点击句子跳转
+            div.addEventListener('click', (e) => {
+                // 如果点击的是具体单词，跳转到单词时间
+                if (e.target.classList.contains('word-span')) {
+                    audio.currentTime = parseFloat(e.target.dataset.start);
+                } else {
+                    // 否则跳转到句子开始
+                    audio.currentTime = segment.start;
+                }
+                if (audio.paused) audio.play();
+            });
+        });
+    }
+
+    // 2. 核心更新逻辑 (帧级调用)
+    function updateTranscript() {
+        const t = audio.currentTime;
+        
+        // --- 句子级高亮 ---
+        let activeIndex = -1;
+        // 查找当前句子 (假设数据有序，简单遍历即可，由于数据量不大，性能可接受)
+        // 优化：只在当前索引附近查找
+        for (let i = 0; i < transcriptData.length; i++) {
+            if (t >= transcriptData[i].start && t < transcriptData[i].end) {
+                activeIndex = i;
+                break;
+            }
+        }
+
+        // 状态切换：句子
+        if (activeIndex !== -1 && activeIndex !== currentActiveSentenceIndex) {
+            const prev = document.querySelector('.transcript-item.active');
+            if (prev) prev.classList.remove('active');
+
+            const current = container.children[activeIndex];
+            if (current) {
+                current.classList.add('active');
+                current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            currentActiveSentenceIndex = activeIndex;
+        }
+
+        // --- 单词级高亮 ---
+        // 只有当有激活句子时，才在其内部查找单词
+        if (currentActiveSentenceIndex !== -1) {
+            const activeSentenceDiv = container.children[currentActiveSentenceIndex];
+            const wordSpans = activeSentenceDiv.querySelectorAll('.word-span');
+            let foundWord = false;
+
+            for (let span of wordSpans) {
+                const start = parseFloat(span.dataset.start);
+                const end = parseFloat(span.dataset.end);
+
+                if (t >= start && t < end) {
+                    if (currentActiveWordElement !== span) {
+                        if (currentActiveWordElement) currentActiveWordElement.classList.remove('word-active');
+                        span.classList.add('word-active');
+                        currentActiveWordElement = span;
+                    }
+                    foundWord = true;
+                    break; 
+                }
+            }
+            
+            // 如果当前时间不在任何单词范围内（比如句子中间的停顿），清除高亮
+            if (!foundWord && currentActiveWordElement) {
+                currentActiveWordElement.classList.remove('word-active');
+                currentActiveWordElement = null;
+            }
+        }
+    }
+
+    // 事件监听
+    audio.addEventListener('timeupdate', () => {
+        if (!audio.duration) return;
+        const percent = (audio.currentTime / audio.duration) * 100;
+        progressFill.style.width = percent + '%';
+        if(!isRecordingMode) debugTime.textContent = audio.currentTime.toFixed(3);
+        
+        updateTranscript();
+    });
+
+    // 录制模式切换
     recordBtn.addEventListener('click', () => {
-        if (!isRecordingMode) {
-            isRecordingMode = true;
-            body.classList.add('recording-mode');
+        isRecordingMode = !isRecordingMode;
+        if (isRecordingMode) {
+            document.body.classList.add('recording-mode');
             uiControls.classList.add('hidden-ui');
             recordBtn.style.opacity = '0';
             setTimeout(() => recordBtn.style.display = 'none', 300);
@@ -726,81 +470,16 @@
         }
     });
 
-    // 暂停控制
-    document.addEventListener('click', (e) => {
-        if (e.target === recordBtn || progressBarContainer.contains(e.target) || e.target.closest('.transcript-item')) return;
-        
-        if (isRecordingMode) {
-            if (audio.paused) {
-                audio.play();
-            } else {
-                audio.pause();
-            }
-        }
-    });
-
-    // 点击跳转
-    items.forEach(item => {
-        item.addEventListener('click', (e) => {
-            e.stopPropagation(); 
-            const time = parseFloat(item.getAttribute('data-time'));
-            audio.currentTime = time;
-            if (audio.paused) {
-                audio.play();
-            }
-        });
-    });
-
-    // 点击进度条
+    // 进度条点击
     progressBarContainer.addEventListener('click', (e) => {
         const rect = progressBarContainer.getBoundingClientRect();
         const pos = (e.clientX - rect.left) / rect.width;
         audio.currentTime = pos * audio.duration;
     });
 
-    audio.addEventListener('timeupdate', () => {
-        if (!audio.duration) return;
-        const percent = (audio.currentTime / audio.duration) * 100;
-        progressFill.style.width = percent + '%';
-        updateTranscript();
-    });
+    // 初始化
+    initTranscript();
 
-    function updateTranscript() {
-        const currentTime = audio.currentTime;
-        let activeItemIndex = -1;
-
-        // 核心校验逻辑：只高亮当前正在读的这一句
-        for (let i = 0; i < items.length; i++) {
-            const time = parseFloat(items[i].getAttribute('data-time'));
-            const nextTime = items[i+1] ? parseFloat(items[i+1].getAttribute('data-time')) : Infinity;
-            
-            if (currentTime >= time && currentTime < nextTime) {
-                activeItemIndex = i;
-                break;
-            }
-        }
-
-        if (activeItemIndex !== -1 && activeItemIndex !== currentActiveIndex) {
-            
-            // 移除旧高亮
-            const previousActive = document.querySelector('.transcript-item.active');
-            if (previousActive) {
-                previousActive.classList.remove('active');
-            }
-
-            // 添加新高亮
-            const currentItem = items[activeItemIndex];
-            currentItem.classList.add('active');
-            
-            // 滚动
-            currentItem.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center'
-            });
-
-            currentActiveIndex = activeItemIndex;
-        }
-    }
 </script>
 
 </body>
