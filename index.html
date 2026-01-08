@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>The Week Junior Podcast - Precise Sync</title>
+    <title>The Week Junior - Smart Sync</title>
     <style>
         :root {
             --bg-color: #000000;
@@ -11,7 +11,7 @@
             --female-color: #ec4899;
             --male-color: #2dd4bf;
             --text-active: #ffffff;
-            --word-highlight: #ff9f0a; /* 苹果风格的亮橘色 */
+            --word-highlight: #ff9f0a; /* 苹果风格亮橘色 */
             --font-stack: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
         }
 
@@ -117,22 +117,22 @@
         
         .transcript-container::-webkit-scrollbar { display: none; }
 
-        /* 句子样式 */
+        /* 段落样式 */
         .transcript-item {
-            margin-bottom: 25px;
-            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-            opacity: 0.3;
+            margin-bottom: 35px;
+            transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            opacity: 0.35;
             filter: blur(1.5px);
             transform: scale(0.98);
             transform-origin: left center;
             cursor: pointer;
         }
 
-        /* 句子激活状态 */
+        /* 激活段落 */
         .transcript-item.active {
             opacity: 1;
             filter: blur(0);
-            transform: scale(1.05) translateX(10px);
+            transform: scale(1.02) translateX(5px);
         }
 
         .speaker-tag {
@@ -140,19 +140,20 @@
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             display: inline-block;
-            padding: 2px 6px;
+            padding: 3px 8px;
             border-radius: 4px;
-            opacity: 0.8;
+            opacity: 0.9;
         }
 
+        /* 根据 JSON 中的 "Male" / "Female" 自动匹配颜色 */
         .speaker-female { background-color: var(--female-color); color: #fff; }
         .speaker-male { background-color: var(--male-color); color: #000; }
 
         .text-content {
-            font-size: 22px;
-            line-height: 1.5;
+            font-size: 24px;
+            line-height: 1.6;
             font-weight: 600;
             margin: 0;
             text-shadow: 0 2px 4px rgba(0,0,0,0.5);
@@ -161,14 +162,16 @@
         /* 单词样式 */
         .word-span {
             transition: color 0.1s ease, text-shadow 0.1s ease;
-            display: inline-block; /* 允许 transform */
+            display: inline;
+            border-radius: 4px;
+            /* 关键：通过 CSS 保证空格渲染，或者在 JS 文本内容中添加 */
+            white-space: pre-wrap; 
         }
 
-        /* 单词激活状态：橘色高亮 */
+        /* 单词激活：橘色高亮 */
         .word-active {
             color: var(--word-highlight);
-            text-shadow: 0 0 15px rgba(255, 159, 10, 0.6);
-            transform: scale(1.05);
+            text-shadow: 0 0 15px rgba(255, 159, 10, 0.5);
         }
 
         /* 录制按钮 */
@@ -217,8 +220,7 @@
             margin-top: 30px; 
         }
         body.recording-mode .transcript-item.active .text-content { 
-            /* 录制模式下，非高亮单词稍微暗一点，为了突出橘色 */
-            color: rgba(255,255,255,0.9);
+            color: rgba(255,255,255,0.95);
         }
         body.recording-mode #debugTime { display: none; }
 
@@ -264,71 +266,8354 @@
 
 <script>
     // ==========================================
-    // ⬇️ 请在此处替换您的 JSON 数据 ⬇️
-    // 数据结构说明：
-    // 每个对象代表一个句子 (segment)
-    // "start": 句子开始时间
-    // "end": 句子结束时间
-    // "speaker": "Female" 或 "Male"
-    // "words": 单词数组，每个单词包含 word, start, end
+    // ⬇️⬇️⬇️ 请在此处粘贴您的 JSON 数据 ⬇️⬇️⬇️
     // ==========================================
     
-    const transcriptData = [
-        {
-            "start": 0.00,
-            "end": 6.00,
-            "speaker": "Female",
-            "words": [
-                {"word": "Hello", "start": 0.00, "end": 0.50},
-                {"word": "curious", "start": 0.50, "end": 1.00},
-                {"word": "minds,", "start": 1.00, "end": 1.50},
-                {"word": "welcome", "start": 1.50, "end": 2.00},
-                {"word": "to", "start": 2.00, "end": 2.20},
-                {"word": "the", "start": 2.20, "end": 2.40},
-                {"word": "Week", "start": 2.40, "end": 2.80},
-                {"word": "Junior,", "start": 2.80, "end": 3.30},
-                {"word": "the", "start": 3.30, "end": 3.50},
-                {"word": "podcast", "start": 3.50, "end": 4.00},
-                {"word": "where", "start": 4.00, "end": 4.20},
-                {"word": "we", "start": 4.20, "end": 4.40},
-                {"word": "explore", "start": 4.40, "end": 4.90},
-                {"word": "the", "start": 4.90, "end": 5.10},
-                {"word": "news", "start": 5.10, "end": 5.50},
-                {"word": "and", "start": 5.50, "end": 5.70},
-                {"word": "practice", "start": 5.70, "end": 6.20},
-                {"word": "English.", "start": 6.20, "end": 6.80}
-            ]
-        },
-        {
-            "start": 6.80,
-            "end": 10.50,
-            "speaker": "Female",
-            "words": [
-                {"word": "Today", "start": 6.80, "end": 7.20},
-                {"word": "we", "start": 7.20, "end": 7.40},
-                {"word": "are", "start": 7.40, "end": 7.60},
-                {"word": "diving", "start": 7.60, "end": 8.00},
-                {"word": "deep", "start": 8.00, "end": 8.40},
-                {"word": "into", "start": 8.40, "end": 8.70},
-                {"word": "a", "start": 8.70, "end": 8.90},
-                {"word": "story", "start": 8.90, "end": 9.40},
-                {"word": "that", "start": 9.40, "end": 9.60},
-                {"word": "feels", "start": 9.60, "end": 9.90},
-                {"word": "like", "start": 9.90, "end": 10.10},
-                {"word": "it's", "start": 10.10, "end": 10.30},
-                {"word": "straight", "start": 10.30, "end": 10.70},
-                {"word": "out", "start": 10.70, "end": 10.90},
-                {"word": "of", "start": 10.90, "end": 11.00},
-                {"word": "a", "start": 11.00, "end": 11.10},
-                {"word": "movie.", "start": 11.10, "end": 11.50}
-            ]
-        },
-        // ⚠️ 重要：这里只是演示数据！请复制您的完整 JSON 替换上面的数组内容。
-        // 为了确保代码运行，我只放了前两句。您需要放入完整的 WhisperX JSON。
+    const rawTranscriptData = [
+        
+        // 请把 a_en_diarized_sentences.json 中的全部内容复制粘贴到这里
+        // 格式示例:
+        // {
+        //   "speaker": "Male",
+        //   "sentence": "Hello, Curious Minds.",
+        //   "start": 0.031,
+        //   "end": 1.152,
+        //   "words": [ ... ]
+        // },
+        
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "Hello, Curious Minds.",
+    "start": 0.031,
+    "end": 1.152,
+    "words": [
+      {
+        "word": "Hello,",
+        "start": 0.031,
+        "end": 0.371
+      },
+      {
+        "word": "Curious",
+        "start": 0.391,
+        "end": 0.712
+      },
+      {
+        "word": "Minds.",
+        "start": 0.792,
+        "end": 1.152
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "Welcome to The Week Junior, the podcast where we explore the news and practice English.",
+    "start": 1.292,
+    "end": 5.856,
+    "words": [
+      {
+        "word": "Welcome",
+        "start": 1.292,
+        "end": 1.652
+      },
+      {
+        "word": "to",
+        "start": 1.712,
+        "end": 1.873
+      },
+      {
+        "word": "The",
+        "start": 1.973,
+        "end": 2.053
+      },
+      {
+        "word": "Week",
+        "start": 2.133,
+        "end": 2.353
+      },
+      {
+        "word": "Junior,",
+        "start": 2.413,
+        "end": 2.813
+      },
+      {
+        "word": "the",
+        "start": 3.014,
+        "end": 3.094
+      },
+      {
+        "word": "podcast",
+        "start": 3.134,
+        "end": 3.674
+      },
+      {
+        "word": "where",
+        "start": 3.694,
+        "end": 3.834
+      },
+      {
+        "word": "we",
+        "start": 3.854,
+        "end": 3.934
+      },
+      {
+        "word": "explore",
+        "start": 3.995,
+        "end": 4.455
+      },
+      {
+        "word": "the",
+        "start": 4.495,
+        "end": 4.575
+      },
+      {
+        "word": "news",
+        "start": 4.615,
+        "end": 4.875
+      },
+      {
+        "word": "and",
+        "start": 4.995,
+        "end": 5.075
+      },
+      {
+        "word": "practice",
+        "start": 5.116,
+        "end": 5.476
+      },
+      {
+        "word": "English.",
+        "start": 5.556,
+        "end": 5.856
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "Today, we are diving deep into a story that feels like it's straight out of a movie.",
+    "start": 6.457,
+    "end": 10.4,
+    "words": [
+      {
+        "word": "Today,",
+        "start": 6.457,
+        "end": 6.737
+      },
+      {
+        "word": "we",
+        "start": 6.797,
+        "end": 6.937
+      },
+      {
+        "word": "are",
+        "start": 6.977,
+        "end": 7.057
+      },
+      {
+        "word": "diving",
+        "start": 7.137,
+        "end": 7.438
+      },
+      {
+        "word": "deep",
+        "start": 7.558,
+        "end": 7.818
+      },
+      {
+        "word": "into",
+        "start": 7.898,
+        "end": 8.078
+      },
+      {
+        "word": "a",
+        "start": 8.138,
+        "end": 8.158
+      },
+      {
+        "word": "story",
+        "start": 8.218,
+        "end": 8.499
+      },
+      {
+        "word": "that",
+        "start": 8.519,
+        "end": 8.639
+      },
+      {
+        "word": "feels",
+        "start": 8.719,
+        "end": 8.939
+      },
+      {
+        "word": "like",
+        "start": 8.959,
+        "end": 9.079
+      },
+      {
+        "word": "it's",
+        "start": 9.119,
+        "end": 9.199
+      },
+      {
+        "word": "straight",
+        "start": 9.259,
+        "end": 9.519
+      },
+      {
+        "word": "out",
+        "start": 9.579,
+        "end": 9.66
+      },
+      {
+        "word": "of",
+        "start": 9.7,
+        "end": 9.74
+      },
+      {
+        "word": "a",
+        "start": 9.78,
+        "end": 9.84
+      },
+      {
+        "word": "movie.",
+        "start": 9.98,
+        "end": 10.4
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "It's got a sunken ship, a massive treasure, and a mystery that's been unsolved for over 300 years.",
+    "start": 10.981,
+    "end": 16.866,
+    "words": [
+      {
+        "word": "It's",
+        "start": 10.981,
+        "end": 11.081
+      },
+      {
+        "word": "got",
+        "start": 11.101,
+        "end": 11.181
+      },
+      {
+        "word": "a",
+        "start": 11.201,
+        "end": 11.221
+      },
+      {
+        "word": "sunken",
+        "start": 11.341,
+        "end": 11.721
+      },
+      {
+        "word": "ship,",
+        "start": 11.801,
+        "end": 12.062
+      },
+      {
+        "word": "a",
+        "start": 12.462,
+        "end": 12.502
+      },
+      {
+        "word": "massive",
+        "start": 12.622,
+        "end": 13.023
+      },
+      {
+        "word": "treasure,",
+        "start": 13.103,
+        "end": 13.483
+      },
+      {
+        "word": "and",
+        "start": 13.743,
+        "end": 13.823
+      },
+      {
+        "word": "a",
+        "start": 13.883,
+        "end": 13.903
+      },
+      {
+        "word": "mystery",
+        "start": 13.983,
+        "end": 14.344
+      },
+      {
+        "word": "that's",
+        "start": 14.384,
+        "end": 14.544
+      },
+      {
+        "word": "been",
+        "start": 14.584,
+        "end": 14.724
+      },
+      {
+        "word": "unsolved",
+        "start": 14.804,
+        "end": 15.325
+      },
+      {
+        "word": "for",
+        "start": 15.365,
+        "end": 15.505
+      },
+      {
+        "word": "over",
+        "start": 15.585,
+        "end": 15.745
+      },
+      {
+        "word": "300",
+        "start": 15.765,
+        "end": 16.466
+      },
+      {
+        "word": "years.",
+        "start": 16.546,
+        "end": 16.866
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "We're talking about the secrets of the San Jose.",
+    "start": 17.486,
+    "end": 19.929,
+    "words": [
+      {
+        "word": "We're",
+        "start": 17.486,
+        "end": 17.627
+      },
+      {
+        "word": "talking",
+        "start": 17.647,
+        "end": 17.887
+      },
+      {
+        "word": "about",
+        "start": 17.927,
+        "end": 18.087
+      },
+      {
+        "word": "the",
+        "start": 18.107,
+        "end": 18.207
+      },
+      {
+        "word": "secrets",
+        "start": 18.287,
+        "end": 18.748
+      },
+      {
+        "word": "of",
+        "start": 18.848,
+        "end": 18.908
+      },
+      {
+        "word": "the",
+        "start": 18.948,
+        "end": 19.028
+      },
+      {
+        "word": "San",
+        "start": 19.108,
+        "end": 19.348
+      },
+      {
+        "word": "Jose.",
+        "start": 19.388,
+        "end": 19.929
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "Yes.",
+    "start": 20.069,
+    "end": 20.429,
+    "words": [
+      {
+        "word": "Yes.",
+        "start": 20.069,
+        "end": 20.429
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "I've been so excited for this one.",
+    "start": 20.869,
+    "end": 22.131,
+    "words": [
+      {
+        "word": "I've",
+        "start": 20.869,
+        "end": 20.99
+      },
+      {
+        "word": "been",
+        "start": 21.01,
+        "end": 21.13
+      },
+      {
+        "word": "so",
+        "start": 21.17,
+        "end": 21.33
+      },
+      {
+        "word": "excited",
+        "start": 21.37,
+        "end": 21.69
+      },
+      {
+        "word": "for",
+        "start": 21.73,
+        "end": 21.81
+      },
+      {
+        "word": "this",
+        "start": 21.85,
+        "end": 21.95
+      },
+      {
+        "word": "one.",
+        "start": 22.03,
+        "end": 22.131
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "A legendary treasure ship.",
+    "start": 22.591,
+    "end": 23.872,
+    "words": [
+      {
+        "word": "A",
+        "start": 22.591,
+        "end": 22.651
+      },
+      {
+        "word": "legendary",
+        "start": 22.751,
+        "end": 23.232
+      },
+      {
+        "word": "treasure",
+        "start": 23.292,
+        "end": 23.612
+      },
+      {
+        "word": "ship.",
+        "start": 23.652,
+        "end": 23.872
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "I mean, what's not to love?",
+    "start": 24.373,
+    "end": 25.794,
+    "words": [
+      {
+        "word": "I",
+        "start": 24.373,
+        "end": 24.413
+      },
+      {
+        "word": "mean,",
+        "start": 24.453,
+        "end": 24.613
+      },
+      {
+        "word": "what's",
+        "start": 24.913,
+        "end": 25.173
+      },
+      {
+        "word": "not",
+        "start": 25.213,
+        "end": 25.373
+      },
+      {
+        "word": "to",
+        "start": 25.413,
+        "end": 25.514
+      },
+      {
+        "word": "love?",
+        "start": 25.574,
+        "end": 25.794
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "It's just incredible.",
+    "start": 25.834,
+    "end": 26.635,
+    "words": [
+      {
+        "word": "It's",
+        "start": 25.834,
+        "end": 25.934
+      },
+      {
+        "word": "just",
+        "start": 25.974,
+        "end": 26.134
+      },
+      {
+        "word": "incredible.",
+        "start": 26.194,
+        "end": 26.635
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "It really is.",
+    "start": 26.755,
+    "end": 27.275,
+    "words": [
+      {
+        "word": "It",
+        "start": 26.755,
+        "end": 26.795
+      },
+      {
+        "word": "really",
+        "start": 26.875,
+        "end": 27.115
+      },
+      {
+        "word": "is.",
+        "start": 27.215,
+        "end": 27.275
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "And things are happening right now.",
+    "start": 27.655,
+    "end": 29.397,
+    "words": [
+      {
+        "word": "And",
+        "start": 27.655,
+        "end": 27.736
+      },
+      {
+        "word": "things",
+        "start": 27.796,
+        "end": 27.976
+      },
+      {
+        "word": "are",
+        "start": 28.016,
+        "end": 28.096
+      },
+      {
+        "word": "happening",
+        "start": 28.156,
+        "end": 28.456
+      },
+      {
+        "word": "right",
+        "start": 28.496,
+        "end": 28.917
+      },
+      {
+        "word": "now.",
+        "start": 28.957,
+        "end": 29.397
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "Colombian scientists just announced they've recovered the very first pieces of this treasure.",
+    "start": 29.377,
+    "end": 34.302,
+    "words": [
+      {
+        "word": "Colombian",
+        "start": 29.377,
+        "end": 30.018
+      },
+      {
+        "word": "scientists",
+        "start": 30.058,
+        "end": 30.598
+      },
+      {
+        "word": "just",
+        "start": 30.759,
+        "end": 30.999
+      },
+      {
+        "word": "announced",
+        "start": 31.079,
+        "end": 31.419
+      },
+      {
+        "word": "they've",
+        "start": 31.439,
+        "end": 31.7
+      },
+      {
+        "word": "recovered",
+        "start": 31.72,
+        "end": 32.12
+      },
+      {
+        "word": "the",
+        "start": 32.14,
+        "end": 32.24
+      },
+      {
+        "word": "very",
+        "start": 32.36,
+        "end": 32.621
+      },
+      {
+        "word": "first",
+        "start": 32.721,
+        "end": 33.021
+      },
+      {
+        "word": "pieces",
+        "start": 33.141,
+        "end": 33.542
+      },
+      {
+        "word": "of",
+        "start": 33.602,
+        "end": 33.642
+      },
+      {
+        "word": "this",
+        "start": 33.682,
+        "end": 33.842
+      },
+      {
+        "word": "treasure.",
+        "start": 33.942,
+        "end": 34.302
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "OK, so let's start there.",
+    "start": 34.463,
+    "end": 35.404,
+    "words": [
+      {
+        "word": "OK,",
+        "start": 34.463,
+        "end": 34.683
+      },
+      {
+        "word": "so",
+        "start": 34.723,
+        "end": 34.843
+      },
+      {
+        "word": "let's",
+        "start": 34.863,
+        "end": 34.983
+      },
+      {
+        "word": "start",
+        "start": 35.003,
+        "end": 35.203
+      },
+      {
+        "word": "there.",
+        "start": 35.223,
+        "end": 35.404
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "What actually happened?",
+    "start": 35.484,
+    "end": 36.605,
+    "words": [
+      {
+        "word": "What",
+        "start": 35.484,
+        "end": 35.644
+      },
+      {
+        "word": "actually",
+        "start": 35.764,
+        "end": 36.124
+      },
+      {
+        "word": "happened?",
+        "start": 36.184,
+        "end": 36.605
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "This ship sank such a long time ago, right?",
+    "start": 36.625,
+    "end": 38.447,
+    "words": [
+      {
+        "word": "This",
+        "start": 36.625,
+        "end": 36.765
+      },
+      {
+        "word": "ship",
+        "start": 36.805,
+        "end": 37.025
+      },
+      {
+        "word": "sank",
+        "start": 37.065,
+        "end": 37.326
+      },
+      {
+        "word": "such",
+        "start": 37.366,
+        "end": 37.546
+      },
+      {
+        "word": "a",
+        "start": 37.566,
+        "end": 37.586
+      },
+      {
+        "word": "long",
+        "start": 37.626,
+        "end": 37.786
+      },
+      {
+        "word": "time",
+        "start": 37.846,
+        "end": 38.027
+      },
+      {
+        "word": "ago,",
+        "start": 38.067,
+        "end": 38.267
+      },
+      {
+        "word": "right?",
+        "start": 38.287,
+        "end": 38.447
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "A very long time ago, yeah.",
+    "start": 38.487,
+    "end": 39.728,
+    "words": [
+      {
+        "word": "A",
+        "start": 38.487,
+        "end": 38.527
+      },
+      {
+        "word": "very",
+        "start": 38.607,
+        "end": 38.867
+      },
+      {
+        "word": "long",
+        "start": 38.907,
+        "end": 39.088
+      },
+      {
+        "word": "time",
+        "start": 39.128,
+        "end": 39.288
+      },
+      {
+        "word": "ago,",
+        "start": 39.348,
+        "end": 39.508
+      },
+      {
+        "word": "yeah.",
+        "start": 39.548,
+        "end": 39.728
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "We're going all the way back to 1708.",
+    "start": 39.929,
+    "end": 41.43,
+    "words": [
+      {
+        "word": "We're",
+        "start": 39.929,
+        "end": 40.069
+      },
+      {
+        "word": "going",
+        "start": 40.109,
+        "end": 40.249
+      },
+      {
+        "word": "all",
+        "start": 40.309,
+        "end": 40.409
+      },
+      {
+        "word": "the",
+        "start": 40.449,
+        "end": 40.509
+      },
+      {
+        "word": "way",
+        "start": 40.549,
+        "end": 40.629
+      },
+      {
+        "word": "back",
+        "start": 40.669,
+        "end": 40.81
+      },
+      {
+        "word": "to",
+        "start": 40.85,
+        "end": 40.91
+      },
+      {
+        "word": "1708.",
+        "start": 40.93,
+        "end": 41.43
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "The ship was the San Jose, which was a Spanish galleon.",
+    "start": 41.811,
+    "end": 46.055,
+    "words": [
+      {
+        "word": "The",
+        "start": 41.811,
+        "end": 42.371
+      },
+      {
+        "word": "ship",
+        "start": 42.411,
+        "end": 42.632
+      },
+      {
+        "word": "was",
+        "start": 42.712,
+        "end": 42.972
+      },
+      {
+        "word": "the",
+        "start": 42.992,
+        "end": 43.052
+      },
+      {
+        "word": "San",
+        "start": 43.352,
+        "end": 43.593
+      },
+      {
+        "word": "Jose,",
+        "start": 43.613,
+        "end": 44.013
+      },
+      {
+        "word": "which",
+        "start": 44.494,
+        "end": 44.614
+      },
+      {
+        "word": "was",
+        "start": 44.674,
+        "end": 44.814
+      },
+      {
+        "word": "a",
+        "start": 44.834,
+        "end": 44.854
+      },
+      {
+        "word": "Spanish",
+        "start": 45.074,
+        "end": 45.475
+      },
+      {
+        "word": "galleon.",
+        "start": 45.595,
+        "end": 46.055
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "A galleon.",
+    "start": 46.296,
+    "end": 46.756,
+    "words": [
+      {
+        "word": "A",
+        "start": 46.296,
+        "end": 46.336
+      },
+      {
+        "word": "galleon.",
+        "start": 46.396,
+        "end": 46.756
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "So that's like one of those huge old timey sailing ships.",
+    "start": 46.776,
+    "end": 49.199,
+    "words": [
+      {
+        "word": "So",
+        "start": 46.776,
+        "end": 46.816
+      },
+      {
+        "word": "that's",
+        "start": 46.836,
+        "end": 46.976
+      },
+      {
+        "word": "like",
+        "start": 46.996,
+        "end": 47.117
+      },
+      {
+        "word": "one",
+        "start": 47.177,
+        "end": 47.237
+      },
+      {
+        "word": "of",
+        "start": 47.277,
+        "end": 47.337
+      },
+      {
+        "word": "those",
+        "start": 47.357,
+        "end": 47.457
+      },
+      {
+        "word": "huge",
+        "start": 47.497,
+        "end": 47.817
+      },
+      {
+        "word": "old",
+        "start": 47.857,
+        "end": 48.178
+      },
+      {
+        "word": "timey",
+        "start": 48.238,
+        "end": 48.558
+      },
+      {
+        "word": "sailing",
+        "start": 48.598,
+        "end": 48.899
+      },
+      {
+        "word": "ships.",
+        "start": 48.959,
+        "end": 49.199
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "Exactly.",
+    "start": 49.219,
+    "end": 49.759,
+    "words": [
+      {
+        "word": "Exactly.",
+        "start": 49.219,
+        "end": 49.759
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "A really big ship used for both fighting and, you know, for carrying valuable goods.",
+    "start": 49.82,
+    "end": 54.004,
+    "words": [
+      {
+        "word": "A",
+        "start": 49.82,
+        "end": 49.88
+      },
+      {
+        "word": "really",
+        "start": 49.94,
+        "end": 50.18
+      },
+      {
+        "word": "big",
+        "start": 50.24,
+        "end": 50.4
+      },
+      {
+        "word": "ship",
+        "start": 50.48,
+        "end": 50.7
+      },
+      {
+        "word": "used",
+        "start": 50.821,
+        "end": 50.961
+      },
+      {
+        "word": "for",
+        "start": 51.001,
+        "end": 51.121
+      },
+      {
+        "word": "both",
+        "start": 51.161,
+        "end": 51.321
+      },
+      {
+        "word": "fighting",
+        "start": 51.401,
+        "end": 51.802
+      },
+      {
+        "word": "and,",
+        "start": 51.822,
+        "end": 52.302
+      },
+      {
+        "word": "you",
+        "start": 52.342,
+        "end": 52.583
+      },
+      {
+        "word": "know,",
+        "start": 52.603,
+        "end": 52.743
+      },
+      {
+        "word": "for",
+        "start": 52.763,
+        "end": 52.863
+      },
+      {
+        "word": "carrying",
+        "start": 52.903,
+        "end": 53.163
+      },
+      {
+        "word": "valuable",
+        "start": 53.243,
+        "end": 53.664
+      },
+      {
+        "word": "goods.",
+        "start": 53.704,
+        "end": 54.004
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "And it was off the coast of Cartagena in modern day Colombia when it was attacked by the British Navy.",
+    "start": 54.405,
+    "end": 59.35,
+    "words": [
+      {
+        "word": "And",
+        "start": 54.405,
+        "end": 54.485
+      },
+      {
+        "word": "it",
+        "start": 54.505,
+        "end": 54.545
+      },
+      {
+        "word": "was",
+        "start": 54.565,
+        "end": 54.645
+      },
+      {
+        "word": "off",
+        "start": 54.705,
+        "end": 54.825
+      },
+      {
+        "word": "the",
+        "start": 54.845,
+        "end": 54.925
+      },
+      {
+        "word": "coast",
+        "start": 54.965,
+        "end": 55.185
+      },
+      {
+        "word": "of",
+        "start": 55.225,
+        "end": 55.266
+      },
+      {
+        "word": "Cartagena",
+        "start": 55.346,
+        "end": 55.866
+      },
+      {
+        "word": "in",
+        "start": 56.167,
+        "end": 56.227
+      },
+      {
+        "word": "modern",
+        "start": 56.287,
+        "end": 56.547
+      },
+      {
+        "word": "day",
+        "start": 56.567,
+        "end": 56.687
+      },
+      {
+        "word": "Colombia",
+        "start": 56.727,
+        "end": 57.188
+      },
+      {
+        "word": "when",
+        "start": 57.568,
+        "end": 57.688
+      },
+      {
+        "word": "it",
+        "start": 57.708,
+        "end": 57.748
+      },
+      {
+        "word": "was",
+        "start": 57.788,
+        "end": 57.868
+      },
+      {
+        "word": "attacked",
+        "start": 57.928,
+        "end": 58.329
+      },
+      {
+        "word": "by",
+        "start": 58.389,
+        "end": 58.489
+      },
+      {
+        "word": "the",
+        "start": 58.529,
+        "end": 58.589
+      },
+      {
+        "word": "British",
+        "start": 58.649,
+        "end": 58.93
+      },
+      {
+        "word": "Navy.",
+        "start": 59.01,
+        "end": 59.35
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "OK, so it sank in a battle.",
+    "start": 59.549,
+    "end": 60.891,
+    "words": [
+      {
+        "word": "OK,",
+        "start": 59.549,
+        "end": 59.95
+      },
+      {
+        "word": "so",
+        "start": 60.01,
+        "end": 60.05
+      },
+      {
+        "word": "it",
+        "start": 60.07,
+        "end": 60.15
+      },
+      {
+        "word": "sank",
+        "start": 60.19,
+        "end": 60.39
+      },
+      {
+        "word": "in",
+        "start": 60.45,
+        "end": 60.49
+      },
+      {
+        "word": "a",
+        "start": 60.531,
+        "end": 60.551
+      },
+      {
+        "word": "battle.",
+        "start": 60.611,
+        "end": 60.891
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "It did, but not in the way you might think.",
+    "start": 61.151,
+    "end": 62.974,
+    "words": [
+      {
+        "word": "It",
+        "start": 61.151,
+        "end": 61.212
+      },
+      {
+        "word": "did,",
+        "start": 61.292,
+        "end": 61.572
+      },
+      {
+        "word": "but",
+        "start": 61.632,
+        "end": 61.893
+      },
+      {
+        "word": "not",
+        "start": 61.973,
+        "end": 62.093
+      },
+      {
+        "word": "in",
+        "start": 62.133,
+        "end": 62.173
+      },
+      {
+        "word": "the",
+        "start": 62.193,
+        "end": 62.273
+      },
+      {
+        "word": "way",
+        "start": 62.313,
+        "end": 62.393
+      },
+      {
+        "word": "you",
+        "start": 62.433,
+        "end": 62.514
+      },
+      {
+        "word": "might",
+        "start": 62.574,
+        "end": 62.694
+      },
+      {
+        "word": "think.",
+        "start": 62.754,
+        "end": 62.974
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "During the fight, the ship's powder magazines, that's where they stored all the gunpowder, they just exploded.",
+    "start": 63.415,
+    "end": 68.122,
+    "words": [
+      {
+        "word": "During",
+        "start": 63.415,
+        "end": 63.595
+      },
+      {
+        "word": "the",
+        "start": 63.615,
+        "end": 63.695
+      },
+      {
+        "word": "fight,",
+        "start": 63.755,
+        "end": 64.056
+      },
+      {
+        "word": "the",
+        "start": 64.577,
+        "end": 64.677
+      },
+      {
+        "word": "ship's",
+        "start": 64.717,
+        "end": 64.957
+      },
+      {
+        "word": "powder",
+        "start": 65.077,
+        "end": 65.458
+      },
+      {
+        "word": "magazines,",
+        "start": 65.518,
+        "end": 65.959
+      },
+      {
+        "word": "that's",
+        "start": 65.979,
+        "end": 66.099
+      },
+      {
+        "word": "where",
+        "start": 66.119,
+        "end": 66.219
+      },
+      {
+        "word": "they",
+        "start": 66.239,
+        "end": 66.319
+      },
+      {
+        "word": "stored",
+        "start": 66.339,
+        "end": 66.5
+      },
+      {
+        "word": "all",
+        "start": 66.52,
+        "end": 66.6
+      },
+      {
+        "word": "the",
+        "start": 66.62,
+        "end": 66.68
+      },
+      {
+        "word": "gunpowder,",
+        "start": 66.72,
+        "end": 67.101
+      },
+      {
+        "word": "they",
+        "start": 67.161,
+        "end": 67.341
+      },
+      {
+        "word": "just",
+        "start": 67.381,
+        "end": 67.521
+      },
+      {
+        "word": "exploded.",
+        "start": 67.641,
+        "end": 68.122
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "Whoa.",
+    "start": 68.262,
+    "end": 68.503,
+    "words": [
+      {
+        "word": "Whoa.",
+        "start": 68.262,
+        "end": 68.503
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "So it blew up from the inside.",
+    "start": 68.903,
+    "end": 70.386,
+    "words": [
+      {
+        "word": "So",
+        "start": 68.903,
+        "end": 69.024
+      },
+      {
+        "word": "it",
+        "start": 69.084,
+        "end": 69.124
+      },
+      {
+        "word": "blew",
+        "start": 69.244,
+        "end": 69.524
+      },
+      {
+        "word": "up",
+        "start": 69.604,
+        "end": 69.664
+      },
+      {
+        "word": "from",
+        "start": 69.725,
+        "end": 69.825
+      },
+      {
+        "word": "the",
+        "start": 69.865,
+        "end": 69.925
+      },
+      {
+        "word": "inside.",
+        "start": 70.005,
+        "end": 70.386
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "Pretty much.",
+    "start": 70.546,
+    "end": 70.946,
+    "words": [
+      {
+        "word": "Pretty",
+        "start": 70.546,
+        "end": 70.726
+      },
+      {
+        "word": "much.",
+        "start": 70.766,
+        "end": 70.946
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "A catastrophic explosion.",
+    "start": 71.427,
+    "end": 72.749,
+    "words": [
+      {
+        "word": "A",
+        "start": 71.427,
+        "end": 71.467
+      },
+      {
+        "word": "catastrophic",
+        "start": 71.547,
+        "end": 72.148
+      },
+      {
+        "word": "explosion.",
+        "start": 72.228,
+        "end": 72.749
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "The ship sank almost immediately.",
+    "start": 72.789,
+    "end": 74.452,
+    "words": [
+      {
+        "word": "The",
+        "start": 72.789,
+        "end": 72.869
+      },
+      {
+        "word": "ship",
+        "start": 72.909,
+        "end": 73.13
+      },
+      {
+        "word": "sank",
+        "start": 73.17,
+        "end": 73.39
+      },
+      {
+        "word": "almost",
+        "start": 73.43,
+        "end": 73.771
+      },
+      {
+        "word": "immediately.",
+        "start": 73.811,
+        "end": 74.452
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "And the treasure.",
+    "start": 74.492,
+    "end": 75.233,
+    "words": [
+      {
+        "word": "And",
+        "start": 74.492,
+        "end": 74.752
+      },
+      {
+        "word": "the",
+        "start": 74.772,
+        "end": 74.852
+      },
+      {
+        "word": "treasure.",
+        "start": 74.913,
+        "end": 75.233
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "The numbers I've heard are just mind boggling.",
+    "start": 76.074,
+    "end": 77.817,
+    "words": [
+      {
+        "word": "The",
+        "start": 76.074,
+        "end": 76.174
+      },
+      {
+        "word": "numbers",
+        "start": 76.215,
+        "end": 76.435
+      },
+      {
+        "word": "I've",
+        "start": 76.475,
+        "end": 76.595
+      },
+      {
+        "word": "heard",
+        "start": 76.635,
+        "end": 76.775
+      },
+      {
+        "word": "are",
+        "start": 76.815,
+        "end": 77.036
+      },
+      {
+        "word": "just",
+        "start": 77.056,
+        "end": 77.136
+      },
+      {
+        "word": "mind",
+        "start": 77.196,
+        "end": 77.396
+      },
+      {
+        "word": "boggling.",
+        "start": 77.436,
+        "end": 77.817
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "What was it actually carrying?",
+    "start": 78.097,
+    "end": 79.379,
+    "words": [
+      {
+        "word": "What",
+        "start": 78.097,
+        "end": 78.218
+      },
+      {
+        "word": "was",
+        "start": 78.258,
+        "end": 78.378
+      },
+      {
+        "word": "it",
+        "start": 78.438,
+        "end": 78.478
+      },
+      {
+        "word": "actually",
+        "start": 78.518,
+        "end": 78.979
+      },
+      {
+        "word": "carrying?",
+        "start": 79.039,
+        "end": 79.379
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "OK, get ready for this.",
+    "start": 79.54,
+    "end": 80.401,
+    "words": [
+      {
+        "word": "OK,",
+        "start": 79.54,
+        "end": 79.76
+      },
+      {
+        "word": "get",
+        "start": 79.78,
+        "end": 79.86
+      },
+      {
+        "word": "ready",
+        "start": 79.88,
+        "end": 80.02
+      },
+      {
+        "word": "for",
+        "start": 80.06,
+        "end": 80.141
+      },
+      {
+        "word": "this.",
+        "start": 80.201,
+        "end": 80.401
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "The San Jose was carrying almost 200 tons of gold, silver, and gems.",
+    "start": 81.002,
+    "end": 86.35,
+    "words": [
+      {
+        "word": "The",
+        "start": 81.002,
+        "end": 81.082
+      },
+      {
+        "word": "San",
+        "start": 81.122,
+        "end": 81.322
+      },
+      {
+        "word": "Jose",
+        "start": 81.342,
+        "end": 81.783
+      },
+      {
+        "word": "was",
+        "start": 81.823,
+        "end": 82.043
+      },
+      {
+        "word": "carrying",
+        "start": 82.124,
+        "end": 82.584
+      },
+      {
+        "word": "almost",
+        "start": 82.624,
+        "end": 83.025
+      },
+      {
+        "word": "200",
+        "start": 83.045,
+        "end": 83.345
+      },
+      {
+        "word": "tons",
+        "start": 83.866,
+        "end": 84.287
+      },
+      {
+        "word": "of",
+        "start": 84.307,
+        "end": 84.387
+      },
+      {
+        "word": "gold,",
+        "start": 84.507,
+        "end": 84.908
+      },
+      {
+        "word": "silver,",
+        "start": 85.108,
+        "end": 85.549
+      },
+      {
+        "word": "and",
+        "start": 85.689,
+        "end": 85.769
+      },
+      {
+        "word": "gems.",
+        "start": 85.829,
+        "end": 86.35
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "200 tons.",
+    "start": 86.6,
+    "end": 87.923,
+    "words": [
+      {
+        "word": "200",
+        "start": 86.6,
+        "end": 86.841
+      },
+      {
+        "word": "tons.",
+        "start": 87.402,
+        "end": 87.923
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "That can't be right.",
+    "start": 88.184,
+    "end": 89.046,
+    "words": [
+      {
+        "word": "That",
+        "start": 88.184,
+        "end": 88.364
+      },
+      {
+        "word": "can't",
+        "start": 88.444,
+        "end": 88.625
+      },
+      {
+        "word": "be",
+        "start": 88.685,
+        "end": 88.765
+      },
+      {
+        "word": "right.",
+        "start": 88.825,
+        "end": 89.046
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "It is.",
+    "start": 89.206,
+    "end": 89.527,
+    "words": [
+      {
+        "word": "It",
+        "start": 89.206,
+        "end": 89.266
+      },
+      {
+        "word": "is.",
+        "start": 89.407,
+        "end": 89.527
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "That includes something like 11 million gold and silver coins.",
+    "start": 89.567,
+    "end": 93.557,
+    "words": [
+      {
+        "word": "That",
+        "start": 89.567,
+        "end": 89.687
+      },
+      {
+        "word": "includes",
+        "start": 89.747,
+        "end": 90.008
+      },
+      {
+        "word": "something",
+        "start": 90.048,
+        "end": 90.269
+      },
+      {
+        "word": "like",
+        "start": 90.289,
+        "end": 90.409
+      },
+      {
+        "word": "11",
+        "start": 90.429,
+        "end": 90.89
+      },
+      {
+        "word": "million",
+        "start": 90.97,
+        "end": 91.411
+      },
+      {
+        "word": "gold",
+        "start": 91.512,
+        "end": 91.873
+      },
+      {
+        "word": "and",
+        "start": 91.933,
+        "end": 92.013
+      },
+      {
+        "word": "silver",
+        "start": 92.073,
+        "end": 92.454
+      },
+      {
+        "word": "coins.",
+        "start": 92.554,
+        "end": 93.557
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "I can't even picture that.",
+    "start": 93.797,
+    "end": 94.679,
+    "words": [
+      {
+        "word": "I",
+        "start": 93.797,
+        "end": 93.897
+      },
+      {
+        "word": "can't",
+        "start": 93.917,
+        "end": 94.058
+      },
+      {
+        "word": "even",
+        "start": 94.078,
+        "end": 94.238
+      },
+      {
+        "word": "picture",
+        "start": 94.298,
+        "end": 94.539
+      },
+      {
+        "word": "that.",
+        "start": 94.559,
+        "end": 94.679
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "What's that equivalent to?",
+    "start": 94.719,
+    "end": 95.641,
+    "words": [
+      {
+        "word": "What's",
+        "start": 94.719,
+        "end": 94.88
+      },
+      {
+        "word": "that",
+        "start": 94.9,
+        "end": 95.02
+      },
+      {
+        "word": "equivalent",
+        "start": 95.06,
+        "end": 95.441
+      },
+      {
+        "word": "to?",
+        "start": 95.461,
+        "end": 95.641
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "Well, to give you an idea, 200 tons is about the same weight as 40 fully grown male African elephants.",
+    "start": 95.842,
+    "end": 103.039,
+    "words": [
+      {
+        "word": "Well,",
+        "start": 95.842,
+        "end": 96.062
+      },
+      {
+        "word": "to",
+        "start": 96.163,
+        "end": 96.243
+      },
+      {
+        "word": "give",
+        "start": 96.263,
+        "end": 96.363
+      },
+      {
+        "word": "you",
+        "start": 96.383,
+        "end": 96.463
+      },
+      {
+        "word": "an",
+        "start": 96.504,
+        "end": 96.544
+      },
+      {
+        "word": "idea,",
+        "start": 96.604,
+        "end": 96.925
+      },
+      {
+        "word": "200",
+        "start": 96.945,
+        "end": 97.005
+      },
+      {
+        "word": "tons",
+        "start": 97.065,
+        "end": 98.047
+      },
+      {
+        "word": "is",
+        "start": 98.127,
+        "end": 98.208
+      },
+      {
+        "word": "about",
+        "start": 98.248,
+        "end": 98.428
+      },
+      {
+        "word": "the",
+        "start": 98.448,
+        "end": 98.548
+      },
+      {
+        "word": "same",
+        "start": 98.609,
+        "end": 98.849
+      },
+      {
+        "word": "weight",
+        "start": 98.909,
+        "end": 99.17
+      },
+      {
+        "word": "as",
+        "start": 99.27,
+        "end": 99.33
+      },
+      {
+        "word": "40",
+        "start": 99.35,
+        "end": 99.39
+      },
+      {
+        "word": "fully",
+        "start": 99.531,
+        "end": 101.094
+      },
+      {
+        "word": "grown",
+        "start": 101.135,
+        "end": 101.455
+      },
+      {
+        "word": "male",
+        "start": 101.535,
+        "end": 101.896
+      },
+      {
+        "word": "African",
+        "start": 102.077,
+        "end": 102.377
+      },
+      {
+        "word": "elephants.",
+        "start": 102.438,
+        "end": 103.039
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "40 elephants worth of gold, wow.",
+    "start": 103.255,
+    "end": 105.138,
+    "words": [
+      {
+        "word": "40",
+        "start": 103.255,
+        "end": 103.555
+      },
+      {
+        "word": "elephants",
+        "start": 103.616,
+        "end": 103.916
+      },
+      {
+        "word": "worth",
+        "start": 103.956,
+        "end": 104.136
+      },
+      {
+        "word": "of",
+        "start": 104.176,
+        "end": 104.216
+      },
+      {
+        "word": "gold,",
+        "start": 104.297,
+        "end": 104.617
+      },
+      {
+        "word": "wow.",
+        "start": 104.877,
+        "end": 105.138
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "And in today's money, that's worth around 15 billion.",
+    "start": 105.358,
+    "end": 108.222,
+    "words": [
+      {
+        "word": "And",
+        "start": 105.358,
+        "end": 105.438
+      },
+      {
+        "word": "in",
+        "start": 105.498,
+        "end": 105.598
+      },
+      {
+        "word": "today's",
+        "start": 105.639,
+        "end": 106.079
+      },
+      {
+        "word": "money,",
+        "start": 106.179,
+        "end": 106.44
+      },
+      {
+        "word": "that's",
+        "start": 106.52,
+        "end": 106.7
+      },
+      {
+        "word": "worth",
+        "start": 106.74,
+        "end": 106.94
+      },
+      {
+        "word": "around",
+        "start": 107.001,
+        "end": 107.181
+      },
+      {
+        "word": "15",
+        "start": 107.201,
+        "end": 107.722
+      },
+      {
+        "word": "billion.",
+        "start": 107.802,
+        "end": 108.222
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "15 billion, okay.",
+    "start": 108.242,
+    "end": 109.504,
+    "words": [
+      {
+        "word": "15",
+        "start": 108.242,
+        "end": 108.282
+      },
+      {
+        "word": "billion,",
+        "start": 108.863,
+        "end": 109.204
+      },
+      {
+        "word": "okay.",
+        "start": 109.264,
+        "end": 109.504
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "So what did the scientists actually bring up recently?",
+    "start": 109.845,
+    "end": 112.409,
+    "words": [
+      {
+        "word": "So",
+        "start": 109.845,
+        "end": 109.965
+      },
+      {
+        "word": "what",
+        "start": 110.085,
+        "end": 110.245
+      },
+      {
+        "word": "did",
+        "start": 110.285,
+        "end": 110.386
+      },
+      {
+        "word": "the",
+        "start": 110.406,
+        "end": 110.526
+      },
+      {
+        "word": "scientists",
+        "start": 110.566,
+        "end": 111.087
+      },
+      {
+        "word": "actually",
+        "start": 111.247,
+        "end": 111.567
+      },
+      {
+        "word": "bring",
+        "start": 111.607,
+        "end": 111.868
+      },
+      {
+        "word": "up",
+        "start": 111.928,
+        "end": 112.008
+      },
+      {
+        "word": "recently?",
+        "start": 112.068,
+        "end": 112.409
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "Wasn't all of it right?",
+    "start": 112.449,
+    "end": 113.39,
+    "words": [
+      {
+        "word": "Wasn't",
+        "start": 112.449,
+        "end": 112.749
+      },
+      {
+        "word": "all",
+        "start": 112.849,
+        "end": 112.989
+      },
+      {
+        "word": "of",
+        "start": 113.009,
+        "end": 113.049
+      },
+      {
+        "word": "it",
+        "start": 113.069,
+        "end": 113.15
+      },
+      {
+        "word": "right?",
+        "start": 113.19,
+        "end": 113.39
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "No, no, just the very first pieces.",
+    "start": 113.63,
+    "end": 115.133,
+    "words": [
+      {
+        "word": "No,",
+        "start": 113.63,
+        "end": 113.851
+      },
+      {
+        "word": "no,",
+        "start": 113.891,
+        "end": 114.011
+      },
+      {
+        "word": "just",
+        "start": 114.031,
+        "end": 114.151
+      },
+      {
+        "word": "the",
+        "start": 114.171,
+        "end": 114.251
+      },
+      {
+        "word": "very",
+        "start": 114.291,
+        "end": 114.472
+      },
+      {
+        "word": "first",
+        "start": 114.532,
+        "end": 114.732
+      },
+      {
+        "word": "pieces.",
+        "start": 114.772,
+        "end": 115.133
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "They've recovered a cannon, three old coins, and this is my favorite part, a delicate little china cup that somehow survived.",
+    "start": 115.393,
+    "end": 122.503,
+    "words": [
+      {
+        "word": "They've",
+        "start": 115.393,
+        "end": 115.573
+      },
+      {
+        "word": "recovered",
+        "start": 115.593,
+        "end": 115.974
+      },
+      {
+        "word": "a",
+        "start": 116.034,
+        "end": 116.054
+      },
+      {
+        "word": "cannon,",
+        "start": 116.114,
+        "end": 116.535
+      },
+      {
+        "word": "three",
+        "start": 116.815,
+        "end": 117.075
+      },
+      {
+        "word": "old",
+        "start": 117.216,
+        "end": 117.356
+      },
+      {
+        "word": "coins,",
+        "start": 117.436,
+        "end": 117.897
+      },
+      {
+        "word": "and",
+        "start": 118.237,
+        "end": 118.377
+      },
+      {
+        "word": "this",
+        "start": 118.397,
+        "end": 118.477
+      },
+      {
+        "word": "is",
+        "start": 118.618,
+        "end": 118.758
+      },
+      {
+        "word": "my",
+        "start": 118.798,
+        "end": 118.878
+      },
+      {
+        "word": "favorite",
+        "start": 118.918,
+        "end": 119.158
+      },
+      {
+        "word": "part,",
+        "start": 119.199,
+        "end": 119.399
+      },
+      {
+        "word": "a",
+        "start": 119.779,
+        "end": 119.819
+      },
+      {
+        "word": "delicate",
+        "start": 119.92,
+        "end": 120.36
+      },
+      {
+        "word": "little",
+        "start": 120.4,
+        "end": 120.601
+      },
+      {
+        "word": "china",
+        "start": 120.681,
+        "end": 120.981
+      },
+      {
+        "word": "cup",
+        "start": 121.041,
+        "end": 121.242
+      },
+      {
+        "word": "that",
+        "start": 121.282,
+        "end": 121.442
+      },
+      {
+        "word": "somehow",
+        "start": 121.482,
+        "end": 121.862
+      },
+      {
+        "word": "survived.",
+        "start": 121.923,
+        "end": 122.503
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "A teacup.",
+    "start": 123.144,
+    "end": 124.226,
+    "words": [
+      {
+        "word": "A",
+        "start": 123.144,
+        "end": 123.184
+      },
+      {
+        "word": "teacup.",
+        "start": 123.244,
+        "end": 124.226
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "Yeah.",
+    "start": 124.246,
+    "end": 124.346,
+    "words": [
+      {
+        "word": "Yeah.",
+        "start": 124.246,
+        "end": 124.346
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "After 300 years at the bottom of the ocean, that's amazing.",
+    "start": 124.366,
+    "end": 127.05,
+    "words": [
+      {
+        "word": "After",
+        "start": 124.366,
+        "end": 124.546
+      },
+      {
+        "word": "300",
+        "start": 124.566,
+        "end": 124.787
+      },
+      {
+        "word": "years",
+        "start": 125.047,
+        "end": 125.227
+      },
+      {
+        "word": "at",
+        "start": 125.267,
+        "end": 125.308
+      },
+      {
+        "word": "the",
+        "start": 125.328,
+        "end": 125.408
+      },
+      {
+        "word": "bottom",
+        "start": 125.468,
+        "end": 125.688
+      },
+      {
+        "word": "of",
+        "start": 125.728,
+        "end": 125.768
+      },
+      {
+        "word": "the",
+        "start": 125.788,
+        "end": 125.848
+      },
+      {
+        "word": "ocean,",
+        "start": 125.928,
+        "end": 126.149
+      },
+      {
+        "word": "that's",
+        "start": 126.389,
+        "end": 126.569
+      },
+      {
+        "word": "amazing.",
+        "start": 126.629,
+        "end": 127.05
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "Wow.",
+    "start": 127.871,
+    "end": 128.092,
+    "words": [
+      {
+        "word": "Wow.",
+        "start": 127.871,
+        "end": 128.092
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "So how did they even find a ship that sank 300 years ago and so deep?",
+    "start": 128.733,
+    "end": 132.418,
+    "words": [
+      {
+        "word": "So",
+        "start": 128.733,
+        "end": 128.833
+      },
+      {
+        "word": "how",
+        "start": 128.893,
+        "end": 128.993
+      },
+      {
+        "word": "did",
+        "start": 129.013,
+        "end": 129.113
+      },
+      {
+        "word": "they",
+        "start": 129.133,
+        "end": 129.213
+      },
+      {
+        "word": "even",
+        "start": 129.253,
+        "end": 129.414
+      },
+      {
+        "word": "find",
+        "start": 129.454,
+        "end": 129.634
+      },
+      {
+        "word": "a",
+        "start": 129.674,
+        "end": 129.694
+      },
+      {
+        "word": "ship",
+        "start": 129.754,
+        "end": 129.954
+      },
+      {
+        "word": "that",
+        "start": 129.974,
+        "end": 130.155
+      },
+      {
+        "word": "sank",
+        "start": 130.215,
+        "end": 130.455
+      },
+      {
+        "word": "300",
+        "start": 130.475,
+        "end": 130.695
+      },
+      {
+        "word": "years",
+        "start": 130.976,
+        "end": 131.156
+      },
+      {
+        "word": "ago",
+        "start": 131.196,
+        "end": 131.376
+      },
+      {
+        "word": "and",
+        "start": 131.737,
+        "end": 131.837
+      },
+      {
+        "word": "so",
+        "start": 131.897,
+        "end": 132.057
+      },
+      {
+        "word": "deep?",
+        "start": 132.098,
+        "end": 132.418
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "Right.",
+    "start": 132.618,
+    "end": 132.878,
+    "words": [
+      {
+        "word": "Right.",
+        "start": 132.618,
+        "end": 132.878
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "That's the next incredible part of the story.",
+    "start": 132.918,
+    "end": 134.46,
+    "words": [
+      {
+        "word": "That's",
+        "start": 132.918,
+        "end": 133.078
+      },
+      {
+        "word": "the",
+        "start": 133.098,
+        "end": 133.179
+      },
+      {
+        "word": "next",
+        "start": 133.219,
+        "end": 133.359
+      },
+      {
+        "word": "incredible",
+        "start": 133.419,
+        "end": 133.739
+      },
+      {
+        "word": "part",
+        "start": 133.779,
+        "end": 133.899
+      },
+      {
+        "word": "of",
+        "start": 133.939,
+        "end": 133.979
+      },
+      {
+        "word": "the",
+        "start": 133.999,
+        "end": 134.099
+      },
+      {
+        "word": "story.",
+        "start": 134.139,
+        "end": 134.46
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "It's all about the science.",
+    "start": 134.5,
+    "end": 135.821,
+    "words": [
+      {
+        "word": "It's",
+        "start": 134.5,
+        "end": 134.58
+      },
+      {
+        "word": "all",
+        "start": 134.62,
+        "end": 134.7
+      },
+      {
+        "word": "about",
+        "start": 134.74,
+        "end": 134.86
+      },
+      {
+        "word": "the",
+        "start": 134.88,
+        "end": 134.96
+      },
+      {
+        "word": "science.",
+        "start": 134.98,
+        "end": 135.821
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "The wreck was first spotted back in 2015 by a Colombian Navy research ship.",
+    "start": 135.841,
+    "end": 140.065,
+    "words": [
+      {
+        "word": "The",
+        "start": 135.841,
+        "end": 135.921
+      },
+      {
+        "word": "wreck",
+        "start": 135.961,
+        "end": 136.121
+      },
+      {
+        "word": "was",
+        "start": 136.161,
+        "end": 136.282
+      },
+      {
+        "word": "first",
+        "start": 136.342,
+        "end": 136.522
+      },
+      {
+        "word": "spotted",
+        "start": 136.562,
+        "end": 136.842
+      },
+      {
+        "word": "back",
+        "start": 136.882,
+        "end": 137.002
+      },
+      {
+        "word": "in",
+        "start": 137.062,
+        "end": 137.102
+      },
+      {
+        "word": "2015",
+        "start": 137.122,
+        "end": 137.383
+      },
+      {
+        "word": "by",
+        "start": 138.103,
+        "end": 138.263
+      },
+      {
+        "word": "a",
+        "start": 138.283,
+        "end": 138.304
+      },
+      {
+        "word": "Colombian",
+        "start": 138.404,
+        "end": 138.884
+      },
+      {
+        "word": "Navy",
+        "start": 138.964,
+        "end": 139.224
+      },
+      {
+        "word": "research",
+        "start": 139.325,
+        "end": 139.765
+      },
+      {
+        "word": "ship.",
+        "start": 139.785,
+        "end": 140.065
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "But the location is incredibly deep.",
+    "start": 140.646,
+    "end": 143.529,
+    "words": [
+      {
+        "word": "But",
+        "start": 140.646,
+        "end": 140.746
+      },
+      {
+        "word": "the",
+        "start": 140.766,
+        "end": 140.846
+      },
+      {
+        "word": "location",
+        "start": 140.906,
+        "end": 141.487
+      },
+      {
+        "word": "is",
+        "start": 141.687,
+        "end": 141.827
+      },
+      {
+        "word": "incredibly",
+        "start": 141.867,
+        "end": 143.288
+      },
+      {
+        "word": "deep.",
+        "start": 143.328,
+        "end": 143.529
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "It's about 600 meters under the water.",
+    "start": 143.549,
+    "end": 145.771,
+    "words": [
+      {
+        "word": "It's",
+        "start": 143.549,
+        "end": 143.649
+      },
+      {
+        "word": "about",
+        "start": 143.709,
+        "end": 143.929
+      },
+      {
+        "word": "600",
+        "start": 143.949,
+        "end": 144.429
+      },
+      {
+        "word": "meters",
+        "start": 144.77,
+        "end": 145.03
+      },
+      {
+        "word": "under",
+        "start": 145.17,
+        "end": 145.35
+      },
+      {
+        "word": "the",
+        "start": 145.37,
+        "end": 145.45
+      },
+      {
+        "word": "water.",
+        "start": 145.49,
+        "end": 145.771
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "600 meters is more than half a kilometer straight down.",
+    "start": 145.951,
+    "end": 148.533,
+    "words": [
+      {
+        "word": "600",
+        "start": 145.951,
+        "end": 146.411
+      },
+      {
+        "word": "meters",
+        "start": 146.451,
+        "end": 146.732
+      },
+      {
+        "word": "is",
+        "start": 146.792,
+        "end": 146.852
+      },
+      {
+        "word": "more",
+        "start": 146.892,
+        "end": 146.992
+      },
+      {
+        "word": "than",
+        "start": 147.032,
+        "end": 147.132
+      },
+      {
+        "word": "half",
+        "start": 147.172,
+        "end": 147.352
+      },
+      {
+        "word": "a",
+        "start": 147.412,
+        "end": 147.432
+      },
+      {
+        "word": "kilometer",
+        "start": 147.472,
+        "end": 147.953
+      },
+      {
+        "word": "straight",
+        "start": 147.993,
+        "end": 148.273
+      },
+      {
+        "word": "down.",
+        "start": 148.313,
+        "end": 148.533
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "Exactly.",
+    "start": 148.734,
+    "end": 149.534,
+    "words": [
+      {
+        "word": "Exactly.",
+        "start": 148.734,
+        "end": 149.534
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "Way too deep for human divers.",
+    "start": 149.735,
+    "end": 151.616,
+    "words": [
+      {
+        "word": "Way",
+        "start": 149.735,
+        "end": 150.075
+      },
+      {
+        "word": "too",
+        "start": 150.155,
+        "end": 150.375
+      },
+      {
+        "word": "deep",
+        "start": 150.455,
+        "end": 150.656
+      },
+      {
+        "word": "for",
+        "start": 150.716,
+        "end": 150.816
+      },
+      {
+        "word": "human",
+        "start": 150.876,
+        "end": 151.156
+      },
+      {
+        "word": "divers.",
+        "start": 151.196,
+        "end": 151.616
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "The pressure would be immense.",
+    "start": 151.697,
+    "end": 153.118,
+    "words": [
+      {
+        "word": "The",
+        "start": 151.697,
+        "end": 151.777
+      },
+      {
+        "word": "pressure",
+        "start": 151.917,
+        "end": 152.277
+      },
+      {
+        "word": "would",
+        "start": 152.297,
+        "end": 152.437
+      },
+      {
+        "word": "be",
+        "start": 152.477,
+        "end": 152.557
+      },
+      {
+        "word": "immense.",
+        "start": 152.577,
+        "end": 153.118
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "And that's why the location is still a top secret, you know, to stop people from trying to steal the treasure.",
+    "start": 153.478,
+    "end": 158.343,
+    "words": [
+      {
+        "word": "And",
+        "start": 153.478,
+        "end": 153.558
+      },
+      {
+        "word": "that's",
+        "start": 153.578,
+        "end": 153.738
+      },
+      {
+        "word": "why",
+        "start": 153.779,
+        "end": 153.879
+      },
+      {
+        "word": "the",
+        "start": 153.919,
+        "end": 153.999
+      },
+      {
+        "word": "location",
+        "start": 154.039,
+        "end": 154.459
+      },
+      {
+        "word": "is",
+        "start": 154.539,
+        "end": 154.599
+      },
+      {
+        "word": "still",
+        "start": 154.639,
+        "end": 154.84
+      },
+      {
+        "word": "a",
+        "start": 154.88,
+        "end": 154.9
+      },
+      {
+        "word": "top",
+        "start": 154.94,
+        "end": 155.18
+      },
+      {
+        "word": "secret,",
+        "start": 155.22,
+        "end": 155.58
+      },
+      {
+        "word": "you",
+        "start": 155.7,
+        "end": 155.78
+      },
+      {
+        "word": "know,",
+        "start": 155.821,
+        "end": 155.941
+      },
+      {
+        "word": "to",
+        "start": 156.001,
+        "end": 156.121
+      },
+      {
+        "word": "stop",
+        "start": 156.201,
+        "end": 156.481
+      },
+      {
+        "word": "people",
+        "start": 156.521,
+        "end": 156.821
+      },
+      {
+        "word": "from",
+        "start": 156.922,
+        "end": 157.122
+      },
+      {
+        "word": "trying",
+        "start": 157.162,
+        "end": 157.502
+      },
+      {
+        "word": "to",
+        "start": 157.542,
+        "end": 157.602
+      },
+      {
+        "word": "steal",
+        "start": 157.662,
+        "end": 157.883
+      },
+      {
+        "word": "the",
+        "start": 157.923,
+        "end": 158.003
+      },
+      {
+        "word": "treasure.",
+        "start": 158.043,
+        "end": 158.343
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "So if people can't go down,",
+    "start": 158.523,
+    "end": 160.465,
+    "words": [
+      {
+        "word": "So",
+        "start": 158.523,
+        "end": 158.643
+      },
+      {
+        "word": "if",
+        "start": 158.703,
+        "end": 158.783
+      },
+      {
+        "word": "people",
+        "start": 158.843,
+        "end": 159.104
+      },
+      {
+        "word": "can't",
+        "start": 159.184,
+        "end": 159.424
+      },
+      {
+        "word": "go",
+        "start": 159.464,
+        "end": 159.584
+      },
+      {
+        "word": "down,",
+        "start": 159.624,
+        "end": 160.465
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "How did they know it was the right ship?",
+    "start": 160.445,
+    "end": 161.826,
+    "words": [
+      {
+        "word": "How",
+        "start": 160.445,
+        "end": 160.645
+      },
+      {
+        "word": "did",
+        "start": 160.685,
+        "end": 160.785
+      },
+      {
+        "word": "they",
+        "start": 160.805,
+        "end": 160.925
+      },
+      {
+        "word": "know",
+        "start": 160.946,
+        "end": 161.066
+      },
+      {
+        "word": "it",
+        "start": 161.086,
+        "end": 161.126
+      },
+      {
+        "word": "was",
+        "start": 161.166,
+        "end": 161.266
+      },
+      {
+        "word": "the",
+        "start": 161.286,
+        "end": 161.366
+      },
+      {
+        "word": "right",
+        "start": 161.426,
+        "end": 161.586
+      },
+      {
+        "word": "ship?",
+        "start": 161.626,
+        "end": 161.826
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "How did they confirm it?",
+    "start": 161.846,
+    "end": 162.707,
+    "words": [
+      {
+        "word": "How",
+        "start": 161.846,
+        "end": 161.947
+      },
+      {
+        "word": "did",
+        "start": 161.967,
+        "end": 162.047
+      },
+      {
+        "word": "they",
+        "start": 162.067,
+        "end": 162.167
+      },
+      {
+        "word": "confirm",
+        "start": 162.207,
+        "end": 162.607
+      },
+      {
+        "word": "it?",
+        "start": 162.647,
+        "end": 162.707
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "They used technology, specifically remote controlled underwater vehicles, little robots basically.",
+    "start": 162.888,
+    "end": 168.834,
+    "words": [
+      {
+        "word": "They",
+        "start": 162.888,
+        "end": 163.008
+      },
+      {
+        "word": "used",
+        "start": 163.108,
+        "end": 163.248
+      },
+      {
+        "word": "technology,",
+        "start": 163.308,
+        "end": 163.989
+      },
+      {
+        "word": "specifically",
+        "start": 164.389,
+        "end": 165.03
+      },
+      {
+        "word": "remote",
+        "start": 165.05,
+        "end": 165.41
+      },
+      {
+        "word": "controlled",
+        "start": 165.47,
+        "end": 165.831
+      },
+      {
+        "word": "underwater",
+        "start": 165.871,
+        "end": 166.451
+      },
+      {
+        "word": "vehicles,",
+        "start": 166.551,
+        "end": 167.052
+      },
+      {
+        "word": "little",
+        "start": 167.412,
+        "end": 167.632
+      },
+      {
+        "word": "robots",
+        "start": 167.753,
+        "end": 168.253
+      },
+      {
+        "word": "basically.",
+        "start": 168.313,
+        "end": 168.834
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "Like underwater drones?",
+    "start": 168.854,
+    "end": 169.835,
+    "words": [
+      {
+        "word": "Like",
+        "start": 168.854,
+        "end": 168.954
+      },
+      {
+        "word": "underwater",
+        "start": 169.074,
+        "end": 169.454
+      },
+      {
+        "word": "drones?",
+        "start": 169.474,
+        "end": 169.835
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "Kind of, yeah.",
+    "start": 170.075,
+    "end": 171.056,
+    "words": [
+      {
+        "word": "Kind",
+        "start": 170.075,
+        "end": 170.315
+      },
+      {
+        "word": "of,",
+        "start": 170.375,
+        "end": 170.455
+      },
+      {
+        "word": "yeah.",
+        "start": 170.475,
+        "end": 171.056
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "They sent them down to scout the area and the images they sent back were just stunning.",
+    "start": 171.076,
+    "end": 174.94,
+    "words": [
+      {
+        "word": "They",
+        "start": 171.076,
+        "end": 171.196
+      },
+      {
+        "word": "sent",
+        "start": 171.236,
+        "end": 171.376
+      },
+      {
+        "word": "them",
+        "start": 171.396,
+        "end": 171.516
+      },
+      {
+        "word": "down",
+        "start": 171.556,
+        "end": 171.717
+      },
+      {
+        "word": "to",
+        "start": 171.737,
+        "end": 171.817
+      },
+      {
+        "word": "scout",
+        "start": 171.857,
+        "end": 172.097
+      },
+      {
+        "word": "the",
+        "start": 172.137,
+        "end": 172.197
+      },
+      {
+        "word": "area",
+        "start": 172.337,
+        "end": 172.618
+      },
+      {
+        "word": "and",
+        "start": 172.698,
+        "end": 172.778
+      },
+      {
+        "word": "the",
+        "start": 172.818,
+        "end": 172.898
+      },
+      {
+        "word": "images",
+        "start": 173.058,
+        "end": 173.338
+      },
+      {
+        "word": "they",
+        "start": 173.378,
+        "end": 173.538
+      },
+      {
+        "word": "sent",
+        "start": 173.579,
+        "end": 173.759
+      },
+      {
+        "word": "back",
+        "start": 173.819,
+        "end": 173.999
+      },
+      {
+        "word": "were",
+        "start": 174.019,
+        "end": 174.159
+      },
+      {
+        "word": "just",
+        "start": 174.179,
+        "end": 174.319
+      },
+      {
+        "word": "stunning.",
+        "start": 174.479,
+        "end": 174.94
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "They could see bronze cannons and coins just scattered all over the seabed.",
+    "start": 175.0,
+    "end": 178.824,
+    "words": [
+      {
+        "word": "They",
+        "start": 175.0,
+        "end": 175.1
+      },
+      {
+        "word": "could",
+        "start": 175.12,
+        "end": 175.22
+      },
+      {
+        "word": "see",
+        "start": 175.26,
+        "end": 175.38
+      },
+      {
+        "word": "bronze",
+        "start": 175.48,
+        "end": 175.921
+      },
+      {
+        "word": "cannons",
+        "start": 176.001,
+        "end": 176.502
+      },
+      {
+        "word": "and",
+        "start": 176.562,
+        "end": 176.642
+      },
+      {
+        "word": "coins",
+        "start": 176.742,
+        "end": 177.122
+      },
+      {
+        "word": "just",
+        "start": 177.202,
+        "end": 177.342
+      },
+      {
+        "word": "scattered",
+        "start": 177.443,
+        "end": 177.863
+      },
+      {
+        "word": "all",
+        "start": 177.923,
+        "end": 178.043
+      },
+      {
+        "word": "over",
+        "start": 178.083,
+        "end": 178.223
+      },
+      {
+        "word": "the",
+        "start": 178.263,
+        "end": 178.363
+      },
+      {
+        "word": "seabed.",
+        "start": 178.424,
+        "end": 178.824
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "But there were lots of Spanish ships back then.",
+    "start": 178.984,
+    "end": 180.706,
+    "words": [
+      {
+        "word": "But",
+        "start": 178.984,
+        "end": 179.084
+      },
+      {
+        "word": "there",
+        "start": 179.104,
+        "end": 179.224
+      },
+      {
+        "word": "were",
+        "start": 179.244,
+        "end": 179.324
+      },
+      {
+        "word": "lots",
+        "start": 179.344,
+        "end": 179.565
+      },
+      {
+        "word": "of",
+        "start": 179.605,
+        "end": 179.645
+      },
+      {
+        "word": "Spanish",
+        "start": 179.705,
+        "end": 180.025
+      },
+      {
+        "word": "ships",
+        "start": 180.045,
+        "end": 180.245
+      },
+      {
+        "word": "back",
+        "start": 180.305,
+        "end": 180.506
+      },
+      {
+        "word": "then.",
+        "start": 180.546,
+        "end": 180.706
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "How did they know for sure it was the famous San Jose?",
+    "start": 180.726,
+    "end": 182.908,
+    "words": [
+      {
+        "word": "How",
+        "start": 180.726,
+        "end": 180.806
+      },
+      {
+        "word": "did",
+        "start": 180.846,
+        "end": 180.926
+      },
+      {
+        "word": "they",
+        "start": 180.966,
+        "end": 181.046
+      },
+      {
+        "word": "know",
+        "start": 181.066,
+        "end": 181.206
+      },
+      {
+        "word": "for",
+        "start": 181.246,
+        "end": 181.367
+      },
+      {
+        "word": "sure",
+        "start": 181.427,
+        "end": 181.587
+      },
+      {
+        "word": "it",
+        "start": 181.607,
+        "end": 181.647
+      },
+      {
+        "word": "was",
+        "start": 181.667,
+        "end": 181.747
+      },
+      {
+        "word": "the",
+        "start": 181.787,
+        "end": 181.867
+      },
+      {
+        "word": "famous",
+        "start": 181.907,
+        "end": 182.187
+      },
+      {
+        "word": "San",
+        "start": 182.227,
+        "end": 182.428
+      },
+      {
+        "word": "Jose?",
+        "start": 182.448,
+        "end": 182.908
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "That's the clever part.",
+    "start": 183.829,
+    "end": 184.79,
+    "words": [
+      {
+        "word": "That's",
+        "start": 183.829,
+        "end": 184.049
+      },
+      {
+        "word": "the",
+        "start": 184.129,
+        "end": 184.189
+      },
+      {
+        "word": "clever",
+        "start": 184.23,
+        "end": 184.47
+      },
+      {
+        "word": "part.",
+        "start": 184.51,
+        "end": 184.79
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "The proof came from those three little coins they brought up.",
+    "start": 185.191,
+    "end": 187.633,
+    "words": [
+      {
+        "word": "The",
+        "start": 185.191,
+        "end": 185.291
+      },
+      {
+        "word": "proof",
+        "start": 185.351,
+        "end": 185.651
+      },
+      {
+        "word": "came",
+        "start": 185.731,
+        "end": 185.911
+      },
+      {
+        "word": "from",
+        "start": 185.971,
+        "end": 186.071
+      },
+      {
+        "word": "those",
+        "start": 186.111,
+        "end": 186.232
+      },
+      {
+        "word": "three",
+        "start": 186.272,
+        "end": 186.452
+      },
+      {
+        "word": "little",
+        "start": 186.492,
+        "end": 186.692
+      },
+      {
+        "word": "coins",
+        "start": 186.752,
+        "end": 186.992
+      },
+      {
+        "word": "they",
+        "start": 187.032,
+        "end": 187.153
+      },
+      {
+        "word": "brought",
+        "start": 187.173,
+        "end": 187.373
+      },
+      {
+        "word": "up.",
+        "start": 187.453,
+        "end": 187.633
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "You see, the coins had what are called mint marks on them.",
+    "start": 188.187,
+    "end": 190.65,
+    "words": [
+      {
+        "word": "You",
+        "start": 188.187,
+        "end": 188.307
+      },
+      {
+        "word": "see,",
+        "start": 188.327,
+        "end": 188.447
+      },
+      {
+        "word": "the",
+        "start": 188.487,
+        "end": 188.547
+      },
+      {
+        "word": "coins",
+        "start": 188.608,
+        "end": 188.888
+      },
+      {
+        "word": "had",
+        "start": 188.908,
+        "end": 189.048
+      },
+      {
+        "word": "what",
+        "start": 189.068,
+        "end": 189.168
+      },
+      {
+        "word": "are",
+        "start": 189.188,
+        "end": 189.268
+      },
+      {
+        "word": "called",
+        "start": 189.288,
+        "end": 189.449
+      },
+      {
+        "word": "mint",
+        "start": 189.629,
+        "end": 189.849
+      },
+      {
+        "word": "marks",
+        "start": 189.889,
+        "end": 190.229
+      },
+      {
+        "word": "on",
+        "start": 190.39,
+        "end": 190.45
+      },
+      {
+        "word": "them.",
+        "start": 190.51,
+        "end": 190.65
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "Mint marks.",
+    "start": 190.81,
+    "end": 191.331,
+    "words": [
+      {
+        "word": "Mint",
+        "start": 190.81,
+        "end": 191.01
+      },
+      {
+        "word": "marks.",
+        "start": 191.05,
+        "end": 191.331
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "What are those?",
+    "start": 191.371,
+    "end": 191.791,
+    "words": [
+      {
+        "word": "What",
+        "start": 191.371,
+        "end": 191.491
+      },
+      {
+        "word": "are",
+        "start": 191.531,
+        "end": 191.591
+      },
+      {
+        "word": "those?",
+        "start": 191.611,
+        "end": 191.791
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "They're like little stamps that show exactly where and, more importantly, when they were made.",
+    "start": 191.952,
+    "end": 196.177,
+    "words": [
+      {
+        "word": "They're",
+        "start": 191.952,
+        "end": 192.132
+      },
+      {
+        "word": "like",
+        "start": 192.172,
+        "end": 192.272
+      },
+      {
+        "word": "little",
+        "start": 192.312,
+        "end": 192.552
+      },
+      {
+        "word": "stamps",
+        "start": 192.652,
+        "end": 193.053
+      },
+      {
+        "word": "that",
+        "start": 193.093,
+        "end": 193.213
+      },
+      {
+        "word": "show",
+        "start": 193.253,
+        "end": 193.413
+      },
+      {
+        "word": "exactly",
+        "start": 193.453,
+        "end": 193.814
+      },
+      {
+        "word": "where",
+        "start": 193.854,
+        "end": 194.314
+      },
+      {
+        "word": "and,",
+        "start": 194.495,
+        "end": 194.615
+      },
+      {
+        "word": "more",
+        "start": 194.655,
+        "end": 194.875
+      },
+      {
+        "word": "importantly,",
+        "start": 194.895,
+        "end": 195.296
+      },
+      {
+        "word": "when",
+        "start": 195.376,
+        "end": 195.576
+      },
+      {
+        "word": "they",
+        "start": 195.596,
+        "end": 195.756
+      },
+      {
+        "word": "were",
+        "start": 195.776,
+        "end": 195.896
+      },
+      {
+        "word": "made.",
+        "start": 195.936,
+        "end": 196.177
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "OK. And the marks on these coins show they were made in the year 1707.",
+    "start": 196.437,
+    "end": 199.741,
+    "words": [
+      {
+        "word": "OK.",
+        "start": 196.437,
+        "end": 196.797
+      },
+      {
+        "word": "And",
+        "start": 196.877,
+        "end": 196.978
+      },
+      {
+        "word": "the",
+        "start": 197.018,
+        "end": 197.098
+      },
+      {
+        "word": "marks",
+        "start": 197.178,
+        "end": 197.478
+      },
+      {
+        "word": "on",
+        "start": 197.578,
+        "end": 197.618
+      },
+      {
+        "word": "these",
+        "start": 197.658,
+        "end": 197.799
+      },
+      {
+        "word": "coins",
+        "start": 197.879,
+        "end": 198.179
+      },
+      {
+        "word": "show",
+        "start": 198.219,
+        "end": 198.499
+      },
+      {
+        "word": "they",
+        "start": 198.519,
+        "end": 198.62
+      },
+      {
+        "word": "were",
+        "start": 198.66,
+        "end": 198.76
+      },
+      {
+        "word": "made",
+        "start": 198.8,
+        "end": 198.96
+      },
+      {
+        "word": "in",
+        "start": 199.02,
+        "end": 199.06
+      },
+      {
+        "word": "the",
+        "start": 199.08,
+        "end": 199.16
+      },
+      {
+        "word": "year",
+        "start": 199.2,
+        "end": 199.34
+      },
+      {
+        "word": "1707.",
+        "start": 199.36,
+        "end": 199.741
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "1707.",
+    "start": 199.761,
+    "end": 200.822,
+    "words": [
+      {
+        "word": "1707.",
+        "start": 199.761,
+        "end": 200.822
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "And the ship sank in 1708.",
+    "start": 200.982,
+    "end": 203.405,
+    "words": [
+      {
+        "word": "And",
+        "start": 200.982,
+        "end": 202.204
+      },
+      {
+        "word": "the",
+        "start": 202.244,
+        "end": 202.304
+      },
+      {
+        "word": "ship",
+        "start": 202.364,
+        "end": 202.584
+      },
+      {
+        "word": "sank",
+        "start": 202.664,
+        "end": 202.945
+      },
+      {
+        "word": "in",
+        "start": 203.025,
+        "end": 203.085
+      },
+      {
+        "word": "1708.",
+        "start": 203.105,
+        "end": 203.405
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "Exactly.",
+    "start": 203.425,
+    "end": 204.707,
+    "words": [
+      {
+        "word": "Exactly.",
+        "start": 203.425,
+        "end": 204.707
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "It was carrying brand new money.",
+    "start": 204.727,
+    "end": 206.889,
+    "words": [
+      {
+        "word": "It",
+        "start": 204.727,
+        "end": 205.187
+      },
+      {
+        "word": "was",
+        "start": 205.227,
+        "end": 205.348
+      },
+      {
+        "word": "carrying",
+        "start": 205.428,
+        "end": 205.788
+      },
+      {
+        "word": "brand",
+        "start": 205.888,
+        "end": 206.309
+      },
+      {
+        "word": "new",
+        "start": 206.369,
+        "end": 206.549
+      },
+      {
+        "word": "money.",
+        "start": 206.629,
+        "end": 206.889
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "That was the definitive proof.",
+    "start": 207.27,
+    "end": 208.592,
+    "words": [
+      {
+        "word": "That",
+        "start": 207.27,
+        "end": 207.41
+      },
+      {
+        "word": "was",
+        "start": 207.45,
+        "end": 207.57
+      },
+      {
+        "word": "the",
+        "start": 207.61,
+        "end": 207.71
+      },
+      {
+        "word": "definitive",
+        "start": 207.771,
+        "end": 208.291
+      },
+      {
+        "word": "proof.",
+        "start": 208.351,
+        "end": 208.592
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "It had to be the San Jose.",
+    "start": 208.972,
+    "end": 210.334,
+    "words": [
+      {
+        "word": "It",
+        "start": 208.972,
+        "end": 209.032
+      },
+      {
+        "word": "had",
+        "start": 209.092,
+        "end": 209.272
+      },
+      {
+        "word": "to",
+        "start": 209.312,
+        "end": 209.392
+      },
+      {
+        "word": "be",
+        "start": 209.433,
+        "end": 209.513
+      },
+      {
+        "word": "the",
+        "start": 209.573,
+        "end": 209.653
+      },
+      {
+        "word": "San",
+        "start": 209.693,
+        "end": 209.873
+      },
+      {
+        "word": "Jose.",
+        "start": 209.893,
+        "end": 210.334
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "That is brilliant.",
+    "start": 210.694,
+    "end": 211.755,
+    "words": [
+      {
+        "word": "That",
+        "start": 210.694,
+        "end": 210.954
+      },
+      {
+        "word": "is",
+        "start": 211.175,
+        "end": 211.255
+      },
+      {
+        "word": "brilliant.",
+        "start": 211.375,
+        "end": 211.755
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "It's like a tiny time stamp solving a giant mystery.",
+    "start": 211.815,
+    "end": 214.819,
+    "words": [
+      {
+        "word": "It's",
+        "start": 211.815,
+        "end": 211.916
+      },
+      {
+        "word": "like",
+        "start": 211.936,
+        "end": 212.056
+      },
+      {
+        "word": "a",
+        "start": 212.096,
+        "end": 212.116
+      },
+      {
+        "word": "tiny",
+        "start": 212.216,
+        "end": 212.576
+      },
+      {
+        "word": "time",
+        "start": 212.656,
+        "end": 212.997
+      },
+      {
+        "word": "stamp",
+        "start": 213.057,
+        "end": 213.377
+      },
+      {
+        "word": "solving",
+        "start": 213.457,
+        "end": 213.778
+      },
+      {
+        "word": "a",
+        "start": 213.838,
+        "end": 213.858
+      },
+      {
+        "word": "giant",
+        "start": 213.938,
+        "end": 214.278
+      },
+      {
+        "word": "mystery.",
+        "start": 214.338,
+        "end": 214.819
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "It is.",
+    "start": 214.833,
+    "end": 215.214,
+    "words": [
+      {
+        "word": "It",
+        "start": 214.833,
+        "end": 214.993
+      },
+      {
+        "word": "is.",
+        "start": 215.113,
+        "end": 215.214
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "And the Colombian government has been very clear about something.",
+    "start": 215.534,
+    "end": 218.059,
+    "words": [
+      {
+        "word": "And",
+        "start": 215.534,
+        "end": 215.614
+      },
+      {
+        "word": "the",
+        "start": 215.634,
+        "end": 215.695
+      },
+      {
+        "word": "Colombian",
+        "start": 215.715,
+        "end": 216.095
+      },
+      {
+        "word": "government",
+        "start": 216.155,
+        "end": 216.476
+      },
+      {
+        "word": "has",
+        "start": 216.516,
+        "end": 216.616
+      },
+      {
+        "word": "been",
+        "start": 216.656,
+        "end": 216.796
+      },
+      {
+        "word": "very",
+        "start": 216.857,
+        "end": 217.097
+      },
+      {
+        "word": "clear",
+        "start": 217.197,
+        "end": 217.418
+      },
+      {
+        "word": "about",
+        "start": 217.458,
+        "end": 217.618
+      },
+      {
+        "word": "something.",
+        "start": 217.678,
+        "end": 218.059
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "They say this recovery is actually part of an investigation.",
+    "start": 218.139,
+    "end": 221.144,
+    "words": [
+      {
+        "word": "They",
+        "start": 218.139,
+        "end": 218.299
+      },
+      {
+        "word": "say",
+        "start": 218.339,
+        "end": 218.499
+      },
+      {
+        "word": "this",
+        "start": 218.52,
+        "end": 218.7
+      },
+      {
+        "word": "recovery",
+        "start": 218.76,
+        "end": 219.201
+      },
+      {
+        "word": "is",
+        "start": 219.261,
+        "end": 219.321
+      },
+      {
+        "word": "actually",
+        "start": 219.441,
+        "end": 219.702
+      },
+      {
+        "word": "part",
+        "start": 219.802,
+        "end": 220.062
+      },
+      {
+        "word": "of",
+        "start": 220.203,
+        "end": 220.263
+      },
+      {
+        "word": "an",
+        "start": 220.303,
+        "end": 220.343
+      },
+      {
+        "word": "investigation.",
+        "start": 220.403,
+        "end": 221.144
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "An investigation?",
+    "start": 221.385,
+    "end": 222.487,
+    "words": [
+      {
+        "word": "An",
+        "start": 221.385,
+        "end": 221.445
+      },
+      {
+        "word": "investigation?",
+        "start": 221.505,
+        "end": 222.487
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "Yeah.",
+    "start": 222.767,
+    "end": 223.007,
+    "words": [
+      {
+        "word": "Yeah.",
+        "start": 222.767,
+        "end": 223.007
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "Not just a treasure hunt.",
+    "start": 223.228,
+    "end": 224.35,
+    "words": [
+      {
+        "word": "Not",
+        "start": 223.228,
+        "end": 223.388
+      },
+      {
+        "word": "just",
+        "start": 223.428,
+        "end": 223.609
+      },
+      {
+        "word": "a",
+        "start": 223.669,
+        "end": 223.689
+      },
+      {
+        "word": "treasure",
+        "start": 223.769,
+        "end": 224.089
+      },
+      {
+        "word": "hunt.",
+        "start": 224.129,
+        "end": 224.35
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "Right.",
+    "start": 224.53,
+    "end": 224.751,
+    "words": [
+      {
+        "word": "Right.",
+        "start": 224.53,
+        "end": 224.751
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "They want to understand why the galleon sank and what these items can teach us.",
+    "start": 225.171,
+    "end": 228.818,
+    "words": [
+      {
+        "word": "They",
+        "start": 225.171,
+        "end": 225.271
+      },
+      {
+        "word": "want",
+        "start": 225.312,
+        "end": 225.432
+      },
+      {
+        "word": "to",
+        "start": 225.452,
+        "end": 225.512
+      },
+      {
+        "word": "understand",
+        "start": 225.592,
+        "end": 226.113
+      },
+      {
+        "word": "why",
+        "start": 226.153,
+        "end": 226.434
+      },
+      {
+        "word": "the",
+        "start": 226.474,
+        "end": 226.554
+      },
+      {
+        "word": "galleon",
+        "start": 226.594,
+        "end": 226.975
+      },
+      {
+        "word": "sank",
+        "start": 227.035,
+        "end": 227.395
+      },
+      {
+        "word": "and",
+        "start": 227.455,
+        "end": 227.515
+      },
+      {
+        "word": "what",
+        "start": 227.556,
+        "end": 227.656
+      },
+      {
+        "word": "these",
+        "start": 227.696,
+        "end": 227.836
+      },
+      {
+        "word": "items",
+        "start": 227.976,
+        "end": 228.197
+      },
+      {
+        "word": "can",
+        "start": 228.237,
+        "end": 228.357
+      },
+      {
+        "word": "teach",
+        "start": 228.397,
+        "end": 228.597
+      },
+      {
+        "word": "us.",
+        "start": 228.718,
+        "end": 228.818
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "Scientists are going to study the cannon, the china cup, and especially the coins to learn about how things were made and traded 300 years ago.",
+    "start": 229.499,
+    "end": 236.952,
+    "words": [
+      {
+        "word": "Scientists",
+        "start": 229.499,
+        "end": 229.96
+      },
+      {
+        "word": "are",
+        "start": 229.98,
+        "end": 230.04
+      },
+      {
+        "word": "going",
+        "start": 230.06,
+        "end": 230.16
+      },
+      {
+        "word": "to",
+        "start": 230.18,
+        "end": 230.22
+      },
+      {
+        "word": "study",
+        "start": 230.26,
+        "end": 230.481
+      },
+      {
+        "word": "the",
+        "start": 230.501,
+        "end": 230.561
+      },
+      {
+        "word": "cannon,",
+        "start": 230.621,
+        "end": 231.082
+      },
+      {
+        "word": "the",
+        "start": 231.122,
+        "end": 231.282
+      },
+      {
+        "word": "china",
+        "start": 231.402,
+        "end": 231.703
+      },
+      {
+        "word": "cup,",
+        "start": 231.743,
+        "end": 231.983
+      },
+      {
+        "word": "and",
+        "start": 232.023,
+        "end": 232.104
+      },
+      {
+        "word": "especially",
+        "start": 232.144,
+        "end": 232.564
+      },
+      {
+        "word": "the",
+        "start": 232.604,
+        "end": 232.725
+      },
+      {
+        "word": "coins",
+        "start": 232.825,
+        "end": 233.366
+      },
+      {
+        "word": "to",
+        "start": 233.726,
+        "end": 233.827
+      },
+      {
+        "word": "learn",
+        "start": 233.887,
+        "end": 234.107
+      },
+      {
+        "word": "about",
+        "start": 234.147,
+        "end": 234.328
+      },
+      {
+        "word": "how",
+        "start": 234.368,
+        "end": 234.508
+      },
+      {
+        "word": "things",
+        "start": 234.548,
+        "end": 234.768
+      },
+      {
+        "word": "were",
+        "start": 234.828,
+        "end": 234.949
+      },
+      {
+        "word": "made",
+        "start": 235.009,
+        "end": 235.269
+      },
+      {
+        "word": "and",
+        "start": 235.329,
+        "end": 235.409
+      },
+      {
+        "word": "traded",
+        "start": 235.47,
+        "end": 235.83
+      },
+      {
+        "word": "300",
+        "start": 235.85,
+        "end": 236.151
+      },
+      {
+        "word": "years",
+        "start": 236.491,
+        "end": 236.672
+      },
+      {
+        "word": "ago.",
+        "start": 236.732,
+        "end": 236.952
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "So it's about history, not just the money.",
+    "start": 237.092,
+    "end": 239.136,
+    "words": [
+      {
+        "word": "So",
+        "start": 237.092,
+        "end": 237.173
+      },
+      {
+        "word": "it's",
+        "start": 237.233,
+        "end": 237.313
+      },
+      {
+        "word": "about",
+        "start": 237.373,
+        "end": 237.573
+      },
+      {
+        "word": "history,",
+        "start": 237.653,
+        "end": 238.074
+      },
+      {
+        "word": "not",
+        "start": 238.295,
+        "end": 238.415
+      },
+      {
+        "word": "just",
+        "start": 238.455,
+        "end": 238.595
+      },
+      {
+        "word": "the",
+        "start": 238.615,
+        "end": 238.695
+      },
+      {
+        "word": "money.",
+        "start": 238.735,
+        "end": 239.136
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "That's the official goal.",
+    "start": 239.251,
+    "end": 240.393,
+    "words": [
+      {
+        "word": "That's",
+        "start": 239.251,
+        "end": 239.491
+      },
+      {
+        "word": "the",
+        "start": 239.552,
+        "end": 239.652
+      },
+      {
+        "word": "official",
+        "start": 239.692,
+        "end": 240.052
+      },
+      {
+        "word": "goal.",
+        "start": 240.113,
+        "end": 240.393
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "Those coins, by the way, have a special name.",
+    "start": 240.794,
+    "end": 242.597,
+    "words": [
+      {
+        "word": "Those",
+        "start": 240.794,
+        "end": 240.974
+      },
+      {
+        "word": "coins,",
+        "start": 241.054,
+        "end": 241.375
+      },
+      {
+        "word": "by",
+        "start": 241.415,
+        "end": 241.495
+      },
+      {
+        "word": "the",
+        "start": 241.515,
+        "end": 241.595
+      },
+      {
+        "word": "way,",
+        "start": 241.635,
+        "end": 241.716
+      },
+      {
+        "word": "have",
+        "start": 241.756,
+        "end": 241.916
+      },
+      {
+        "word": "a",
+        "start": 241.936,
+        "end": 241.976
+      },
+      {
+        "word": "special",
+        "start": 242.016,
+        "end": 242.317
+      },
+      {
+        "word": "name.",
+        "start": 242.377,
+        "end": 242.597
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "They're called makukinas, or sometimes cobs.",
+    "start": 242.617,
+    "end": 245.202,
+    "words": [
+      {
+        "word": "They're",
+        "start": 242.617,
+        "end": 242.757
+      },
+      {
+        "word": "called",
+        "start": 242.778,
+        "end": 242.938
+      },
+      {
+        "word": "makukinas,",
+        "start": 242.998,
+        "end": 243.699
+      },
+      {
+        "word": "or",
+        "start": 244.1,
+        "end": 244.18
+      },
+      {
+        "word": "sometimes",
+        "start": 244.22,
+        "end": 244.661
+      },
+      {
+        "word": "cobs.",
+        "start": 244.761,
+        "end": 245.202
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "They were like the main type of money in the Americas for over 200 years.",
+    "start": 245.763,
+    "end": 249.791,
+    "words": [
+      {
+        "word": "They",
+        "start": 245.763,
+        "end": 245.923
+      },
+      {
+        "word": "were",
+        "start": 245.963,
+        "end": 246.204
+      },
+      {
+        "word": "like",
+        "start": 246.364,
+        "end": 246.504
+      },
+      {
+        "word": "the",
+        "start": 246.565,
+        "end": 246.665
+      },
+      {
+        "word": "main",
+        "start": 246.765,
+        "end": 247.045
+      },
+      {
+        "word": "type",
+        "start": 247.106,
+        "end": 247.306
+      },
+      {
+        "word": "of",
+        "start": 247.346,
+        "end": 247.386
+      },
+      {
+        "word": "money",
+        "start": 247.426,
+        "end": 247.727
+      },
+      {
+        "word": "in",
+        "start": 247.807,
+        "end": 247.847
+      },
+      {
+        "word": "the",
+        "start": 247.867,
+        "end": 247.947
+      },
+      {
+        "word": "Americas",
+        "start": 247.967,
+        "end": 248.428
+      },
+      {
+        "word": "for",
+        "start": 248.528,
+        "end": 248.668
+      },
+      {
+        "word": "over",
+        "start": 248.709,
+        "end": 248.969
+      },
+      {
+        "word": "200",
+        "start": 248.989,
+        "end": 249.189
+      },
+      {
+        "word": "years.",
+        "start": 249.53,
+        "end": 249.791
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "Makukinas.",
+    "start": 249.991,
+    "end": 250.852,
+    "words": [
+      {
+        "word": "Makukinas.",
+        "start": 249.991,
+        "end": 250.852
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "Cool word.",
+    "start": 251.734,
+    "end": 252.155,
+    "words": [
+      {
+        "word": "Cool",
+        "start": 251.734,
+        "end": 251.814
+      },
+      {
+        "word": "word.",
+        "start": 251.834,
+        "end": 252.155
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "OK, so this ship is called the world's richest shipwreck.",
+    "start": 252.676,
+    "end": 256.082,
+    "words": [
+      {
+        "word": "OK,",
+        "start": 252.676,
+        "end": 252.976
+      },
+      {
+        "word": "so",
+        "start": 253.016,
+        "end": 253.057
+      },
+      {
+        "word": "this",
+        "start": 253.117,
+        "end": 253.257
+      },
+      {
+        "word": "ship",
+        "start": 253.317,
+        "end": 253.537
+      },
+      {
+        "word": "is",
+        "start": 253.738,
+        "end": 253.798
+      },
+      {
+        "word": "called",
+        "start": 253.838,
+        "end": 254.098
+      },
+      {
+        "word": "the",
+        "start": 254.139,
+        "end": 254.299
+      },
+      {
+        "word": "world's",
+        "start": 254.379,
+        "end": 254.82
+      },
+      {
+        "word": "richest",
+        "start": 255.02,
+        "end": 255.421
+      },
+      {
+        "word": "shipwreck.",
+        "start": 255.561,
+        "end": 256.082
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "But if the scientists have the pieces now, who actually gets to keep all that money?",
+    "start": 256.884,
+    "end": 260.871,
+    "words": [
+      {
+        "word": "But",
+        "start": 256.884,
+        "end": 256.964
+      },
+      {
+        "word": "if",
+        "start": 256.984,
+        "end": 257.024
+      },
+      {
+        "word": "the",
+        "start": 257.044,
+        "end": 257.104
+      },
+      {
+        "word": "scientists",
+        "start": 257.144,
+        "end": 257.605
+      },
+      {
+        "word": "have",
+        "start": 257.645,
+        "end": 257.785
+      },
+      {
+        "word": "the",
+        "start": 257.825,
+        "end": 257.886
+      },
+      {
+        "word": "pieces",
+        "start": 257.926,
+        "end": 258.246
+      },
+      {
+        "word": "now,",
+        "start": 258.346,
+        "end": 258.647
+      },
+      {
+        "word": "who",
+        "start": 259.068,
+        "end": 259.188
+      },
+      {
+        "word": "actually",
+        "start": 259.268,
+        "end": 259.529
+      },
+      {
+        "word": "gets",
+        "start": 259.569,
+        "end": 259.729
+      },
+      {
+        "word": "to",
+        "start": 259.789,
+        "end": 259.869
+      },
+      {
+        "word": "keep",
+        "start": 259.909,
+        "end": 260.09
+      },
+      {
+        "word": "all",
+        "start": 260.15,
+        "end": 260.27
+      },
+      {
+        "word": "that",
+        "start": 260.29,
+        "end": 260.45
+      },
+      {
+        "word": "money?",
+        "start": 260.51,
+        "end": 260.871
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "And that right there is the huge, complicated question.",
+    "start": 260.851,
+    "end": 264.536,
+    "words": [
+      {
+        "word": "And",
+        "start": 260.851,
+        "end": 261.091
+      },
+      {
+        "word": "that",
+        "start": 261.352,
+        "end": 261.672
+      },
+      {
+        "word": "right",
+        "start": 261.852,
+        "end": 262.013
+      },
+      {
+        "word": "there",
+        "start": 262.093,
+        "end": 262.413
+      },
+      {
+        "word": "is",
+        "start": 262.493,
+        "end": 262.554
+      },
+      {
+        "word": "the",
+        "start": 262.614,
+        "end": 262.694
+      },
+      {
+        "word": "huge,",
+        "start": 262.794,
+        "end": 263.275
+      },
+      {
+        "word": "complicated",
+        "start": 263.395,
+        "end": 263.996
+      },
+      {
+        "word": "question.",
+        "start": 264.076,
+        "end": 264.536
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "This is where the story gets really intense.",
+    "start": 264.997,
+    "end": 266.88,
+    "words": [
+      {
+        "word": "This",
+        "start": 264.997,
+        "end": 265.137
+      },
+      {
+        "word": "is",
+        "start": 265.197,
+        "end": 265.257
+      },
+      {
+        "word": "where",
+        "start": 265.278,
+        "end": 265.418
+      },
+      {
+        "word": "the",
+        "start": 265.438,
+        "end": 265.518
+      },
+      {
+        "word": "story",
+        "start": 265.558,
+        "end": 265.758
+      },
+      {
+        "word": "gets",
+        "start": 265.798,
+        "end": 265.918
+      },
+      {
+        "word": "really",
+        "start": 266.139,
+        "end": 266.459
+      },
+      {
+        "word": "intense.",
+        "start": 266.499,
+        "end": 266.88
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "The San Jose is a treasure trove, no doubt about it.",
+    "start": 267.321,
+    "end": 269.564,
+    "words": [
+      {
+        "word": "The",
+        "start": 267.321,
+        "end": 267.381
+      },
+      {
+        "word": "San",
+        "start": 267.401,
+        "end": 267.541
+      },
+      {
+        "word": "Jose",
+        "start": 267.561,
+        "end": 267.841
+      },
+      {
+        "word": "is",
+        "start": 267.901,
+        "end": 267.961
+      },
+      {
+        "word": "a",
+        "start": 268.022,
+        "end": 268.042
+      },
+      {
+        "word": "treasure",
+        "start": 268.102,
+        "end": 268.362
+      },
+      {
+        "word": "trove,",
+        "start": 268.382,
+        "end": 268.703
+      },
+      {
+        "word": "no",
+        "start": 268.803,
+        "end": 268.903
+      },
+      {
+        "word": "doubt",
+        "start": 268.943,
+        "end": 269.123
+      },
+      {
+        "word": "about",
+        "start": 269.183,
+        "end": 269.404
+      },
+      {
+        "word": "it.",
+        "start": 269.484,
+        "end": 269.564
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "But the treasure is now at the center of this massive legal fight.",
+    "start": 269.984,
+    "end": 273.97,
+    "words": [
+      {
+        "word": "But",
+        "start": 269.984,
+        "end": 270.125
+      },
+      {
+        "word": "the",
+        "start": 270.205,
+        "end": 270.285
+      },
+      {
+        "word": "treasure",
+        "start": 270.365,
+        "end": 270.726
+      },
+      {
+        "word": "is",
+        "start": 270.826,
+        "end": 270.886
+      },
+      {
+        "word": "now",
+        "start": 270.966,
+        "end": 271.166
+      },
+      {
+        "word": "at",
+        "start": 271.266,
+        "end": 271.306
+      },
+      {
+        "word": "the",
+        "start": 271.326,
+        "end": 271.427
+      },
+      {
+        "word": "center",
+        "start": 271.527,
+        "end": 271.827
+      },
+      {
+        "word": "of",
+        "start": 271.887,
+        "end": 271.927
+      },
+      {
+        "word": "this",
+        "start": 271.967,
+        "end": 272.148
+      },
+      {
+        "word": "massive",
+        "start": 272.348,
+        "end": 272.849
+      },
+      {
+        "word": "legal",
+        "start": 273.309,
+        "end": 273.63
+      },
+      {
+        "word": "fight.",
+        "start": 273.73,
+        "end": 273.97
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "I can imagine.",
+    "start": 274.231,
+    "end": 274.792,
+    "words": [
+      {
+        "word": "I",
+        "start": 274.231,
+        "end": 274.271
+      },
+      {
+        "word": "can",
+        "start": 274.291,
+        "end": 274.391
+      },
+      {
+        "word": "imagine.",
+        "start": 274.431,
+        "end": 274.792
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "Who's involved?",
+    "start": 275.252,
+    "end": 275.773,
+    "words": [
+      {
+        "word": "Who's",
+        "start": 275.252,
+        "end": 275.412
+      },
+      {
+        "word": "involved?",
+        "start": 275.453,
+        "end": 275.773
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "Well, there are three main groups or claimants fighting for it.",
+    "start": 275.933,
+    "end": 279.078,
+    "words": [
+      {
+        "word": "Well,",
+        "start": 275.933,
+        "end": 276.093
+      },
+      {
+        "word": "there",
+        "start": 276.113,
+        "end": 276.234
+      },
+      {
+        "word": "are",
+        "start": 276.254,
+        "end": 276.314
+      },
+      {
+        "word": "three",
+        "start": 276.454,
+        "end": 276.714
+      },
+      {
+        "word": "main",
+        "start": 276.774,
+        "end": 276.995
+      },
+      {
+        "word": "groups",
+        "start": 277.015,
+        "end": 277.335
+      },
+      {
+        "word": "or",
+        "start": 277.656,
+        "end": 277.736
+      },
+      {
+        "word": "claimants",
+        "start": 277.796,
+        "end": 278.197
+      },
+      {
+        "word": "fighting",
+        "start": 278.457,
+        "end": 278.717
+      },
+      {
+        "word": "for",
+        "start": 278.777,
+        "end": 278.938
+      },
+      {
+        "word": "it.",
+        "start": 278.998,
+        "end": 279.078
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "OK, claimant number one.",
+    "start": 279.338,
+    "end": 280.44,
+    "words": [
+      {
+        "word": "OK,",
+        "start": 279.338,
+        "end": 279.599
+      },
+      {
+        "word": "claimant",
+        "start": 279.639,
+        "end": 279.939
+      },
+      {
+        "word": "number",
+        "start": 279.979,
+        "end": 280.2
+      },
+      {
+        "word": "one.",
+        "start": 280.3,
+        "end": 280.44
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "Claimant number one is Colombia.",
+    "start": 280.48,
+    "end": 281.762,
+    "words": [
+      {
+        "word": "Claimant",
+        "start": 280.48,
+        "end": 280.72
+      },
+      {
+        "word": "number",
+        "start": 280.74,
+        "end": 280.921
+      },
+      {
+        "word": "one",
+        "start": 281.001,
+        "end": 281.101
+      },
+      {
+        "word": "is",
+        "start": 281.141,
+        "end": 281.201
+      },
+      {
+        "word": "Colombia.",
+        "start": 281.281,
+        "end": 281.762
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "Their argument is pretty simple.",
+    "start": 282.162,
+    "end": 283.524,
+    "words": [
+      {
+        "word": "Their",
+        "start": 282.162,
+        "end": 282.343
+      },
+      {
+        "word": "argument",
+        "start": 282.383,
+        "end": 282.823
+      },
+      {
+        "word": "is",
+        "start": 282.863,
+        "end": 282.924
+      },
+      {
+        "word": "pretty",
+        "start": 282.964,
+        "end": 283.164
+      },
+      {
+        "word": "simple.",
+        "start": 283.224,
+        "end": 283.524
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "The wreck is in their territory in Colombian waters.",
+    "start": 283.885,
+    "end": 286.268,
+    "words": [
+      {
+        "word": "The",
+        "start": 283.885,
+        "end": 284.025
+      },
+      {
+        "word": "wreck",
+        "start": 284.065,
+        "end": 284.286
+      },
+      {
+        "word": "is",
+        "start": 284.406,
+        "end": 284.486
+      },
+      {
+        "word": "in",
+        "start": 284.526,
+        "end": 284.566
+      },
+      {
+        "word": "their",
+        "start": 284.606,
+        "end": 284.746
+      },
+      {
+        "word": "territory",
+        "start": 284.786,
+        "end": 285.327
+      },
+      {
+        "word": "in",
+        "start": 285.407,
+        "end": 285.467
+      },
+      {
+        "word": "Colombian",
+        "start": 285.527,
+        "end": 285.908
+      },
+      {
+        "word": "waters.",
+        "start": 285.948,
+        "end": 286.268
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "So they say it's part of their national heritage.",
+    "start": 286.329,
+    "end": 288.752,
+    "words": [
+      {
+        "word": "So",
+        "start": 286.329,
+        "end": 286.449
+      },
+      {
+        "word": "they",
+        "start": 286.489,
+        "end": 286.649
+      },
+      {
+        "word": "say",
+        "start": 286.709,
+        "end": 286.929
+      },
+      {
+        "word": "it's",
+        "start": 286.949,
+        "end": 287.47
+      },
+      {
+        "word": "part",
+        "start": 287.51,
+        "end": 287.65
+      },
+      {
+        "word": "of",
+        "start": 287.711,
+        "end": 287.751
+      },
+      {
+        "word": "their",
+        "start": 287.771,
+        "end": 287.891
+      },
+      {
+        "word": "national",
+        "start": 287.931,
+        "end": 288.271
+      },
+      {
+        "word": "heritage.",
+        "start": 288.331,
+        "end": 288.752
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "It's theirs.",
+    "start": 288.812,
+    "end": 289.373,
+    "words": [
+      {
+        "word": "It's",
+        "start": 288.812,
+        "end": 288.912
+      },
+      {
+        "word": "theirs.",
+        "start": 288.952,
+        "end": 289.373
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "That makes sense.",
+    "start": 289.64,
+    "end": 290.221,
+    "words": [
+      {
+        "word": "That",
+        "start": 289.64,
+        "end": 289.82
+      },
+      {
+        "word": "makes",
+        "start": 289.84,
+        "end": 289.96
+      },
+      {
+        "word": "sense.",
+        "start": 289.98,
+        "end": 290.221
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "Finders keepers prefer a country.",
+    "start": 290.381,
+    "end": 291.762,
+    "words": [
+      {
+        "word": "Finders",
+        "start": 290.381,
+        "end": 290.721
+      },
+      {
+        "word": "keepers",
+        "start": 290.761,
+        "end": 291.081
+      },
+      {
+        "word": "prefer",
+        "start": 291.141,
+        "end": 291.362
+      },
+      {
+        "word": "a",
+        "start": 291.402,
+        "end": 291.442
+      },
+      {
+        "word": "country.",
+        "start": 291.502,
+        "end": 291.762
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "Sort of, yeah.",
+    "start": 292.002,
+    "end": 292.623,
+    "words": [
+      {
+        "word": "Sort",
+        "start": 292.002,
+        "end": 292.242
+      },
+      {
+        "word": "of,",
+        "start": 292.282,
+        "end": 292.363
+      },
+      {
+        "word": "yeah.",
+        "start": 292.403,
+        "end": 292.623
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "But then you have claimant number two, Spain.",
+    "start": 292.823,
+    "end": 295.045,
+    "words": [
+      {
+        "word": "But",
+        "start": 292.823,
+        "end": 292.903
+      },
+      {
+        "word": "then",
+        "start": 292.923,
+        "end": 293.023
+      },
+      {
+        "word": "you",
+        "start": 293.043,
+        "end": 293.123
+      },
+      {
+        "word": "have",
+        "start": 293.163,
+        "end": 293.243
+      },
+      {
+        "word": "claimant",
+        "start": 293.263,
+        "end": 293.504
+      },
+      {
+        "word": "number",
+        "start": 293.524,
+        "end": 293.724
+      },
+      {
+        "word": "two,",
+        "start": 293.764,
+        "end": 293.964
+      },
+      {
+        "word": "Spain.",
+        "start": 294.545,
+        "end": 295.045
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "Spain.",
+    "start": 295.125,
+    "end": 295.626,
+    "words": [
+      {
+        "word": "Spain.",
+        "start": 295.125,
+        "end": 295.626
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "Why them?",
+    "start": 296.226,
+    "end": 296.727,
+    "words": [
+      {
+        "word": "Why",
+        "start": 296.226,
+        "end": 296.386
+      },
+      {
+        "word": "them?",
+        "start": 296.506,
+        "end": 296.727
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "Because the San Jose was a Spanish ship.",
+    "start": 297.007,
+    "end": 299.049,
+    "words": [
+      {
+        "word": "Because",
+        "start": 297.007,
+        "end": 297.367
+      },
+      {
+        "word": "the",
+        "start": 297.387,
+        "end": 297.607
+      },
+      {
+        "word": "San",
+        "start": 297.647,
+        "end": 297.828
+      },
+      {
+        "word": "Jose",
+        "start": 297.848,
+        "end": 298.148
+      },
+      {
+        "word": "was",
+        "start": 298.188,
+        "end": 298.288
+      },
+      {
+        "word": "a",
+        "start": 298.328,
+        "end": 298.368
+      },
+      {
+        "word": "Spanish",
+        "start": 298.428,
+        "end": 298.809
+      },
+      {
+        "word": "ship.",
+        "start": 298.849,
+        "end": 299.049
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "It was part of the Spanish Navy flying a Spanish flag.",
+    "start": 299.229,
+    "end": 301.931,
+    "words": [
+      {
+        "word": "It",
+        "start": 299.229,
+        "end": 299.289
+      },
+      {
+        "word": "was",
+        "start": 299.309,
+        "end": 299.409
+      },
+      {
+        "word": "part",
+        "start": 299.489,
+        "end": 299.649
+      },
+      {
+        "word": "of",
+        "start": 299.689,
+        "end": 299.729
+      },
+      {
+        "word": "the",
+        "start": 299.769,
+        "end": 299.85
+      },
+      {
+        "word": "Spanish",
+        "start": 299.89,
+        "end": 300.23
+      },
+      {
+        "word": "Navy",
+        "start": 300.31,
+        "end": 300.61
+      },
+      {
+        "word": "flying",
+        "start": 300.65,
+        "end": 301.031
+      },
+      {
+        "word": "a",
+        "start": 301.091,
+        "end": 301.111
+      },
+      {
+        "word": "Spanish",
+        "start": 301.151,
+        "end": 301.491
+      },
+      {
+        "word": "flag.",
+        "start": 301.551,
+        "end": 301.931
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "They argue that even though it sank, it never stopped being the property of Spain.",
+    "start": 302.392,
+    "end": 306.356,
+    "words": [
+      {
+        "word": "They",
+        "start": 302.392,
+        "end": 302.532
+      },
+      {
+        "word": "argue",
+        "start": 302.612,
+        "end": 302.892
+      },
+      {
+        "word": "that",
+        "start": 302.932,
+        "end": 303.033
+      },
+      {
+        "word": "even",
+        "start": 303.153,
+        "end": 303.293
+      },
+      {
+        "word": "though",
+        "start": 303.333,
+        "end": 303.473
+      },
+      {
+        "word": "it",
+        "start": 303.513,
+        "end": 303.613
+      },
+      {
+        "word": "sank,",
+        "start": 303.653,
+        "end": 303.973
+      },
+      {
+        "word": "it",
+        "start": 304.033,
+        "end": 304.114
+      },
+      {
+        "word": "never",
+        "start": 304.194,
+        "end": 304.414
+      },
+      {
+        "word": "stopped",
+        "start": 304.494,
+        "end": 304.814
+      },
+      {
+        "word": "being",
+        "start": 304.894,
+        "end": 305.134
+      },
+      {
+        "word": "the",
+        "start": 305.154,
+        "end": 305.235
+      },
+      {
+        "word": "property",
+        "start": 305.295,
+        "end": 305.715
+      },
+      {
+        "word": "of",
+        "start": 305.755,
+        "end": 305.795
+      },
+      {
+        "word": "Spain.",
+        "start": 305.935,
+        "end": 306.356
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "So they're saying it's still technically theirs, even after 300 years at the bottom of the sea.",
+    "start": 306.576,
+    "end": 311.2,
+    "words": [
+      {
+        "word": "So",
+        "start": 306.576,
+        "end": 306.676
+      },
+      {
+        "word": "they're",
+        "start": 306.696,
+        "end": 306.856
+      },
+      {
+        "word": "saying",
+        "start": 306.876,
+        "end": 307.016
+      },
+      {
+        "word": "it's",
+        "start": 307.056,
+        "end": 307.136
+      },
+      {
+        "word": "still",
+        "start": 307.176,
+        "end": 307.357
+      },
+      {
+        "word": "technically",
+        "start": 307.417,
+        "end": 307.817
+      },
+      {
+        "word": "theirs,",
+        "start": 307.877,
+        "end": 308.177
+      },
+      {
+        "word": "even",
+        "start": 309.058,
+        "end": 309.218
+      },
+      {
+        "word": "after",
+        "start": 309.298,
+        "end": 309.459
+      },
+      {
+        "word": "300",
+        "start": 309.479,
+        "end": 309.679
+      },
+      {
+        "word": "years",
+        "start": 309.979,
+        "end": 310.199
+      },
+      {
+        "word": "at",
+        "start": 310.259,
+        "end": 310.299
+      },
+      {
+        "word": "the",
+        "start": 310.319,
+        "end": 310.399
+      },
+      {
+        "word": "bottom",
+        "start": 310.439,
+        "end": 310.66
+      },
+      {
+        "word": "of",
+        "start": 310.7,
+        "end": 310.74
+      },
+      {
+        "word": "the",
+        "start": 310.78,
+        "end": 310.84
+      },
+      {
+        "word": "sea.",
+        "start": 310.9,
+        "end": 311.2
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "Exactly.",
+    "start": 311.22,
+    "end": 311.661,
+    "words": [
+      {
+        "word": "Exactly.",
+        "start": 311.22,
+        "end": 311.661
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "It's a complex legal idea, but that's their claim.",
+    "start": 311.721,
+    "end": 314.443,
+    "words": [
+      {
+        "word": "It's",
+        "start": 311.721,
+        "end": 311.821
+      },
+      {
+        "word": "a",
+        "start": 311.861,
+        "end": 311.881
+      },
+      {
+        "word": "complex",
+        "start": 311.941,
+        "end": 312.461
+      },
+      {
+        "word": "legal",
+        "start": 312.601,
+        "end": 312.882
+      },
+      {
+        "word": "idea,",
+        "start": 312.982,
+        "end": 313.322
+      },
+      {
+        "word": "but",
+        "start": 313.482,
+        "end": 313.582
+      },
+      {
+        "word": "that's",
+        "start": 313.642,
+        "end": 313.863
+      },
+      {
+        "word": "their",
+        "start": 313.903,
+        "end": 314.083
+      },
+      {
+        "word": "claim.",
+        "start": 314.123,
+        "end": 314.443
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "And then there's a third party.",
+    "start": 314.804,
+    "end": 316.505,
+    "words": [
+      {
+        "word": "And",
+        "start": 314.804,
+        "end": 314.864
+      },
+      {
+        "word": "then",
+        "start": 314.904,
+        "end": 315.144
+      },
+      {
+        "word": "there's",
+        "start": 315.184,
+        "end": 315.824
+      },
+      {
+        "word": "a",
+        "start": 315.885,
+        "end": 315.905
+      },
+      {
+        "word": "third",
+        "start": 315.945,
+        "end": 316.165
+      },
+      {
+        "word": "party.",
+        "start": 316.225,
+        "end": 316.505
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "Well, this gets even more complicated.",
+    "start": 316.525,
+    "end": 317.946,
+    "words": [
+      {
+        "word": "Well,",
+        "start": 316.525,
+        "end": 316.625
+      },
+      {
+        "word": "this",
+        "start": 316.645,
+        "end": 316.785
+      },
+      {
+        "word": "gets",
+        "start": 316.805,
+        "end": 316.946
+      },
+      {
+        "word": "even",
+        "start": 317.006,
+        "end": 317.146
+      },
+      {
+        "word": "more",
+        "start": 317.206,
+        "end": 317.326
+      },
+      {
+        "word": "complicated.",
+        "start": 317.406,
+        "end": 317.946
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "Who else?",
+    "start": 317.986,
+    "end": 318.567,
+    "words": [
+      {
+        "word": "Who",
+        "start": 317.986,
+        "end": 318.107
+      },
+      {
+        "word": "else?",
+        "start": 318.187,
+        "end": 318.567
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "An American company.",
+    "start": 318.648,
+    "end": 319.855,
+    "words": [
+      {
+        "word": "An",
+        "start": 318.648,
+        "end": 318.809
+      },
+      {
+        "word": "American",
+        "start": 318.849,
+        "end": 319.392
+      },
+      {
+        "word": "company.",
+        "start": 319.433,
+        "end": 319.855
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "Yay.",
+    "start": 319.915,
+    "end": 320.197,
+    "words": [
+      {
+        "word": "Yay.",
+        "start": 319.915,
+        "end": 320.197
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "A marine salvage company called Sea Search Armada.",
+    "start": 320.398,
+    "end": 323.496,
+    "words": [
+      {
+        "word": "A",
+        "start": 320.398,
+        "end": 320.438
+      },
+      {
+        "word": "marine",
+        "start": 320.479,
+        "end": 320.901
+      },
+      {
+        "word": "salvage",
+        "start": 321.002,
+        "end": 321.525
+      },
+      {
+        "word": "company",
+        "start": 321.565,
+        "end": 321.987
+      },
+      {
+        "word": "called",
+        "start": 322.048,
+        "end": 322.269
+      },
+      {
+        "word": "Sea",
+        "start": 322.37,
+        "end": 322.591
+      },
+      {
+        "word": "Search",
+        "start": 322.651,
+        "end": 322.913
+      },
+      {
+        "word": "Armada.",
+        "start": 323.034,
+        "end": 323.496
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "And what's their story?",
+    "start": 323.878,
+    "end": 324.844,
+    "words": [
+      {
+        "word": "And",
+        "start": 323.878,
+        "end": 323.959
+      },
+      {
+        "word": "what's",
+        "start": 323.999,
+        "end": 324.2
+      },
+      {
+        "word": "their",
+        "start": 324.241,
+        "end": 324.422
+      },
+      {
+        "word": "story?",
+        "start": 324.482,
+        "end": 324.844
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "Well, they claim that they actually found the wreck first, more than 40 years ago.",
+    "start": 325.313,
+    "end": 329.999,
+    "words": [
+      {
+        "word": "Well,",
+        "start": 325.313,
+        "end": 325.633
+      },
+      {
+        "word": "they",
+        "start": 325.794,
+        "end": 325.994
+      },
+      {
+        "word": "claim",
+        "start": 326.094,
+        "end": 326.454
+      },
+      {
+        "word": "that",
+        "start": 326.494,
+        "end": 326.595
+      },
+      {
+        "word": "they",
+        "start": 326.615,
+        "end": 326.735
+      },
+      {
+        "word": "actually",
+        "start": 326.795,
+        "end": 327.075
+      },
+      {
+        "word": "found",
+        "start": 327.115,
+        "end": 327.416
+      },
+      {
+        "word": "the",
+        "start": 327.456,
+        "end": 327.516
+      },
+      {
+        "word": "wreck",
+        "start": 327.776,
+        "end": 327.976
+      },
+      {
+        "word": "first,",
+        "start": 328.156,
+        "end": 328.517
+      },
+      {
+        "word": "more",
+        "start": 328.897,
+        "end": 329.038
+      },
+      {
+        "word": "than",
+        "start": 329.078,
+        "end": 329.198
+      },
+      {
+        "word": "40",
+        "start": 329.218,
+        "end": 329.258
+      },
+      {
+        "word": "years",
+        "start": 329.578,
+        "end": 329.778
+      },
+      {
+        "word": "ago.",
+        "start": 329.818,
+        "end": 329.999
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "40 years ago?",
+    "start": 330.019,
+    "end": 330.92,
+    "words": [
+      {
+        "word": "40",
+        "start": 330.019,
+        "end": 330.399
+      },
+      {
+        "word": "years",
+        "start": 330.519,
+        "end": 330.7
+      },
+      {
+        "word": "ago?",
+        "start": 330.74,
+        "end": 330.92
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "Yes.",
+    "start": 331.0,
+    "end": 331.26,
+    "words": [
+      {
+        "word": "Yes.",
+        "start": 331.0,
+        "end": 331.26
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "And they say they told the Colombian government where it was.",
+    "start": 331.621,
+    "end": 334.124,
+    "words": [
+      {
+        "word": "And",
+        "start": 331.621,
+        "end": 331.701
+      },
+      {
+        "word": "they",
+        "start": 331.741,
+        "end": 331.881
+      },
+      {
+        "word": "say",
+        "start": 331.941,
+        "end": 332.081
+      },
+      {
+        "word": "they",
+        "start": 332.121,
+        "end": 332.342
+      },
+      {
+        "word": "told",
+        "start": 332.402,
+        "end": 332.622
+      },
+      {
+        "word": "the",
+        "start": 332.642,
+        "end": 332.742
+      },
+      {
+        "word": "Colombian",
+        "start": 332.782,
+        "end": 333.183
+      },
+      {
+        "word": "government",
+        "start": 333.223,
+        "end": 333.563
+      },
+      {
+        "word": "where",
+        "start": 333.603,
+        "end": 333.723
+      },
+      {
+        "word": "it",
+        "start": 333.763,
+        "end": 333.823
+      },
+      {
+        "word": "was.",
+        "start": 333.863,
+        "end": 334.124
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "They allege that in return, the government promised them a share of the treasure.",
+    "start": 334.704,
+    "end": 338.709,
+    "words": [
+      {
+        "word": "They",
+        "start": 334.704,
+        "end": 334.865
+      },
+      {
+        "word": "allege",
+        "start": 334.905,
+        "end": 335.265
+      },
+      {
+        "word": "that",
+        "start": 335.305,
+        "end": 335.445
+      },
+      {
+        "word": "in",
+        "start": 335.565,
+        "end": 335.646
+      },
+      {
+        "word": "return,",
+        "start": 335.746,
+        "end": 336.246
+      },
+      {
+        "word": "the",
+        "start": 336.306,
+        "end": 336.507
+      },
+      {
+        "word": "government",
+        "start": 336.547,
+        "end": 336.847
+      },
+      {
+        "word": "promised",
+        "start": 336.907,
+        "end": 337.268
+      },
+      {
+        "word": "them",
+        "start": 337.308,
+        "end": 337.488
+      },
+      {
+        "word": "a",
+        "start": 337.528,
+        "end": 337.548
+      },
+      {
+        "word": "share",
+        "start": 337.788,
+        "end": 338.049
+      },
+      {
+        "word": "of",
+        "start": 338.109,
+        "end": 338.149
+      },
+      {
+        "word": "the",
+        "start": 338.189,
+        "end": 338.289
+      },
+      {
+        "word": "treasure.",
+        "start": 338.349,
+        "end": 338.709
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "A share.",
+    "start": 338.87,
+    "end": 339.37,
+    "words": [
+      {
+        "word": "A",
+        "start": 338.87,
+        "end": 338.91
+      },
+      {
+        "word": "share.",
+        "start": 339.05,
+        "end": 339.37
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "How much of a share?",
+    "start": 339.731,
+    "end": 340.512,
+    "words": [
+      {
+        "word": "How",
+        "start": 339.731,
+        "end": 339.851
+      },
+      {
+        "word": "much",
+        "start": 339.891,
+        "end": 340.031
+      },
+      {
+        "word": "of",
+        "start": 340.071,
+        "end": 340.111
+      },
+      {
+        "word": "a",
+        "start": 340.171,
+        "end": 340.191
+      },
+      {
+        "word": "share?",
+        "start": 340.271,
+        "end": 340.512
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "Huge one.",
+    "start": 340.552,
+    "end": 341.112,
+    "words": [
+      {
+        "word": "Huge",
+        "start": 340.552,
+        "end": 340.892
+      },
+      {
+        "word": "one.",
+        "start": 341.012,
+        "end": 341.112
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "And now they're asking for what they say they were promised, which is about 7.6 billion pounds.",
+    "start": 341.393,
+    "end": 346.279,
+    "words": [
+      {
+        "word": "And",
+        "start": 341.393,
+        "end": 341.473
+      },
+      {
+        "word": "now",
+        "start": 341.573,
+        "end": 341.733
+      },
+      {
+        "word": "they're",
+        "start": 341.793,
+        "end": 341.953
+      },
+      {
+        "word": "asking",
+        "start": 342.013,
+        "end": 342.294
+      },
+      {
+        "word": "for",
+        "start": 342.334,
+        "end": 342.434
+      },
+      {
+        "word": "what",
+        "start": 342.474,
+        "end": 342.574
+      },
+      {
+        "word": "they",
+        "start": 342.614,
+        "end": 342.754
+      },
+      {
+        "word": "say",
+        "start": 342.854,
+        "end": 342.995
+      },
+      {
+        "word": "they",
+        "start": 343.035,
+        "end": 343.135
+      },
+      {
+        "word": "were",
+        "start": 343.175,
+        "end": 343.275
+      },
+      {
+        "word": "promised,",
+        "start": 343.335,
+        "end": 343.755
+      },
+      {
+        "word": "which",
+        "start": 343.816,
+        "end": 343.936
+      },
+      {
+        "word": "is",
+        "start": 343.996,
+        "end": 344.056
+      },
+      {
+        "word": "about",
+        "start": 344.116,
+        "end": 344.356
+      },
+      {
+        "word": "7.6",
+        "start": 344.376,
+        "end": 344.937
+      },
+      {
+        "word": "billion",
+        "start": 345.578,
+        "end": 345.918
+      },
+      {
+        "word": "pounds.",
+        "start": 345.958,
+        "end": 346.279
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "7.6 billion pounds for finding it.",
+    "start": 346.299,
+    "end": 350.764,
+    "words": [
+      {
+        "word": "7.6",
+        "start": 346.299,
+        "end": 347.76
+      },
+      {
+        "word": "billion",
+        "start": 348.381,
+        "end": 348.822
+      },
+      {
+        "word": "pounds",
+        "start": 348.882,
+        "end": 349.262
+      },
+      {
+        "word": "for",
+        "start": 349.983,
+        "end": 350.103
+      },
+      {
+        "word": "finding",
+        "start": 350.163,
+        "end": 350.484
+      },
+      {
+        "word": "it.",
+        "start": 350.524,
+        "end": 350.764
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "Wow.",
+    "start": 350.744,
+    "end": 351.125,
+    "words": [
+      {
+        "word": "Wow.",
+        "start": 350.744,
+        "end": 351.125
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "It's an astonishing amount of money, and it raises this really important question about, you know, who should benefit from history, a country, or a private company.",
+    "start": 351.265,
+    "end": 359.757,
+    "words": [
+      {
+        "word": "It's",
+        "start": 351.265,
+        "end": 351.385
+      },
+      {
+        "word": "an",
+        "start": 351.425,
+        "end": 351.465
+      },
+      {
+        "word": "astonishing",
+        "start": 351.525,
+        "end": 352.066
+      },
+      {
+        "word": "amount",
+        "start": 352.106,
+        "end": 352.306
+      },
+      {
+        "word": "of",
+        "start": 352.346,
+        "end": 352.386
+      },
+      {
+        "word": "money,",
+        "start": 352.486,
+        "end": 352.727
+      },
+      {
+        "word": "and",
+        "start": 353.127,
+        "end": 353.228
+      },
+      {
+        "word": "it",
+        "start": 353.268,
+        "end": 353.308
+      },
+      {
+        "word": "raises",
+        "start": 353.368,
+        "end": 353.648
+      },
+      {
+        "word": "this",
+        "start": 353.688,
+        "end": 353.848
+      },
+      {
+        "word": "really",
+        "start": 353.908,
+        "end": 354.109
+      },
+      {
+        "word": "important",
+        "start": 354.169,
+        "end": 354.489
+      },
+      {
+        "word": "question",
+        "start": 354.529,
+        "end": 354.87
+      },
+      {
+        "word": "about,",
+        "start": 354.93,
+        "end": 355.13
+      },
+      {
+        "word": "you",
+        "start": 355.17,
+        "end": 355.27
+      },
+      {
+        "word": "know,",
+        "start": 355.31,
+        "end": 355.451
+      },
+      {
+        "word": "who",
+        "start": 355.471,
+        "end": 355.631
+      },
+      {
+        "word": "should",
+        "start": 355.671,
+        "end": 355.891
+      },
+      {
+        "word": "benefit",
+        "start": 355.931,
+        "end": 356.292
+      },
+      {
+        "word": "from",
+        "start": 356.352,
+        "end": 356.472
+      },
+      {
+        "word": "history,",
+        "start": 356.492,
+        "end": 357.053
+      },
+      {
+        "word": "a",
+        "start": 357.273,
+        "end": 357.293
+      },
+      {
+        "word": "country,",
+        "start": 357.353,
+        "end": 357.774
+      },
+      {
+        "word": "or",
+        "start": 357.794,
+        "end": 358.395
+      },
+      {
+        "word": "a",
+        "start": 358.415,
+        "end": 358.435
+      },
+      {
+        "word": "private",
+        "start": 358.875,
+        "end": 359.296
+      },
+      {
+        "word": "company.",
+        "start": 359.356,
+        "end": 359.757
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "And I heard there were others, too.",
+    "start": 359.817,
+    "end": 361.059,
+    "words": [
+      {
+        "word": "And",
+        "start": 359.817,
+        "end": 359.897
+      },
+      {
+        "word": "I",
+        "start": 359.937,
+        "end": 359.997
+      },
+      {
+        "word": "heard",
+        "start": 360.037,
+        "end": 360.177
+      },
+      {
+        "word": "there",
+        "start": 360.217,
+        "end": 360.378
+      },
+      {
+        "word": "were",
+        "start": 360.418,
+        "end": 360.518
+      },
+      {
+        "word": "others,",
+        "start": 360.578,
+        "end": 360.778
+      },
+      {
+        "word": "too.",
+        "start": 360.858,
+        "end": 361.059
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "That's right.",
+    "start": 361.459,
+    "end": 361.88,
+    "words": [
+      {
+        "word": "That's",
+        "start": 361.459,
+        "end": 361.619
+      },
+      {
+        "word": "right.",
+        "start": 361.679,
+        "end": 361.88
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "To make it even more complex, communities in Bolivia have also made a claim.",
+    "start": 362.421,
+    "end": 366.306,
+    "words": [
+      {
+        "word": "To",
+        "start": 362.421,
+        "end": 362.501
+      },
+      {
+        "word": "make",
+        "start": 362.541,
+        "end": 362.661
+      },
+      {
+        "word": "it",
+        "start": 362.721,
+        "end": 362.761
+      },
+      {
+        "word": "even",
+        "start": 362.821,
+        "end": 362.961
+      },
+      {
+        "word": "more",
+        "start": 363.001,
+        "end": 363.202
+      },
+      {
+        "word": "complex,",
+        "start": 363.262,
+        "end": 363.822
+      },
+      {
+        "word": "communities",
+        "start": 363.883,
+        "end": 364.423
+      },
+      {
+        "word": "in",
+        "start": 364.483,
+        "end": 364.564
+      },
+      {
+        "word": "Bolivia",
+        "start": 364.604,
+        "end": 365.204
+      },
+      {
+        "word": "have",
+        "start": 365.365,
+        "end": 365.485
+      },
+      {
+        "word": "also",
+        "start": 365.525,
+        "end": 365.745
+      },
+      {
+        "word": "made",
+        "start": 365.785,
+        "end": 365.905
+      },
+      {
+        "word": "a",
+        "start": 365.966,
+        "end": 365.986
+      },
+      {
+        "word": "claim.",
+        "start": 366.026,
+        "end": 366.306
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "Bolivia.",
+    "start": 366.707,
+    "end": 367.127,
+    "words": [
+      {
+        "word": "Bolivia.",
+        "start": 366.707,
+        "end": 367.127
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "How are they connected?",
+    "start": 367.548,
+    "end": 368.449,
+    "words": [
+      {
+        "word": "How",
+        "start": 367.548,
+        "end": 367.648
+      },
+      {
+        "word": "are",
+        "start": 367.688,
+        "end": 367.748
+      },
+      {
+        "word": "they",
+        "start": 367.768,
+        "end": 367.868
+      },
+      {
+        "word": "connected?",
+        "start": 367.888,
+        "end": 368.449
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "They argue that much of the silver and gold on that ship was originally taken from mines in their land under, well, very harsh colonial rule.",
+    "start": 368.817,
+    "end": 376.785,
+    "words": [
+      {
+        "word": "They",
+        "start": 368.817,
+        "end": 369.077
+      },
+      {
+        "word": "argue",
+        "start": 369.157,
+        "end": 369.358
+      },
+      {
+        "word": "that",
+        "start": 369.378,
+        "end": 369.498
+      },
+      {
+        "word": "much",
+        "start": 369.658,
+        "end": 369.878
+      },
+      {
+        "word": "of",
+        "start": 369.938,
+        "end": 369.978
+      },
+      {
+        "word": "the",
+        "start": 370.018,
+        "end": 370.118
+      },
+      {
+        "word": "silver",
+        "start": 370.198,
+        "end": 370.499
+      },
+      {
+        "word": "and",
+        "start": 370.539,
+        "end": 370.619
+      },
+      {
+        "word": "gold",
+        "start": 370.659,
+        "end": 370.919
+      },
+      {
+        "word": "on",
+        "start": 370.979,
+        "end": 371.019
+      },
+      {
+        "word": "that",
+        "start": 371.059,
+        "end": 371.219
+      },
+      {
+        "word": "ship",
+        "start": 371.28,
+        "end": 371.52
+      },
+      {
+        "word": "was",
+        "start": 371.6,
+        "end": 371.72
+      },
+      {
+        "word": "originally",
+        "start": 371.8,
+        "end": 372.16
+      },
+      {
+        "word": "taken",
+        "start": 372.201,
+        "end": 372.441
+      },
+      {
+        "word": "from",
+        "start": 372.601,
+        "end": 372.761
+      },
+      {
+        "word": "mines",
+        "start": 372.881,
+        "end": 373.322
+      },
+      {
+        "word": "in",
+        "start": 373.362,
+        "end": 373.522
+      },
+      {
+        "word": "their",
+        "start": 373.562,
+        "end": 373.702
+      },
+      {
+        "word": "land",
+        "start": 373.762,
+        "end": 374.102
+      },
+      {
+        "word": "under,",
+        "start": 374.423,
+        "end": 374.683
+      },
+      {
+        "word": "well,",
+        "start": 374.843,
+        "end": 375.104
+      },
+      {
+        "word": "very",
+        "start": 375.244,
+        "end": 375.484
+      },
+      {
+        "word": "harsh",
+        "start": 375.544,
+        "end": 375.824
+      },
+      {
+        "word": "colonial",
+        "start": 375.944,
+        "end": 376.385
+      },
+      {
+        "word": "rule.",
+        "start": 376.465,
+        "end": 376.785
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "They feel they have a historical right to it.",
+    "start": 377.266,
+    "end": 379.248,
+    "words": [
+      {
+        "word": "They",
+        "start": 377.266,
+        "end": 377.446
+      },
+      {
+        "word": "feel",
+        "start": 377.506,
+        "end": 377.686
+      },
+      {
+        "word": "they",
+        "start": 377.726,
+        "end": 377.846
+      },
+      {
+        "word": "have",
+        "start": 377.886,
+        "end": 377.987
+      },
+      {
+        "word": "a",
+        "start": 378.027,
+        "end": 378.047
+      },
+      {
+        "word": "historical",
+        "start": 378.107,
+        "end": 378.627
+      },
+      {
+        "word": "right",
+        "start": 378.707,
+        "end": 378.887
+      },
+      {
+        "word": "to",
+        "start": 378.927,
+        "end": 379.048
+      },
+      {
+        "word": "it.",
+        "start": 379.148,
+        "end": 379.248
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "So you can see it's a huge tangled mess of history, law, and an incredible amount of money.",
+    "start": 379.268,
+    "end": 385.634,
+    "words": [
+      {
+        "word": "So",
+        "start": 379.268,
+        "end": 379.308
+      },
+      {
+        "word": "you",
+        "start": 379.328,
+        "end": 379.408
+      },
+      {
+        "word": "can",
+        "start": 379.428,
+        "end": 379.548
+      },
+      {
+        "word": "see",
+        "start": 379.608,
+        "end": 379.788
+      },
+      {
+        "word": "it's",
+        "start": 379.868,
+        "end": 379.989
+      },
+      {
+        "word": "a",
+        "start": 380.729,
+        "end": 380.749
+      },
+      {
+        "word": "huge",
+        "start": 380.91,
+        "end": 381.39
+      },
+      {
+        "word": "tangled",
+        "start": 381.55,
+        "end": 382.091
+      },
+      {
+        "word": "mess",
+        "start": 382.251,
+        "end": 382.551
+      },
+      {
+        "word": "of",
+        "start": 382.651,
+        "end": 382.711
+      },
+      {
+        "word": "history,",
+        "start": 382.832,
+        "end": 383.352
+      },
+      {
+        "word": "law,",
+        "start": 383.652,
+        "end": 384.013
+      },
+      {
+        "word": "and",
+        "start": 384.213,
+        "end": 384.293
+      },
+      {
+        "word": "an",
+        "start": 384.353,
+        "end": 384.393
+      },
+      {
+        "word": "incredible",
+        "start": 384.453,
+        "end": 385.054
+      },
+      {
+        "word": "amount",
+        "start": 385.114,
+        "end": 385.314
+      },
+      {
+        "word": "of",
+        "start": 385.354,
+        "end": 385.394
+      },
+      {
+        "word": "money.",
+        "start": 385.434,
+        "end": 385.634
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "So just to recap, we've talked about this incredible Spanish galleon, the San Jose, sinking in 1708.",
+    "start": 386.335,
+    "end": 392.502,
+    "words": [
+      {
+        "word": "So",
+        "start": 386.335,
+        "end": 386.495
+      },
+      {
+        "word": "just",
+        "start": 386.816,
+        "end": 386.956
+      },
+      {
+        "word": "to",
+        "start": 386.996,
+        "end": 387.056
+      },
+      {
+        "word": "recap,",
+        "start": 387.076,
+        "end": 387.396
+      },
+      {
+        "word": "we've",
+        "start": 387.977,
+        "end": 388.137
+      },
+      {
+        "word": "talked",
+        "start": 388.177,
+        "end": 388.357
+      },
+      {
+        "word": "about",
+        "start": 388.397,
+        "end": 388.598
+      },
+      {
+        "word": "this",
+        "start": 388.638,
+        "end": 388.818
+      },
+      {
+        "word": "incredible",
+        "start": 388.918,
+        "end": 389.458
+      },
+      {
+        "word": "Spanish",
+        "start": 389.579,
+        "end": 389.979
+      },
+      {
+        "word": "galleon,",
+        "start": 390.039,
+        "end": 390.52
+      },
+      {
+        "word": "the",
+        "start": 390.74,
+        "end": 390.82
+      },
+      {
+        "word": "San",
+        "start": 390.86,
+        "end": 391.04
+      },
+      {
+        "word": "Jose,",
+        "start": 391.06,
+        "end": 391.461
+      },
+      {
+        "word": "sinking",
+        "start": 391.581,
+        "end": 391.881
+      },
+      {
+        "word": "in",
+        "start": 391.941,
+        "end": 392.001
+      },
+      {
+        "word": "1708.",
+        "start": 392.021,
+        "end": 392.502
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "It went down with 200 tons of treasure, which is now worth about 15 billion.",
+    "start": 392.662,
+    "end": 397.727,
+    "words": [
+      {
+        "word": "It",
+        "start": 392.662,
+        "end": 392.822
+      },
+      {
+        "word": "went",
+        "start": 393.643,
+        "end": 393.803
+      },
+      {
+        "word": "down",
+        "start": 393.843,
+        "end": 394.043
+      },
+      {
+        "word": "with",
+        "start": 394.103,
+        "end": 394.203
+      },
+      {
+        "word": "200",
+        "start": 394.223,
+        "end": 394.424
+      },
+      {
+        "word": "tons",
+        "start": 394.724,
+        "end": 394.944
+      },
+      {
+        "word": "of",
+        "start": 395.004,
+        "end": 395.044
+      },
+      {
+        "word": "treasure,",
+        "start": 395.104,
+        "end": 395.445
+      },
+      {
+        "word": "which",
+        "start": 395.465,
+        "end": 395.585
+      },
+      {
+        "word": "is",
+        "start": 395.645,
+        "end": 395.685
+      },
+      {
+        "word": "now",
+        "start": 395.745,
+        "end": 395.885
+      },
+      {
+        "word": "worth",
+        "start": 395.925,
+        "end": 396.125
+      },
+      {
+        "word": "about",
+        "start": 396.185,
+        "end": 396.366
+      },
+      {
+        "word": "15",
+        "start": 396.386,
+        "end": 396.886
+      },
+      {
+        "word": "billion.",
+        "start": 397.066,
+        "end": 397.727
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "And after 300 years, scientists have found it 600 meters deep and are starting to bring up the first pieces.",
+    "start": 397.707,
+    "end": 402.938,
+    "words": [
+      {
+        "word": "And",
+        "start": 397.707,
+        "end": 397.887
+      },
+      {
+        "word": "after",
+        "start": 397.968,
+        "end": 398.128
+      },
+      {
+        "word": "300",
+        "start": 398.148,
+        "end": 398.429
+      },
+      {
+        "word": "years,",
+        "start": 398.749,
+        "end": 399.01
+      },
+      {
+        "word": "scientists",
+        "start": 399.05,
+        "end": 399.491
+      },
+      {
+        "word": "have",
+        "start": 399.511,
+        "end": 399.611
+      },
+      {
+        "word": "found",
+        "start": 399.651,
+        "end": 399.832
+      },
+      {
+        "word": "it",
+        "start": 399.872,
+        "end": 399.932
+      },
+      {
+        "word": "600",
+        "start": 399.952,
+        "end": 400.132
+      },
+      {
+        "word": "meters",
+        "start": 400.413,
+        "end": 400.693
+      },
+      {
+        "word": "deep",
+        "start": 400.754,
+        "end": 400.974
+      },
+      {
+        "word": "and",
+        "start": 401.415,
+        "end": 401.495
+      },
+      {
+        "word": "are",
+        "start": 401.535,
+        "end": 401.615
+      },
+      {
+        "word": "starting",
+        "start": 401.635,
+        "end": 401.876
+      },
+      {
+        "word": "to",
+        "start": 401.896,
+        "end": 401.936
+      },
+      {
+        "word": "bring",
+        "start": 401.956,
+        "end": 402.096
+      },
+      {
+        "word": "up",
+        "start": 402.157,
+        "end": 402.217
+      },
+      {
+        "word": "the",
+        "start": 402.257,
+        "end": 402.337
+      },
+      {
+        "word": "first",
+        "start": 402.377,
+        "end": 402.557
+      },
+      {
+        "word": "pieces.",
+        "start": 402.598,
+        "end": 402.938
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "Right.",
+    "start": 403.239,
+    "end": 403.459,
+    "words": [
+      {
+        "word": "Right.",
+        "start": 403.239,
+        "end": 403.459
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "And now there's this huge international fight between Colombia, Spain, an American company, and even Bolivian communities over who really owns this amazing piece of history.",
+    "start": 403.74,
+    "end": 413.28,
+    "words": [
+      {
+        "word": "And",
+        "start": 403.74,
+        "end": 403.82
+      },
+      {
+        "word": "now",
+        "start": 403.9,
+        "end": 404.261
+      },
+      {
+        "word": "there's",
+        "start": 404.502,
+        "end": 404.702
+      },
+      {
+        "word": "this",
+        "start": 404.722,
+        "end": 404.862
+      },
+      {
+        "word": "huge",
+        "start": 405.123,
+        "end": 405.424
+      },
+      {
+        "word": "international",
+        "start": 405.484,
+        "end": 405.925
+      },
+      {
+        "word": "fight",
+        "start": 406.005,
+        "end": 406.245
+      },
+      {
+        "word": "between",
+        "start": 406.326,
+        "end": 406.606
+      },
+      {
+        "word": "Colombia,",
+        "start": 406.646,
+        "end": 407.147
+      },
+      {
+        "word": "Spain,",
+        "start": 407.187,
+        "end": 407.829
+      },
+      {
+        "word": "an",
+        "start": 407.909,
+        "end": 407.969
+      },
+      {
+        "word": "American",
+        "start": 408.029,
+        "end": 408.39
+      },
+      {
+        "word": "company,",
+        "start": 408.45,
+        "end": 408.791
+      },
+      {
+        "word": "and",
+        "start": 408.811,
+        "end": 408.871
+      },
+      {
+        "word": "even",
+        "start": 408.931,
+        "end": 409.091
+      },
+      {
+        "word": "Bolivian",
+        "start": 409.152,
+        "end": 409.653
+      },
+      {
+        "word": "communities",
+        "start": 409.713,
+        "end": 410.274
+      },
+      {
+        "word": "over",
+        "start": 410.394,
+        "end": 410.555
+      },
+      {
+        "word": "who",
+        "start": 410.895,
+        "end": 411.036
+      },
+      {
+        "word": "really",
+        "start": 411.076,
+        "end": 411.296
+      },
+      {
+        "word": "owns",
+        "start": 411.457,
+        "end": 411.697
+      },
+      {
+        "word": "this",
+        "start": 411.717,
+        "end": 411.877
+      },
+      {
+        "word": "amazing",
+        "start": 411.938,
+        "end": 412.419
+      },
+      {
+        "word": "piece",
+        "start": 412.519,
+        "end": 412.719
+      },
+      {
+        "word": "of",
+        "start": 412.779,
+        "end": 412.819
+      },
+      {
+        "word": "history.",
+        "start": 412.88,
+        "end": 413.28
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "It's an amazing story.",
+    "start": 413.561,
+    "end": 414.603,
+    "words": [
+      {
+        "word": "It's",
+        "start": 413.561,
+        "end": 413.661
+      },
+      {
+        "word": "an",
+        "start": 413.701,
+        "end": 413.741
+      },
+      {
+        "word": "amazing",
+        "start": 413.802,
+        "end": 414.222
+      },
+      {
+        "word": "story.",
+        "start": 414.283,
+        "end": 414.603
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "You know, if you want to practice your English more, you should go back and read the text again.",
+    "start": 414.824,
+    "end": 418.311,
+    "words": [
+      {
+        "word": "You",
+        "start": 414.824,
+        "end": 414.904
+      },
+      {
+        "word": "know,",
+        "start": 414.924,
+        "end": 415.044
+      },
+      {
+        "word": "if",
+        "start": 415.064,
+        "end": 415.124
+      },
+      {
+        "word": "you",
+        "start": 415.144,
+        "end": 415.225
+      },
+      {
+        "word": "want",
+        "start": 415.265,
+        "end": 415.385
+      },
+      {
+        "word": "to",
+        "start": 415.405,
+        "end": 415.445
+      },
+      {
+        "word": "practice",
+        "start": 415.505,
+        "end": 415.826
+      },
+      {
+        "word": "your",
+        "start": 415.846,
+        "end": 415.966
+      },
+      {
+        "word": "English",
+        "start": 416.026,
+        "end": 416.287
+      },
+      {
+        "word": "more,",
+        "start": 416.347,
+        "end": 416.568
+      },
+      {
+        "word": "you",
+        "start": 416.888,
+        "end": 416.968
+      },
+      {
+        "word": "should",
+        "start": 416.988,
+        "end": 417.109
+      },
+      {
+        "word": "go",
+        "start": 417.149,
+        "end": 417.209
+      },
+      {
+        "word": "back",
+        "start": 417.249,
+        "end": 417.369
+      },
+      {
+        "word": "and",
+        "start": 417.429,
+        "end": 417.489
+      },
+      {
+        "word": "read",
+        "start": 417.53,
+        "end": 417.67
+      },
+      {
+        "word": "the",
+        "start": 417.69,
+        "end": 417.77
+      },
+      {
+        "word": "text",
+        "start": 417.81,
+        "end": 418.031
+      },
+      {
+        "word": "again.",
+        "start": 418.091,
+        "end": 418.311
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "Try to find some of the new words we use, like galleon, macaquinas, or mint marks.",
+    "start": 418.472,
+    "end": 422.841,
+    "words": [
+      {
+        "word": "Try",
+        "start": 418.472,
+        "end": 418.612
+      },
+      {
+        "word": "to",
+        "start": 418.652,
+        "end": 418.692
+      },
+      {
+        "word": "find",
+        "start": 418.732,
+        "end": 418.872
+      },
+      {
+        "word": "some",
+        "start": 418.913,
+        "end": 419.013
+      },
+      {
+        "word": "of",
+        "start": 419.033,
+        "end": 419.073
+      },
+      {
+        "word": "the",
+        "start": 419.113,
+        "end": 419.173
+      },
+      {
+        "word": "new",
+        "start": 419.213,
+        "end": 419.333
+      },
+      {
+        "word": "words",
+        "start": 419.374,
+        "end": 419.634
+      },
+      {
+        "word": "we",
+        "start": 419.674,
+        "end": 419.794
+      },
+      {
+        "word": "use,",
+        "start": 419.895,
+        "end": 420.035
+      },
+      {
+        "word": "like",
+        "start": 420.075,
+        "end": 420.215
+      },
+      {
+        "word": "galleon,",
+        "start": 420.456,
+        "end": 420.897
+      },
+      {
+        "word": "macaquinas,",
+        "start": 421.057,
+        "end": 421.799
+      },
+      {
+        "word": "or",
+        "start": 421.859,
+        "end": 421.919
+      },
+      {
+        "word": "mint",
+        "start": 422.059,
+        "end": 422.24
+      },
+      {
+        "word": "marks.",
+        "start": 422.26,
+        "end": 422.841
+      }
+    ]
+  },
+  {
+    "speaker": "Female",
+    "speaker_id": "SPEAKER_01",
+    "sentence": "It's a great way to learn.",
+    "start": 422.861,
+    "end": 423.723,
+    "words": [
+      {
+        "word": "It's",
+        "start": 422.861,
+        "end": 422.941
+      },
+      {
+        "word": "a",
+        "start": 422.981,
+        "end": 423.001
+      },
+      {
+        "word": "great",
+        "start": 423.041,
+        "end": 423.242
+      },
+      {
+        "word": "way",
+        "start": 423.262,
+        "end": 423.342
+      },
+      {
+        "word": "to",
+        "start": 423.362,
+        "end": 423.442
+      },
+      {
+        "word": "learn.",
+        "start": 423.482,
+        "end": 423.723
+      }
+    ]
+  },
+  {
+    "speaker": "Male",
+    "speaker_id": "SPEAKER_00",
+    "sentence": "Keep reading and keep exploring the world.",
+    "start": 423.803,
+    "end": 426.128,
+    "words": [
+      {
+        "word": "Keep",
+        "start": 423.803,
+        "end": 423.983
+      },
+      {
+        "word": "reading",
+        "start": 424.044,
+        "end": 424.344
+      },
+      {
+        "word": "and",
+        "start": 424.404,
+        "end": 424.485
+      },
+      {
+        "word": "keep",
+        "start": 424.545,
+        "end": 424.785
+      },
+      {
+        "word": "exploring",
+        "start": 424.865,
+        "end": 425.326
+      },
+      {
+        "word": "the",
+        "start": 425.366,
+        "end": 425.447
+      },
+      {
+        "word": "world.",
+        "start": 425.487,
+        "end": 426.128
+      }
+    ]
+  },
+        
     ];
 
     // ==========================================
-    // ⬆️ 替换结束 ⬆️
+    // ⬆️⬆️⬆️ 粘贴结束 ⬆️⬆️⬆️
     // ==========================================
 
     const audio = document.getElementById('audioPlayer');
@@ -340,23 +8625,73 @@
     const debugTime = document.getElementById('debugTime');
 
     let isRecordingMode = false;
-    let currentActiveSentenceIndex = -1;
+    let processedData = []; // 存储合并后的数据
+    let currentActiveBlockIndex = -1;
     let currentActiveWordElement = null;
 
-    // 1. 初始化 DOM：根据 JSON 生成 HTML
+    // --- 核心算法：智能合并 ---
+    function mergeTranscriptSegments(rawData) {
+        if (!rawData || rawData.length === 0) return [];
+        
+        const merged = [];
+        // 初始化第一个块
+        let currentBlock = {
+            speaker: rawData[0].speaker,
+            start: rawData[0].start,
+            end: rawData[0].end,
+            words: [...(rawData[0].words || [])]
+        };
+
+        for (let i = 1; i < rawData.length; i++) {
+            const nextSegment = rawData[i];
+            
+            // 计算合并后的预估时长
+            const projectedDuration = nextSegment.end - currentBlock.start;
+            
+            // 合并条件：
+            // 1. 同一个说话人 (speaker 字段完全一致)
+            // 2. 合并后总时长不超过 10 秒
+            if (nextSegment.speaker === currentBlock.speaker && projectedDuration <= 10.0) {
+                // 执行合并：更新结束时间，追加单词
+                currentBlock.end = nextSegment.end;
+                if (nextSegment.words) {
+                    currentBlock.words = currentBlock.words.concat(nextSegment.words);
+                }
+            } else {
+                // 条件不满足，结算当前块，开启新块
+                merged.push(currentBlock);
+                currentBlock = {
+                    speaker: nextSegment.speaker,
+                    start: nextSegment.start,
+                    end: nextSegment.end,
+                    words: [...(nextSegment.words || [])]
+                };
+            }
+        }
+        // 推入最后一个块
+        merged.push(currentBlock);
+        return merged;
+    }
+
+    // 1. 初始化 DOM
     function initTranscript() {
+        // 先执行合并算法
+        processedData = mergeTranscriptSegments(rawTranscriptData);
+        
         container.innerHTML = '';
-        transcriptData.forEach((segment, index) => {
+        processedData.forEach((block, index) => {
             const div = document.createElement('div');
             div.className = 'transcript-item';
-            div.dataset.start = segment.start;
-            div.dataset.end = segment.end;
+            div.dataset.start = block.start;
+            div.dataset.end = block.end;
             div.dataset.index = index;
 
             // 角色标签
             const speakerSpan = document.createElement('span');
-            speakerSpan.className = `speaker-tag speaker-${segment.speaker.toLowerCase()}`;
-            speakerSpan.textContent = segment.speaker;
+            // 处理 Speaker 样式，转为小写 (Male -> male)
+            const speakerClass = block.speaker ? block.speaker.toLowerCase() : 'unknown';
+            speakerSpan.className = `speaker-tag speaker-${speakerClass}`;
+            speakerSpan.textContent = block.speaker || 'Unknown';
             div.appendChild(speakerSpan);
 
             // 文本容器
@@ -364,72 +8699,81 @@
             p.className = 'text-content';
 
             // 生成单词 Span
-            segment.words.forEach(wordObj => {
-                const wordSpan = document.createElement('span');
-                wordSpan.className = 'word-span';
-                wordSpan.textContent = wordObj.word + " "; // 补空格
-                wordSpan.dataset.start = wordObj.start;
-                wordSpan.dataset.end = wordObj.end;
-                p.appendChild(wordSpan);
-            });
+            if (block.words) {
+                block.words.forEach(wordObj => {
+                    const wordSpan = document.createElement('span');
+                    wordSpan.className = 'word-span';
+                    
+                    // 核心排版：在单词后面加一个空格，确保单词间距
+                    // 注意：这解决了 "Hello," 和 "Curious" 粘连的问题
+                    wordSpan.textContent = wordObj.word + " "; 
+                    
+                    wordSpan.dataset.start = wordObj.start;
+                    wordSpan.dataset.end = wordObj.end;
+                    p.appendChild(wordSpan);
+                });
+            } else {
+                // 如果没有单词数据，回退显示句子
+                p.textContent = block.sentence;
+            }
 
             div.appendChild(p);
             container.appendChild(div);
 
-            // 点击句子跳转
+            // 点击句子跳转逻辑
             div.addEventListener('click', (e) => {
-                // 如果点击的是具体单词，跳转到单词时间
+                // 如果点到了具体的单词，精确定位
                 if (e.target.classList.contains('word-span')) {
                     audio.currentTime = parseFloat(e.target.dataset.start);
                 } else {
-                    // 否则跳转到句子开始
-                    audio.currentTime = segment.start;
+                    // 否则跳到段落开头
+                    audio.currentTime = block.start;
                 }
                 if (audio.paused) audio.play();
             });
         });
     }
 
-    // 2. 核心更新逻辑 (帧级调用)
+    // 2. 更新逻辑 (高频调用)
     function updateTranscript() {
         const t = audio.currentTime;
         
-        // --- 句子级高亮 ---
-        let activeIndex = -1;
-        // 查找当前句子 (假设数据有序，简单遍历即可，由于数据量不大，性能可接受)
-        // 优化：只在当前索引附近查找
-        for (let i = 0; i < transcriptData.length; i++) {
-            if (t >= transcriptData[i].start && t < transcriptData[i].end) {
-                activeIndex = i;
+        // --- A. 段落级高亮 (Block Level) ---
+        let activeBlockIndex = -1;
+        
+        // 查找当前时间落在哪个块里
+        for (let i = 0; i < processedData.length; i++) {
+            if (t >= processedData[i].start && t < processedData[i].end) {
+                activeBlockIndex = i;
                 break;
             }
         }
 
-        // 状态切换：句子
-        if (activeIndex !== -1 && activeIndex !== currentActiveSentenceIndex) {
+        // 状态切换：段落
+        if (activeBlockIndex !== -1 && activeBlockIndex !== currentActiveBlockIndex) {
             const prev = document.querySelector('.transcript-item.active');
             if (prev) prev.classList.remove('active');
 
-            const current = container.children[activeIndex];
+            const current = container.children[activeBlockIndex];
             if (current) {
                 current.classList.add('active');
                 current.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
-            currentActiveSentenceIndex = activeIndex;
+            currentActiveBlockIndex = activeBlockIndex;
         }
 
-        // --- 单词级高亮 ---
-        // 只有当有激活句子时，才在其内部查找单词
-        if (currentActiveSentenceIndex !== -1) {
-            const activeSentenceDiv = container.children[currentActiveSentenceIndex];
-            const wordSpans = activeSentenceDiv.querySelectorAll('.word-span');
+        // --- B. 单词级高亮 (Word Level) ---
+        // 仅在当前激活的段落内查找
+        if (currentActiveBlockIndex !== -1) {
+            const activeBlockElement = container.children[currentActiveBlockIndex];
+            const wordSpans = activeBlockElement.querySelectorAll('.word-span');
             let foundWord = false;
 
             for (let span of wordSpans) {
                 const start = parseFloat(span.dataset.start);
                 const end = parseFloat(span.dataset.end);
 
-                if (t >= start && t < end) {
+                if (t >= start && t < end) { 
                     if (currentActiveWordElement !== span) {
                         if (currentActiveWordElement) currentActiveWordElement.classList.remove('word-active');
                         span.classList.add('word-active');
@@ -440,7 +8784,7 @@
                 }
             }
             
-            // 如果当前时间不在任何单词范围内（比如句子中间的停顿），清除高亮
+            // 如果当前没有词被激活，去掉高亮
             if (!foundWord && currentActiveWordElement) {
                 currentActiveWordElement.classList.remove('word-active');
                 currentActiveWordElement = null;
@@ -477,8 +8821,13 @@
         audio.currentTime = pos * audio.duration;
     });
 
-    // 初始化
-    initTranscript();
+    // 启动
+    // 注意：需要确保 JSON 数据填充后才能正确运行
+    if (typeof rawTranscriptData !== 'undefined' && rawTranscriptData.length > 0) {
+        initTranscript();
+    } else {
+        console.warn("请在 script 标签中填入 JSON 数据");
+    }
 
 </script>
 
