@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chinese Astronauts Install Space Junk Shields</title>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --accent-color: #a855f7;
+            --female-color: #ec4899;
+            --male-color: #2dd4bf;
+            --text-normal: rgba(255, 255, 255, 0.4);
+            --text-active: #ffffff;
+            --word-highlight: #ff9f0a;
+            --font-stack: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            font-family: var(--font-stack);
+            background-color: var(--bg-color);
+            color: white;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.5s ease;
+        }
+
+        .ambient-bg {
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 50% 50%, #4c1d95, #0f172a 70%, #000);
+            z-index: -1;
+            filter: blur(80px);
+            opacity: 0.8;
+            animation: breathe 10s infinite alternate;
+        }
+
+        @keyframes breathe {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1); }
+        }
+
+        .player-header {
+            padding: 40px 20px 20px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+            transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+            flex-shrink: 0;
+        }
+
+        .artwork-container {
+            width: 140px;
+            height: 185px;
+            border-radius: 8px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            margin-bottom: 15px;
+            overflow: hidden;
+            background-color: #333;
+            position: relative;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .artwork-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .track-info { 
+            text-align: center; 
+            transition: all 0.5s ease;
+        }
+        
+        /* 2. 标题占位符 */
+        .track-title { font-size: 20px; font-weight: 800; margin: 0; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .track-artist { font-size: 14px; color: rgba(255,255,255,0.9); margin-top: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        
+        /* 3. 副标题（文件夹名）占位符 */
+        .track-subtitle { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 4px; font-weight: 400; letter-spacing: 0.5px; }
+
+        .ui-controls {
+            width: 100%;
+            max-width: 400px;
+            margin-top: 20px;
+            transition: opacity 0.5s, transform 0.5s;
+        }
+
+        .hidden-ui {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-20px);
+            height: 0; 
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .progress-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; margin-bottom: 20px; cursor: pointer; }
+        .progress-fill { height: 100%; background: white; border-radius: 2px; width: 0%; transition: width 0.1s linear; }
+
+        .transcript-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 30px 150px 30px;
+            mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
+            scroll-behavior: smooth;
+            transition: all 0.5s ease;
+        }
+        .transcript-container::-webkit-scrollbar { display: none; }
+
+        .transcript-item {
+            margin-bottom: 30px;
+            transition: opacity 0.4s ease, transform 0.4s ease, filter 0.4s ease;
+            opacity: 0.3; 
+            filter: blur(1.5px);
+            transform: scale(0.98);
+            transform-origin: left center;
+            cursor: pointer;
+            scroll-margin-top: 100px;
+        }
+
+        .transcript-item.active {
+            opacity: 1;
+            filter: blur(0);
+            transform: scale(1.0);
+        }
+
+        .speaker-tag {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            opacity: 0.8;
+        }
+        .speaker-female { background-color: var(--female-color); color: #fff; }
+        .speaker-male { background-color: var(--male-color); color: #000; }
+
+        .text-content {
+            font-size: 24px;
+            line-height: 1.6;
+            font-weight: 600;
+            margin: 0;
+            color: var(--text-active);
+            word-wrap: break-word;
+        }
+
+        .word-span {
+            transition: color 0.1s ease, text-shadow 0.1s ease;
+            display: inline;
+            border-radius: 4px;
+            margin: 0; 
+            padding: 0;
+        }
+
+        .word-active {
+            color: var(--word-highlight);
+            text-shadow: 0 0 15px rgba(255, 159, 10, 0.7);
+        }
+
+        .overlay-btn {
+            position: fixed;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            color: black;
+            padding: 16px 32px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 18px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            cursor: pointer;
+            z-index: 100;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+        .overlay-btn:active { transform: translateX(-50%) scale(0.95); }
+
+        #debugTime {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #0f0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            z-index: 2000;
+            pointer-events: none;
+        }
+
+        body.recording-mode .player-header {
+            padding-top: 30px;
+            padding-bottom: 5px; 
+        }
+
+        body.recording-mode .artwork-container { 
+            width: 140px; 
+            height: 185px;
+            margin-top: 10px; 
+            margin-bottom: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        body.recording-mode .track-info {
+            margin-bottom: 5px;
+            transform: scale(0.95); 
+        }
+
+        body.recording-mode .transcript-container {
+            padding-top: 0px; 
+            mask-image: linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%);
+        }
+
+        body.recording-mode .transcript-item.active .text-content { 
+            color: rgba(255,255,255,0.9);
+        }
+        
+        body.recording-mode #debugTime { display: none; }
+
+    </style>
+</head>
+<body>
+
+<div class="ambient-bg"></div>
+<div id="debugTime">0.000</div>
+
+<div class="player-header">
+    <div class="artwork-container">
+        <img src="525.jpg" alt="Magazine Cover" class="artwork-img" onerror="this.style.display='none'; document.getElementById('placeholder').style.display='flex';">
+        <div id="placeholder" class="artwork-placeholder" style="display:none;">📖</div>
+    </div>
+    <div class="track-info">
+        <h1 class="track-title">Astronauts install panels to protect space station</h1>
+        <div class="track-artist">The Week Junior Podcast</div>
+        <div class="track-subtitle">525 期 - 20260109</div>
+    </div>
+
+    <div class="ui-controls" id="uiControls">
+        <div class="progress-bar" id="progressBarContainer">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div style="text-align: center; color: rgba(255,255,255,0.5); font-size: 12px;">
+            点击下方按钮进入“纯净录屏模式” (5秒倒计时)
+        </div>
+    </div>
+</div>
+
+<div class="transcript-container" id="transcriptContainer"></div>
+
+<button class="overlay-btn" id="recordBtn">
+    🎥 开始录制模式
+</button>
+
+<audio id="audioPlayer">
+    <source src="Chinese_Astronauts_Install_Space_Junk_Shields.m4a" type="audio/mp4">
+</audio>
+
+<script>
+    // ==========================================
+    // ⬇️⬇️⬇️ JSON 数据由 Python 脚本注入 ⬇️⬇️⬇️
+    // ==========================================
+    
+    // 4. JSON 数据占位符
+    const rawTranscriptData = [{"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Hello Curious Minds.", "start": 0.031, "end": 1.112, "words": [{"word": "Hello", "start": 0.031, "end": 0.351}, {"word": "Curious", "start": 0.391, "end": 0.732}, {"word": "Minds.", "start": 0.792, "end": 1.112}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Welcome to the Week Junior, the podcast where we explore the news and practice English.", "start": 1.212, "end": 4.977, "words": [{"word": "Welcome", "start": 1.212, "end": 1.593}, {"word": "to", "start": 1.613, "end": 1.713}, {"word": "the", "start": 1.733, "end": 1.793}, {"word": "Week", "start": 1.833, "end": 1.993}, {"word": "Junior,", "start": 2.033, "end": 2.354}, {"word": "the", "start": 2.454, "end": 2.554}, {"word": "podcast", "start": 2.594, "end": 2.995}, {"word": "where", "start": 3.035, "end": 3.155}, {"word": "we", "start": 3.175, "end": 3.255}, {"word": "explore", "start": 3.295, "end": 3.635}, {"word": "the", "start": 3.676, "end": 3.736}, {"word": "news", "start": 3.796, "end": 4.036}, {"word": "and", "start": 4.156, "end": 4.216}, {"word": "practice", "start": 4.276, "end": 4.637}, {"word": "English.", "start": 4.717, "end": 4.977}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Today we're doing a deep dive into a story that's happening hundreds of miles right above our heads.", "start": 5.718, "end": 11.285, "words": [{"word": "Today", "start": 5.718, "end": 5.938}, {"word": "we're", "start": 5.978, "end": 6.119}, {"word": "doing", "start": 6.159, "end": 6.359}, {"word": "a", "start": 6.419, "end": 6.439}, {"word": "deep", "start": 6.499, "end": 6.699}, {"word": "dive", "start": 6.759, "end": 7.0}, {"word": "into", "start": 7.06, "end": 7.24}, {"word": "a", "start": 7.3, "end": 7.32}, {"word": "story", "start": 7.38, "end": 7.701}, {"word": "that's", "start": 7.741, "end": 7.901}, {"word": "happening", "start": 7.961, "end": 8.401}, {"word": "hundreds", "start": 9.563, "end": 9.863}, {"word": "of", "start": 9.903, "end": 9.943}, {"word": "miles", "start": 10.023, "end": 10.324}, {"word": "right", "start": 10.404, "end": 10.584}, {"word": "above", "start": 10.644, "end": 10.824}, {"word": "our", "start": 10.885, "end": 10.985}, {"word": "heads.", "start": 11.025, "end": 11.285}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "We're going to be focusing on China's space station, Tiangong, and some, well, pretty dramatic steps that astronauts had to take to keep it safe.", "start": 11.806, "end": 19.515, "words": [{"word": "We're", "start": 11.806, "end": 11.906}, {"word": "going", "start": 11.926, "end": 12.026}, {"word": "to", "start": 12.046, "end": 12.086}, {"word": "be", "start": 12.106, "end": 12.166}, {"word": "focusing", "start": 12.226, "end": 12.627}, {"word": "on", "start": 12.727, "end": 12.787}, {"word": "China's", "start": 12.847, "end": 13.187}, {"word": "space", "start": 13.227, "end": 13.528}, {"word": "station,", "start": 13.548, "end": 13.968}, {"word": "Tiangong,", "start": 14.289, "end": 14.91}, {"word": "and", "start": 15.43, "end": 15.53}, {"word": "some,", "start": 15.63, "end": 15.811}, {"word": "well,", "start": 15.931, "end": 16.151}, {"word": "pretty", "start": 16.532, "end": 16.732}, {"word": "dramatic", "start": 16.772, "end": 17.132}, {"word": "steps", "start": 17.172, "end": 17.413}, {"word": "that", "start": 17.433, "end": 17.513}, {"word": "astronauts", "start": 17.533, "end": 17.913}, {"word": "had", "start": 17.953, "end": 18.074}, {"word": "to", "start": 18.114, "end": 18.174}, {"word": "take", "start": 18.234, "end": 18.414}, {"word": "to", "start": 18.774, "end": 18.834}, {"word": "keep", "start": 18.895, "end": 19.055}, {"word": "it", "start": 19.115, "end": 19.175}, {"word": "safe.", "start": 19.235, "end": 19.515}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Our mission today is to really understand the danger that's lurking up there in space.", "start": 20.336, "end": 24.922, "words": [{"word": "Our", "start": 20.336, "end": 20.436}, {"word": "mission", "start": 20.517, "end": 20.777}, {"word": "today", "start": 20.817, "end": 21.037}, {"word": "is", "start": 21.097, "end": 21.157}, {"word": "to", "start": 21.197, "end": 21.278}, {"word": "really", "start": 21.358, "end": 21.638}, {"word": "understand", "start": 21.718, "end": 22.179}, {"word": "the", "start": 22.199, "end": 22.319}, {"word": "danger", "start": 22.399, "end": 22.799}, {"word": "that's", "start": 22.839, "end": 23.04}, {"word": "lurking", "start": 23.1, "end": 23.46}, {"word": "up", "start": 23.54, "end": 23.62}, {"word": "there", "start": 23.66, "end": 23.841}, {"word": "in", "start": 23.881, "end": 23.961}, {"word": "space.", "start": 24.021, "end": 24.922}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "We want to know why these astronauts had to go outside to install protective panels.", "start": 24.942, "end": 28.907, "words": [{"word": "We", "start": 24.942, "end": 25.042}, {"word": "want", "start": 25.082, "end": 25.202}, {"word": "to", "start": 25.222, "end": 25.283}, {"word": "know", "start": 25.323, "end": 25.443}, {"word": "why", "start": 25.503, "end": 25.683}, {"word": "these", "start": 25.743, "end": 25.883}, {"word": "astronauts", "start": 26.023, "end": 26.424}, {"word": "had", "start": 26.484, "end": 26.604}, {"word": "to", "start": 26.644, "end": 26.684}, {"word": "go", "start": 26.744, "end": 26.824}, {"word": "outside", "start": 26.885, "end": 27.325}, {"word": "to", "start": 27.385, "end": 27.485}, {"word": "install", "start": 27.545, "end": 27.906}, {"word": "protective", "start": 27.946, "end": 28.406}, {"word": "panels.", "start": 28.446, "end": 28.907}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "I love stories about space.", "start": 29.174, "end": 30.737, "words": [{"word": "I", "start": 29.174, "end": 29.374}, {"word": "love", "start": 29.394, "end": 29.595}, {"word": "stories", "start": 29.635, "end": 29.915}, {"word": "about", "start": 29.955, "end": 30.136}, {"word": "space.", "start": 30.176, "end": 30.737}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "It's always this mix of incredible science and huge challenges.", "start": 30.757, "end": 34.723, "words": [{"word": "It's", "start": 30.757, "end": 30.857}, {"word": "always", "start": 30.897, "end": 31.057}, {"word": "this", "start": 31.117, "end": 31.237}, {"word": "mix", "start": 31.358, "end": 31.578}, {"word": "of", "start": 31.658, "end": 31.698}, {"word": "incredible", "start": 31.778, "end": 32.299}, {"word": "science", "start": 32.359, "end": 32.86}, {"word": "and", "start": 33.12, "end": 33.261}, {"word": "huge", "start": 33.902, "end": 34.202}, {"word": "challenges.", "start": 34.282, "end": 34.723}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "Installing shields in space sounds like something from a movie.", "start": 34.803, "end": 37.467, "words": [{"word": "Installing", "start": 34.803, "end": 35.264}, {"word": "shields", "start": 35.324, "end": 35.604}, {"word": "in", "start": 35.664, "end": 35.725}, {"word": "space", "start": 35.765, "end": 36.085}, {"word": "sounds", "start": 36.165, "end": 36.406}, {"word": "like", "start": 36.426, "end": 36.546}, {"word": "something", "start": 36.586, "end": 36.866}, {"word": "from", "start": 36.886, "end": 36.987}, {"word": "a", "start": 37.047, "end": 37.067}, {"word": "movie.", "start": 37.127, "end": 37.467}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "So let's start right there.", "start": 37.527, "end": 38.469, "words": [{"word": "So", "start": 37.527, "end": 37.708}, {"word": "let's", "start": 37.748, "end": 37.908}, {"word": "start", "start": 37.928, "end": 38.128}, {"word": "right", "start": 38.168, "end": 38.289}, {"word": "there.", "start": 38.309, "end": 38.469}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "What actually happened?", "start": 38.529, "end": 39.27, "words": [{"word": "What", "start": 38.529, "end": 38.649}, {"word": "actually", "start": 38.709, "end": 38.93}, {"word": "happened?", "start": 38.97, "end": 39.27}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "What was this big job they had to do?", "start": 39.29, "end": 40.673, "words": [{"word": "What", "start": 39.29, "end": 39.39}, {"word": "was", "start": 39.41, "end": 39.491}, {"word": "this", "start": 39.531, "end": 39.631}, {"word": "big", "start": 39.671, "end": 39.811}, {"word": "job", "start": 39.871, "end": 40.072}, {"word": "they", "start": 40.112, "end": 40.232}, {"word": "had", "start": 40.272, "end": 40.372}, {"word": "to", "start": 40.412, "end": 40.472}, {"word": "do?", "start": 40.512, "end": 40.673}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "OK, let's unpack the facts.", "start": 40.853, "end": 41.915, "words": [{"word": "OK,", "start": 40.853, "end": 41.073}, {"word": "let's", "start": 41.093, "end": 41.213}, {"word": "unpack", "start": 41.273, "end": 41.534}, {"word": "the", "start": 41.554, "end": 41.614}, {"word": "facts.", "start": 41.654, "end": 41.915}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "The main event was a spacewalk, a very long and very important one.", "start": 42.195, "end": 46.762, "words": [{"word": "The", "start": 42.195, "end": 42.275}, {"word": "main", "start": 42.315, "end": 42.455}, {"word": "event", "start": 42.495, "end": 42.696}, {"word": "was", "start": 42.756, "end": 42.856}, {"word": "a", "start": 42.936, "end": 42.956}, {"word": "spacewalk,", "start": 42.996, "end": 43.557}, {"word": "a", "start": 43.998, "end": 44.038}, {"word": "very", "start": 44.118, "end": 44.358}, {"word": "long", "start": 44.439, "end": 44.739}, {"word": "and", "start": 45.06, "end": 45.24}, {"word": "very", "start": 46.041, "end": 46.201}, {"word": "important", "start": 46.242, "end": 46.582}, {"word": "one.", "start": 46.662, "end": 46.762}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Two Chinese astronauts, Zhang Lu and Wu Fei, went outside the Tiangong Space Station.", "start": 47.203, "end": 51.73, "words": [{"word": "Two", "start": 47.203, "end": 47.343}, {"word": "Chinese", "start": 47.403, "end": 47.764}, {"word": "astronauts,", "start": 47.864, "end": 48.305}, {"word": "Zhang", "start": 48.585, "end": 48.866}, {"word": "Lu", "start": 48.886, "end": 49.106}, {"word": "and", "start": 49.186, "end": 49.246}, {"word": "Wu", "start": 49.286, "end": 49.467}, {"word": "Fei,", "start": 49.487, "end": 49.747}, {"word": "went", "start": 50.148, "end": 50.248}, {"word": "outside", "start": 50.288, "end": 50.548}, {"word": "the", "start": 50.589, "end": 50.649}, {"word": "Tiangong", "start": 50.689, "end": 51.109}, {"word": "Space", "start": 51.129, "end": 51.35}, {"word": "Station.", "start": 51.39, "end": 51.73}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Their job was to install these special protective panels.", "start": 52.231, "end": 54.695, "words": [{"word": "Their", "start": 52.231, "end": 52.391}, {"word": "job", "start": 52.431, "end": 52.632}, {"word": "was", "start": 52.652, "end": 52.752}, {"word": "to", "start": 52.812, "end": 52.892}, {"word": "install", "start": 52.972, "end": 53.313}, {"word": "these", "start": 53.353, "end": 53.473}, {"word": "special", "start": 53.513, "end": 53.854}, {"word": "protective", "start": 53.914, "end": 54.335}, {"word": "panels.", "start": 54.375, "end": 54.695}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "A spacewalk?", "start": 54.875, "end": 56.017, "words": [{"word": "A", "start": 54.875, "end": 54.915}, {"word": "spacewalk?", "start": 54.996, "end": 56.017}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Wow.", "start": 56.037, "end": 56.498, "words": [{"word": "Wow.", "start": 56.037, "end": 56.498}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "And how long were they out there for?", "start": 56.478, "end": 57.679, "words": [{"word": "And", "start": 56.478, "end": 56.638}, {"word": "how", "start": 56.678, "end": 56.758}, {"word": "long", "start": 56.798, "end": 56.918}, {"word": "were", "start": 56.938, "end": 57.039}, {"word": "they", "start": 57.059, "end": 57.159}, {"word": "out", "start": 57.199, "end": 57.299}, {"word": "there", "start": 57.319, "end": 57.459}, {"word": "for?", "start": 57.499, "end": 57.679}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "That's the amazing part.", "start": 57.859, "end": 58.72, "words": [{"word": "That's", "start": 57.859, "end": 58.04}, {"word": "the", "start": 58.08, "end": 58.16}, {"word": "amazing", "start": 58.2, "end": 58.52}, {"word": "part.", "start": 58.62, "end": 58.72}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "It wasn't a quick job.", "start": 58.78, "end": 59.561, "words": [{"word": "It", "start": 58.78, "end": 58.821}, {"word": "wasn't", "start": 58.861, "end": 59.061}, {"word": "a", "start": 59.101, "end": 59.121}, {"word": "quick", "start": 59.161, "end": 59.341}, {"word": "job.", "start": 59.381, "end": 59.561}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "They were outside for a full eight hours.", "start": 59.581, "end": 61.303, "words": [{"word": "They", "start": 59.581, "end": 59.681}, {"word": "were", "start": 59.701, "end": 59.782}, {"word": "outside", "start": 59.802, "end": 60.102}, {"word": "for", "start": 60.142, "end": 60.242}, {"word": "a", "start": 60.282, "end": 60.302}, {"word": "full", "start": 60.422, "end": 60.642}, {"word": "eight", "start": 60.783, "end": 60.923}, {"word": "hours.", "start": 60.963, "end": 61.303}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "Eight hours.", "start": 61.784, "end": 62.404, "words": [{"word": "Eight", "start": 61.784, "end": 61.944}, {"word": "hours.", "start": 61.984, "end": 62.404}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "That's an entire work day, but in a space suit.", "start": 62.765, "end": 65.548, "words": [{"word": "That's", "start": 62.765, "end": 62.985}, {"word": "an", "start": 63.025, "end": 63.065}, {"word": "entire", "start": 63.125, "end": 63.506}, {"word": "work", "start": 63.606, "end": 63.846}, {"word": "day,", "start": 63.866, "end": 64.066}, {"word": "but", "start": 64.407, "end": 64.507}, {"word": "in", "start": 64.607, "end": 64.687}, {"word": "a", "start": 64.707, "end": 64.747}, {"word": "space", "start": 64.827, "end": 65.107}, {"word": "suit.", "start": 65.147, "end": 65.548}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Exactly.", "start": 65.568, "end": 66.088, "words": [{"word": "Exactly.", "start": 65.568, "end": 66.088}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "You have to think about how hard every single movement is in one of those suits.", "start": 66.509, "end": 70.473, "words": [{"word": "You", "start": 66.509, "end": 66.609}, {"word": "have", "start": 66.649, "end": 66.729}, {"word": "to", "start": 66.749, "end": 66.809}, {"word": "think", "start": 66.849, "end": 66.989}, {"word": "about", "start": 67.029, "end": 67.19}, {"word": "how", "start": 67.25, "end": 67.35}, {"word": "hard", "start": 67.45, "end": 67.67}, {"word": "every", "start": 67.91, "end": 68.251}, {"word": "single", "start": 68.351, "end": 68.671}, {"word": "movement", "start": 68.751, "end": 69.112}, {"word": "is", "start": 69.292, "end": 69.392}, {"word": "in", "start": 69.692, "end": 69.752}, {"word": "one", "start": 69.812, "end": 69.892}, {"word": "of", "start": 69.933, "end": 69.973}, {"word": "those", "start": 69.993, "end": 70.133}, {"word": "suits.", "start": 70.193, "end": 70.473}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It's exhausting.", "start": 71.114, "end": 72.095, "words": [{"word": "It's", "start": 71.114, "end": 71.234}, {"word": "exhausting.", "start": 71.394, "end": 72.095}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "So eight hours tells you how important this was.", "start": 72.796, "end": 75.178, "words": [{"word": "So", "start": 72.796, "end": 72.916}, {"word": "eight", "start": 73.016, "end": 73.156}, {"word": "hours", "start": 73.196, "end": 73.576}, {"word": "tells", "start": 73.596, "end": 74.017}, {"word": "you", "start": 74.057, "end": 74.177}, {"word": "how", "start": 74.217, "end": 74.317}, {"word": "important", "start": 74.377, "end": 74.738}, {"word": "this", "start": 74.758, "end": 74.918}, {"word": "was.", "start": 74.978, "end": 75.178}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "Right.", "start": 75.238, "end": 75.619, "words": [{"word": "Right.", "start": 75.238, "end": 75.619}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "It wasn't just a minor fix then.", "start": 75.919, "end": 77.481, "words": [{"word": "It", "start": 75.919, "end": 75.979}, {"word": "wasn't", "start": 76.039, "end": 76.259}, {"word": "just", "start": 76.299, "end": 76.46}, {"word": "a", "start": 76.52, "end": 76.56}, {"word": "minor", "start": 76.6, "end": 76.86}, {"word": "fix", "start": 76.94, "end": 77.2}, {"word": "then.", "start": 77.26, "end": 77.481}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "No, not at all.", "start": 77.621, "end": 78.462, "words": [{"word": "No,", "start": 77.621, "end": 77.841}, {"word": "not", "start": 78.041, "end": 78.201}, {"word": "at", "start": 78.242, "end": 78.282}, {"word": "all.", "start": 78.342, "end": 78.462}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "And after they got the panels on, they didn't just head back inside.", "start": 78.882, "end": 81.325, "words": [{"word": "And", "start": 78.882, "end": 79.002}, {"word": "after", "start": 79.062, "end": 79.203}, {"word": "they", "start": 79.223, "end": 79.323}, {"word": "got", "start": 79.343, "end": 79.423}, {"word": "the", "start": 79.463, "end": 79.523}, {"word": "panels", "start": 79.583, "end": 79.883}, {"word": "on,", "start": 79.983, "end": 80.043}, {"word": "they", "start": 80.063, "end": 80.164}, {"word": "didn't", "start": 80.204, "end": 80.344}, {"word": "just", "start": 80.384, "end": 80.504}, {"word": "head", "start": 80.544, "end": 80.684}, {"word": "back", "start": 80.724, "end": 80.884}, {"word": "inside.", "start": 80.944, "end": 81.325}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Our source says they also did a full inspection of the outside of the station.", "start": 81.705, "end": 86.13, "words": [{"word": "Our", "start": 81.705, "end": 81.825}, {"word": "source", "start": 81.885, "end": 82.146}, {"word": "says", "start": 82.186, "end": 82.426}, {"word": "they", "start": 82.466, "end": 82.766}, {"word": "also", "start": 82.887, "end": 83.127}, {"word": "did", "start": 83.187, "end": 83.287}, {"word": "a", "start": 83.327, "end": 83.347}, {"word": "full", "start": 83.427, "end": 83.627}, {"word": "inspection", "start": 83.687, "end": 84.328}, {"word": "of", "start": 84.729, "end": 84.789}, {"word": "the", "start": 84.809, "end": 84.909}, {"word": "outside", "start": 85.029, "end": 85.369}, {"word": "of", "start": 85.409, "end": 85.449}, {"word": "the", "start": 85.469, "end": 85.569}, {"word": "station.", "start": 85.589, "end": 86.13}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "a full inspection, so they were checking for other problems too.", "start": 86.161, "end": 88.925, "words": [{"word": "a", "start": 86.161, "end": 86.321}, {"word": "full", "start": 86.341, "end": 86.502}, {"word": "inspection,", "start": 86.562, "end": 87.062}, {"word": "so", "start": 87.102, "end": 87.223}, {"word": "they", "start": 87.243, "end": 87.343}, {"word": "were", "start": 87.383, "end": 87.483}, {"word": "checking", "start": 87.503, "end": 87.784}, {"word": "for", "start": 87.824, "end": 87.924}, {"word": "other", "start": 88.004, "end": 88.164}, {"word": "problems", "start": 88.224, "end": 88.605}, {"word": "too.", "start": 88.705, "end": 88.925}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Precisely.", "start": 89.206, "end": 89.747, "words": [{"word": "Precisely.", "start": 89.206, "end": 89.747}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Looking for any signs of damage, maybe from before the new shields were put on.", "start": 90.227, "end": 94.314, "words": [{"word": "Looking", "start": 90.227, "end": 90.508}, {"word": "for", "start": 90.568, "end": 90.708}, {"word": "any", "start": 90.728, "end": 91.029}, {"word": "signs", "start": 91.069, "end": 91.269}, {"word": "of", "start": 91.309, "end": 91.349}, {"word": "damage,", "start": 91.409, "end": 91.77}, {"word": "maybe", "start": 92.07, "end": 92.331}, {"word": "from", "start": 92.431, "end": 92.571}, {"word": "before", "start": 92.771, "end": 93.112}, {"word": "the", "start": 93.172, "end": 93.252}, {"word": "new", "start": 93.292, "end": 93.433}, {"word": "shields", "start": 93.473, "end": 93.773}, {"word": "were", "start": 93.813, "end": 93.933}, {"word": "put", "start": 93.973, "end": 94.114}, {"word": "on.", "start": 94.214, "end": 94.314}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "OK, that makes sense.", "start": 94.334, "end": 95.215, "words": [{"word": "OK,", "start": 94.334, "end": 94.634}, {"word": "that", "start": 94.654, "end": 94.755}, {"word": "makes", "start": 94.795, "end": 94.935}, {"word": "sense.", "start": 94.975, "end": 95.215}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "But it all leads back to the big question, doesn't it?", "start": 95.656, "end": 97.96, "words": [{"word": "But", "start": 95.656, "end": 95.776}, {"word": "it", "start": 95.836, "end": 95.876}, {"word": "all", "start": 95.937, "end": 96.037}, {"word": "leads", "start": 96.097, "end": 96.297}, {"word": "back", "start": 96.357, "end": 96.517}, {"word": "to", "start": 96.578, "end": 96.658}, {"word": "the", "start": 96.698, "end": 96.778}, {"word": "big", "start": 96.838, "end": 96.998}, {"word": "question,", "start": 97.138, "end": 97.559}, {"word": "doesn't", "start": 97.579, "end": 97.819}, {"word": "it?", "start": 97.9, "end": 97.96}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "Why did they need new protection in the first place?", "start": 98.661, "end": 100.804, "words": [{"word": "Why", "start": 98.661, "end": 98.861}, {"word": "did", "start": 98.921, "end": 99.021}, {"word": "they", "start": 99.061, "end": 99.162}, {"word": "need", "start": 99.222, "end": 99.362}, {"word": "new", "start": 99.402, "end": 99.522}, {"word": "protection", "start": 99.582, "end": 100.023}, {"word": "in", "start": 100.063, "end": 100.103}, {"word": "the", "start": 100.143, "end": 100.203}, {"word": "first", "start": 100.263, "end": 100.464}, {"word": "place?", "start": 100.524, "end": 100.804}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "What's so dangerous in space that you need to spend eight hours installing armor.", "start": 101.445, "end": 106.185, "words": [{"word": "What's", "start": 101.445, "end": 101.646}, {"word": "so", "start": 101.706, "end": 101.866}, {"word": "dangerous", "start": 101.966, "end": 102.427}, {"word": "in", "start": 102.507, "end": 102.547}, {"word": "space", "start": 102.587, "end": 103.208}, {"word": "that", "start": 103.458, "end": 103.598}, {"word": "you", "start": 103.638, "end": 103.719}, {"word": "need", "start": 103.759, "end": 103.899}, {"word": "to", "start": 103.939, "end": 103.979}, {"word": "spend", "start": 104.039, "end": 104.28}, {"word": "eight", "start": 104.32, "end": 104.661}, {"word": "hours", "start": 104.721, "end": 105.142}, {"word": "installing", "start": 105.303, "end": 105.784}, {"word": "armor.", "start": 105.804, "end": 106.185}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "This is where the story gets really interesting.", "start": 106.566, "end": 108.631, "words": [{"word": "This", "start": 106.566, "end": 106.786}, {"word": "is", "start": 106.886, "end": 106.947}, {"word": "where", "start": 107.007, "end": 107.167}, {"word": "the", "start": 107.207, "end": 107.287}, {"word": "story", "start": 107.327, "end": 107.588}, {"word": "gets", "start": 107.648, "end": 107.809}, {"word": "really", "start": 107.889, "end": 108.109}, {"word": "interesting.", "start": 108.19, "end": 108.631}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "The danger is something called space junk.", "start": 109.192, "end": 111.919, "words": [{"word": "The", "start": 109.192, "end": 109.292}, {"word": "danger", "start": 109.312, "end": 109.713}, {"word": "is", "start": 109.733, "end": 109.773}, {"word": "something", "start": 110.215, "end": 110.535}, {"word": "called", "start": 110.575, "end": 110.736}, {"word": "space", "start": 110.776, "end": 111.197}, {"word": "junk.", "start": 111.237, "end": 111.919}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "Space junk.", "start": 111.939, "end": 112.721, "words": [{"word": "Space", "start": 111.939, "end": 112.36}, {"word": "junk.", "start": 112.44, "end": 112.721}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "Right.", "start": 112.921, "end": 113.202, "words": [{"word": "Right.", "start": 112.921, "end": 113.202}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "I think most people imagine, you know, big broken satellites floating around.", "start": 113.322, "end": 117.633, "words": [{"word": "I", "start": 113.322, "end": 113.362}, {"word": "think", "start": 113.402, "end": 113.543}, {"word": "most", "start": 113.583, "end": 113.743}, {"word": "people", "start": 113.783, "end": 114.044}, {"word": "imagine,", "start": 114.104, "end": 114.525}, {"word": "you", "start": 114.545, "end": 114.645}, {"word": "know,", "start": 114.685, "end": 114.826}, {"word": "big", "start": 114.866, "end": 116.029}, {"word": "broken", "start": 116.269, "end": 116.59}, {"word": "satellites", "start": 116.67, "end": 117.111}, {"word": "floating", "start": 117.151, "end": 117.372}, {"word": "around.", "start": 117.432, "end": 117.633}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "Is that what we're talking about?", "start": 117.653, "end": 118.615, "words": [{"word": "Is", "start": 117.653, "end": 117.693}, {"word": "that", "start": 117.713, "end": 117.793}, {"word": "what", "start": 117.833, "end": 117.913}, {"word": "we're", "start": 117.933, "end": 118.034}, {"word": "talking", "start": 118.054, "end": 118.254}, {"word": "about?", "start": 118.274, "end": 118.615}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "That's part of it, yes.", "start": 118.679, "end": 119.58, "words": [{"word": "That's", "start": 118.679, "end": 118.919}, {"word": "part", "start": 118.979, "end": 119.14}, {"word": "of", "start": 119.18, "end": 119.22}, {"word": "it,", "start": 119.28, "end": 119.34}, {"word": "yes.", "start": 119.38, "end": 119.58}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "But the real danger often comes from things that are much, much smaller.", "start": 119.941, "end": 124.146, "words": [{"word": "But", "start": 119.941, "end": 120.021}, {"word": "the", "start": 120.061, "end": 120.141}, {"word": "real", "start": 120.181, "end": 120.381}, {"word": "danger", "start": 120.441, "end": 120.842}, {"word": "often", "start": 120.862, "end": 122.203}, {"word": "comes", "start": 122.243, "end": 122.424}, {"word": "from", "start": 122.464, "end": 122.584}, {"word": "things", "start": 122.624, "end": 122.804}, {"word": "that", "start": 122.824, "end": 122.924}, {"word": "are", "start": 122.964, "end": 123.044}, {"word": "much,", "start": 123.184, "end": 123.385}, {"word": "much", "start": 123.525, "end": 123.705}, {"word": "smaller.", "start": 123.765, "end": 124.146}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Space junk is basically anything human made we've left in orbit.", "start": 124.646, "end": 128.551, "words": [{"word": "Space", "start": 124.646, "end": 124.967}, {"word": "junk", "start": 125.027, "end": 125.307}, {"word": "is", "start": 125.387, "end": 125.467}, {"word": "basically", "start": 125.527, "end": 125.988}, {"word": "anything", "start": 126.028, "end": 126.789}, {"word": "human", "start": 126.849, "end": 127.109}, {"word": "made", "start": 127.149, "end": 127.349}, {"word": "we've", "start": 127.389, "end": 127.55}, {"word": "left", "start": 127.61, "end": 127.77}, {"word": "in", "start": 127.85, "end": 127.89}, {"word": "orbit.", "start": 127.97, "end": 128.551}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "So yes, old satellites, but also tiny bits that have fallen off rockets or even flakes of paint.", "start": 128.571, "end": 134.458, "words": [{"word": "So", "start": 128.571, "end": 128.671}, {"word": "yes,", "start": 128.731, "end": 128.951}, {"word": "old", "start": 129.152, "end": 129.272}, {"word": "satellites,", "start": 129.332, "end": 129.852}, {"word": "but", "start": 130.393, "end": 130.493}, {"word": "also", "start": 130.533, "end": 130.794}, {"word": "tiny", "start": 130.814, "end": 131.675}, {"word": "bits", "start": 131.715, "end": 131.875}, {"word": "that", "start": 131.895, "end": 131.995}, {"word": "have", "start": 132.015, "end": 132.095}, {"word": "fallen", "start": 132.135, "end": 132.395}, {"word": "off", "start": 132.456, "end": 132.576}, {"word": "rockets", "start": 132.676, "end": 133.056}, {"word": "or", "start": 133.337, "end": 133.417}, {"word": "even", "start": 133.477, "end": 133.637}, {"word": "flakes", "start": 133.697, "end": 134.078}, {"word": "of", "start": 134.138, "end": 134.198}, {"word": "paint.", "start": 134.238, "end": 134.458}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "Flakes of paint?", "start": 134.638, "end": 135.339, "words": [{"word": "Flakes", "start": 134.638, "end": 134.858}, {"word": "of", "start": 134.899, "end": 134.959}, {"word": "paint?", "start": 135.039, "end": 135.339}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "How could a flake of paint be dangerous?", "start": 135.679, "end": 137.522, "words": [{"word": "How", "start": 135.679, "end": 135.78}, {"word": "could", "start": 135.82, "end": 135.92}, {"word": "a", "start": 135.98, "end": 136.0}, {"word": "flake", "start": 136.04, "end": 136.24}, {"word": "of", "start": 136.28, "end": 136.32}, {"word": "paint", "start": 136.4, "end": 136.661}, {"word": "be", "start": 136.701, "end": 136.841}, {"word": "dangerous?", "start": 136.901, "end": 137.522}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It's all about the speed.", "start": 137.542, "end": 138.503, "words": [{"word": "It's", "start": 137.542, "end": 137.662}, {"word": "all", "start": 137.702, "end": 137.802}, {"word": "about", "start": 137.842, "end": 138.002}, {"word": "the", "start": 138.022, "end": 138.102}, {"word": "speed.", "start": 138.162, "end": 138.503}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "This is the key thing to understand.", "start": 138.763, "end": 140.285, "words": [{"word": "This", "start": 138.763, "end": 138.903}, {"word": "is", "start": 138.963, "end": 139.023}, {"word": "the", "start": 139.064, "end": 139.204}, {"word": "key", "start": 139.264, "end": 139.504}, {"word": "thing", "start": 139.544, "end": 139.704}, {"word": "to", "start": 139.744, "end": 139.804}, {"word": "understand.", "start": 139.844, "end": 140.285}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Most of this junk is moving at incredible speeds, sometimes up to 18,000 miles per hour.", "start": 140.886, "end": 146.813, "words": [{"word": "Most", "start": 140.886, "end": 141.146}, {"word": "of", "start": 141.186, "end": 141.226}, {"word": "this", "start": 141.266, "end": 141.426}, {"word": "junk", "start": 141.526, "end": 141.787}, {"word": "is", "start": 141.907, "end": 141.967}, {"word": "moving", "start": 142.047, "end": 142.347}, {"word": "at", "start": 142.388, "end": 142.448}, {"word": "incredible", "start": 142.508, "end": 143.329}, {"word": "speeds,", "start": 143.409, "end": 143.889}, {"word": "sometimes", "start": 144.41, "end": 144.81}, {"word": "up", "start": 144.891, "end": 144.951}, {"word": "to", "start": 144.971, "end": 145.011}, {"word": "18,000", "start": 145.031, "end": 145.972}, {"word": "miles", "start": 146.032, "end": 146.292}, {"word": "per", "start": 146.392, "end": 146.532}, {"word": "hour.", "start": 146.553, "end": 146.813}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "18,000.", "start": 146.833, "end": 148.635, "words": [{"word": "18,000.", "start": 146.833, "end": 148.635}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "I can't even picture that.", "start": 149.223, "end": 150.284, "words": [{"word": "I", "start": 149.223, "end": 149.363}, {"word": "can't", "start": 149.403, "end": 149.583}, {"word": "even", "start": 149.623, "end": 149.764}, {"word": "picture", "start": 149.824, "end": 150.084}, {"word": "that.", "start": 150.144, "end": 150.284}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "How fast is that, really?", "start": 150.344, "end": 151.465, "words": [{"word": "How", "start": 150.344, "end": 150.464}, {"word": "fast", "start": 150.504, "end": 150.745}, {"word": "is", "start": 150.805, "end": 150.865}, {"word": "that,", "start": 150.905, "end": 151.085}, {"word": "really?", "start": 151.145, "end": 151.465}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Well, just to give you some context, it's way faster than any car or even any jet on Earth.", "start": 151.766, "end": 157.051, "words": [{"word": "Well,", "start": 151.766, "end": 151.946}, {"word": "just", "start": 151.986, "end": 152.106}, {"word": "to", "start": 152.126, "end": 152.186}, {"word": "give", "start": 152.246, "end": 152.326}, {"word": "you", "start": 152.366, "end": 152.446}, {"word": "some", "start": 152.486, "end": 152.606}, {"word": "context,", "start": 152.646, "end": 153.047}, {"word": "it's", "start": 153.367, "end": 153.487}, {"word": "way", "start": 153.627, "end": 153.868}, {"word": "faster", "start": 153.888, "end": 154.268}, {"word": "than", "start": 154.308, "end": 154.428}, {"word": "any", "start": 154.468, "end": 154.849}, {"word": "car", "start": 154.949, "end": 155.309}, {"word": "or", "start": 155.629, "end": 155.709}, {"word": "even", "start": 155.83, "end": 155.99}, {"word": "any", "start": 156.03, "end": 156.25}, {"word": "jet", "start": 156.37, "end": 156.59}, {"word": "on", "start": 156.67, "end": 156.73}, {"word": "Earth.", "start": 156.77, "end": 157.051}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It's just a completely different level of speed.", "start": 157.631, "end": 159.453, "words": [{"word": "It's", "start": 157.631, "end": 157.731}, {"word": "just", "start": 157.751, "end": 157.872}, {"word": "a", "start": 157.912, "end": 157.932}, {"word": "completely", "start": 157.992, "end": 158.512}, {"word": "different", "start": 158.552, "end": 158.772}, {"word": "level", "start": 158.792, "end": 159.013}, {"word": "of", "start": 159.053, "end": 159.093}, {"word": "speed.", "start": 159.133, "end": 159.453}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "So a tiny piece of paint moving at that speed.", "start": 159.473, "end": 161.876, "words": [{"word": "So", "start": 159.473, "end": 159.593}, {"word": "a", "start": 159.653, "end": 159.673}, {"word": "tiny", "start": 159.753, "end": 160.074}, {"word": "piece", "start": 160.114, "end": 160.314}, {"word": "of", "start": 160.374, "end": 160.414}, {"word": "paint", "start": 160.494, "end": 160.714}, {"word": "moving", "start": 160.754, "end": 161.135}, {"word": "at", "start": 161.195, "end": 161.235}, {"word": "that", "start": 161.275, "end": 161.455}, {"word": "speed.", "start": 161.515, "end": 161.876}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It hits with the force of a bullet.", "start": 162.056, "end": 163.337, "words": [{"word": "It", "start": 162.056, "end": 162.136}, {"word": "hits", "start": 162.196, "end": 162.336}, {"word": "with", "start": 162.376, "end": 162.476}, {"word": "the", "start": 162.516, "end": 162.576}, {"word": "force", "start": 162.636, "end": 162.877}, {"word": "of", "start": 162.917, "end": 162.957}, {"word": "a", "start": 163.037, "end": 163.057}, {"word": "bullet.", "start": 163.097, "end": 163.337}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It can go right through the metal skin of a spacecraft.", "start": 163.397, "end": 165.719, "words": [{"word": "It", "start": 163.397, "end": 163.437}, {"word": "can", "start": 163.457, "end": 163.557}, {"word": "go", "start": 163.597, "end": 163.717}, {"word": "right", "start": 163.797, "end": 163.978}, {"word": "through", "start": 164.018, "end": 164.218}, {"word": "the", "start": 164.238, "end": 164.338}, {"word": "metal", "start": 164.398, "end": 164.598}, {"word": "skin", "start": 164.638, "end": 164.878}, {"word": "of", "start": 164.919, "end": 164.959}, {"word": "a", "start": 165.019, "end": 165.039}, {"word": "spacecraft.", "start": 165.059, "end": 165.719}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "Wow.", "start": 165.739, "end": 166.18, "words": [{"word": "Wow.", "start": 165.739, "end": 166.18}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "OK, now I see the problem.", "start": 166.3, "end": 167.261, "words": [{"word": "OK,", "start": 166.3, "end": 166.52}, {"word": "now", "start": 166.54, "end": 166.64}, {"word": "I", "start": 166.66, "end": 166.72}, {"word": "see", "start": 166.74, "end": 166.82}, {"word": "the", "start": 166.84, "end": 166.9}, {"word": "problem.", "start": 166.941, "end": 167.261}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "So how much of this stuff is actually up there?", "start": 167.301, "end": 169.263, "words": [{"word": "So", "start": 167.301, "end": 167.341}, {"word": "how", "start": 167.361, "end": 167.541}, {"word": "much", "start": 167.581, "end": 167.721}, {"word": "of", "start": 167.761, "end": 167.821}, {"word": "this", "start": 167.881, "end": 167.962}, {"word": "stuff", "start": 168.002, "end": 168.182}, {"word": "is", "start": 168.242, "end": 168.302}, {"word": "actually", "start": 168.342, "end": 168.802}, {"word": "up", "start": 168.882, "end": 168.963}, {"word": "there?", "start": 169.043, "end": 169.263}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "The numbers are, well, they're pretty staggering.", "start": 169.423, "end": 171.745, "words": [{"word": "The", "start": 169.423, "end": 169.503}, {"word": "numbers", "start": 169.543, "end": 169.823}, {"word": "are,", "start": 169.964, "end": 170.104}, {"word": "well,", "start": 170.504, "end": 170.744}, {"word": "they're", "start": 170.784, "end": 170.924}, {"word": "pretty", "start": 170.964, "end": 171.165}, {"word": "staggering.", "start": 171.245, "end": 171.745}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Experts track about 34,000 pieces of junk that are bigger than 10 centimeters, so around the size of a tennis ball.", "start": 172.226, "end": 178.572, "words": [{"word": "Experts", "start": 172.226, "end": 172.526}, {"word": "track", "start": 172.566, "end": 172.766}, {"word": "about", "start": 172.806, "end": 172.966}, {"word": "34,000", "start": 172.986, "end": 173.347}, {"word": "pieces", "start": 174.248, "end": 174.568}, {"word": "of", "start": 174.628, "end": 174.668}, {"word": "junk", "start": 174.748, "end": 175.029}, {"word": "that", "start": 175.389, "end": 175.489}, {"word": "are", "start": 175.549, "end": 175.609}, {"word": "bigger", "start": 175.649, "end": 175.849}, {"word": "than", "start": 175.889, "end": 175.989}, {"word": "10", "start": 176.009, "end": 176.27}, {"word": "centimeters,", "start": 176.31, "end": 176.79}, {"word": "so", "start": 176.95, "end": 177.091}, {"word": "around", "start": 177.431, "end": 177.611}, {"word": "the", "start": 177.651, "end": 177.711}, {"word": "size", "start": 177.731, "end": 177.891}, {"word": "of", "start": 177.911, "end": 177.951}, {"word": "a", "start": 177.971, "end": 178.031}, {"word": "tennis", "start": 178.072, "end": 178.312}, {"word": "ball.", "start": 178.332, "end": 178.572}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "34,000.", "start": 178.552, "end": 178.913, "words": [{"word": "34,000.", "start": 178.552, "end": 178.913}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "And those are just the big ones.", "start": 179.654, "end": 181.177, "words": [{"word": "And", "start": 179.654, "end": 179.774}, {"word": "those", "start": 180.035, "end": 180.155}, {"word": "are", "start": 180.195, "end": 180.275}, {"word": "just", "start": 180.336, "end": 180.476}, {"word": "the", "start": 180.496, "end": 180.636}, {"word": "big", "start": 180.696, "end": 180.857}, {"word": "ones.", "start": 180.997, "end": 181.177}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Those are just the ones we can track.", "start": 181.538, "end": 182.8, "words": [{"word": "Those", "start": 181.538, "end": 181.698}, {"word": "are", "start": 181.738, "end": 181.798}, {"word": "just", "start": 181.818, "end": 181.919}, {"word": "the", "start": 181.939, "end": 181.999}, {"word": "ones", "start": 182.059, "end": 182.159}, {"word": "we", "start": 182.219, "end": 182.299}, {"word": "can", "start": 182.339, "end": 182.44}, {"word": "track.", "start": 182.48, "end": 182.8}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "There are millions, literally millions, of smaller pieces.", "start": 183.161, "end": 187.069, "words": [{"word": "There", "start": 183.161, "end": 183.321}, {"word": "are", "start": 183.382, "end": 183.462}, {"word": "millions,", "start": 183.502, "end": 184.243}, {"word": "literally", "start": 184.704, "end": 185.125}, {"word": "millions,", "start": 185.205, "end": 185.626}, {"word": "of", "start": 185.967, "end": 186.047}, {"word": "smaller", "start": 186.367, "end": 186.668}, {"word": "pieces.", "start": 186.728, "end": 187.069}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "Millions.", "start": 187.229, "end": 187.65, "words": [{"word": "Millions.", "start": 187.229, "end": 187.65}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "So it's like the whole area around Earth is like a minefield.", "start": 187.67, "end": 191.317, "words": [{"word": "So", "start": 187.67, "end": 187.75}, {"word": "it's", "start": 187.79, "end": 187.87}, {"word": "like", "start": 187.89, "end": 187.991}, {"word": "the", "start": 188.031, "end": 188.211}, {"word": "whole", "start": 188.271, "end": 188.492}, {"word": "area", "start": 188.652, "end": 188.892}, {"word": "around", "start": 188.993, "end": 189.273}, {"word": "Earth", "start": 189.313, "end": 189.654}, {"word": "is", "start": 189.814, "end": 189.914}, {"word": "like", "start": 190.556, "end": 190.676}, {"word": "a", "start": 190.696, "end": 190.736}, {"word": "minefield.", "start": 190.796, "end": 191.317}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "That is a perfect way to describe it.", "start": 191.417, "end": 193.161, "words": [{"word": "That", "start": 191.417, "end": 191.558}, {"word": "is", "start": 191.618, "end": 191.678}, {"word": "a", "start": 191.738, "end": 191.758}, {"word": "perfect", "start": 191.958, "end": 192.239}, {"word": "way", "start": 192.259, "end": 192.359}, {"word": "to", "start": 192.399, "end": 192.459}, {"word": "describe", "start": 192.5, "end": 192.84}, {"word": "it.", "start": 192.9, "end": 193.161}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "A giant, invisible, high-speed minefield.", "start": 193.181, "end": 196.307, "words": [{"word": "A", "start": 193.181, "end": 193.261}, {"word": "giant,", "start": 193.361, "end": 193.982}, {"word": "invisible,", "start": 194.002, "end": 194.544}, {"word": "high-speed", "start": 194.864, "end": 195.586}, {"word": "minefield.", "start": 195.686, "end": 196.307}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "So that explains the general danger.", "start": 196.372, "end": 198.217, "words": [{"word": "So", "start": 196.372, "end": 196.552}, {"word": "that", "start": 196.593, "end": 196.733}, {"word": "explains", "start": 196.773, "end": 197.234}, {"word": "the", "start": 197.274, "end": 197.375}, {"word": "general", "start": 197.435, "end": 197.736}, {"word": "danger.", "start": 197.796, "end": 198.217}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "But why install these panels right now?", "start": 198.277, "end": 201.325, "words": [{"word": "But", "start": 198.277, "end": 199.019}, {"word": "why", "start": 199.42, "end": 199.741}, {"word": "install", "start": 199.821, "end": 200.142}, {"word": "these", "start": 200.182, "end": 200.303}, {"word": "panels", "start": 200.363, "end": 200.704}, {"word": "right", "start": 200.764, "end": 200.924}, {"word": "now?", "start": 201.004, "end": 201.325}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "Was there a specific event that made them say, OK, we have to do this?", "start": 201.365, "end": 204.995, "words": [{"word": "Was", "start": 201.365, "end": 201.426}, {"word": "there", "start": 201.526, "end": 201.726}, {"word": "a", "start": 201.746, "end": 201.766}, {"word": "specific", "start": 201.787, "end": 202.228}, {"word": "event", "start": 202.268, "end": 202.589}, {"word": "that", "start": 202.629, "end": 202.749}, {"word": "made", "start": 202.789, "end": 202.91}, {"word": "them", "start": 202.95, "end": 203.07}, {"word": "say,", "start": 203.13, "end": 203.291}, {"word": "OK,", "start": 203.331, "end": 203.732}, {"word": "we", "start": 203.792, "end": 203.932}, {"word": "have", "start": 204.053, "end": 204.333}, {"word": "to", "start": 204.394, "end": 204.454}, {"word": "do", "start": 204.514, "end": 204.634}, {"word": "this?", "start": 204.714, "end": 204.995}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "There was.", "start": 205.015, "end": 205.476, "words": [{"word": "There", "start": 205.015, "end": 205.156}, {"word": "was.", "start": 205.216, "end": 205.476}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "And it was a very serious wake up call.", "start": 206.299, "end": 208.063, "words": [{"word": "And", "start": 206.299, "end": 206.379}, {"word": "it", "start": 206.399, "end": 206.459}, {"word": "was", "start": 206.499, "end": 206.579}, {"word": "a", "start": 206.62, "end": 206.66}, {"word": "very", "start": 206.8, "end": 207.041}, {"word": "serious", "start": 207.121, "end": 207.462}, {"word": "wake", "start": 207.502, "end": 207.702}, {"word": "up", "start": 207.743, "end": 207.803}, {"word": "call.", "start": 207.843, "end": 208.063}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It involved a spacecraft called the Shenzhou 20.", "start": 208.685, "end": 211.292, "words": [{"word": "It", "start": 208.685, "end": 208.745}, {"word": "involved", "start": 208.805, "end": 209.126}, {"word": "a", "start": 209.186, "end": 209.206}, {"word": "spacecraft", "start": 209.247, "end": 209.828}, {"word": "called", "start": 209.888, "end": 210.109}, {"word": "the", "start": 210.149, "end": 210.209}, {"word": "Shenzhou", "start": 210.289, "end": 210.831}, {"word": "20.", "start": 210.851, "end": 211.292}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "The Shenzhou.", "start": 211.357, "end": 212.218, "words": [{"word": "The", "start": 211.357, "end": 211.517}, {"word": "Shenzhou.", "start": 211.617, "end": 212.218}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "That's the ship that carries astronauts up and down, right?", "start": 212.238, "end": 214.681, "words": [{"word": "That's", "start": 212.238, "end": 212.438}, {"word": "the", "start": 212.518, "end": 212.618}, {"word": "ship", "start": 212.658, "end": 212.839}, {"word": "that", "start": 212.899, "end": 213.019}, {"word": "carries", "start": 213.099, "end": 213.399}, {"word": "astronauts", "start": 213.439, "end": 213.98}, {"word": "up", "start": 214.06, "end": 214.12}, {"word": "and", "start": 214.16, "end": 214.24}, {"word": "down,", "start": 214.28, "end": 214.5}, {"word": "right?", "start": 214.521, "end": 214.681}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "That's the one.", "start": 214.701, "end": 215.381, "words": [{"word": "That's", "start": 214.701, "end": 214.901}, {"word": "the", "start": 215.001, "end": 215.101}, {"word": "one.", "start": 215.261, "end": 215.381}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It's their ride home, their lifeboat.", "start": 215.802, "end": 217.424, "words": [{"word": "It's", "start": 215.802, "end": 215.922}, {"word": "their", "start": 215.962, "end": 216.102}, {"word": "ride", "start": 216.162, "end": 216.363}, {"word": "home,", "start": 216.403, "end": 216.583}, {"word": "their", "start": 216.763, "end": 216.923}, {"word": "lifeboat.", "start": 216.983, "end": 217.424}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Yeah.", "start": 218.004, "end": 218.104, "words": [{"word": "Yeah.", "start": 218.004, "end": 218.104}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "And this particular ship was docked at the station, ready to bring three astronauts back to Earth.", "start": 218.125, "end": 222.369, "words": [{"word": "And", "start": 218.125, "end": 218.185}, {"word": "this", "start": 218.245, "end": 218.385}, {"word": "particular", "start": 218.465, "end": 218.945}, {"word": "ship", "start": 218.965, "end": 219.146}, {"word": "was", "start": 219.206, "end": 219.306}, {"word": "docked", "start": 219.366, "end": 219.626}, {"word": "at", "start": 219.666, "end": 219.706}, {"word": "the", "start": 219.746, "end": 219.806}, {"word": "station,", "start": 219.846, "end": 220.267}, {"word": "ready", "start": 220.587, "end": 220.767}, {"word": "to", "start": 220.807, "end": 220.848}, {"word": "bring", "start": 220.888, "end": 221.048}, {"word": "three", "start": 221.088, "end": 221.328}, {"word": "astronauts", "start": 221.408, "end": 221.789}, {"word": "back", "start": 221.849, "end": 222.009}, {"word": "to", "start": 222.049, "end": 222.109}, {"word": "Earth.", "start": 222.189, "end": 222.369}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "But then they found a problem.", "start": 223.15, "end": 224.391, "words": [{"word": "But", "start": 223.15, "end": 223.23}, {"word": "then", "start": 223.25, "end": 223.35}, {"word": "they", "start": 223.39, "end": 223.49}, {"word": "found", "start": 223.531, "end": 223.671}, {"word": "a", "start": 223.711, "end": 223.731}, {"word": "problem.", "start": 223.771, "end": 224.391}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "What kind of problem?", "start": 224.411, "end": 225.152, "words": [{"word": "What", "start": 224.411, "end": 224.512}, {"word": "kind", "start": 224.572, "end": 224.732}, {"word": "of", "start": 224.772, "end": 224.812}, {"word": "problem?", "start": 224.852, "end": 225.152}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "During some final checks, scientists found cracks in the window of the spacecraft.", "start": 225.373, "end": 229.057, "words": [{"word": "During", "start": 225.373, "end": 225.593}, {"word": "some", "start": 225.633, "end": 225.753}, {"word": "final", "start": 225.813, "end": 226.053}, {"word": "checks,", "start": 226.113, "end": 226.394}, {"word": "scientists", "start": 226.454, "end": 226.914}, {"word": "found", "start": 226.954, "end": 227.155}, {"word": "cracks", "start": 227.295, "end": 227.615}, {"word": "in", "start": 227.735, "end": 227.795}, {"word": "the", "start": 227.835, "end": 227.895}, {"word": "window", "start": 227.975, "end": 228.276}, {"word": "of", "start": 228.316, "end": 228.356}, {"word": "the", "start": 228.396, "end": 228.476}, {"word": "spacecraft.", "start": 228.496, "end": 229.057}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "Cracks in the window?", "start": 229.137, "end": 230.358, "words": [{"word": "Cracks", "start": 229.137, "end": 229.477}, {"word": "in", "start": 229.537, "end": 229.617}, {"word": "the", "start": 229.657, "end": 229.737}, {"word": "window?", "start": 229.918, "end": 230.358}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "While you're in space, that sounds terrifying.", "start": 230.438, "end": 232.821, "words": [{"word": "While", "start": 230.438, "end": 230.638}, {"word": "you're", "start": 230.658, "end": 230.819}, {"word": "in", "start": 230.859, "end": 230.919}, {"word": "space,", "start": 231.099, "end": 231.519}, {"word": "that", "start": 231.539, "end": 231.64}, {"word": "sounds", "start": 231.7, "end": 231.92}, {"word": "terrifying.", "start": 232.0, "end": 232.821}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It's pretty much a nightmare scenario, yes.", "start": 232.841, "end": 234.403, "words": [{"word": "It's", "start": 232.841, "end": 232.941}, {"word": "pretty", "start": 232.981, "end": 233.141}, {"word": "much", "start": 233.161, "end": 233.261}, {"word": "a", "start": 233.321, "end": 233.361}, {"word": "nightmare", "start": 233.401, "end": 233.702}, {"word": "scenario,", "start": 233.722, "end": 234.162}, {"word": "yes.", "start": 234.182, "end": 234.403}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "They believe a tiny piece of space junk hit the window and caused the damage.", "start": 235.264, "end": 239.288, "words": [{"word": "They", "start": 235.264, "end": 235.404}, {"word": "believe", "start": 235.444, "end": 235.744}, {"word": "a", "start": 235.804, "end": 235.824}, {"word": "tiny", "start": 235.904, "end": 236.285}, {"word": "piece", "start": 236.345, "end": 236.565}, {"word": "of", "start": 236.605, "end": 236.645}, {"word": "space", "start": 236.705, "end": 237.026}, {"word": "junk", "start": 237.046, "end": 237.286}, {"word": "hit", "start": 237.486, "end": 237.646}, {"word": "the", "start": 237.686, "end": 237.766}, {"word": "window", "start": 237.826, "end": 238.187}, {"word": "and", "start": 238.307, "end": 238.387}, {"word": "caused", "start": 238.447, "end": 238.667}, {"word": "the", "start": 238.707, "end": 238.787}, {"word": "damage.", "start": 238.828, "end": 239.288}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "And I'm guessing a cracked window means you can't fly home.", "start": 239.369, "end": 242.113, "words": [{"word": "And", "start": 239.369, "end": 239.489}, {"word": "I'm", "start": 239.509, "end": 239.609}, {"word": "guessing", "start": 239.629, "end": 239.85}, {"word": "a", "start": 239.89, "end": 239.95}, {"word": "cracked", "start": 240.11, "end": 240.491}, {"word": "window", "start": 240.551, "end": 240.831}, {"word": "means", "start": 240.871, "end": 241.092}, {"word": "you", "start": 241.132, "end": 241.212}, {"word": "can't", "start": 241.272, "end": 241.492}, {"word": "fly", "start": 241.552, "end": 241.793}, {"word": "home.", "start": 241.813, "end": 242.113}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Exactly.", "start": 242.494, "end": 242.894, "words": [{"word": "Exactly.", "start": 242.494, "end": 242.894}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It was no longer safe.", "start": 243.074, "end": 244.016, "words": [{"word": "It", "start": 243.074, "end": 243.114}, {"word": "was", "start": 243.155, "end": 243.255}, {"word": "no", "start": 243.315, "end": 243.435}, {"word": "longer", "start": 243.475, "end": 243.735}, {"word": "safe.", "start": 243.795, "end": 244.016}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "The ship couldn't be used to bring the astronauts back to Earth.", "start": 244.677, "end": 247.401, "words": [{"word": "The", "start": 244.677, "end": 244.777}, {"word": "ship", "start": 244.817, "end": 244.997}, {"word": "couldn't", "start": 245.057, "end": 245.298}, {"word": "be", "start": 245.358, "end": 245.458}, {"word": "used", "start": 245.618, "end": 245.778}, {"word": "to", "start": 245.818, "end": 245.878}, {"word": "bring", "start": 245.919, "end": 246.059}, {"word": "the", "start": 246.079, "end": 246.159}, {"word": "astronauts", "start": 246.239, "end": 246.66}, {"word": "back", "start": 246.74, "end": 246.96}, {"word": "to", "start": 247.02, "end": 247.1}, {"word": "Earth.", "start": 247.12, "end": 247.401}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "So what did they do?", "start": 247.781, "end": 248.502, "words": [{"word": "So", "start": 247.781, "end": 247.901}, {"word": "what", "start": 247.941, "end": 248.022}, {"word": "did", "start": 248.062, "end": 248.162}, {"word": "they", "start": 248.182, "end": 248.302}, {"word": "do?", "start": 248.342, "end": 248.502}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "Were the astronauts just stuck up there?", "start": 248.542, "end": 250.225, "words": [{"word": "Were", "start": 248.542, "end": 248.622}, {"word": "the", "start": 248.643, "end": 248.723}, {"word": "astronauts", "start": 248.763, "end": 249.163}, {"word": "just", "start": 249.183, "end": 249.344}, {"word": "stuck", "start": 249.524, "end": 249.804}, {"word": "up", "start": 249.884, "end": 249.964}, {"word": "there?", "start": 250.004, "end": 250.225}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "For a while, yes.", "start": 250.505, "end": 251.467, "words": [{"word": "For", "start": 250.505, "end": 250.645}, {"word": "a", "start": 250.706, "end": 250.726}, {"word": "while,", "start": 250.786, "end": 251.066}, {"word": "yes.", "start": 251.166, "end": 251.467}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "They had to launch an entirely new spacecraft from Earth.", "start": 252.168, "end": 254.992, "words": [{"word": "They", "start": 252.168, "end": 252.288}, {"word": "had", "start": 252.348, "end": 252.448}, {"word": "to", "start": 252.468, "end": 252.528}, {"word": "launch", "start": 252.608, "end": 252.889}, {"word": "an", "start": 252.949, "end": 252.989}, {"word": "entirely", "start": 253.049, "end": 253.59}, {"word": "new", "start": 253.65, "end": 253.79}, {"word": "spacecraft", "start": 253.81, "end": 254.431}, {"word": "from", "start": 254.511, "end": 254.651}, {"word": "Earth.", "start": 254.691, "end": 254.992}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Think about that.", "start": 255.673, "end": 256.254, "words": [{"word": "Think", "start": 255.673, "end": 255.853}, {"word": "about", "start": 255.913, "end": 256.073}, {"word": "that.", "start": 256.093, "end": 256.254}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "They had to send up a brand new empty ship just to go and pick them up and bring them home safely, all because of a tiny crack.", "start": 256.754, "end": 264.185, "words": [{"word": "They", "start": 256.754, "end": 256.854}, {"word": "had", "start": 256.895, "end": 256.955}, {"word": "to", "start": 256.995, "end": 257.035}, {"word": "send", "start": 257.075, "end": 257.215}, {"word": "up", "start": 257.295, "end": 257.355}, {"word": "a", "start": 257.415, "end": 257.435}, {"word": "brand", "start": 257.555, "end": 257.876}, {"word": "new", "start": 257.936, "end": 258.096}, {"word": "empty", "start": 258.577, "end": 258.877}, {"word": "ship", "start": 258.998, "end": 259.298}, {"word": "just", "start": 259.799, "end": 259.959}, {"word": "to", "start": 259.999, "end": 260.039}, {"word": "go", "start": 260.099, "end": 260.179}, {"word": "and", "start": 260.219, "end": 260.299}, {"word": "pick", "start": 260.36, "end": 260.52}, {"word": "them", "start": 260.54, "end": 260.68}, {"word": "up", "start": 260.78, "end": 260.86}, {"word": "and", "start": 260.94, "end": 261.021}, {"word": "bring", "start": 261.061, "end": 261.221}, {"word": "them", "start": 261.261, "end": 261.361}, {"word": "home", "start": 261.401, "end": 261.581}, {"word": "safely,", "start": 261.682, "end": 262.082}, {"word": "all", "start": 262.923, "end": 263.043}, {"word": "because", "start": 263.104, "end": 263.304}, {"word": "of", "start": 263.324, "end": 263.364}, {"word": "a", "start": 263.424, "end": 263.464}, {"word": "tiny", "start": 263.504, "end": 263.785}, {"word": "crack.", "start": 263.845, "end": 264.185}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "Wow.", "start": 264.345, "end": 264.786, "words": [{"word": "Wow.", "start": 264.345, "end": 264.786}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "That one incident must have cost a fortune.", "start": 266.2, "end": 268.302, "words": [{"word": "That", "start": 266.2, "end": 266.36}, {"word": "one", "start": 266.56, "end": 266.66}, {"word": "incident", "start": 266.761, "end": 267.101}, {"word": "must", "start": 267.161, "end": 267.301}, {"word": "have", "start": 267.321, "end": 267.401}, {"word": "cost", "start": 267.461, "end": 267.682}, {"word": "a", "start": 267.742, "end": 267.762}, {"word": "fortune.", "start": 267.842, "end": 268.302}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "And it really shows you the risk, doesn't it?", "start": 268.342, "end": 270.585, "words": [{"word": "And", "start": 268.342, "end": 268.843}, {"word": "it", "start": 268.903, "end": 268.943}, {"word": "really", "start": 269.003, "end": 269.223}, {"word": "shows", "start": 269.283, "end": 269.483}, {"word": "you", "start": 269.503, "end": 269.583}, {"word": "the", "start": 269.624, "end": 269.684}, {"word": "risk,", "start": 269.764, "end": 270.124}, {"word": "doesn't", "start": 270.224, "end": 270.484}, {"word": "it?", "start": 270.524, "end": 270.585}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It really does.", "start": 270.705, "end": 271.345, "words": [{"word": "It", "start": 270.705, "end": 270.765}, {"word": "really", "start": 270.825, "end": 271.045}, {"word": "does.", "start": 271.085, "end": 271.345}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "That near disaster was the reason they decided they had to upgrade the station's protection immediately.", "start": 271.826, "end": 276.39, "words": [{"word": "That", "start": 271.826, "end": 271.966}, {"word": "near", "start": 272.046, "end": 272.246}, {"word": "disaster", "start": 272.306, "end": 272.867}, {"word": "was", "start": 272.947, "end": 273.087}, {"word": "the", "start": 273.147, "end": 273.227}, {"word": "reason", "start": 273.267, "end": 273.548}, {"word": "they", "start": 273.588, "end": 273.728}, {"word": "decided", "start": 273.768, "end": 274.108}, {"word": "they", "start": 274.148, "end": 274.248}, {"word": "had", "start": 274.288, "end": 274.368}, {"word": "to", "start": 274.388, "end": 274.448}, {"word": "upgrade", "start": 274.549, "end": 274.849}, {"word": "the", "start": 274.869, "end": 274.949}, {"word": "station's", "start": 274.969, "end": 275.309}, {"word": "protection", "start": 275.349, "end": 275.77}, {"word": "immediately.", "start": 275.83, "end": 276.39}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "So these panels are to prevent that from happening to the station itself.", "start": 276.931, "end": 279.894, "words": [{"word": "So", "start": 276.931, "end": 277.051}, {"word": "these", "start": 277.071, "end": 277.211}, {"word": "panels", "start": 277.271, "end": 277.592}, {"word": "are", "start": 277.632, "end": 277.752}, {"word": "to", "start": 277.792, "end": 277.952}, {"word": "prevent", "start": 277.992, "end": 278.232}, {"word": "that", "start": 278.252, "end": 278.393}, {"word": "from", "start": 278.433, "end": 278.553}, {"word": "happening", "start": 278.633, "end": 278.973}, {"word": "to", "start": 278.993, "end": 279.053}, {"word": "the", "start": 279.093, "end": 279.173}, {"word": "station", "start": 279.193, "end": 279.494}, {"word": "itself.", "start": 279.534, "end": 279.894}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Yes.", "start": 280.094, "end": 280.355, "words": [{"word": "Yes.", "start": 280.094, "end": 280.355}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "The station is their home and their science lab.", "start": 280.935, "end": 283.198, "words": [{"word": "The", "start": 280.935, "end": 281.035}, {"word": "station", "start": 281.075, "end": 281.416}, {"word": "is", "start": 281.476, "end": 281.536}, {"word": "their", "start": 281.576, "end": 281.736}, {"word": "home", "start": 281.796, "end": 282.056}, {"word": "and", "start": 282.176, "end": 282.257}, {"word": "their", "start": 282.277, "end": 282.437}, {"word": "science", "start": 282.477, "end": 282.857}, {"word": "lab.", "start": 282.917, "end": 283.198}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "And the name for it, Tiangong, is quite beautiful.", "start": 283.978, "end": 287.242, "words": [{"word": "And", "start": 283.978, "end": 284.038}, {"word": "the", "start": 284.078, "end": 284.159}, {"word": "name", "start": 284.219, "end": 284.379}, {"word": "for", "start": 284.439, "end": 284.619}, {"word": "it,", "start": 284.679, "end": 284.739}, {"word": "Tiangong,", "start": 284.919, "end": 285.76}, {"word": "is", "start": 285.8, "end": 286.341}, {"word": "quite", "start": 286.581, "end": 286.801}, {"word": "beautiful.", "start": 286.861, "end": 287.242}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "Ah, what does it mean?", "start": 287.902, "end": 288.583, "words": [{"word": "Ah,", "start": 287.902, "end": 287.982}, {"word": "what", "start": 288.043, "end": 288.143}, {"word": "does", "start": 288.163, "end": 288.263}, {"word": "it", "start": 288.303, "end": 288.343}, {"word": "mean?", "start": 288.383, "end": 288.583}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "In Mandarin Chinese, kiangong means heavenly palace.", "start": 289.084, "end": 292.427, "words": [{"word": "In", "start": 289.084, "end": 289.144}, {"word": "Mandarin", "start": 289.204, "end": 289.604}, {"word": "Chinese,", "start": 289.644, "end": 290.145}, {"word": "kiangong", "start": 290.425, "end": 290.966}, {"word": "means", "start": 291.006, "end": 291.286}, {"word": "heavenly", "start": 291.326, "end": 291.786}, {"word": "palace.", "start": 291.846, "end": 292.427}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "A heavenly palace.", "start": 292.66, "end": 293.762, "words": [{"word": "A", "start": 292.66, "end": 292.86}, {"word": "heavenly", "start": 292.88, "end": 293.261}, {"word": "palace.", "start": 293.321, "end": 293.762}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "That's lovely.", "start": 293.802, "end": 294.523, "words": [{"word": "That's", "start": 293.802, "end": 294.002}, {"word": "lovely.", "start": 294.122, "end": 294.523}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It is.", "start": 294.843, "end": 295.124, "words": [{"word": "It", "start": 294.843, "end": 294.903}, {"word": "is.", "start": 295.023, "end": 295.124}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "So when you think about it, those two astronauts spent eight hours outside.", "start": 295.444, "end": 299.029, "words": [{"word": "So", "start": 295.444, "end": 295.584}, {"word": "when", "start": 295.704, "end": 295.804}, {"word": "you", "start": 295.845, "end": 295.965}, {"word": "think", "start": 295.985, "end": 296.145}, {"word": "about", "start": 296.205, "end": 296.405}, {"word": "it,", "start": 296.465, "end": 296.526}, {"word": "those", "start": 296.846, "end": 297.026}, {"word": "two", "start": 297.066, "end": 297.206}, {"word": "astronauts", "start": 297.287, "end": 297.687}, {"word": "spent", "start": 297.727, "end": 297.948}, {"word": "eight", "start": 298.128, "end": 298.268}, {"word": "hours", "start": 298.308, "end": 298.528}, {"word": "outside.", "start": 298.608, "end": 299.029}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "They weren't just installing panels.", "start": 299.37, "end": 300.711, "words": [{"word": "They", "start": 299.37, "end": 299.47}, {"word": "weren't", "start": 299.51, "end": 299.69}, {"word": "just", "start": 299.71, "end": 299.81}, {"word": "installing", "start": 299.87, "end": 300.291}, {"word": "panels.", "start": 300.351, "end": 300.711}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "They were protecting their heavenly palace.", "start": 301.112, "end": 303.135, "words": [{"word": "They", "start": 301.112, "end": 301.232}, {"word": "were", "start": 301.252, "end": 301.372}, {"word": "protecting", "start": 301.412, "end": 301.913}, {"word": "their", "start": 301.993, "end": 302.154}, {"word": "heavenly", "start": 302.174, "end": 302.594}, {"word": "palace.", "start": 302.654, "end": 303.135}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "An incredible story.", "start": 303.155, "end": 304.257, "words": [{"word": "An", "start": 303.155, "end": 303.215}, {"word": "incredible", "start": 303.255, "end": 303.836}, {"word": "story.", "start": 303.896, "end": 304.257}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "It really shows how you have to plan for every possible risk up there.", "start": 304.377, "end": 308.122, "words": [{"word": "It", "start": 304.377, "end": 304.417}, {"word": "really", "start": 304.537, "end": 304.817}, {"word": "shows", "start": 304.897, "end": 305.158}, {"word": "how", "start": 305.238, "end": 305.398}, {"word": "you", "start": 305.438, "end": 305.598}, {"word": "have", "start": 305.659, "end": 305.799}, {"word": "to", "start": 305.819, "end": 305.899}, {"word": "plan", "start": 305.959, "end": 306.239}, {"word": "for", "start": 306.279, "end": 306.4}, {"word": "every", "start": 306.56, "end": 306.78}, {"word": "possible", "start": 306.9, "end": 307.381}, {"word": "risk", "start": 307.401, "end": 307.741}, {"word": "up", "start": 307.802, "end": 307.882}, {"word": "there.", "start": 307.922, "end": 308.122}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "We've definitely covered a lot today from that intense eight hour spacewalk to the scary reality of space junk.", "start": 308.402, "end": 315.833, "words": [{"word": "We've", "start": 308.402, "end": 308.603}, {"word": "definitely", "start": 308.683, "end": 309.063}, {"word": "covered", "start": 309.103, "end": 309.364}, {"word": "a", "start": 309.404, "end": 309.444}, {"word": "lot", "start": 309.484, "end": 309.664}, {"word": "today", "start": 309.704, "end": 309.985}, {"word": "from", "start": 310.505, "end": 310.646}, {"word": "that", "start": 310.686, "end": 310.846}, {"word": "intense", "start": 310.966, "end": 311.427}, {"word": "eight", "start": 311.567, "end": 311.707}, {"word": "hour", "start": 311.747, "end": 311.968}, {"word": "spacewalk", "start": 312.028, "end": 312.669}, {"word": "to", "start": 313.149, "end": 313.43}, {"word": "the", "start": 313.47, "end": 313.77}, {"word": "scary", "start": 313.83, "end": 314.371}, {"word": "reality", "start": 314.431, "end": 314.952}, {"word": "of", "start": 315.012, "end": 315.052}, {"word": "space", "start": 315.132, "end": 315.473}, {"word": "junk.", "start": 315.513, "end": 315.833}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "It's a great reminder that for every amazing thing we do in space, there's a lot of difficult problem solving that has to happen behind the scenes.", "start": 315.948, "end": 325.69, "words": [{"word": "It's", "start": 315.948, "end": 316.108}, {"word": "a", "start": 316.168, "end": 316.189}, {"word": "great", "start": 316.249, "end": 316.449}, {"word": "reminder", "start": 316.489, "end": 316.97}, {"word": "that", "start": 317.01, "end": 317.271}, {"word": "for", "start": 317.351, "end": 317.471}, {"word": "every", "start": 317.652, "end": 317.973}, {"word": "amazing", "start": 318.073, "end": 318.434}, {"word": "thing", "start": 318.474, "end": 318.614}, {"word": "we", "start": 318.654, "end": 318.774}, {"word": "do", "start": 318.794, "end": 318.895}, {"word": "in", "start": 318.955, "end": 319.015}, {"word": "space,", "start": 319.075, "end": 319.536}, {"word": "there's", "start": 320.077, "end": 320.298}, {"word": "a", "start": 320.358, "end": 320.378}, {"word": "lot", "start": 320.498, "end": 320.759}, {"word": "of", "start": 320.839, "end": 320.899}, {"word": "difficult", "start": 322.402, "end": 322.843}, {"word": "problem", "start": 323.164, "end": 323.605}, {"word": "solving", "start": 323.645, "end": 324.006}, {"word": "that", "start": 324.046, "end": 324.166}, {"word": "has", "start": 324.206, "end": 324.367}, {"word": "to", "start": 324.407, "end": 324.467}, {"word": "happen", "start": 324.527, "end": 324.788}, {"word": "behind", "start": 324.828, "end": 325.149}, {"word": "the", "start": 325.209, "end": 325.309}, {"word": "scenes.", "start": 325.349, "end": 325.69}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "That's right.", "start": 325.77, "end": 326.171, "words": [{"word": "That's", "start": 325.77, "end": 325.95}, {"word": "right.", "start": 325.99, "end": 326.171}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "And for you listening, remember that if you read the article again, you could look for some of the new words we used.", "start": 326.472, "end": 331.042, "words": [{"word": "And", "start": 326.472, "end": 326.552}, {"word": "for", "start": 326.592, "end": 326.692}, {"word": "you", "start": 326.712, "end": 326.832}, {"word": "listening,", "start": 326.872, "end": 327.233}, {"word": "remember", "start": 327.273, "end": 327.634}, {"word": "that", "start": 327.654, "end": 327.754}, {"word": "if", "start": 327.795, "end": 327.835}, {"word": "you", "start": 327.855, "end": 327.975}, {"word": "read", "start": 328.015, "end": 328.155}, {"word": "the", "start": 328.195, "end": 328.276}, {"word": "article", "start": 328.356, "end": 328.656}, {"word": "again,", "start": 328.697, "end": 328.937}, {"word": "you", "start": 328.997, "end": 329.378}, {"word": "could", "start": 329.418, "end": 329.518}, {"word": "look", "start": 329.538, "end": 329.679}, {"word": "for", "start": 329.699, "end": 329.799}, {"word": "some", "start": 329.819, "end": 329.939}, {"word": "of", "start": 329.979, "end": 330.019}, {"word": "the", "start": 330.06, "end": 330.12}, {"word": "new", "start": 330.18, "end": 330.3}, {"word": "words", "start": 330.36, "end": 330.601}, {"word": "we", "start": 330.641, "end": 330.761}, {"word": "used.", "start": 330.861, "end": 331.042}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "Yeah, words like orbital debris or hypervelocity.", "start": 331.102, "end": 334.51, "words": [{"word": "Yeah,", "start": 331.102, "end": 331.363}, {"word": "words", "start": 331.423, "end": 331.663}, {"word": "like", "start": 331.723, "end": 331.884}, {"word": "orbital", "start": 331.904, "end": 332.445}, {"word": "debris", "start": 332.485, "end": 332.946}, {"word": "or", "start": 332.986, "end": 333.447}, {"word": "hypervelocity.", "start": 333.487, "end": 334.51}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "Seeing them in the story really helps you remember what they mean.", "start": 334.951, "end": 337.777, "words": [{"word": "Seeing", "start": 334.951, "end": 335.271}, {"word": "them", "start": 335.311, "end": 335.432}, {"word": "in", "start": 335.472, "end": 335.512}, {"word": "the", "start": 335.572, "end": 335.632}, {"word": "story", "start": 335.692, "end": 336.013}, {"word": "really", "start": 336.033, "end": 336.374}, {"word": "helps", "start": 336.434, "end": 336.634}, {"word": "you", "start": 336.674, "end": 336.795}, {"word": "remember", "start": 336.835, "end": 337.196}, {"word": "what", "start": 337.256, "end": 337.356}, {"word": "they", "start": 337.396, "end": 337.536}, {"word": "mean.", "start": 337.576, "end": 337.777}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Absolutely.", "start": 338.057, "end": 338.478, "words": [{"word": "Absolutely.", "start": 338.057, "end": 338.478}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Go back and give it another read.", "start": 338.539, "end": 339.761, "words": [{"word": "Go", "start": 338.539, "end": 338.659}, {"word": "back", "start": 338.699, "end": 338.879}, {"word": "and", "start": 338.939, "end": 339.0}, {"word": "give", "start": 339.04, "end": 339.14}, {"word": "it", "start": 339.18, "end": 339.22}, {"word": "another", "start": 339.28, "end": 339.521}, {"word": "read.", "start": 339.541, "end": 339.761}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "Keep reading and keep exploring the world.", "start": 339.902, "end": 342.327, "words": [{"word": "Keep", "start": 339.902, "end": 340.102}, {"word": "reading", "start": 340.162, "end": 340.543}, {"word": "and", "start": 340.603, "end": 340.683}, {"word": "keep", "start": 340.764, "end": 340.984}, {"word": "exploring", "start": 341.004, "end": 341.565}, {"word": "the", "start": 341.605, "end": 341.686}, {"word": "world.", "start": 341.726, "end": 342.327}]}];
+
+    // ==========================================
+
+    const audio = document.getElementById('audioPlayer');
+    const container = document.getElementById('transcriptContainer');
+    const recordBtn = document.getElementById('recordBtn');
+    const uiControls = document.getElementById('uiControls');
+    const progressFill = document.getElementById('progressFill');
+    const progressBarContainer = document.getElementById('progressBarContainer');
+    const debugTime = document.getElementById('debugTime');
+
+    let isRecordingMode = false;
+    let processedData = []; 
+    let currentActiveBlockIndex = -1;
+    let currentActiveWordElement = null;
+    let animationFrameId;
+
+    function mergeTranscriptSegments(rawData) {
+        if (!rawData || rawData.length === 0) return [];
+        
+        const merged = [];
+        let currentBlock = {
+            speaker: rawData[0].speaker,
+            start: rawData[0].start,
+            end: rawData[0].end,
+            words: [...(rawData[0].words || [])]
+        };
+
+        for (let i = 1; i < rawData.length; i++) {
+            const nextSegment = rawData[i];
+            const projectedDuration = nextSegment.end - currentBlock.start;
+            
+            if (nextSegment.speaker === currentBlock.speaker && projectedDuration <= 10.0) {
+                currentBlock.end = nextSegment.end;
+                if (nextSegment.words) {
+                    currentBlock.words = currentBlock.words.concat(nextSegment.words);
+                }
+            } else {
+                merged.push(currentBlock);
+                currentBlock = {
+                    speaker: nextSegment.speaker,
+                    start: nextSegment.start,
+                    end: nextSegment.end,
+                    words: [...(nextSegment.words || [])]
+                };
+            }
+        }
+        merged.push(currentBlock);
+        return merged;
+    }
+
+    function initTranscript() {
+        if (!rawTranscriptData || rawTranscriptData.length === 0) {
+            container.innerHTML = '<div style="padding:20px; text-align:center; color:#666; margin-top:50px;">暂无字幕数据</div>';
+            return;
+        }
+
+        processedData = mergeTranscriptSegments(rawTranscriptData);
+        container.innerHTML = '';
+        
+        processedData.forEach((block, index) => {
+            const div = document.createElement('div');
+            div.className = 'transcript-item';
+            div.dataset.start = block.start;
+            div.dataset.end = block.end;
+            div.dataset.index = index;
+
+            const speakerSpan = document.createElement('span');
+            const speakerClass = block.speaker ? block.speaker.toLowerCase() : 'unknown';
+            speakerSpan.className = `speaker-tag speaker-${speakerClass}`;
+            speakerSpan.textContent = block.speaker || 'Unknown';
+            div.appendChild(speakerSpan);
+
+            const p = document.createElement('p');
+            p.className = 'text-content';
+
+            if (block.words) {
+                block.words.forEach((wordObj, wIndex) => {
+                    const wordSpan = document.createElement('span');
+                    wordSpan.className = 'word-span';
+                    wordSpan.textContent = wordObj.word; 
+                    wordSpan.dataset.start = wordObj.start;
+                    wordSpan.dataset.end = wordObj.end;
+                    p.appendChild(wordSpan);
+
+                    if (wIndex < block.words.length - 1) {
+                        p.appendChild(document.createTextNode(" "));
+                    }
+                });
+            } else {
+                p.textContent = block.sentence;
+            }
+
+            div.appendChild(p);
+            container.appendChild(div);
+
+            div.addEventListener('click', (e) => {
+                if (e.target.classList.contains('word-span')) {
+                    audio.currentTime = parseFloat(e.target.dataset.start);
+                } else {
+                    audio.currentTime = block.start;
+                }
+                if (audio.paused) audio.play();
+            });
+        });
+    }
+
+    function renderLoop() {
+        if (!audio.paused) {
+            updateTranscript();
+        }
+        animationFrameId = requestAnimationFrame(renderLoop);
+    }
+
+    function updateTranscript() {
+        const t = audio.currentTime;
+        let activeBlockIndex = -1;
+        for (let i = 0; i < processedData.length; i++) {
+            if (t >= processedData[i].start && t < processedData[i].end) {
+                activeBlockIndex = i;
+                break;
+            }
+        }
+
+        if (activeBlockIndex !== -1 && activeBlockIndex !== currentActiveBlockIndex) {
+            const prev = document.querySelector('.transcript-item.active');
+            if (prev) prev.classList.remove('active');
+
+            const current = container.children[activeBlockIndex];
+            if (current) {
+                current.classList.add('active');
+                current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            currentActiveBlockIndex = activeBlockIndex;
+        }
+
+        if (currentActiveBlockIndex !== -1) {
+            const activeBlockElement = container.children[currentActiveBlockIndex];
+            const wordSpans = activeBlockElement.querySelectorAll('.word-span');
+            let foundWord = false;
+
+            for (let span of wordSpans) {
+                const start = parseFloat(span.dataset.start);
+                const end = parseFloat(span.dataset.end);
+
+                if (t >= start && t < end + 0.05) { 
+                    if (currentActiveWordElement !== span) {
+                        if (currentActiveWordElement) currentActiveWordElement.classList.remove('word-active');
+                        span.classList.add('word-active');
+                        currentActiveWordElement = span;
+                    }
+                    foundWord = true;
+                    break; 
+                }
+            }
+            
+            if (!foundWord && currentActiveWordElement) {
+                currentActiveWordElement.classList.remove('word-active');
+                currentActiveWordElement = null;
+            }
+        }
+    }
+
+    audio.addEventListener('play', () => {
+        cancelAnimationFrame(animationFrameId);
+        renderLoop();
+    });
+
+    audio.addEventListener('pause', () => {
+        cancelAnimationFrame(animationFrameId);
+    });
+
+    audio.addEventListener('timeupdate', () => {
+        if (!audio.duration) return;
+        const percent = (audio.currentTime / audio.duration) * 100;
+        progressFill.style.width = percent + '%';
+        if(!isRecordingMode) debugTime.textContent = audio.currentTime.toFixed(3);
+    });
+
+    recordBtn.addEventListener('click', () => {
+        if (!isRecordingMode) {
+            isRecordingMode = true;
+            document.body.classList.add('recording-mode');
+            uiControls.classList.add('hidden-ui');
+            recordBtn.style.opacity = '0';
+            setTimeout(() => recordBtn.style.display = 'none', 300);
+            
+            console.log("准备录制... 5秒倒计时");
+            setTimeout(() => {
+                audio.play();
+            }, 5000);
+        }
+    });
+
+    progressBarContainer.addEventListener('click', (e) => {
+        const rect = progressBarContainer.getBoundingClientRect();
+        const pos = (e.clientX - rect.left) / rect.width;
+        audio.currentTime = pos * audio.duration;
+        updateTranscript();
+    });
+
+    initTranscript();
+
+</script>
+
+</body>
+</html>
