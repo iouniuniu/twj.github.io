@@ -1,456 +1,491 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Week Junior Handout</title>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400&family=Noto+Sans+SC:wght@300;400;500;700&family=Lato:wght@400;700;900&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
-<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-<style>
-    :root {
-        /* --- 动态主题色 (由 JS 注入) --- */
-        --theme-color: #F39C12; 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Respect Your Body From The Inside Out</title>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --accent-color: #a855f7;
+            --female-color: #ec4899;
+            --male-color: #2dd4bf;
+            --text-normal: rgba(255, 255, 255, 0.4);
+            --text-active: #ffffff;
+            --word-highlight: #ff9f0a;
+            --font-stack: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+        }
 
-        /* --- 严格词性配色 (固定) --- */
-        --bg-noun: #D6EAF8; /* 名-蓝 */
-        --bg-verb: #D5F5E3; /* 动-绿 */
-        --bg-adj: #E8DAEF;  /* 修饰-紫 */
+        body {
+            font-family: var(--font-stack);
+            background-color: var(--bg-color);
+            color: white;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.5s ease;
+        }
+
+        .ambient-bg {
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 50% 50%, #4c1d95, #0f172a 70%, #000);
+            z-index: -1;
+            filter: blur(80px);
+            opacity: 0.8;
+            animation: breathe 10s infinite alternate;
+        }
+
+        @keyframes breathe {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1); }
+        }
+
+        .player-header {
+            padding: 40px 20px 20px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+            transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+            flex-shrink: 0;
+        }
+
+        .artwork-container {
+            width: 140px;
+            height: 185px;
+            border-radius: 8px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            margin-bottom: 15px;
+            overflow: hidden;
+            background-color: #333;
+            position: relative;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .artwork-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .track-info { 
+            text-align: center; 
+            transition: all 0.5s ease;
+        }
         
-        /* 词性文字颜色 */
-        --t-subj: #C0392B; --t-verb: #2980B9; --t-obj: #27AE60; --t-mod: #D35400; --t-prep: #8E44AD; --t-conn: #7F8C8D;
+        /* 2. 标题占位符 */
+        .track-title { font-size: 20px; font-weight: 800; margin: 0; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .track-artist { font-size: 14px; color: rgba(255,255,255,0.9); margin-top: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
         
-        /* 长难句背景 */
-        --bg-trunk: #EBF5FB; --bg-clause-1: #FEF5E7; --bg-clause-2: #E9F7EF;
-        /* 边框色 */
-        --bd-trunk: #3498DB; --bd-clause-1: #F39C12; --bd-clause-2: #2ECC71; --bd-struct: #2C3E50;
+        /* 3. 副标题（文件夹名）占位符 */
+        .track-subtitle { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 4px; font-weight: 400; letter-spacing: 0.5px; }
+
+        .ui-controls {
+            width: 100%;
+            max-width: 400px;
+            margin-top: 20px;
+            transition: opacity 0.5s, transform 0.5s;
+        }
+
+        .hidden-ui {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-20px);
+            height: 0; 
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .progress-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; margin-bottom: 20px; cursor: pointer; }
+        .progress-fill { height: 100%; background: white; border-radius: 2px; width: 0%; transition: width 0.1s linear; }
+
+        .transcript-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 30px 150px 30px;
+            mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
+            scroll-behavior: smooth;
+            transition: all 0.5s ease;
+        }
+        .transcript-container::-webkit-scrollbar { display: none; }
+
+        .transcript-item {
+            margin-bottom: 30px;
+            transition: opacity 0.4s ease, transform 0.4s ease, filter 0.4s ease;
+            opacity: 0.3; 
+            filter: blur(1.5px);
+            transform: scale(0.98);
+            transform-origin: left center;
+            cursor: pointer;
+            scroll-margin-top: 100px;
+        }
+
+        .transcript-item.active {
+            opacity: 1;
+            filter: blur(0);
+            transform: scale(1.0);
+        }
+
+        .speaker-tag {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            opacity: 0.8;
+        }
+        .speaker-female { background-color: var(--female-color); color: #fff; }
+        .speaker-male { background-color: var(--male-color); color: #000; }
+
+        .text-content {
+            font-size: 24px;
+            line-height: 1.6;
+            font-weight: 600;
+            margin: 0;
+            color: var(--text-active);
+            word-wrap: break-word;
+        }
+
+        .word-span {
+            transition: color 0.1s ease, text-shadow 0.1s ease;
+            display: inline;
+            border-radius: 4px;
+            margin: 0; 
+            padding: 0;
+        }
+
+        .word-active {
+            color: var(--word-highlight);
+            text-shadow: 0 0 15px rgba(255, 159, 10, 0.7);
+        }
+
+        .overlay-btn {
+            position: fixed;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            color: black;
+            padding: 16px 32px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 18px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            cursor: pointer;
+            z-index: 100;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+        .overlay-btn:active { transform: translateX(-50%) scale(0.95); }
+
+        #debugTime {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #0f0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            z-index: 2000;
+            pointer-events: none;
+        }
+
+        body.recording-mode .player-header {
+            padding-top: 30px;
+            padding-bottom: 5px; 
+        }
+
+        body.recording-mode .artwork-container { 
+            width: 140px; 
+            height: 185px;
+            margin-top: 10px; 
+            margin-bottom: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        body.recording-mode .track-info {
+            margin-bottom: 5px;
+            transform: scale(0.95); 
+        }
+
+        body.recording-mode .transcript-container {
+            padding-top: 0px; 
+            mask-image: linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%);
+        }
+
+        body.recording-mode .transcript-item.active .text-content { 
+            color: rgba(255,255,255,0.9);
+        }
         
-        /* 通用布局 */
-        --text-main: #2c3e50; --bg: #ffffff; --supp-bg: #FFF8E1;
-        --p-w: 1080px; --p-h: 1440px;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; }
-    body { background: #444; display: flex; flex-direction: column; align-items: center; padding: 40px 0; gap: 40px; font-family: 'Noto Sans SC', sans-serif; }
-    
-    /* 容器 */
-    .card { width: var(--p-w); height: var(--p-h); background: var(--bg); display: flex; flex-direction: column; overflow: hidden; position: relative; box-shadow: 0 30px 80px rgba(0,0,0,0.6); flex-shrink: 0; }
-    .card.cover-page { padding: 0; } .card.normal-page { padding: 50px 60px; }
-    .content-body { flex-grow: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 0; overflow: hidden; width: 100%; }
-    .cover-page .content-body { padding: 0 60px; } .normal-page .content-body { padding: 0; }
+        body.recording-mode #debugTime { display: none; }
 
-    /* 首页 (960px Height) */
-    .hero-section { width: 100%; height: 960px; background: #e0e0e0; cursor: pointer; border-bottom: 8px solid var(--theme-color); position: relative; flex-shrink: 0; }
-    .hero-img { width: 100%; height: 100%; object-fit: cover; display: none; }
-    .hero-placeholder { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #777; font-size: 20pt; font-family: 'Lato'; text-align: center; border: 3px dashed #bbb; padding: 15px 30px; border-radius: 10px; }
-    
-    .cover-header { padding: 30px 60px 10px 60px; display: flex; flex-direction: column; align-items: center; text-align: center; flex-shrink: 0; }
-    .meta-tag { background: var(--theme-color); color: white; padding: 6px 20px; border-radius: 50px; font-family: 'Lato'; font-weight: 900; font-size: 12pt; margin-bottom: 15px; letter-spacing: 1px; }
-    .poster-title { font-family: 'Lora'; font-size: 46pt; font-weight: 700; color: var(--text-main); line-height: 1.0; margin-bottom: 10px; }
-    .poster-subtitle { font-family: 'Noto Sans SC'; font-size: 20pt; color: #5d6d7e; font-weight: 400; margin-bottom: 20px; position: relative; display: inline-block; }
-    .poster-subtitle::after { content: ""; display: block; width: 60px; height: 3px; background: var(--theme-color); margin: 10px auto 0 auto; }
-
-    /* 续页头 */
-    .mini-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #ccc; padding-bottom: 15px; margin-bottom: 20px; height: 60px; flex-shrink: 0; width: 100%; }
-    .mini-title { font-family: 'Lora'; font-weight: 700; font-size: 16pt; color: var(--text-main); }
-    .continued-tag { font-family: 'Lato'; font-weight: 700; font-style: italic; background: #eee; padding: 5px 15px; border-radius: 6px; font-size: 11pt; color: #666; }
-
-    /* 正文 */
-    .row { display: flex; gap: 40px; width: 100%; padding: 20px 0; border-bottom: 1px solid #f9f9f9; align-items: flex-start; flex-shrink: 0; }
-    .col-eng { flex: 6; font-family: 'Lora'; font-size: 18pt; line-height: 1.8; text-align: justify; padding-right: 25px; border-right: 2px solid #f0f0f0; }
-    .col-chi { flex: 4; font-family: 'Noto Sans SC'; font-size: 16pt; line-height: 1.8; color: #5d6d7e; text-align: justify; font-weight: 400; padding-top: 2px; }
-
-    /* 边栏 (一致布局 + 动态色) */
-    .row.supp-style { background: var(--supp-bg); padding: 25px; border-radius: 12px; margin: 15px 0; border: none; }
-    .row.supp-style .col-eng { border-right: 2px solid #FAD7A0; font-size: 16pt; line-height: 1.6; }
-    .row.supp-style .col-chi { font-size: 14pt !important; line-height: 1.6; color: #555; }
-    h3 { font-family: 'Lato'; font-weight: 900; font-size: 18pt; color: var(--theme-color); margin: 0 0 10px 0; display: block; border-left: 8px solid var(--theme-color); padding-left: 15px; }
-    .row.supp-style h3 { font-size: 16pt !important; border-left-width: 5px; }
-
-    /* 词性高亮 (必须严格对应) */
-    .hl { padding: 0 4px; border-radius: 4px; font-weight: 600; display: inline-block; }
-    .hl-n { background-color: var(--bg-noun); } 
-    .hl-v { background-color: var(--bg-verb); } 
-    .hl-adj { background-color: var(--bg-adj); }
-    sup { color: #555; font-size: 0.6em; vertical-align: super; font-weight: 700; margin-left: 2px; }
-
-    /* 附录 */
-    .app-h { font-size: 18pt; font-weight: 700; color: var(--text-main); border-left: 6px solid #555; padding-left: 12px; display: block; margin: 25px 0 20px 0; font-family: 'Noto Sans SC'; flex-shrink: 0; width: 100%; }
-    
-    /* 词汇表 */
-    .vocab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px 40px; width: 100%; margin-bottom: 30px; flex-shrink: 0; }
-    .vocab-item { background: #fff; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 5px; display: flex; flex-direction: column; gap: 6px; }
-    .v-line-1 { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-    .v-word { font-family: 'Lora'; font-weight: 700; font-size: 19pt; color: #2c3e50; padding: 0 5px; border-radius: 4px; }
-    .v-idx { background: #333; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 11pt; text-align: center; line-height: 22px; display: inline-block; transform: translateY(-2px); }
-    .v-ipa { font-family: 'Arial'; color: #95a5a6; font-size: 13pt; }
-    .v-mean { font-size: 15pt; color: #444; font-weight: 500; margin-left: auto; }
-    .v-pos { color: var(--theme-color); font-weight: bold; font-family: 'Times New Roman'; font-style: italic; font-size: 13pt; margin-right: 2px;}
-    .v-line-2 { font-size: 14pt; color: #d35400; font-family: 'Roboto Mono'; font-weight: 500; }
-    .v-line-3 { font-size: 14pt; color: #7f8c8d; font-style: italic; font-family: 'Lora'; line-height: 1.4; margin-top: 2px; }
-
-    /* 长难句 (V33 Fixed: Group & Brackets) */
-    .sa-sentence-wrapper { display: flex; flex-wrap: wrap; column-gap: 0; row-gap: 35px; line-height: 1.5; margin-bottom: 25px; padding-top: 10px; align-items: flex-end; width: 100%; }
-    .chunk { display: inline-flex; flex-direction: column; align-items: center; margin: 0; vertical-align: bottom; }
-    .chunk-text { font-family: 'Lora'; font-size: 20pt; color: #2c3e50; padding: 4px 5px; font-weight: 500; border-radius: 0; }
-    .chunk-group { border-bottom: 3px solid #ccc; padding-bottom: 2px; margin: 0 3px; }
-    .chunk-group .chunk-text { padding-bottom: 0; } 
-    .chunk-lbl { font-size: 10pt; font-family: 'Noto Sans SC'; font-weight: 800; margin-top: 4px; white-space: nowrap; width: 100%; text-align: center; height: 15px; }
-    .chunk-lbl:empty { height: 0; margin-top: 0; }
-    .bracket { font-size: 20pt; color: #d35400; font-family: 'Lato'; font-weight: 300; padding: 4px 6px; display: inline-block; }
-    
-    .bg-trunk .chunk-text { background-color: var(--bg-trunk); }
-    .bg-clause-1 .chunk-text { background-color: var(--bg-clause-1); }
-    .bg-clause-1.bracket { background-color: var(--bg-clause-1); }
-    .bg-clause-2 .chunk-text { background-color: var(--bg-clause-2); }
-    .bg-clause-2.bracket { background-color: var(--bg-clause-2); }
-    
-    .l-subj { color: var(--t-subj); border-color: var(--t-subj); } 
-    .l-verb { color: var(--t-verb); border-color: var(--t-verb); } 
-    .l-obj { color: var(--t-obj); border-color: var(--t-obj); } 
-    .l-conn { color: var(--t-conn); border-color: var(--t-conn); }
-
-    /* 解析 & Quiz */
-    .sa-step-box, .q-card { background: #fdfefe; padding: 20px 25px; border-radius: 8px; border: 1px solid #eee; box-shadow: 2px 2px 8px rgba(0,0,0,0.02); margin-bottom: 12px; width: 100%; }
-    .bd-struct { border-left: 5px solid var(--bd-struct); }
-    .bd-trunk { border-left: 5px solid var(--bd-trunk); background-color: #FDFEFE; }
-    .bd-clause-1 { border-left: 5px solid var(--bd-clause-1); background-color: #FEF9E7; }
-    .bd-clause-2 { border-left: 5px solid var(--bd-clause-2); background-color: #E9F7EF; }
-    .q-card { border-left: 5px solid var(--theme-color); }
-    
-    .sa-trans { font-size: 16pt; color: #444; font-weight: 600; font-style: italic; margin-bottom: 20px; padding: 15px; border: 1px dashed #ccc; border-radius: 8px; width: 100%; background: #fff; }
-    .sa-step { margin-bottom: 12px; font-size: 15pt; color: #555; line-height: 1.6; }
-    .sa-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11pt; margin-right: 10px; font-weight: 800; color: #fff; background: #555; font-family: 'Lato'; text-transform: uppercase; }
-
-    /* Quiz 内容 */
-    .q-header { display: flex; align-items: baseline; margin-bottom: 5px; }
-    .q-num { color: var(--theme-color); font-size: 18pt; font-weight: 900; margin-right: 10px; font-family: 'Lato'; }
-    .q-text { font-size: 18pt; color: #2c3e50; font-weight: 600; font-family: 'Lora'; }
-    .q-opts { display: flex; gap: 25px; flex-wrap: wrap; margin-left: 0; margin-top: 5px; }
-    .q-opt { font-size: 15pt; color: #555; font-family: 'Lato'; }
-    .q-blank { border-bottom: 2px solid #333; width: 100px; display: inline-block; }
-
-    /* 页脚 */
-    .footer { margin-top: auto; display: flex; justify-content: space-between; border-top: 1px solid #eee; padding: 0 60px; font-size: 11pt; color: #95a5a6; flex-shrink: 0; height: 70px; align-items: center; width: 100%; box-sizing: border-box; font-family: 'Lato'; }
-    .normal-page .footer { padding: 0; }
-    .footer-right { font-weight: 700; color: #333; }
-
-    /* 截图按钮 */
-    #btn-download { position: fixed; bottom: 20px; right: 20px; z-index: 9999; padding: 15px 25px; background: #2c3e50; color: white; border: none; border-radius: 50px; cursor: pointer; font-family: sans-serif; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.2s; }
-    #btn-download:hover { transform: scale(1.05); background: #34495e; }
-    #btn-download:active { transform: scale(0.95); }
-</style>
-<script>
-    // --- Global Error Trap ---
-    window.onerror = function(message, source, lineno, colno, error) {
-        alert("Render Error: " + message + "\\nLine: " + lineno);
-    };
-
-    // --- Phase 4: Data Injection ---
-    const META = { 
-        issue: "17 January 2026", 
-        title: "Respect Your Body", 
-        subtitle: "Building Confidence and Self-Love / 建立自信与关爱自我",
-        themeColor: "#F39C12" 
-    };
-    
-    // Ordered: Text first (txt), then Supplementary (supp) at the end.
-    // Highlight colors synced between English and Chinese (hl-n/v/adj).
-    const MAIN_CONTENT = [
-        {
-            type: "txt",
-            eng: "Having a positive <span class='hl hl-n'>body image</span> helps you feel <span class='hl hl-adj'>confident</span> and happy. Having a <span class='hl hl-adj'>positive</span> body image means you <span class='hl hl-v'>appreciate</span> your body, whatever it looks like or can do.",
-            chi: "拥有积极的<span class='hl hl-n'>身体意象</span>有助于你感到<span class='hl hl-adj'>自信</span>和快乐。拥有<span class='hl hl-adj'>积极的</span>身体意象意味着无论你的身体外表如何或能做什么，你都能<span class='hl hl-v'>欣赏</span>它。"
-        },
-        {
-            type: "txt",
-            eng: "Dr Tharaka Gunarathne is a <span class='hl hl-n'>psychologist</span> (someone who helps people <span class='hl hl-v'>understand</span> their <span class='hl hl-n'>emotions</span>). He says body image can be <span class='hl hl-v'>influenced</span> by what you see on TV and social media, as well as friends and family. It’s also <span class='hl hl-v'>affected</span> by the way you feel about yourself.",
-            chi: "Tharaka Gunarathne 博士是一位<span class='hl hl-n'>心理学家</span>（帮助人们<span class='hl hl-v'>理解</span><span class='hl hl-n'>情绪</span>的人）。他说，身体意象会受到你在电视和社交媒体上看到的内容，以及朋友和家人的<span class='hl hl-v'>影响</span>。它也会受到你对自己的感觉的<span class='hl hl-v'>影响</span>。"
-        },
-        {
-            type: "txt",
-            eng: "<span class='hl hl-n'>Puberty</span>, when a child’s body <span class='hl hl-v'>develops</span> and changes as they become an adult, can make a difference too. It’s normal to care about how you look, Gunarathne says, but when you worry about it too much it can <span class='hl hl-v'>affect</span> your mood.",
-            chi: "<span class='hl hl-n'>青春期</span>，即孩子的身体<span class='hl hl-v'>发育</span>并随着成长为成年人而发生变化的时候，也会产生影响。Gunarathne 说，关心自己的外表是正常的，但当你过度担心时，它会<span class='hl hl-v'>影响</span>你的情绪。"
-        },
-        {
-            type: "txt",
-            eng: "<h3>Why does it matter?</h3>Research shows that when you <span class='hl hl-v'>understand</span> how <span class='hl hl-adj'>amazing</span> your body is you are more likely to treat it with <span class='hl hl-n'>respect</span> and kindness. If you’re busy worrying about having perfect hair or how tall you are, you can forget all the <span class='hl hl-adj'>brilliant</span> things your body can do like cycling, crafting, dancing or swimming.",
-            chi: "<h3>为什么这很重要？</h3>研究表明，当你<span class='hl hl-v'>明白</span>你的身体有多么<span class='hl hl-adj'>神奇</span>时，你更有可能以<span class='hl hl-n'>尊重</span>和善意来对待它。如果你忙着担心拥有完美的头发或身高，你可能会忘记你的身体能做的所有<span class='hl hl-adj'>精彩</span>的事情，比如骑自行车、做手工、跳舞或游泳。"
-        },
-        {
-            type: "txt",
-            eng: "Molly Forbes, the author of <i>Every Body</i> (the winner of the Wellbeing category at The Week Junior Book Awards 2025), says your <span class='hl hl-n'>body image</span> affects how you treat others, “particularly those who live in bodies that might not look like our own”. When everyone is taught to <span class='hl hl-v'>value</span> one body image more than another it can lead to unfair treatment or <span class='hl hl-n'>discrimination</span>, she explains.",
-            chi: "Molly Forbes 是《Every Body》（The Week Junior 2025年图书奖健康类获奖作品）的作者，她说你的<span class='hl hl-n'>身体意象</span>会影响你对待他人的方式，“特别是那些身体看起来可能与我们不同的人”。她解释说，当每个人都被教导要<span class='hl hl-v'>重视</span>某种身体形象胜过另一种时，可能会导致不公平的待遇或<span class='hl hl-n'>歧视</span>。"
-        },
-        {
-            type: "txt",
-            eng: "<h3>Feel better about your body</h3>“Know that the way you look is the least <span class='hl hl-adj'>interesting</span> or <span class='hl hl-adj'>important</span> thing about you,” Forbes says. Write down three things you like about someone you love. “Think of the way they make you feel when you’re with them,” she suggests. “Then consider how many of those things are to do with the way they look.”",
-            chi: "<h3>对自己的身体感觉更好</h3>“要知道，你的外表是你最不<span class='hl hl-adj'>有趣</span>或最不<span class='hl hl-adj'>重要</span>的一点，”Forbes 说。写下你爱的某人的三个优点。“想想当你和他们在一起时他们让你感觉如何，”她建议道，“然后考虑其中有多少事情与他们的外表有关。”"
-        },
-        {
-            type: "txt",
-            eng: "Do you love your best friend because they wear great shoes or because they’re a good <span class='hl hl-n'>listener</span> and make you laugh? “The things we <span class='hl hl-v'>value</span> about the people we love rarely have anything to do with the way they look – and the same is true for the way they feel about you,” Forbes says.",
-            chi: "你爱最好的朋友是因为他们穿着很棒的鞋子，还是因为他们是一个好的<span class='hl hl-n'>倾听者</span>并且让你开怀大笑？“我们所<span class='hl hl-v'>珍视</span>的我们所爱之人的特质，很少与他们的外表有关——他们对你的感觉也是如此，”Forbes 说。"
-        },
-        /* Supplementary Content (moved to the end) */
-        {
-            type: "supp",
-            eng: "<h3>Respect your body</h3>Remember that all <span class='hl hl-n'>bodies</span> are good bodies. Try to <span class='hl hl-v'>spot</span> messages that make you think some bodies are “good” or “bad”. These can come from social media, TV or people around you.",
-            chi: "<h3>尊重你的身体</h3>记住，所有的<span class='hl hl-n'>身体</span>都是好身体。试着<span class='hl hl-v'>识别</span>那些让你觉得某些身体是“好的”或“坏的”的信息。这些信息可能来自社交媒体、电视或你周围的人。"
-        },
-        {
-            type: "supp",
-            eng: "<h3>Celebrate differences</h3>Even if everybody ate the same food and moved in the same way, everyone would still have <span class='hl hl-adj'>different</span> types of bodies. This is a fact of life and it’s a good thing.",
-            chi: "<h3>庆祝差异</h3>即使每个人吃同样的食物，以同样的方式运动，每个人仍然会有<span class='hl hl-adj'>不同</span>类型的身体。这是生活的事实，也是一件好事。"
-        },
-        {
-            type: "supp",
-            eng: "<h3>Love your body</h3><span class='hl hl-v'>Celebrate</span> your body for what it can do. Think of the ways it lets you live your life, like playing in the park and <span class='hl hl-v'>discovering</span> the world around you.",
-            chi: "<h3>爱你的身体</h3>为你身体能做的事情而<span class='hl hl-v'>庆祝</span>。想想它让你生活的方式，比如在公园里玩耍和<span class='hl hl-v'>探索</span>周围的世界。"
-        },
-        {
-            type: "supp",
-            eng: "<h3>Different designs</h3>There are more than eight billion human bodies on Earth, and every one is <span class='hl hl-adj'>different</span>.",
-            chi: "<h3>不同的设计</h3>地球上有超过80亿的人体，每一个都是<span class='hl hl-adj'>独一无二</span>的。"
-        }
-    ];
-    
-    const VOCAB_LIST = [
-        { w: "body image", p: "n.", m: "身体意象", ipa: "ˈbɒdi ˈɪmɪdʒ", c: "对自身外貌的感知和看法。", e: "Having a positive body image helps you feel confident." },
-        { w: "appreciate", p: "v.", m: "欣赏；感激", ipa: "əˈpriːʃieɪt", c: "意识到某事物的价值并给予高度评价。", e: "Appreciate your body for what it can do." },
-        { w: "influence", p: "v.", m: "影响", ipa: "ˈɪnfluəns", c: "对他人的行为、思想或性质产生作用。", e: "Body image can be influenced by social media." },
-        { w: "puberty", p: "n.", m: "青春期", ipa: "ˈpjuːbəti", c: "儿童发育成成年人的时期。", e: "Puberty causes many changes in the body." },
-        { w: "discrimination", p: "n.", m: "歧视", ipa: "dɪˌskrɪmɪˈneɪʃn", c: "对不同类别的人或事物的不公平对待。", e: "Valuing one look over another can lead to discrimination." },
-        { w: "worthy", p: "adj.", m: "值得的", ipa: "ˈwɜːði", c: "配得上；具有价值的。", e: "Your body is worthy of respect and love." },
-        { w: "confident", p: "adj.", m: "自信的", ipa: "ˈkɒnfɪdənt", c: "对自己能力或品质有信心的。", e: "A good body image makes you feel confident." },
-        { w: "psychologist", p: "n.", m: "心理学家", ipa: "saɪˈkɒlədʒɪst", c: "研究人类心理和行为的专家。", e: "The psychologist helps people understand their emotions." }
-    ];
-    
-    const SA_CHUNKS = [
-        { t: "chunk-group", l: "l-subj", txt: "Subject", w: "Research" },
-        { t: "chunk", l: "l-verb", txt: "Verb", w: "shows" },
-        { t: "chunk", l: "l-conn", txt: "Conn", w: "that" },
-        { t: "bracket bg-clause-1", l: "", txt: "", w: "(" },
-        { t: "chunk-group bg-clause-1", l: "l-conn", txt: "Conn", w: "when you" },
-        { t: "chunk bg-clause-1", l: "l-verb", txt: "Verb", w: "understand" },
-        { t: "bracket bg-clause-2", l: "", txt: "", w: "(" },
-        { t: "chunk-group bg-clause-2", l: "l-conn", txt: "Conn", w: "how amazing" },
-        { t: "chunk-group bg-clause-2", l: "l-subj", txt: "Subj", w: "your body" },
-        { t: "chunk bg-clause-2", l: "l-verb", txt: "Verb", w: "is" },
-        { t: "bracket bg-clause-2", l: "", txt: "", w: ")" },
-        { t: "bracket bg-clause-1", l: "", txt: "", w: ")" },
-        { t: "chunk", l: "l-subj", txt: "Subj", w: "you" },
-        { t: "chunk", l: "l-verb", txt: "Verb", w: "are" },
-        { t: "chunk-group", l: "l-mod", txt: "Comp", w: "more likely" },
-        { t: "chunk-group", l: "l-obj", txt: "Inf-Phrase", w: "to treat it" },
-        { t: "chunk-group", l: "l-mod", txt: "Prep-Phrase", w: "with respect." }
-    ];
-
-    const SA_TRANS = "研究表明，当你明白你的身体有多么神奇时，你更有可能以尊重和善意来对待它。";
-    
-    const SA_STEPS = [
-        { type: "bd-trunk", label: "主句", text: "<strong>Research shows that...</strong> (研究表明...) 是句子的主干，引出了后面的宾语从句。" },
-        { type: "bd-clause-1", label: "时间状语", text: "<strong>when you understand...</strong> (当你明白...) 是一个时间状语从句，说明了动作发生的前提条件。" },
-        { type: "bd-clause-2", label: "宾语从句", text: "<strong>how amazing your body is</strong> (你的身体有多么神奇) 嵌套在时间状语从句中，作为 understand 的宾语。" },
-        { type: "bd-struct", label: "核心搭配", text: "<strong>treat... with respect and kindness</strong> (以尊重和善意对待...) 是句子的核心建议部分。" }
-    ];
-
-    const QUIZ_ITEMS = [
-        { q: "What does having a positive body image mean?", a: "<span class='q-opt'>A. Looking perfect</span><span class='q-opt'>B. Appreciating your body</span><span class='q-opt'>C. Eating the same food</span>" },
-        { q: "According to Molly Forbes, what is the least important thing about you?", a: "<span class='q-opt'>A. Your kindness</span><span class='q-opt'>B. The way you look</span><span class='q-opt'>C. Your sense of humour</span>" },
-        { q: "What can influence body image according to the article?", a: "<span class='q-opt'>A. Social media</span><span class='q-opt'>B. Friends and family</span><span class='q-opt'>C. Both A and B</span>" }
-    ];
-
-    function render() {
-        try {
-            document.documentElement.style.setProperty('--theme-color', META.themeColor);
-            const root = document.getElementById('card-container');
-            if(!root) { console.error("Root element not found"); return; } // Safety
-            
-            let cardIdx = 1;
-            let currentCard = createCoverPage();
-            root.appendChild(currentCard);
-            let container = currentCard.querySelector('.content-body');
-            const SAFE_BOTTOM = 1350; 
-
-            // 1. Content
-            if (MAIN_CONTENT && MAIN_CONTENT.length > 0) {
-                MAIN_CONTENT.forEach(item => {
-                    const row = createContentRow(item);
-                    container.appendChild(row);
-                    checkAndMove(row, SAFE_BOTTOM);
-                });
-            }
-
-            // Force new page for Vocab
-            createNewPage();
-
-            // 2. Vocab
-            appendWithCheck(createTitle('中考高频词汇 (Vocab)'));
-            let grid = document.createElement('div'); grid.className = 'vocab-grid';
-            container.appendChild(grid);
-            if (VOCAB_LIST) {
-                VOCAB_LIST.forEach((v, i) => {
-                    const item = createVocabItem(v, i+1); grid.appendChild(item);
-                    if ((grid.getBoundingClientRect().bottom - currentCard.getBoundingClientRect().top) > SAFE_BOTTOM) {
-                        grid.removeChild(item); createNewPage();
-                        grid = document.createElement('div'); grid.className = 'vocab-grid';
-                        container.appendChild(grid); grid.appendChild(item);
-                    }
-                });
-            }
-
-            // 3. Sentence Analysis
-            appendWithCheck(createTitle('长难句分析 (Sentence Analysis)'));
-            let saWrapper = document.createElement('div'); saWrapper.className = 'sa-sentence-wrapper';
-            container.appendChild(saWrapper);
-            if (SA_CHUNKS) {
-                SA_CHUNKS.forEach(chunk => {
-                    let el = createSaChunk(chunk);
-                    if (el) { 
-                        saWrapper.appendChild(el);
-                        if ((saWrapper.getBoundingClientRect().bottom - currentCard.getBoundingClientRect().top) > SAFE_BOTTOM) {
-                            saWrapper.removeChild(el); createNewPage();
-                            saWrapper = document.createElement('div'); saWrapper.className = 'sa-sentence-wrapper';
-                            container.appendChild(saWrapper); saWrapper.appendChild(el);
-                        }
-                    }
-                });
-            }
-
-            const transEl = document.createElement('div'); transEl.className = 'sa-trans'; transEl.innerHTML = SA_TRANS || "";
-            appendWithCheck(transEl);
-
-            if (SA_STEPS) {
-                SA_STEPS.forEach(step => { const el = createSaStep(step); container.appendChild(el); checkAndMove(el, SAFE_BOTTOM); });
-            }
-
-            // 4. Quiz
-            appendWithCheck(createTitle('趣闻挑战 (Little Quiz)'));
-            if (QUIZ_ITEMS) {
-                QUIZ_ITEMS.forEach((q, i) => {
-                    const qCard = document.createElement('div'); qCard.className = 'q-card';
-                    qCard.innerHTML = `<div class="q-header"><div class="q-num">${i+1}</div><div class="q-text">${q.q}</div></div><div class="q-opts">${q.a}</div>`;
-                    container.appendChild(qCard); checkAndMove(qCard, SAFE_BOTTOM);
-                });
-            }
-
-            updateFooters(cardIdx);
-
-            function createNewPage() {
-                cardIdx++; currentCard = createNormalPage(cardIdx);
-                root.appendChild(currentCard); container = currentCard.querySelector('.content-body');
-            }
-            function checkAndMove(el, limit) {
-                const rect = el.getBoundingClientRect();
-                const cardTop = currentCard.getBoundingClientRect().top;
-                if ((rect.bottom - cardTop) > limit) {
-                    container.removeChild(el); createNewPage(); container.appendChild(el);
-                }
-            }
-            function appendWithCheck(el) { container.appendChild(el); checkAndMove(el, SAFE_BOTTOM); }
-        } catch(e) {
-            console.error(e);
-            alert("Render Error: " + e.message);
-        }
-    }
-
-    function createCoverPage() {
-        const d = document.createElement('div'); d.className = 'card cover-page';
-        d.innerHTML = `<div class="hero-section" onclick="document.getElementById('upload-trigger').click()"><img id="hero-img" class="hero-img"><div class="hero-placeholder" id="hero-txt">Tap to Upload Cover</div></div><div class="cover-header"><div class="meta-tag">${META.issue}</div><div class="poster-title">${META.title}</div><div class="poster-subtitle">${META.subtitle}</div></div><div class="content-body" style="padding:0 60px;"></div><div class="footer"><span class="footer-left">Designed for Educational Purpose</span><span class="footer-right page-num"></span></div>`;
-        return d;
-    }
-    function createNormalPage(idx) {
-        const d = document.createElement('div'); d.className = 'card normal-page';
-        d.innerHTML = `<header class="mini-header"><div class="mini-title">${META.title}</div><div class="continued-tag">Continued...</div></header><div class="content-body"></div><div class="footer"><span class="footer-left">Designed for Educational Purpose</span><span class="footer-right page-num"></span></div>`;
-        return d;
-    }
-    function createContentRow(item) {
-        const d = document.createElement('div'); d.className = 'row';
-        if (item.type === 'supp') d.classList.add('supp-style');
-        d.innerHTML = `<div class="col-eng">${item.eng}</div><div class="col-chi">${item.chi}</div>`;
-        return d;
-    }
-    function createTitle(text) { const d = document.createElement('div'); d.className = 'app-h'; d.innerText = text; return d; }
-    
-    function createVocabItem(v, idx) {
-        let bgClass = '';
-        if (v.p.includes('n.')) bgClass = 'hl-n';
-        else if (v.p.includes('v.')) bgClass = 'hl-v';
-        else if (v.p.includes('adj') || v.p.includes('adv')) bgClass = 'hl-adj';
-        else bgClass = 'hl-n'; 
-        const d = document.createElement('div'); d.className = 'vocab-item';
-        d.innerHTML = `<div class="v-line-1"><span class="v-word ${bgClass}">${v.w}</span><span class="v-idx">${idx}</span><span class="v-ipa">[${v.ipa}]</span><span class="v-pos">${v.p}</span><span class="v-mean">${v.m}</span></div><div class="v-line-2">${v.c}</div><div class="v-line-3">"${v.e}"</div>`;
-        return d;
-    }
-    
-    function createSaChunk(c) {
-        if (!c || !c.t) return null;
-        const d = document.createElement('div'); 
-        d.className = `chunk ${c.t}`;
-        if (c.t.includes('chunk-group')) {
-            const color = c.l ? `var(--${c.l.replace('l-', 't-')})` : '#ccc';
-            d.style.borderBottomColor = color;
-        }
-        const label = c.l ? c.l : '';
-        const txt = c.txt ? c.txt : '';
-        d.innerHTML = `<span class="chunk-lbl ${label}">${txt}</span><span class="chunk-text">${c.w}</span>`;
-        return d;
-    }
-    function createSaStep(s) {
-        const d = document.createElement('div'); d.className = `sa-step-box ${s.type}`;
-        d.innerHTML = `<div class="sa-step"><span class="sa-tag">${s.label}</span>${s.text}</div>`;
-        return d;
-    }
-    function updateFooters(total) { document.querySelectorAll('.page-num').forEach((el, i) => el.innerText = `Page ${i+1}/${total}`); }
-    
-    async function downloadAllPages() {
-        const btn = document.getElementById('btn-download');
-        const originalText = btn.innerText;
-        btn.innerText = "Processing... (Please Wait)";
-        btn.style.opacity = "0.7";
-        btn.disabled = true;
-
-        try {
-            const cards = document.querySelectorAll('.card');
-            for (let i = 0; i < cards.length; i++) {
-                const canvas = await html2canvas(cards[i], {
-                    scale: 2, 
-                    useCORS: true, 
-                    allowTaint: false, 
-                    backgroundColor: '#ffffff', 
-                    logging: false
-                });
-
-                canvas.toBlob(function(blob) {
-                    if (!blob) {
-                        alert("Security Error: Use Local Server.");
-                        return;
-                    }
-                    const link = document.createElement('a');
-                    link.download = `TheWeekJunior_Page_${i + 1}.png`;
-                    link.href = URL.createObjectURL(blob);
-                    link.click();
-                    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
-                }, 'image/png');
-                
-                await new Promise(r => setTimeout(r, 500));
-            }
-        } catch (e) {
-            console.error(e);
-            alert("Error: " + e.message);
-        } finally {
-            btn.innerText = originalText;
-            btn.style.opacity = "1";
-            btn.disabled = false;
-        }
-    }
-
-    window.loadFile = function(e) { document.getElementById('hero-img').src = URL.createObjectURL(e.target.files[0]); document.getElementById('hero-img').style.display='block'; document.getElementById('hero-txt').style.display='none'; };
-    window.onload = render;
-</script>
+    </style>
 </head>
 <body>
-    <input type="file" id="upload-trigger" style="display:none" onchange="loadFile(event)" accept="image/*">
-    <div id="card-container"></div>
-    <button id="btn-download" onclick="downloadAllPages()">Download All Images</button>
+
+<div class="ambient-bg"></div>
+<div id="debugTime">0.000</div>
+
+<div class="player-header">
+    <div class="artwork-container">
+        <img src="527.jpg" alt="Magazine Cover" class="artwork-img" onerror="this.style.display='none'; document.getElementById('placeholder').style.display='flex';">
+        <div id="placeholder" class="artwork-placeholder" style="display:none;">📖</div>
+    </div>
+    <div class="track-info">
+        <h1 class="track-title">Respect Your Body From The Inside Out</h1>
+        <div class="track-artist">The Week Junior Podcast</div>
+        <div class="track-subtitle">527 期 - 20260117</div>
+    </div>
+
+    <div class="ui-controls" id="uiControls">
+        <div class="progress-bar" id="progressBarContainer">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div style="text-align: center; color: rgba(255,255,255,0.5); font-size: 12px;">
+            点击下方按钮进入“纯净录屏模式” (5秒倒计时)
+        </div>
+    </div>
+</div>
+
+<div class="transcript-container" id="transcriptContainer"></div>
+
+<button class="overlay-btn" id="recordBtn">
+    🎥 开始录制模式
+</button>
+
+<audio id="audioPlayer">
+    <source src="Respect_Your_Body_From_The_Inside_Out.m4a" type="audio/mp4">
+</audio>
+
+<script>
+    // ==========================================
+    // ⬇️⬇️⬇️ JSON 数据由 Python 脚本注入 ⬇️⬇️⬇️
+    // ==========================================
+    
+    // 4. JSON 数据占位符
+    const rawTranscriptData = [{"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Hello, Curious Minds.", "start": 0.031, "end": 1.193, "words": [{"word": "Hello,", "start": 0.031, "end": 0.432}, {"word": "Curious", "start": 0.472, "end": 0.812}, {"word": "Minds.", "start": 0.892, "end": 1.193}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Welcome to the Week Junior, the podcast where we explore the news and practice English.", "start": 1.253, "end": 5.379, "words": [{"word": "Welcome", "start": 1.253, "end": 1.613}, {"word": "to", "start": 1.673, "end": 1.774}, {"word": "the", "start": 1.814, "end": 1.874}, {"word": "Week", "start": 1.954, "end": 2.174}, {"word": "Junior,", "start": 2.274, "end": 2.655}, {"word": "the", "start": 2.675, "end": 2.795}, {"word": "podcast", "start": 2.835, "end": 3.276}, {"word": "where", "start": 3.296, "end": 3.436}, {"word": "we", "start": 3.456, "end": 3.556}, {"word": "explore", "start": 3.616, "end": 3.957}, {"word": "the", "start": 3.997, "end": 4.077}, {"word": "news", "start": 4.137, "end": 4.458}, {"word": "and", "start": 4.538, "end": 4.618}, {"word": "practice", "start": 4.658, "end": 5.018}, {"word": "English.", "start": 5.078, "end": 5.379}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "That's right.", "start": 5.659, "end": 6.08, "words": [{"word": "That's", "start": 5.659, "end": 5.82}, {"word": "right.", "start": 5.88, "end": 6.08}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "And today, we're doing a deep dive into a really important topic.", "start": 6.601, "end": 11.067, "words": [{"word": "And", "start": 6.601, "end": 6.681}, {"word": "today,", "start": 6.721, "end": 6.961}, {"word": "we're", "start": 7.001, "end": 7.142}, {"word": "doing", "start": 7.162, "end": 7.342}, {"word": "a", "start": 7.402, "end": 7.442}, {"word": "deep", "start": 7.482, "end": 7.742}, {"word": "dive", "start": 7.782, "end": 8.083}, {"word": "into", "start": 8.143, "end": 8.403}, {"word": "a", "start": 8.463, "end": 8.483}, {"word": "really", "start": 8.604, "end": 8.924}, {"word": "important", "start": 8.964, "end": 10.727}, {"word": "topic.", "start": 10.747, "end": 11.067}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "We are.", "start": 11.187, "end": 11.668, "words": [{"word": "We", "start": 11.187, "end": 11.308}, {"word": "are.", "start": 11.528, "end": 11.668}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It's from the well-being section of the magazine, and the article is called Respect Your Body.", "start": 11.688, "end": 15.714, "words": [{"word": "It's", "start": 11.688, "end": 11.868}, {"word": "from", "start": 11.889, "end": 11.989}, {"word": "the", "start": 12.009, "end": 12.089}, {"word": "well-being", "start": 12.129, "end": 12.549}, {"word": "section", "start": 12.61, "end": 12.89}, {"word": "of", "start": 12.93, "end": 12.97}, {"word": "the", "start": 12.99, "end": 13.07}, {"word": "magazine,", "start": 13.11, "end": 13.531}, {"word": "and", "start": 13.891, "end": 13.952}, {"word": "the", "start": 13.972, "end": 14.052}, {"word": "article", "start": 14.112, "end": 14.372}, {"word": "is", "start": 14.432, "end": 14.472}, {"word": "called", "start": 14.532, "end": 14.733}, {"word": "Respect", "start": 14.773, "end": 15.233}, {"word": "Your", "start": 15.274, "end": 15.394}, {"word": "Body.", "start": 15.414, "end": 15.714}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Respect Your Body.", "start": 15.914, "end": 16.776, "words": [{"word": "Respect", "start": 15.914, "end": 16.315}, {"word": "Your", "start": 16.355, "end": 16.475}, {"word": "Body.", "start": 16.495, "end": 16.776}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "OK, that sounds a bit serious.", "start": 16.976, "end": 19.099, "words": [{"word": "OK,", "start": 16.976, "end": 17.156}, {"word": "that", "start": 17.176, "end": 17.297}, {"word": "sounds", "start": 17.337, "end": 17.517}, {"word": "a", "start": 17.837, "end": 18.518}, {"word": "bit", "start": 18.538, "end": 18.699}, {"word": "serious.", "start": 18.719, "end": 19.099}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "What is the article really about?", "start": 19.52, "end": 21.783, "words": [{"word": "What", "start": 19.52, "end": 19.64}, {"word": "is", "start": 19.7, "end": 19.76}, {"word": "the", "start": 19.8, "end": 19.9}, {"word": "article", "start": 20.021, "end": 20.341}, {"word": "really", "start": 20.461, "end": 20.762}, {"word": "about?", "start": 20.802, "end": 21.783}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "That's a great question.", "start": 22.184, "end": 23.105, "words": [{"word": "That's", "start": 22.184, "end": 22.344}, {"word": "a", "start": 22.384, "end": 22.404}, {"word": "great", "start": 22.444, "end": 22.604}, {"word": "question.", "start": 22.664, "end": 23.105}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It's all about confidence and being happy with who you are.", "start": 23.205, "end": 26.35, "words": [{"word": "It's", "start": 23.205, "end": 23.325}, {"word": "all", "start": 23.345, "end": 23.446}, {"word": "about", "start": 23.486, "end": 23.646}, {"word": "confidence", "start": 23.706, "end": 24.227}, {"word": "and", "start": 24.347, "end": 24.467}, {"word": "being", "start": 24.507, "end": 25.268}, {"word": "happy", "start": 25.328, "end": 25.609}, {"word": "with", "start": 25.649, "end": 25.749}, {"word": "who", "start": 25.789, "end": 25.909}, {"word": "you", "start": 25.949, "end": 26.049}, {"word": "are.", "start": 26.25, "end": 26.35}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It's about understanding why every single person is so different.", "start": 26.47, "end": 29.835, "words": [{"word": "It's", "start": 26.47, "end": 26.57}, {"word": "about", "start": 26.61, "end": 26.811}, {"word": "understanding", "start": 26.911, "end": 27.452}, {"word": "why", "start": 27.532, "end": 27.732}, {"word": "every", "start": 27.772, "end": 28.593}, {"word": "single", "start": 28.633, "end": 28.874}, {"word": "person", "start": 28.894, "end": 29.174}, {"word": "is", "start": 29.234, "end": 29.274}, {"word": "so", "start": 29.314, "end": 29.434}, {"word": "different.", "start": 29.495, "end": 29.835}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Okay, I'm interested.", "start": 29.967, "end": 31.109, "words": [{"word": "Okay,", "start": 29.967, "end": 30.548}, {"word": "I'm", "start": 30.568, "end": 30.668}, {"word": "interested.", "start": 30.728, "end": 31.109}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "So let's start with the basics.", "start": 31.57, "end": 32.772, "words": [{"word": "So", "start": 31.57, "end": 31.69}, {"word": "let's", "start": 31.95, "end": 32.091}, {"word": "start", "start": 32.111, "end": 32.231}, {"word": "with", "start": 32.251, "end": 32.331}, {"word": "the", "start": 32.351, "end": 32.411}, {"word": "basics.", "start": 32.431, "end": 32.772}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "What does body image actually mean?", "start": 32.872, "end": 36.098, "words": [{"word": "What", "start": 32.872, "end": 33.012}, {"word": "does", "start": 33.052, "end": 33.213}, {"word": "body", "start": 33.373, "end": 33.694}, {"word": "image", "start": 33.714, "end": 34.094}, {"word": "actually", "start": 34.956, "end": 35.357}, {"word": "mean?", "start": 35.397, "end": 36.098}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Is it just like what you see when you look in the mirror?", "start": 36.559, "end": 39.063, "words": [{"word": "Is", "start": 36.559, "end": 36.639}, {"word": "it", "start": 36.679, "end": 36.719}, {"word": "just", "start": 36.759, "end": 36.939}, {"word": "like", "start": 37.641, "end": 37.761}, {"word": "what", "start": 37.801, "end": 37.921}, {"word": "you", "start": 37.961, "end": 38.081}, {"word": "see", "start": 38.141, "end": 38.302}, {"word": "when", "start": 38.362, "end": 38.442}, {"word": "you", "start": 38.482, "end": 38.542}, {"word": "look", "start": 38.582, "end": 38.682}, {"word": "in", "start": 38.722, "end": 38.763}, {"word": "the", "start": 38.803, "end": 38.863}, {"word": "mirror?", "start": 38.883, "end": 39.063}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "You know, a lot of people think that, but the article makes a really clear distinction.", "start": 39.444, "end": 43.451, "words": [{"word": "You", "start": 39.444, "end": 39.564}, {"word": "know,", "start": 39.604, "end": 39.784}, {"word": "a", "start": 39.925, "end": 39.945}, {"word": "lot", "start": 40.005, "end": 40.165}, {"word": "of", "start": 40.205, "end": 40.245}, {"word": "people", "start": 40.285, "end": 40.526}, {"word": "think", "start": 40.566, "end": 40.806}, {"word": "that,", "start": 40.886, "end": 41.167}, {"word": "but", "start": 41.407, "end": 41.648}, {"word": "the", "start": 41.768, "end": 41.868}, {"word": "article", "start": 41.948, "end": 42.169}, {"word": "makes", "start": 42.209, "end": 42.349}, {"word": "a", "start": 42.389, "end": 42.449}, {"word": "really", "start": 42.529, "end": 42.73}, {"word": "clear", "start": 42.77, "end": 42.93}, {"word": "distinction.", "start": 43.01, "end": 43.451}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It says body image is how you think and feel about the way you look.", "start": 43.571, "end": 46.997, "words": [{"word": "It", "start": 43.571, "end": 43.671}, {"word": "says", "start": 43.711, "end": 43.791}, {"word": "body", "start": 43.992, "end": 44.292}, {"word": "image", "start": 44.372, "end": 44.653}, {"word": "is", "start": 44.733, "end": 44.793}, {"word": "how", "start": 44.913, "end": 45.114}, {"word": "you", "start": 45.174, "end": 45.314}, {"word": "think", "start": 45.374, "end": 45.554}, {"word": "and", "start": 45.615, "end": 45.675}, {"word": "feel", "start": 45.755, "end": 45.995}, {"word": "about", "start": 46.015, "end": 46.296}, {"word": "the", "start": 46.336, "end": 46.436}, {"word": "way", "start": 46.476, "end": 46.596}, {"word": "you", "start": 46.636, "end": 46.777}, {"word": "look.", "start": 46.817, "end": 46.997}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Oh, I see.", "start": 47.078, "end": 47.859, "words": [{"word": "Oh,", "start": 47.078, "end": 47.418}, {"word": "I", "start": 47.559, "end": 47.619}, {"word": "see.", "start": 47.679, "end": 47.859}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "So it's not what you see, but how you feel about what you see.", "start": 48.14, "end": 50.743, "words": [{"word": "So", "start": 48.14, "end": 48.26}, {"word": "it's", "start": 48.3, "end": 48.4}, {"word": "not", "start": 48.44, "end": 48.54}, {"word": "what", "start": 48.6, "end": 48.74}, {"word": "you", "start": 48.78, "end": 48.901}, {"word": "see,", "start": 48.961, "end": 49.141}, {"word": "but", "start": 49.181, "end": 49.281}, {"word": "how", "start": 49.321, "end": 49.421}, {"word": "you", "start": 49.461, "end": 49.582}, {"word": "feel", "start": 49.642, "end": 49.862}, {"word": "about", "start": 49.942, "end": 50.122}, {"word": "what", "start": 50.183, "end": 50.303}, {"word": "you", "start": 50.363, "end": 50.463}, {"word": "see.", "start": 50.503, "end": 50.743}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Exactly.", "start": 50.763, "end": 51.224, "words": [{"word": "Exactly.", "start": 50.763, "end": 51.224}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It's a mental thing, not just a physical one.", "start": 51.284, "end": 53.207, "words": [{"word": "It's", "start": 51.284, "end": 51.384}, {"word": "a", "start": 51.424, "end": 51.464}, {"word": "mental", "start": 51.545, "end": 51.825}, {"word": "thing,", "start": 51.865, "end": 52.045}, {"word": "not", "start": 52.145, "end": 52.266}, {"word": "just", "start": 52.286, "end": 52.426}, {"word": "a", "start": 52.466, "end": 52.486}, {"word": "physical", "start": 52.546, "end": 52.927}, {"word": "one.", "start": 53.087, "end": 53.207}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "And to help us unpack this, the article introduces an expert.", "start": 54.028, "end": 57.453, "words": [{"word": "And", "start": 54.028, "end": 54.088}, {"word": "to", "start": 54.128, "end": 54.168}, {"word": "help", "start": 54.188, "end": 54.349}, {"word": "us", "start": 54.429, "end": 54.509}, {"word": "unpack", "start": 54.569, "end": 54.909}, {"word": "this,", "start": 54.93, "end": 55.13}, {"word": "the", "start": 55.25, "end": 55.37}, {"word": "article", "start": 55.45, "end": 55.791}, {"word": "introduces", "start": 55.891, "end": 56.372}, {"word": "an", "start": 56.432, "end": 56.472}, {"word": "expert.", "start": 56.632, "end": 57.453}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "His name is Dr.", "start": 57.473, "end": 58.294, "words": [{"word": "His", "start": 57.473, "end": 57.593}, {"word": "name", "start": 57.653, "end": 57.814}, {"word": "is", "start": 57.894, "end": 57.974}, {"word": "Dr.", "start": 58.054, "end": 58.294}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Tharaka Gunarathni.", "start": 58.375, "end": 59.576, "words": [{"word": "Tharaka", "start": 58.375, "end": 58.875}, {"word": "Gunarathni.", "start": 58.915, "end": 59.576}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "He's a psychologist.", "start": 59.656, "end": 60.818, "words": [{"word": "He's", "start": 59.656, "end": 59.797}, {"word": "a", "start": 59.817, "end": 59.837}, {"word": "psychologist.", "start": 60.117, "end": 60.818}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Yeah, he is.", "start": 60.838, "end": 61.619, "words": [{"word": "Yeah,", "start": 60.838, "end": 61.119}, {"word": "he", "start": 61.139, "end": 61.239}, {"word": "is.", "start": 61.459, "end": 61.619}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "And for anyone listening, a psychologist is basically someone who helps people understand their emotions and their thoughts.", "start": 61.659, "end": 69.411, "words": [{"word": "And", "start": 61.659, "end": 61.94}, {"word": "for", "start": 62.08, "end": 62.2}, {"word": "anyone", "start": 62.3, "end": 62.581}, {"word": "listening,", "start": 62.621, "end": 63.061}, {"word": "a", "start": 63.121, "end": 63.162}, {"word": "psychologist", "start": 63.182, "end": 63.903}, {"word": "is", "start": 64.103, "end": 64.203}, {"word": "basically", "start": 65.305, "end": 65.805}, {"word": "someone", "start": 65.946, "end": 66.286}, {"word": "who", "start": 66.346, "end": 66.607}, {"word": "helps", "start": 66.647, "end": 66.907}, {"word": "people", "start": 66.947, "end": 67.207}, {"word": "understand", "start": 67.308, "end": 67.828}, {"word": "their", "start": 67.868, "end": 68.069}, {"word": "emotions", "start": 68.129, "end": 68.67}, {"word": "and", "start": 68.75, "end": 68.81}, {"word": "their", "start": 68.85, "end": 68.99}, {"word": "thoughts.", "start": 69.05, "end": 69.411}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Like a doctor for your mind.", "start": 69.671, "end": 70.993, "words": [{"word": "Like", "start": 69.671, "end": 69.791}, {"word": "a", "start": 69.831, "end": 69.851}, {"word": "doctor", "start": 69.931, "end": 70.252}, {"word": "for", "start": 70.292, "end": 70.432}, {"word": "your", "start": 70.452, "end": 70.572}, {"word": "mind.", "start": 70.612, "end": 70.993}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "A perfect way to put it.", "start": 71.362, "end": 72.447, "words": [{"word": "A", "start": 71.362, "end": 71.543}, {"word": "perfect", "start": 71.563, "end": 71.904}, {"word": "way", "start": 71.945, "end": 72.045}, {"word": "to", "start": 72.065, "end": 72.125}, {"word": "put", "start": 72.186, "end": 72.326}, {"word": "it.", "start": 72.386, "end": 72.447}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "So this mind doctor, Dr.", "start": 72.828, "end": 74.415, "words": [{"word": "So", "start": 72.828, "end": 72.949}, {"word": "this", "start": 72.969, "end": 73.11}, {"word": "mind", "start": 73.21, "end": 73.451}, {"word": "doctor,", "start": 73.491, "end": 73.893}, {"word": "Dr.", "start": 73.953, "end": 74.415}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Gunnarathani, he explains where our body image actually comes from.", "start": 74.455, "end": 78.051, "words": [{"word": "Gunnarathani,", "start": 74.455, "end": 75.038}, {"word": "he", "start": 75.4, "end": 75.5}, {"word": "explains", "start": 75.56, "end": 75.962}, {"word": "where", "start": 76.002, "end": 76.324}, {"word": "our", "start": 76.424, "end": 76.504}, {"word": "body", "start": 76.545, "end": 76.826}, {"word": "image", "start": 76.926, "end": 77.167}, {"word": "actually", "start": 77.308, "end": 77.609}, {"word": "comes", "start": 77.649, "end": 77.85}, {"word": "from.", "start": 77.911, "end": 78.051}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "And it doesn't just appear out of nowhere, I'm guessing.", "start": 78.654, "end": 80.562, "words": [{"word": "And", "start": 78.654, "end": 78.714}, {"word": "it", "start": 78.754, "end": 78.794}, {"word": "doesn't", "start": 78.835, "end": 79.056}, {"word": "just", "start": 79.096, "end": 79.236}, {"word": "appear", "start": 79.276, "end": 79.497}, {"word": "out", "start": 79.558, "end": 79.618}, {"word": "of", "start": 79.678, "end": 79.718}, {"word": "nowhere,", "start": 79.779, "end": 80.04}, {"word": "I'm", "start": 80.08, "end": 80.18}, {"word": "guessing.", "start": 80.201, "end": 80.562}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Not at all.", "start": 80.626, "end": 81.207, "words": [{"word": "Not", "start": 80.626, "end": 80.886}, {"word": "at", "start": 80.926, "end": 80.966}, {"word": "all.", "start": 81.067, "end": 81.207}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "He says it's influenced by so many things, like what we see on TV and on social media.", "start": 81.287, "end": 86.875, "words": [{"word": "He", "start": 81.287, "end": 81.367}, {"word": "says", "start": 81.427, "end": 81.547}, {"word": "it's", "start": 81.627, "end": 81.708}, {"word": "influenced", "start": 81.768, "end": 82.148}, {"word": "by", "start": 82.188, "end": 82.308}, {"word": "so", "start": 82.328, "end": 82.989}, {"word": "many", "start": 83.13, "end": 83.41}, {"word": "things,", "start": 83.51, "end": 83.891}, {"word": "like", "start": 83.991, "end": 84.211}, {"word": "what", "start": 84.772, "end": 84.872}, {"word": "we", "start": 84.912, "end": 84.972}, {"word": "see", "start": 85.012, "end": 85.132}, {"word": "on", "start": 85.192, "end": 85.273}, {"word": "TV", "start": 85.293, "end": 85.813}, {"word": "and", "start": 85.873, "end": 85.933}, {"word": "on", "start": 85.994, "end": 86.054}, {"word": "social", "start": 86.114, "end": 86.394}, {"word": "media.", "start": 86.434, "end": 86.875}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Right.", "start": 86.915, "end": 87.115, "words": [{"word": "Right.", "start": 86.915, "end": 87.115}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "And also what our friends and family say.", "start": 87.275, "end": 88.878, "words": [{"word": "And", "start": 87.275, "end": 87.355}, {"word": "also", "start": 87.416, "end": 87.616}, {"word": "what", "start": 87.656, "end": 87.756}, {"word": "our", "start": 87.796, "end": 87.876}, {"word": "friends", "start": 87.916, "end": 88.117}, {"word": "and", "start": 88.177, "end": 88.237}, {"word": "family", "start": 88.297, "end": 88.637}, {"word": "say.", "start": 88.677, "end": 88.878}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Yes.", "start": 89.098, "end": 89.559, "words": [{"word": "Yes.", "start": 89.098, "end": 89.559}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "And maybe most importantly, how we feel about ourselves on the inside.", "start": 89.739, "end": 92.603, "words": [{"word": "And", "start": 89.739, "end": 89.819}, {"word": "maybe", "start": 89.839, "end": 90.059}, {"word": "most", "start": 90.099, "end": 90.26}, {"word": "importantly,", "start": 90.32, "end": 90.84}, {"word": "how", "start": 90.88, "end": 90.981}, {"word": "we", "start": 91.021, "end": 91.121}, {"word": "feel", "start": 91.161, "end": 91.321}, {"word": "about", "start": 91.341, "end": 91.481}, {"word": "ourselves", "start": 91.541, "end": 91.882}, {"word": "on", "start": 91.942, "end": 92.002}, {"word": "the", "start": 92.022, "end": 92.102}, {"word": "inside.", "start": 92.162, "end": 92.603}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "All these things kind of mix together.", "start": 92.843, "end": 94.425, "words": [{"word": "All", "start": 92.843, "end": 92.943}, {"word": "these", "start": 93.003, "end": 93.144}, {"word": "things", "start": 93.204, "end": 93.384}, {"word": "kind", "start": 93.444, "end": 93.584}, {"word": "of", "start": 93.624, "end": 93.684}, {"word": "mix", "start": 93.744, "end": 93.985}, {"word": "together.", "start": 94.025, "end": 94.425}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Really.", "start": 94.485, "end": 94.926, "words": [{"word": "Really.", "start": 94.485, "end": 94.926}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "It's amazing how much outside things like TV can change how we feel about ourselves.", "start": 95.547, "end": 101.135, "words": [{"word": "It's", "start": 95.547, "end": 95.667}, {"word": "amazing", "start": 95.707, "end": 96.048}, {"word": "how", "start": 96.148, "end": 96.348}, {"word": "much", "start": 96.428, "end": 96.649}, {"word": "outside", "start": 97.309, "end": 97.73}, {"word": "things", "start": 97.83, "end": 98.151}, {"word": "like", "start": 98.471, "end": 98.631}, {"word": "TV", "start": 98.671, "end": 99.112}, {"word": "can", "start": 99.553, "end": 99.693}, {"word": "change", "start": 99.733, "end": 99.993}, {"word": "how", "start": 100.033, "end": 100.133}, {"word": "we", "start": 100.193, "end": 100.294}, {"word": "feel", "start": 100.334, "end": 100.514}, {"word": "about", "start": 100.554, "end": 100.694}, {"word": "ourselves.", "start": 100.754, "end": 101.135}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It's huge.", "start": 101.155, "end": 101.816, "words": [{"word": "It's", "start": 101.155, "end": 101.295}, {"word": "huge.", "start": 101.375, "end": 101.816}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "And there's one time in life when this becomes, you know, extra intense, the article calls it puberty.", "start": 101.936, "end": 106.262, "words": [{"word": "And", "start": 101.936, "end": 102.016}, {"word": "there's", "start": 102.036, "end": 102.236}, {"word": "one", "start": 102.337, "end": 102.417}, {"word": "time", "start": 102.457, "end": 102.597}, {"word": "in", "start": 102.657, "end": 102.697}, {"word": "life", "start": 102.757, "end": 102.897}, {"word": "when", "start": 102.937, "end": 103.037}, {"word": "this", "start": 103.058, "end": 103.178}, {"word": "becomes,", "start": 103.238, "end": 103.618}, {"word": "you", "start": 103.879, "end": 103.959}, {"word": "know,", "start": 103.979, "end": 104.139}, {"word": "extra", "start": 104.239, "end": 104.48}, {"word": "intense,", "start": 104.54, "end": 104.94}, {"word": "the", "start": 105.0, "end": 105.1}, {"word": "article", "start": 105.14, "end": 105.381}, {"word": "calls", "start": 105.421, "end": 105.581}, {"word": "it", "start": 105.641, "end": 105.681}, {"word": "puberty.", "start": 105.781, "end": 106.262}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Ah, puberty.", "start": 106.647, "end": 107.849, "words": [{"word": "Ah,", "start": 106.647, "end": 107.108}, {"word": "puberty.", "start": 107.168, "end": 107.849}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Yeah.", "start": 107.889, "end": 108.55, "words": [{"word": "Yeah.", "start": 107.889, "end": 108.55}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "And that's just the word for the time when a child's body develops and changes as they become an adult.", "start": 108.57, "end": 114.678, "words": [{"word": "And", "start": 108.57, "end": 108.67}, {"word": "that's", "start": 108.69, "end": 108.91}, {"word": "just", "start": 108.95, "end": 109.11}, {"word": "the", "start": 109.15, "end": 109.23}, {"word": "word", "start": 109.271, "end": 109.471}, {"word": "for", "start": 109.551, "end": 109.651}, {"word": "the", "start": 109.691, "end": 109.771}, {"word": "time", "start": 109.831, "end": 110.152}, {"word": "when", "start": 110.172, "end": 110.732}, {"word": "a", "start": 110.753, "end": 110.773}, {"word": "child's", "start": 110.913, "end": 111.233}, {"word": "body", "start": 111.313, "end": 111.574}, {"word": "develops", "start": 111.614, "end": 112.114}, {"word": "and", "start": 112.315, "end": 112.415}, {"word": "changes", "start": 112.855, "end": 113.216}, {"word": "as", "start": 113.316, "end": 113.376}, {"word": "they", "start": 113.416, "end": 113.536}, {"word": "become", "start": 113.576, "end": 113.817}, {"word": "an", "start": 113.837, "end": 113.877}, {"word": "adult.", "start": 113.937, "end": 114.678}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It's a time of huge change.", "start": 114.698, "end": 116.16, "words": [{"word": "It's", "start": 114.698, "end": 114.798}, {"word": "a", "start": 114.858, "end": 114.898}, {"word": "time", "start": 114.938, "end": 115.158}, {"word": "of", "start": 115.198, "end": 115.239}, {"word": "huge", "start": 115.259, "end": 115.659}, {"word": "change.", "start": 115.759, "end": 116.16}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "So your body is changing, and you're also more aware of what other people think.", "start": 116.22, "end": 120.626, "words": [{"word": "So", "start": 116.22, "end": 116.26}, {"word": "your", "start": 116.34, "end": 116.44}, {"word": "body", "start": 116.46, "end": 116.701}, {"word": "is", "start": 116.741, "end": 116.801}, {"word": "changing,", "start": 116.861, "end": 117.321}, {"word": "and", "start": 117.922, "end": 117.982}, {"word": "you're", "start": 118.022, "end": 118.162}, {"word": "also", "start": 118.203, "end": 118.403}, {"word": "more", "start": 118.443, "end": 118.663}, {"word": "aware", "start": 118.703, "end": 118.923}, {"word": "of", "start": 118.964, "end": 119.004}, {"word": "what", "start": 119.064, "end": 119.164}, {"word": "other", "start": 119.224, "end": 119.364}, {"word": "people", "start": 119.404, "end": 119.664}, {"word": "think.", "start": 119.725, "end": 120.626}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "That sounds complicated.", "start": 120.646, "end": 121.607, "words": [{"word": "That", "start": 120.646, "end": 120.746}, {"word": "sounds", "start": 120.786, "end": 120.986}, {"word": "complicated.", "start": 121.046, "end": 121.607}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It is.", "start": 121.968, "end": 122.288, "words": [{"word": "It", "start": 121.968, "end": 122.028}, {"word": "is.", "start": 122.168, "end": 122.288}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "But the article says it's completely normal to worry about how you look during this time.", "start": 123.069, "end": 127.455, "words": [{"word": "But", "start": 123.069, "end": 123.189}, {"word": "the", "start": 123.209, "end": 123.309}, {"word": "article", "start": 123.389, "end": 123.71}, {"word": "says", "start": 123.77, "end": 124.01}, {"word": "it's", "start": 124.03, "end": 124.311}, {"word": "completely", "start": 124.391, "end": 124.952}, {"word": "normal", "start": 125.032, "end": 125.412}, {"word": "to", "start": 125.472, "end": 125.572}, {"word": "worry", "start": 125.612, "end": 125.933}, {"word": "about", "start": 125.973, "end": 126.173}, {"word": "how", "start": 126.233, "end": 126.333}, {"word": "you", "start": 126.373, "end": 126.514}, {"word": "look", "start": 126.554, "end": 126.754}, {"word": "during", "start": 126.794, "end": 126.974}, {"word": "this", "start": 127.014, "end": 127.155}, {"word": "time.", "start": 127.195, "end": 127.455}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It's part of growing up.", "start": 127.735, "end": 128.937, "words": [{"word": "It's", "start": 127.735, "end": 127.855}, {"word": "part", "start": 127.896, "end": 128.056}, {"word": "of", "start": 128.096, "end": 128.136}, {"word": "growing", "start": 128.176, "end": 128.456}, {"word": "up.", "start": 128.556, "end": 128.937}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "That's good to hear.", "start": 128.957, "end": 129.618, "words": [{"word": "That's", "start": 128.957, "end": 129.117}, {"word": "good", "start": 129.137, "end": 129.277}, {"word": "to", "start": 129.297, "end": 129.337}, {"word": "hear.", "start": 129.398, "end": 129.618}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "But I guess that brings us to the next big question.", "start": 129.658, "end": 132.722, "words": [{"word": "But", "start": 129.658, "end": 130.359}, {"word": "I", "start": 130.419, "end": 130.459}, {"word": "guess", "start": 130.499, "end": 130.639}, {"word": "that", "start": 130.679, "end": 130.779}, {"word": "brings", "start": 130.819, "end": 131.0}, {"word": "us", "start": 131.08, "end": 131.14}, {"word": "to", "start": 131.18, "end": 131.26}, {"word": "the", "start": 131.3, "end": 131.38}, {"word": "next", "start": 131.44, "end": 131.601}, {"word": "big", "start": 131.681, "end": 131.861}, {"word": "question.", "start": 131.901, "end": 132.722}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Why is it so important to have a positive body image?", "start": 133.327, "end": 136.52, "words": [{"word": "Why", "start": 133.327, "end": 133.688}, {"word": "is", "start": 133.749, "end": 133.809}, {"word": "it", "start": 133.849, "end": 133.949}, {"word": "so", "start": 133.99, "end": 134.11}, {"word": "important", "start": 134.17, "end": 134.532}, {"word": "to", "start": 134.572, "end": 134.632}, {"word": "have", "start": 134.692, "end": 134.853}, {"word": "a", "start": 134.893, "end": 134.913}, {"word": "positive", "start": 134.933, "end": 135.757}, {"word": "body", "start": 135.837, "end": 136.158}, {"word": "image?", "start": 136.259, "end": 136.52}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Well, the article puts it beautifully.", "start": 137.082, "end": 138.648, "words": [{"word": "Well,", "start": 137.082, "end": 137.363}, {"word": "the", "start": 137.403, "end": 137.544}, {"word": "article", "start": 137.624, "end": 137.845}, {"word": "puts", "start": 137.905, "end": 138.046}, {"word": "it", "start": 138.106, "end": 138.146}, {"word": "beautifully.", "start": 138.166, "end": 138.648}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It says, when you understand how amazing your body is, you treat it with respect and kindness.", "start": 138.708, "end": 143.708, "words": [{"word": "It", "start": 138.708, "end": 138.769}, {"word": "says,", "start": 138.809, "end": 138.989}, {"word": "when", "start": 139.03, "end": 139.13}, {"word": "you", "start": 139.17, "end": 139.291}, {"word": "understand", "start": 139.331, "end": 139.752}, {"word": "how", "start": 139.833, "end": 139.933}, {"word": "amazing", "start": 139.973, "end": 140.395}, {"word": "your", "start": 140.435, "end": 140.556}, {"word": "body", "start": 140.576, "end": 140.837}, {"word": "is,", "start": 140.977, "end": 141.078}, {"word": "you", "start": 141.138, "end": 141.62}, {"word": "treat", "start": 141.66, "end": 141.861}, {"word": "it", "start": 141.901, "end": 141.941}, {"word": "with", "start": 141.981, "end": 142.082}, {"word": "respect", "start": 142.122, "end": 142.644}, {"word": "and", "start": 142.724, "end": 142.805}, {"word": "kindness.", "start": 142.885, "end": 143.708}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Respect and kindness.", "start": 143.755, "end": 144.836, "words": [{"word": "Respect", "start": 143.755, "end": 144.296}, {"word": "and", "start": 144.336, "end": 144.416}, {"word": "kindness.", "start": 144.476, "end": 144.836}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "We usually talk about treating other people that way.", "start": 144.876, "end": 146.999, "words": [{"word": "We", "start": 144.876, "end": 144.997}, {"word": "usually", "start": 145.077, "end": 145.297}, {"word": "talk", "start": 145.317, "end": 145.517}, {"word": "about", "start": 145.537, "end": 145.698}, {"word": "treating", "start": 145.778, "end": 146.078}, {"word": "other", "start": 146.098, "end": 146.318}, {"word": "people", "start": 146.358, "end": 146.599}, {"word": "that", "start": 146.619, "end": 146.799}, {"word": "way.", "start": 146.839, "end": 146.999}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Exactly.", "start": 147.24, "end": 147.76, "words": [{"word": "Exactly.", "start": 147.24, "end": 147.76}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "But we need to do it for ourselves, too.", "start": 148.021, "end": 149.483, "words": [{"word": "But", "start": 148.021, "end": 148.121}, {"word": "we", "start": 148.161, "end": 148.241}, {"word": "need", "start": 148.281, "end": 148.401}, {"word": "to", "start": 148.421, "end": 148.461}, {"word": "do", "start": 148.481, "end": 148.541}, {"word": "it", "start": 148.601, "end": 148.641}, {"word": "for", "start": 148.681, "end": 148.762}, {"word": "ourselves,", "start": 148.802, "end": 149.202}, {"word": "too.", "start": 149.262, "end": 149.483}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "And a big part of that is changing how we think.", "start": 149.823, "end": 152.346, "words": [{"word": "And", "start": 149.823, "end": 149.903}, {"word": "a", "start": 149.943, "end": 149.963}, {"word": "big", "start": 149.983, "end": 150.384}, {"word": "part", "start": 150.424, "end": 150.584}, {"word": "of", "start": 150.624, "end": 150.664}, {"word": "that", "start": 150.704, "end": 150.824}, {"word": "is", "start": 150.904, "end": 150.985}, {"word": "changing", "start": 151.105, "end": 151.505}, {"word": "how", "start": 151.545, "end": 151.746}, {"word": "we", "start": 151.806, "end": 151.926}, {"word": "think.", "start": 152.066, "end": 152.346}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "We need to shift our focus from worrying about looks to focusing on what our bodies can do.", "start": 153.047, "end": 158.775, "words": [{"word": "We", "start": 153.047, "end": 153.127}, {"word": "need", "start": 153.167, "end": 153.288}, {"word": "to", "start": 153.328, "end": 153.368}, {"word": "shift", "start": 153.428, "end": 153.648}, {"word": "our", "start": 153.688, "end": 153.788}, {"word": "focus", "start": 153.848, "end": 154.289}, {"word": "from", "start": 154.669, "end": 154.97}, {"word": "worrying", "start": 155.01, "end": 155.691}, {"word": "about", "start": 155.751, "end": 155.971}, {"word": "looks", "start": 155.991, "end": 156.532}, {"word": "to", "start": 156.792, "end": 157.032}, {"word": "focusing", "start": 157.213, "end": 157.613}, {"word": "on", "start": 157.673, "end": 157.733}, {"word": "what", "start": 157.773, "end": 157.874}, {"word": "our", "start": 157.914, "end": 157.994}, {"word": "bodies", "start": 158.034, "end": 158.334}, {"word": "can", "start": 158.414, "end": 158.534}, {"word": "do.", "start": 158.595, "end": 158.775}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "You got it.", "start": 158.995, "end": 159.556, "words": [{"word": "You", "start": 158.995, "end": 159.155}, {"word": "got", "start": 159.195, "end": 159.436}, {"word": "it.", "start": 159.496, "end": 159.556}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Instead of worrying about having perfect hair or how tall you are, the article says to think about the brilliant things your body allows you to do.", "start": 159.676, "end": 166.565, "words": [{"word": "Instead", "start": 159.676, "end": 159.916}, {"word": "of", "start": 159.956, "end": 159.996}, {"word": "worrying", "start": 160.056, "end": 160.377}, {"word": "about", "start": 160.437, "end": 160.597}, {"word": "having", "start": 160.657, "end": 160.838}, {"word": "perfect", "start": 160.918, "end": 161.278}, {"word": "hair", "start": 161.318, "end": 161.719}, {"word": "or", "start": 161.779, "end": 161.819}, {"word": "how", "start": 161.899, "end": 161.999}, {"word": "tall", "start": 162.079, "end": 162.36}, {"word": "you", "start": 162.4, "end": 162.5}, {"word": "are,", "start": 162.64, "end": 162.74}, {"word": "the", "start": 162.78, "end": 163.201}, {"word": "article", "start": 163.281, "end": 163.561}, {"word": "says", "start": 163.601, "end": 163.801}, {"word": "to", "start": 163.882, "end": 163.962}, {"word": "think", "start": 164.002, "end": 164.162}, {"word": "about", "start": 164.222, "end": 164.402}, {"word": "the", "start": 164.422, "end": 164.522}, {"word": "brilliant", "start": 164.602, "end": 164.983}, {"word": "things", "start": 165.043, "end": 165.303}, {"word": "your", "start": 165.343, "end": 165.464}, {"word": "body", "start": 165.524, "end": 165.784}, {"word": "allows", "start": 165.864, "end": 166.165}, {"word": "you", "start": 166.205, "end": 166.285}, {"word": "to", "start": 166.325, "end": 166.385}, {"word": "do.", "start": 166.425, "end": 166.565}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Like what?", "start": 166.825, "end": 167.266, "words": [{"word": "Like", "start": 166.825, "end": 167.006}, {"word": "what?", "start": 167.046, "end": 167.266}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "What are some examples?", "start": 167.687, "end": 168.548, "words": [{"word": "What", "start": 167.687, "end": 167.807}, {"word": "are", "start": 167.847, "end": 167.927}, {"word": "some", "start": 167.947, "end": 168.087}, {"word": "examples?", "start": 168.127, "end": 168.548}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Well, they list things like cycling or crafting something with your hands.", "start": 168.908, "end": 173.374, "words": [{"word": "Well,", "start": 168.908, "end": 169.068}, {"word": "they", "start": 169.088, "end": 169.209}, {"word": "list", "start": 169.249, "end": 169.429}, {"word": "things", "start": 169.469, "end": 169.689}, {"word": "like", "start": 169.749, "end": 169.889}, {"word": "cycling", "start": 170.11, "end": 170.61}, {"word": "or", "start": 170.63, "end": 170.67}, {"word": "crafting", "start": 171.792, "end": 172.293}, {"word": "something", "start": 172.353, "end": 172.613}, {"word": "with", "start": 172.653, "end": 172.753}, {"word": "your", "start": 172.773, "end": 172.893}, {"word": "hands.", "start": 172.933, "end": 173.374}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Dancing, maybe?", "start": 173.472, "end": 174.253, "words": [{"word": "Dancing,", "start": 173.472, "end": 173.933}, {"word": "maybe?", "start": 173.973, "end": 174.253}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Or swimming?", "start": 174.874, "end": 175.314, "words": [{"word": "Or", "start": 174.874, "end": 174.974}, {"word": "swimming?", "start": 174.994, "end": 175.314}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Yes, swimming is a great one.", "start": 175.655, "end": 177.136, "words": [{"word": "Yes,", "start": 175.655, "end": 175.935}, {"word": "swimming", "start": 176.215, "end": 176.516}, {"word": "is", "start": 176.576, "end": 176.636}, {"word": "a", "start": 176.696, "end": 176.716}, {"word": "great", "start": 176.756, "end": 176.936}, {"word": "one.", "start": 177.036, "end": 177.136}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "When you're in the water, you're not thinking about your looks.", "start": 177.156, "end": 179.059, "words": [{"word": "When", "start": 177.156, "end": 177.257}, {"word": "you're", "start": 177.277, "end": 177.417}, {"word": "in", "start": 177.437, "end": 177.497}, {"word": "the", "start": 177.537, "end": 177.637}, {"word": "water,", "start": 177.677, "end": 177.917}, {"word": "you're", "start": 177.937, "end": 178.078}, {"word": "not", "start": 178.098, "end": 178.198}, {"word": "thinking", "start": 178.258, "end": 178.518}, {"word": "about", "start": 178.538, "end": 178.678}, {"word": "your", "start": 178.698, "end": 178.818}, {"word": "looks.", "start": 178.839, "end": 179.059}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "You're just feeling how your body can move and float and be strong.", "start": 179.079, "end": 182.503, "words": [{"word": "You're", "start": 179.079, "end": 179.219}, {"word": "just", "start": 179.239, "end": 179.359}, {"word": "feeling", "start": 179.519, "end": 179.94}, {"word": "how", "start": 180.02, "end": 180.12}, {"word": "your", "start": 180.16, "end": 180.28}, {"word": "body", "start": 180.34, "end": 180.681}, {"word": "can", "start": 180.721, "end": 180.841}, {"word": "move", "start": 180.901, "end": 181.181}, {"word": "and", "start": 181.241, "end": 181.322}, {"word": "float", "start": 181.402, "end": 181.722}, {"word": "and", "start": 181.822, "end": 181.902}, {"word": "be", "start": 181.942, "end": 182.042}, {"word": "strong.", "start": 182.102, "end": 182.503}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "It's about function over form.", "start": 182.964, "end": 184.465, "words": [{"word": "It's", "start": 182.964, "end": 183.064}, {"word": "about", "start": 183.104, "end": 183.284}, {"word": "function", "start": 183.324, "end": 183.744}, {"word": "over", "start": 183.845, "end": 184.045}, {"word": "form.", "start": 184.125, "end": 184.465}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "That's it, exactly.", "start": 184.746, "end": 185.547, "words": [{"word": "That's", "start": 184.746, "end": 184.926}, {"word": "it,", "start": 185.006, "end": 185.066}, {"word": "exactly.", "start": 185.106, "end": 185.547}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "And to back this up, they bring in another expert, Molly Forbes.", "start": 185.847, "end": 189.111, "words": [{"word": "And", "start": 185.847, "end": 185.927}, {"word": "to", "start": 185.967, "end": 186.027}, {"word": "back", "start": 186.067, "end": 186.207}, {"word": "this", "start": 186.248, "end": 186.368}, {"word": "up,", "start": 186.488, "end": 186.588}, {"word": "they", "start": 186.628, "end": 186.808}, {"word": "bring", "start": 186.828, "end": 187.008}, {"word": "in", "start": 187.049, "end": 187.109}, {"word": "another", "start": 187.189, "end": 187.629}, {"word": "expert,", "start": 187.749, "end": 188.11}, {"word": "Molly", "start": 188.41, "end": 188.67}, {"word": "Forbes.", "start": 188.731, "end": 189.111}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "She wrote a book called Everybody.", "start": 189.612, "end": 191.714, "words": [{"word": "She", "start": 189.612, "end": 189.772}, {"word": "wrote", "start": 189.832, "end": 190.032}, {"word": "a", "start": 190.072, "end": 190.092}, {"word": "book", "start": 190.152, "end": 190.353}, {"word": "called", "start": 190.493, "end": 190.833}, {"word": "Everybody.", "start": 190.853, "end": 191.714}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Oh, I've heard of that.", "start": 191.734, "end": 192.816, "words": [{"word": "Oh,", "start": 191.734, "end": 192.135}, {"word": "I've", "start": 192.175, "end": 192.295}, {"word": "heard", "start": 192.335, "end": 192.475}, {"word": "of", "start": 192.535, "end": 192.575}, {"word": "that.", "start": 192.615, "end": 192.816}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Didn't it win an award?", "start": 193.036, "end": 193.957, "words": [{"word": "Didn't", "start": 193.036, "end": 193.236}, {"word": "it", "start": 193.276, "end": 193.316}, {"word": "win", "start": 193.356, "end": 193.476}, {"word": "an", "start": 193.536, "end": 193.596}, {"word": "award?", "start": 193.637, "end": 193.957}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It did.", "start": 194.478, "end": 194.978, "words": [{"word": "It", "start": 194.478, "end": 194.538}, {"word": "did.", "start": 194.658, "end": 194.978}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "The Week Junior Book Awards in 2025.", "start": 195.038, "end": 197.481, "words": [{"word": "The", "start": 195.038, "end": 195.439}, {"word": "Week", "start": 195.539, "end": 195.779}, {"word": "Junior", "start": 195.879, "end": 196.26}, {"word": "Book", "start": 196.32, "end": 196.5}, {"word": "Awards", "start": 196.56, "end": 196.921}, {"word": "in", "start": 197.061, "end": 197.121}, {"word": "2025.", "start": 197.141, "end": 197.481}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "She really knows her stuff.", "start": 198.703, "end": 200.285, "words": [{"word": "She", "start": 198.703, "end": 198.823}, {"word": "really", "start": 198.863, "end": 199.143}, {"word": "knows", "start": 199.183, "end": 199.383}, {"word": "her", "start": 199.444, "end": 199.544}, {"word": "stuff.", "start": 199.604, "end": 200.285}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "And she has this amazing quote.", "start": 200.305, "end": 202.087, "words": [{"word": "And", "start": 200.305, "end": 200.385}, {"word": "she", "start": 200.425, "end": 200.525}, {"word": "has", "start": 200.585, "end": 200.725}, {"word": "this", "start": 200.745, "end": 200.865}, {"word": "amazing", "start": 200.945, "end": 201.606}, {"word": "quote.", "start": 201.726, "end": 202.087}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "What is it?", "start": 202.427, "end": 203.108, "words": [{"word": "What", "start": 202.427, "end": 202.567}, {"word": "is", "start": 202.627, "end": 202.688}, {"word": "it?", "start": 202.748, "end": 203.108}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "She says, your body is important and worthy of your respect and love, and it's yours and yours alone.", "start": 203.341, "end": 210.213, "words": [{"word": "She", "start": 203.341, "end": 203.501}, {"word": "says,", "start": 203.561, "end": 203.842}, {"word": "your", "start": 203.902, "end": 204.423}, {"word": "body", "start": 204.483, "end": 204.844}, {"word": "is", "start": 204.924, "end": 204.964}, {"word": "important", "start": 205.064, "end": 205.605}, {"word": "and", "start": 205.725, "end": 205.785}, {"word": "worthy", "start": 205.906, "end": 206.306}, {"word": "of", "start": 206.366, "end": 206.406}, {"word": "your", "start": 206.446, "end": 206.567}, {"word": "respect", "start": 206.607, "end": 207.007}, {"word": "and", "start": 207.088, "end": 207.168}, {"word": "love,", "start": 207.248, "end": 207.568}, {"word": "and", "start": 208.009, "end": 208.089}, {"word": "it's", "start": 208.15, "end": 208.27}, {"word": "yours", "start": 208.35, "end": 208.871}, {"word": "and", "start": 208.911, "end": 209.372}, {"word": "yours", "start": 209.452, "end": 209.772}, {"word": "alone.", "start": 209.893, "end": 210.213}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Yours alone.", "start": 210.293, "end": 211.035, "words": [{"word": "Yours", "start": 210.293, "end": 210.554}, {"word": "alone.", "start": 210.674, "end": 211.035}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "I like that.", "start": 211.936, "end": 212.477, "words": [{"word": "I", "start": 211.936, "end": 212.016}, {"word": "like", "start": 212.076, "end": 212.277}, {"word": "that.", "start": 212.317, "end": 212.477}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "It feels powerful.", "start": 212.537, "end": 213.439, "words": [{"word": "It", "start": 212.537, "end": 212.577}, {"word": "feels", "start": 212.637, "end": 212.838}, {"word": "powerful.", "start": 212.918, "end": 213.439}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It is.", "start": 213.599, "end": 214.0, "words": [{"word": "It", "start": 213.599, "end": 213.659}, {"word": "is.", "start": 213.84, "end": 214.0}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "But then she says something that really made me think.", "start": 214.441, "end": 216.845, "words": [{"word": "But", "start": 214.441, "end": 214.541}, {"word": "then", "start": 214.561, "end": 214.701}, {"word": "she", "start": 214.741, "end": 214.861}, {"word": "says", "start": 214.901, "end": 215.062}, {"word": "something", "start": 215.102, "end": 215.342}, {"word": "that", "start": 215.382, "end": 215.503}, {"word": "really", "start": 215.563, "end": 215.803}, {"word": "made", "start": 215.863, "end": 216.003}, {"word": "me", "start": 216.043, "end": 216.124}, {"word": "think.", "start": 216.184, "end": 216.845}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "She says, our body image affects how we treat other people.", "start": 216.865, "end": 220.632, "words": [{"word": "She", "start": 216.865, "end": 216.965}, {"word": "says,", "start": 217.025, "end": 217.206}, {"word": "our", "start": 217.246, "end": 217.446}, {"word": "body", "start": 217.506, "end": 217.847}, {"word": "image", "start": 217.927, "end": 218.247}, {"word": "affects", "start": 218.468, "end": 218.909}, {"word": "how", "start": 219.329, "end": 219.45}, {"word": "we", "start": 219.49, "end": 219.59}, {"word": "treat", "start": 219.63, "end": 219.83}, {"word": "other", "start": 219.87, "end": 220.191}, {"word": "people.", "start": 220.271, "end": 220.632}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Wait, how does that work?", "start": 221.092, "end": 221.974, "words": [{"word": "Wait,", "start": 221.092, "end": 221.273}, {"word": "how", "start": 221.293, "end": 221.373}, {"word": "does", "start": 221.393, "end": 221.473}, {"word": "that", "start": 221.553, "end": 221.653}, {"word": "work?", "start": 221.734, "end": 221.974}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "How does my view of myself change how we treat someone else?", "start": 222.275, "end": 225.4, "words": [{"word": "How", "start": 222.275, "end": 222.415}, {"word": "does", "start": 222.455, "end": 222.575}, {"word": "my", "start": 222.655, "end": 222.775}, {"word": "view", "start": 222.835, "end": 222.976}, {"word": "of", "start": 223.036, "end": 223.076}, {"word": "myself", "start": 223.136, "end": 223.577}, {"word": "change", "start": 224.098, "end": 224.318}, {"word": "how", "start": 224.358, "end": 224.438}, {"word": "we", "start": 224.478, "end": 224.559}, {"word": "treat", "start": 224.579, "end": 224.759}, {"word": "someone", "start": 224.799, "end": 225.039}, {"word": "else?", "start": 225.1, "end": 225.4}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Well, think about it.", "start": 225.447, "end": 226.369, "words": [{"word": "Well,", "start": 225.447, "end": 225.768}, {"word": "think", "start": 225.788, "end": 225.968}, {"word": "about", "start": 226.028, "end": 226.228}, {"word": "it.", "start": 226.308, "end": 226.369}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "If we believe there's only one good way to look, we might judge people who look different from that idea.", "start": 226.569, "end": 231.898, "words": [{"word": "If", "start": 226.569, "end": 226.629}, {"word": "we", "start": 226.709, "end": 226.869}, {"word": "believe", "start": 226.909, "end": 227.17}, {"word": "there's", "start": 227.19, "end": 227.39}, {"word": "only", "start": 227.43, "end": 227.571}, {"word": "one", "start": 227.611, "end": 227.851}, {"word": "good", "start": 227.891, "end": 228.192}, {"word": "way", "start": 228.252, "end": 228.372}, {"word": "to", "start": 228.392, "end": 228.472}, {"word": "look,", "start": 228.532, "end": 228.833}, {"word": "we", "start": 229.173, "end": 229.294}, {"word": "might", "start": 229.334, "end": 229.514}, {"word": "judge", "start": 229.614, "end": 229.874}, {"word": "people", "start": 229.935, "end": 230.235}, {"word": "who", "start": 230.315, "end": 230.435}, {"word": "look", "start": 230.476, "end": 230.656}, {"word": "different", "start": 230.756, "end": 231.137}, {"word": "from", "start": 231.197, "end": 231.317}, {"word": "that", "start": 231.377, "end": 231.517}, {"word": "idea.", "start": 231.597, "end": 231.898}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "OK, so if we're unfair to ourselves, we might be unfair to others, too.", "start": 231.958, "end": 235.945, "words": [{"word": "OK,", "start": 231.958, "end": 232.92}, {"word": "so", "start": 232.96, "end": 233.1}, {"word": "if", "start": 233.2, "end": 233.26}, {"word": "we're", "start": 233.3, "end": 233.441}, {"word": "unfair", "start": 233.481, "end": 233.761}, {"word": "to", "start": 233.781, "end": 233.841}, {"word": "ourselves,", "start": 233.861, "end": 234.422}, {"word": "we", "start": 234.502, "end": 234.623}, {"word": "might", "start": 234.663, "end": 234.823}, {"word": "be", "start": 234.883, "end": 234.983}, {"word": "unfair", "start": 235.063, "end": 235.324}, {"word": "to", "start": 235.344, "end": 235.384}, {"word": "others,", "start": 235.444, "end": 235.684}, {"word": "too.", "start": 235.764, "end": 235.945}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Right.", "start": 236.125, "end": 236.345, "words": [{"word": "Right.", "start": 236.125, "end": 236.345}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "And that can lead to unfair treatment, or the article uses the word discrimination.", "start": 236.486, "end": 241.414, "words": [{"word": "And", "start": 236.486, "end": 236.566}, {"word": "that", "start": 236.586, "end": 236.706}, {"word": "can", "start": 236.726, "end": 236.846}, {"word": "lead", "start": 236.886, "end": 237.027}, {"word": "to", "start": 237.087, "end": 237.147}, {"word": "unfair", "start": 237.267, "end": 237.588}, {"word": "treatment,", "start": 237.648, "end": 238.068}, {"word": "or", "start": 238.289, "end": 238.469}, {"word": "the", "start": 238.569, "end": 239.551}, {"word": "article", "start": 239.611, "end": 239.851}, {"word": "uses", "start": 239.932, "end": 240.092}, {"word": "the", "start": 240.132, "end": 240.232}, {"word": "word", "start": 240.272, "end": 240.412}, {"word": "discrimination.", "start": 240.452, "end": 241.414}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Discrimination.", "start": 241.478, "end": 242.219, "words": [{"word": "Discrimination.", "start": 241.478, "end": 242.219}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "So just treating someone badly because they're different.", "start": 242.239, "end": 244.182, "words": [{"word": "So", "start": 242.239, "end": 242.359}, {"word": "just", "start": 242.399, "end": 242.54}, {"word": "treating", "start": 242.68, "end": 242.9}, {"word": "someone", "start": 242.94, "end": 243.121}, {"word": "badly", "start": 243.161, "end": 243.421}, {"word": "because", "start": 243.461, "end": 243.661}, {"word": "they're", "start": 243.682, "end": 243.842}, {"word": "different.", "start": 243.882, "end": 244.182}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Exactly.", "start": 244.282, "end": 244.783, "words": [{"word": "Exactly.", "start": 244.282, "end": 244.783}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "So by learning to respect our own unique bodies, we actually become cleaner and more accepting of everyone.", "start": 245.184, "end": 250.472, "words": [{"word": "So", "start": 245.184, "end": 245.364}, {"word": "by", "start": 245.605, "end": 245.705}, {"word": "learning", "start": 245.745, "end": 245.965}, {"word": "to", "start": 246.005, "end": 246.065}, {"word": "respect", "start": 246.105, "end": 246.446}, {"word": "our", "start": 246.486, "end": 246.626}, {"word": "own", "start": 246.706, "end": 246.827}, {"word": "unique", "start": 246.927, "end": 247.167}, {"word": "bodies,", "start": 247.227, "end": 247.608}, {"word": "we", "start": 247.768, "end": 247.868}, {"word": "actually", "start": 247.968, "end": 248.229}, {"word": "become", "start": 248.249, "end": 248.469}, {"word": "cleaner", "start": 248.529, "end": 248.93}, {"word": "and", "start": 249.01, "end": 249.09}, {"word": "more", "start": 249.13, "end": 249.29}, {"word": "accepting", "start": 249.351, "end": 249.891}, {"word": "of", "start": 249.952, "end": 249.992}, {"word": "everyone.", "start": 250.072, "end": 250.472}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Wow.", "start": 250.512, "end": 251.113, "words": [{"word": "Wow.", "start": 250.512, "end": 251.113}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "So it's not just about me.", "start": 251.594, "end": 252.736, "words": [{"word": "So", "start": 251.594, "end": 251.694}, {"word": "it's", "start": 251.734, "end": 251.855}, {"word": "not", "start": 251.895, "end": 252.035}, {"word": "just", "start": 252.115, "end": 252.295}, {"word": "about", "start": 252.355, "end": 252.536}, {"word": "me.", "start": 252.596, "end": 252.736}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "It's about making the world a bit better.", "start": 253.097, "end": 254.779, "words": [{"word": "It's", "start": 253.097, "end": 253.217}, {"word": "about", "start": 253.257, "end": 253.437}, {"word": "making", "start": 253.497, "end": 253.758}, {"word": "the", "start": 253.818, "end": 253.898}, {"word": "world", "start": 253.938, "end": 254.178}, {"word": "a", "start": 254.238, "end": 254.258}, {"word": "bit", "start": 254.318, "end": 254.459}, {"word": "better.", "start": 254.539, "end": 254.779}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It really is.", "start": 255.1, "end": 255.601, "words": [{"word": "It", "start": 255.1, "end": 255.14}, {"word": "really", "start": 255.2, "end": 255.42}, {"word": "is.", "start": 255.52, "end": 255.601}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "That all makes sense.", "start": 256.021, "end": 256.782, "words": [{"word": "That", "start": 256.021, "end": 256.141}, {"word": "all", "start": 256.181, "end": 256.302}, {"word": "makes", "start": 256.342, "end": 256.482}, {"word": "sense.", "start": 256.542, "end": 256.782}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "But what if I'm feeling bad about my body?", "start": 256.863, "end": 261.109, "words": [{"word": "But", "start": 256.863, "end": 257.003}, {"word": "what", "start": 258.545, "end": 258.725}, {"word": "if", "start": 258.826, "end": 258.906}, {"word": "I'm", "start": 259.346, "end": 259.487}, {"word": "feeling", "start": 259.567, "end": 259.927}, {"word": "bad", "start": 260.068, "end": 260.328}, {"word": "about", "start": 260.368, "end": 260.568}, {"word": "my", "start": 260.608, "end": 260.729}, {"word": "body?", "start": 260.789, "end": 261.109}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "What's the advice to feel happier?", "start": 261.51, "end": 263.453, "words": [{"word": "What's", "start": 261.51, "end": 261.67}, {"word": "the", "start": 261.71, "end": 261.79}, {"word": "advice", "start": 261.81, "end": 262.151}, {"word": "to", "start": 262.191, "end": 262.532}, {"word": "feel", "start": 262.572, "end": 262.772}, {"word": "happier?", "start": 262.792, "end": 263.453}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "That is the most important question, right?", "start": 263.669, "end": 265.932, "words": [{"word": "That", "start": 263.669, "end": 263.869}, {"word": "is", "start": 263.929, "end": 264.009}, {"word": "the", "start": 264.11, "end": 264.21}, {"word": "most", "start": 264.35, "end": 264.59}, {"word": "important", "start": 264.67, "end": 265.151}, {"word": "question,", "start": 265.211, "end": 265.592}, {"word": "right?", "start": 265.632, "end": 265.932}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "And Molly Forbes gives some fantastic practical tips for being body positive.", "start": 265.952, "end": 270.779, "words": [{"word": "And", "start": 265.952, "end": 266.032}, {"word": "Molly", "start": 266.092, "end": 266.393}, {"word": "Forbes", "start": 266.453, "end": 266.813}, {"word": "gives", "start": 266.993, "end": 267.154}, {"word": "some", "start": 267.234, "end": 267.394}, {"word": "fantastic", "start": 267.494, "end": 268.415}, {"word": "practical", "start": 268.596, "end": 269.196}, {"word": "tips", "start": 269.277, "end": 269.517}, {"word": "for", "start": 269.597, "end": 269.697}, {"word": "being", "start": 269.757, "end": 269.977}, {"word": "body", "start": 270.058, "end": 270.278}, {"word": "positive.", "start": 270.318, "end": 270.779}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Okay, let's hear them.", "start": 270.819, "end": 271.58, "words": [{"word": "Okay,", "start": 270.819, "end": 270.999}, {"word": "let's", "start": 271.119, "end": 271.279}, {"word": "hear", "start": 271.319, "end": 271.459}, {"word": "them.", "start": 271.479, "end": 271.58}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Tip one.", "start": 271.78, "end": 272.22, "words": [{"word": "Tip", "start": 271.78, "end": 271.98}, {"word": "one.", "start": 272.1, "end": 272.22}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Tip number one is to focus on the inside.", "start": 272.581, "end": 275.365, "words": [{"word": "Tip", "start": 272.581, "end": 272.781}, {"word": "number", "start": 272.821, "end": 273.082}, {"word": "one", "start": 273.322, "end": 273.442}, {"word": "is", "start": 273.482, "end": 273.823}, {"word": "to", "start": 273.883, "end": 273.983}, {"word": "focus", "start": 274.083, "end": 274.463}, {"word": "on", "start": 274.564, "end": 274.604}, {"word": "the", "start": 274.644, "end": 274.724}, {"word": "inside.", "start": 274.864, "end": 275.365}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "You have to remember that the way you look is the least interesting thing about you.", "start": 276.006, "end": 280.131, "words": [{"word": "You", "start": 276.006, "end": 276.146}, {"word": "have", "start": 276.186, "end": 276.346}, {"word": "to", "start": 276.386, "end": 276.486}, {"word": "remember", "start": 276.566, "end": 276.947}, {"word": "that", "start": 277.027, "end": 277.127}, {"word": "the", "start": 277.147, "end": 277.247}, {"word": "way", "start": 277.307, "end": 277.407}, {"word": "you", "start": 277.468, "end": 277.588}, {"word": "look", "start": 277.648, "end": 277.928}, {"word": "is", "start": 278.128, "end": 278.188}, {"word": "the", "start": 278.229, "end": 278.389}, {"word": "least", "start": 278.529, "end": 278.849}, {"word": "interesting", "start": 278.95, "end": 279.39}, {"word": "thing", "start": 279.45, "end": 279.63}, {"word": "about", "start": 279.711, "end": 279.931}, {"word": "you.", "start": 279.991, "end": 280.131}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "The least interesting thing?", "start": 280.652, "end": 281.893, "words": [{"word": "The", "start": 280.652, "end": 280.752}, {"word": "least", "start": 280.852, "end": 281.172}, {"word": "interesting", "start": 281.293, "end": 281.673}, {"word": "thing?", "start": 281.713, "end": 281.893}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "That's a big statement in a world full of selfies.", "start": 281.913, "end": 284.757, "words": [{"word": "That's", "start": 281.913, "end": 282.074}, {"word": "a", "start": 282.094, "end": 282.134}, {"word": "big", "start": 282.354, "end": 282.634}, {"word": "statement", "start": 282.695, "end": 283.155}, {"word": "in", "start": 283.315, "end": 283.375}, {"word": "a", "start": 283.436, "end": 283.456}, {"word": "world", "start": 283.556, "end": 283.876}, {"word": "full", "start": 283.956, "end": 284.116}, {"word": "of", "start": 284.136, "end": 284.197}, {"word": "selfies.", "start": 284.277, "end": 284.757}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It is, but there's a great exercise in the article to prove it.", "start": 284.998, "end": 288.342, "words": [{"word": "It", "start": 284.998, "end": 285.058}, {"word": "is,", "start": 285.518, "end": 285.679}, {"word": "but", "start": 285.779, "end": 285.859}, {"word": "there's", "start": 285.899, "end": 286.139}, {"word": "a", "start": 286.199, "end": 286.219}, {"word": "great", "start": 286.4, "end": 286.78}, {"word": "exercise", "start": 286.88, "end": 287.321}, {"word": "in", "start": 287.361, "end": 287.401}, {"word": "the", "start": 287.441, "end": 287.501}, {"word": "article", "start": 287.561, "end": 287.801}, {"word": "to", "start": 287.821, "end": 287.881}, {"word": "prove", "start": 287.962, "end": 288.182}, {"word": "it.", "start": 288.282, "end": 288.342}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It says to think of someone you love like a good friend.", "start": 288.422, "end": 290.886, "words": [{"word": "It", "start": 288.422, "end": 288.462}, {"word": "says", "start": 288.482, "end": 288.622}, {"word": "to", "start": 288.663, "end": 288.743}, {"word": "think", "start": 288.803, "end": 289.003}, {"word": "of", "start": 289.043, "end": 289.083}, {"word": "someone", "start": 289.163, "end": 289.444}, {"word": "you", "start": 289.464, "end": 289.604}, {"word": "love", "start": 289.644, "end": 289.884}, {"word": "like", "start": 289.924, "end": 290.024}, {"word": "a", "start": 290.064, "end": 290.104}, {"word": "good", "start": 290.265, "end": 290.465}, {"word": "friend.", "start": 290.565, "end": 290.886}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Okay, I have someone in mind.", "start": 291.286, "end": 292.748, "words": [{"word": "Okay,", "start": 291.286, "end": 291.566}, {"word": "I", "start": 291.807, "end": 291.867}, {"word": "have", "start": 291.907, "end": 292.007}, {"word": "someone", "start": 292.047, "end": 292.287}, {"word": "in", "start": 292.347, "end": 292.388}, {"word": "mind.", "start": 292.448, "end": 292.748}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Now write down three things you like about them.", "start": 293.065, "end": 294.888, "words": [{"word": "Now", "start": 293.065, "end": 293.265}, {"word": "write", "start": 293.325, "end": 293.486}, {"word": "down", "start": 293.526, "end": 293.666}, {"word": "three", "start": 293.706, "end": 293.946}, {"word": "things", "start": 293.966, "end": 294.147}, {"word": "you", "start": 294.167, "end": 294.287}, {"word": "like", "start": 294.307, "end": 294.447}, {"word": "about", "start": 294.487, "end": 294.667}, {"word": "them.", "start": 294.707, "end": 294.888}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Okay, well first, they're a really good listener.", "start": 295.829, "end": 297.752, "words": [{"word": "Okay,", "start": 295.829, "end": 296.069}, {"word": "well", "start": 296.129, "end": 296.29}, {"word": "first,", "start": 296.33, "end": 296.55}, {"word": "they're", "start": 296.63, "end": 296.85}, {"word": "a", "start": 297.051, "end": 297.071}, {"word": "really", "start": 297.091, "end": 297.271}, {"word": "good", "start": 297.291, "end": 297.411}, {"word": "listener.", "start": 297.431, "end": 297.752}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Second, they always make me laugh.", "start": 298.132, "end": 299.234, "words": [{"word": "Second,", "start": 298.132, "end": 298.393}, {"word": "they", "start": 298.413, "end": 298.493}, {"word": "always", "start": 298.533, "end": 298.693}, {"word": "make", "start": 298.733, "end": 298.853}, {"word": "me", "start": 298.893, "end": 298.974}, {"word": "laugh.", "start": 299.014, "end": 299.234}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "And third, they're just super kind.", "start": 299.434, "end": 301.918, "words": [{"word": "And", "start": 299.434, "end": 299.514}, {"word": "third,", "start": 299.594, "end": 299.855}, {"word": "they're", "start": 300.796, "end": 301.017}, {"word": "just", "start": 301.077, "end": 301.237}, {"word": "super", "start": 301.337, "end": 301.657}, {"word": "kind.", "start": 301.677, "end": 301.918}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "See, you didn't mention that they have cool shoes or a certain haircut.", "start": 302.419, "end": 306.524, "words": [{"word": "See,", "start": 302.419, "end": 302.639}, {"word": "you", "start": 303.34, "end": 303.46}, {"word": "didn't", "start": 303.5, "end": 303.68}, {"word": "mention", "start": 303.76, "end": 304.021}, {"word": "that", "start": 304.061, "end": 304.141}, {"word": "they", "start": 304.181, "end": 304.301}, {"word": "have", "start": 304.341, "end": 304.461}, {"word": "cool", "start": 304.502, "end": 304.942}, {"word": "shoes", "start": 305.022, "end": 305.423}, {"word": "or", "start": 305.503, "end": 305.563}, {"word": "a", "start": 305.603, "end": 305.623}, {"word": "certain", "start": 305.683, "end": 305.944}, {"word": "haircut.", "start": 306.004, "end": 306.524}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "No, I didn't.", "start": 306.605, "end": 307.185, "words": [{"word": "No,", "start": 306.605, "end": 306.745}, {"word": "I", "start": 306.825, "end": 306.885}, {"word": "didn't.", "start": 306.925, "end": 307.185}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "It was all about their personality.", "start": 307.246, "end": 308.527, "words": [{"word": "It", "start": 307.246, "end": 307.286}, {"word": "was", "start": 307.326, "end": 307.386}, {"word": "all", "start": 307.426, "end": 307.566}, {"word": "about", "start": 307.606, "end": 307.766}, {"word": "their", "start": 307.786, "end": 307.927}, {"word": "personality.", "start": 307.967, "end": 308.527}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "And that's the aha moment.", "start": 308.688, "end": 310.871, "words": [{"word": "And", "start": 308.688, "end": 308.788}, {"word": "that's", "start": 308.828, "end": 309.108}, {"word": "the", "start": 309.228, "end": 309.409}, {"word": "aha", "start": 309.649, "end": 310.23}, {"word": "moment.", "start": 310.49, "end": 310.871}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "People love you for who you are inside, not for how you look on the outside.", "start": 311.311, "end": 315.437, "words": [{"word": "People", "start": 311.311, "end": 311.692}, {"word": "love", "start": 311.772, "end": 311.952}, {"word": "you", "start": 311.992, "end": 312.113}, {"word": "for", "start": 312.193, "end": 312.313}, {"word": "who", "start": 312.373, "end": 312.533}, {"word": "you", "start": 312.573, "end": 312.673}, {"word": "are", "start": 312.753, "end": 312.854}, {"word": "inside,", "start": 312.974, "end": 313.495}, {"word": "not", "start": 314.115, "end": 314.236}, {"word": "for", "start": 314.276, "end": 314.376}, {"word": "how", "start": 314.436, "end": 314.496}, {"word": "you", "start": 314.516, "end": 314.636}, {"word": "look", "start": 314.676, "end": 314.816}, {"word": "on", "start": 314.857, "end": 314.897}, {"word": "the", "start": 314.917, "end": 314.997}, {"word": "outside.", "start": 315.057, "end": 315.437}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "That actually takes a lot of pressure off.", "start": 315.798, "end": 317.24, "words": [{"word": "That", "start": 315.798, "end": 315.998}, {"word": "actually", "start": 316.038, "end": 316.279}, {"word": "takes", "start": 316.299, "end": 316.459}, {"word": "a", "start": 316.499, "end": 316.519}, {"word": "lot", "start": 316.559, "end": 316.679}, {"word": "of", "start": 316.699, "end": 316.739}, {"word": "pressure", "start": 316.779, "end": 317.1}, {"word": "off.", "start": 317.12, "end": 317.24}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Wow.", "start": 317.801, "end": 318.021, "words": [{"word": "Wow.", "start": 317.801, "end": 318.021}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Okay, what's tip number two?", "start": 318.302, "end": 319.343, "words": [{"word": "Okay,", "start": 318.302, "end": 318.502}, {"word": "what's", "start": 318.522, "end": 318.642}, {"word": "tip", "start": 318.662, "end": 318.802}, {"word": "number", "start": 318.822, "end": 319.003}, {"word": "two?", "start": 319.023, "end": 319.343}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Tip number two is to celebrate differences.", "start": 319.525, "end": 322.028, "words": [{"word": "Tip", "start": 319.525, "end": 319.725}, {"word": "number", "start": 319.745, "end": 319.965}, {"word": "two", "start": 320.006, "end": 320.246}, {"word": "is", "start": 320.266, "end": 320.586}, {"word": "to", "start": 320.606, "end": 320.646}, {"word": "celebrate", "start": 321.007, "end": 321.387}, {"word": "differences.", "start": 321.427, "end": 322.028}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "The article points out that even if we all ate the same food and did the same exercise, we would still all look different.", "start": 322.909, "end": 329.175, "words": [{"word": "The", "start": 322.909, "end": 323.009}, {"word": "article", "start": 323.089, "end": 323.369}, {"word": "points", "start": 323.449, "end": 323.689}, {"word": "out", "start": 323.809, "end": 323.91}, {"word": "that", "start": 323.95, "end": 324.07}, {"word": "even", "start": 324.27, "end": 324.49}, {"word": "if", "start": 324.51, "end": 324.65}, {"word": "we", "start": 324.73, "end": 324.871}, {"word": "all", "start": 325.091, "end": 325.231}, {"word": "ate", "start": 325.351, "end": 325.451}, {"word": "the", "start": 325.471, "end": 325.551}, {"word": "same", "start": 325.591, "end": 325.792}, {"word": "food", "start": 325.872, "end": 326.112}, {"word": "and", "start": 326.172, "end": 326.252}, {"word": "did", "start": 326.412, "end": 326.592}, {"word": "the", "start": 326.632, "end": 326.753}, {"word": "same", "start": 326.793, "end": 327.013}, {"word": "exercise,", "start": 327.133, "end": 327.714}, {"word": "we", "start": 327.874, "end": 327.974}, {"word": "would", "start": 328.014, "end": 328.154}, {"word": "still", "start": 328.194, "end": 328.414}, {"word": "all", "start": 328.474, "end": 328.574}, {"word": "look", "start": 328.614, "end": 328.795}, {"word": "different.", "start": 328.835, "end": 329.175}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "We would, because we're all built differently.", "start": 329.315, "end": 331.798, "words": [{"word": "We", "start": 329.315, "end": 329.435}, {"word": "would,", "start": 329.495, "end": 329.836}, {"word": "because", "start": 329.896, "end": 330.416}, {"word": "we're", "start": 330.436, "end": 330.597}, {"word": "all", "start": 330.617, "end": 330.737}, {"word": "built", "start": 330.897, "end": 331.177}, {"word": "differently.", "start": 331.317, "end": 331.798}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "And get this, there are more than eight billion human bodies on Earth.", "start": 331.858, "end": 337.704, "words": [{"word": "And", "start": 331.858, "end": 332.438}, {"word": "get", "start": 332.539, "end": 332.699}, {"word": "this,", "start": 332.779, "end": 333.019}, {"word": "there", "start": 333.58, "end": 333.76}, {"word": "are", "start": 333.82, "end": 333.9}, {"word": "more", "start": 333.94, "end": 334.08}, {"word": "than", "start": 334.12, "end": 334.26}, {"word": "eight", "start": 334.641, "end": 334.861}, {"word": "billion", "start": 335.462, "end": 336.082}, {"word": "human", "start": 336.403, "end": 336.783}, {"word": "bodies", "start": 336.883, "end": 337.263}, {"word": "on", "start": 337.384, "end": 337.444}, {"word": "Earth.", "start": 337.504, "end": 337.704}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Eight billion, wow.", "start": 338.124, "end": 339.386, "words": [{"word": "Eight", "start": 338.124, "end": 338.245}, {"word": "billion,", "start": 338.345, "end": 338.805}, {"word": "wow.", "start": 339.025, "end": 339.386}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "And every single one is different.", "start": 339.506, "end": 341.668, "words": [{"word": "And", "start": 339.506, "end": 339.586}, {"word": "every", "start": 339.826, "end": 340.106}, {"word": "single", "start": 340.187, "end": 340.527}, {"word": "one", "start": 340.667, "end": 340.767}, {"word": "is", "start": 340.827, "end": 340.887}, {"word": "different.", "start": 340.947, "end": 341.668}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "So being different isn't weird, it's actually the most normal thing in the world.", "start": 341.688, "end": 345.592, "words": [{"word": "So", "start": 341.688, "end": 341.828}, {"word": "being", "start": 341.908, "end": 342.169}, {"word": "different", "start": 342.269, "end": 342.629}, {"word": "isn't", "start": 342.709, "end": 342.909}, {"word": "weird,", "start": 343.11, "end": 343.49}, {"word": "it's", "start": 343.73, "end": 343.85}, {"word": "actually", "start": 343.91, "end": 344.171}, {"word": "the", "start": 344.191, "end": 344.271}, {"word": "most", "start": 344.311, "end": 344.451}, {"word": "normal", "start": 344.531, "end": 344.891}, {"word": "thing", "start": 344.972, "end": 345.132}, {"word": "in", "start": 345.152, "end": 345.212}, {"word": "the", "start": 345.232, "end": 345.312}, {"word": "world.", "start": 345.352, "end": 345.592}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "So trying to look like someone else is kind of impossible.", "start": 345.852, "end": 349.296, "words": [{"word": "So", "start": 345.852, "end": 345.993}, {"word": "trying", "start": 346.053, "end": 346.293}, {"word": "to", "start": 346.313, "end": 346.373}, {"word": "look", "start": 346.413, "end": 346.553}, {"word": "like", "start": 346.593, "end": 346.733}, {"word": "someone", "start": 346.773, "end": 347.034}, {"word": "else", "start": 347.094, "end": 347.334}, {"word": "is", "start": 347.354, "end": 347.434}, {"word": "kind", "start": 348.335, "end": 348.495}, {"word": "of", "start": 348.515, "end": 348.575}, {"word": "impossible.", "start": 348.595, "end": 349.296}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It is.", "start": 349.276, "end": 349.837, "words": [{"word": "It", "start": 349.276, "end": 349.496}, {"word": "is.", "start": 349.677, "end": 349.837}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "And that's a good thing.", "start": 349.997, "end": 350.759, "words": [{"word": "And", "start": 349.997, "end": 350.057}, {"word": "that's", "start": 350.097, "end": 350.218}, {"word": "a", "start": 350.258, "end": 350.278}, {"word": "good", "start": 350.318, "end": 350.478}, {"word": "thing.", "start": 350.518, "end": 350.759}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "The last tip circles back to what we talked about with TV and social media.", "start": 351.279, "end": 354.425, "words": [{"word": "The", "start": 351.279, "end": 351.4}, {"word": "last", "start": 351.44, "end": 351.7}, {"word": "tip", "start": 351.74, "end": 351.921}, {"word": "circles", "start": 351.941, "end": 352.201}, {"word": "back", "start": 352.261, "end": 352.401}, {"word": "to", "start": 352.441, "end": 352.481}, {"word": "what", "start": 352.522, "end": 352.622}, {"word": "we", "start": 352.662, "end": 352.722}, {"word": "talked", "start": 352.762, "end": 352.942}, {"word": "about", "start": 352.962, "end": 353.103}, {"word": "with", "start": 353.123, "end": 353.243}, {"word": "TV", "start": 353.323, "end": 353.623}, {"word": "and", "start": 353.663, "end": 353.744}, {"word": "social", "start": 353.764, "end": 354.044}, {"word": "media.", "start": 354.084, "end": 354.425}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It's about media literacy.", "start": 354.906, "end": 357.009, "words": [{"word": "It's", "start": 354.906, "end": 355.026}, {"word": "about", "start": 355.086, "end": 355.326}, {"word": "media", "start": 355.867, "end": 356.328}, {"word": "literacy.", "start": 356.408, "end": 357.009}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Media literacy.", "start": 357.109, "end": 358.031, "words": [{"word": "Media", "start": 357.109, "end": 357.47}, {"word": "literacy.", "start": 357.49, "end": 358.031}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "What does that mean?", "start": 358.071, "end": 358.812, "words": [{"word": "What", "start": 358.071, "end": 358.171}, {"word": "does", "start": 358.211, "end": 358.291}, {"word": "that", "start": 358.311, "end": 358.472}, {"word": "mean?", "start": 358.532, "end": 358.812}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It just means being smart about what you see and hear.", "start": 358.832, "end": 361.397, "words": [{"word": "It", "start": 358.832, "end": 358.872}, {"word": "just", "start": 358.912, "end": 359.033}, {"word": "means", "start": 359.073, "end": 359.253}, {"word": "being", "start": 359.293, "end": 359.574}, {"word": "smart", "start": 359.594, "end": 360.074}, {"word": "about", "start": 360.135, "end": 360.295}, {"word": "what", "start": 360.315, "end": 360.415}, {"word": "you", "start": 360.455, "end": 360.575}, {"word": "see", "start": 360.655, "end": 360.936}, {"word": "and", "start": 361.016, "end": 361.096}, {"word": "hear.", "start": 361.156, "end": 361.397}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "The article says to listen for messages that try to say some bodies are good and some are bad.", "start": 361.437, "end": 366.846, "words": [{"word": "The", "start": 361.437, "end": 362.058}, {"word": "article", "start": 362.098, "end": 362.378}, {"word": "says", "start": 362.439, "end": 362.659}, {"word": "to", "start": 362.679, "end": 362.719}, {"word": "listen", "start": 363.1, "end": 363.4}, {"word": "for", "start": 363.46, "end": 363.58}, {"word": "messages", "start": 363.661, "end": 364.101}, {"word": "that", "start": 364.141, "end": 364.322}, {"word": "try", "start": 364.362, "end": 364.542}, {"word": "to", "start": 364.582, "end": 364.662}, {"word": "say", "start": 364.722, "end": 364.883}, {"word": "some", "start": 364.943, "end": 365.123}, {"word": "bodies", "start": 365.143, "end": 365.444}, {"word": "are", "start": 365.524, "end": 365.604}, {"word": "good", "start": 365.644, "end": 365.884}, {"word": "and", "start": 365.904, "end": 366.185}, {"word": "some", "start": 366.245, "end": 366.405}, {"word": "are", "start": 366.445, "end": 366.525}, {"word": "bad.", "start": 366.566, "end": 366.846}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "You mean like in ads that try to sell you something to make you look different?", "start": 367.096, "end": 370.02, "words": [{"word": "You", "start": 367.096, "end": 367.196}, {"word": "mean", "start": 367.216, "end": 367.336}, {"word": "like", "start": 367.356, "end": 367.477}, {"word": "in", "start": 367.517, "end": 367.557}, {"word": "ads", "start": 367.757, "end": 367.937}, {"word": "that", "start": 367.957, "end": 368.077}, {"word": "try", "start": 368.118, "end": 368.258}, {"word": "to", "start": 368.298, "end": 368.358}, {"word": "sell", "start": 368.458, "end": 368.638}, {"word": "you", "start": 368.658, "end": 368.778}, {"word": "something", "start": 368.819, "end": 369.099}, {"word": "to", "start": 369.139, "end": 369.179}, {"word": "make", "start": 369.219, "end": 369.339}, {"word": "you", "start": 369.359, "end": 369.459}, {"word": "look", "start": 369.5, "end": 369.68}, {"word": "different?", "start": 369.7, "end": 370.02}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Exactly.", "start": 370.181, "end": 370.701, "words": [{"word": "Exactly.", "start": 370.181, "end": 370.701}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Those messages are designed to make you feel bad so you'll buy their product.", "start": 370.741, "end": 374.928, "words": [{"word": "Those", "start": 370.741, "end": 370.902}, {"word": "messages", "start": 371.162, "end": 371.723}, {"word": "are", "start": 371.803, "end": 371.883}, {"word": "designed", "start": 371.923, "end": 372.304}, {"word": "to", "start": 372.324, "end": 372.384}, {"word": "make", "start": 372.444, "end": 372.564}, {"word": "you", "start": 372.604, "end": 372.744}, {"word": "feel", "start": 372.945, "end": 373.225}, {"word": "bad", "start": 373.265, "end": 373.525}, {"word": "so", "start": 373.586, "end": 373.686}, {"word": "you'll", "start": 373.726, "end": 373.906}, {"word": "buy", "start": 373.986, "end": 374.247}, {"word": "their", "start": 374.287, "end": 374.467}, {"word": "product.", "start": 374.527, "end": 374.928}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Molly Forbes says we should just ignore them.", "start": 375.148, "end": 377.371, "words": [{"word": "Molly", "start": 375.148, "end": 375.448}, {"word": "Forbes", "start": 375.508, "end": 375.929}, {"word": "says", "start": 376.129, "end": 376.31}, {"word": "we", "start": 376.37, "end": 376.43}, {"word": "should", "start": 376.47, "end": 376.61}, {"word": "just", "start": 376.63, "end": 376.77}, {"word": "ignore", "start": 376.89, "end": 377.151}, {"word": "them.", "start": 377.211, "end": 377.371}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "So you see it.", "start": 377.652, "end": 378.333, "words": [{"word": "So", "start": 377.652, "end": 377.772}, {"word": "you", "start": 377.812, "end": 377.952}, {"word": "see", "start": 378.012, "end": 378.192}, {"word": "it.", "start": 378.272, "end": 378.333}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "You recognize what it's trying to do.", "start": 379.314, "end": 380.876, "words": [{"word": "You", "start": 379.314, "end": 379.454}, {"word": "recognize", "start": 379.494, "end": 380.015}, {"word": "what", "start": 380.055, "end": 380.155}, {"word": "it's", "start": 380.195, "end": 380.295}, {"word": "trying", "start": 380.336, "end": 380.556}, {"word": "to", "start": 380.596, "end": 380.656}, {"word": "do.", "start": 380.716, "end": 380.876}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "And you just choose not to believe it.", "start": 381.497, "end": 382.959, "words": [{"word": "And", "start": 381.497, "end": 381.577}, {"word": "you", "start": 381.617, "end": 381.738}, {"word": "just", "start": 381.778, "end": 381.918}, {"word": "choose", "start": 381.998, "end": 382.258}, {"word": "not", "start": 382.298, "end": 382.439}, {"word": "to", "start": 382.459, "end": 382.519}, {"word": "believe", "start": 382.579, "end": 382.839}, {"word": "it.", "start": 382.899, "end": 382.959}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "You got it.", "start": 383.16, "end": 383.781, "words": [{"word": "You", "start": 383.16, "end": 383.34}, {"word": "got", "start": 383.38, "end": 383.66}, {"word": "it.", "start": 383.72, "end": 383.781}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "You protect your mind.", "start": 383.801, "end": 384.862, "words": [{"word": "You", "start": 383.801, "end": 383.941}, {"word": "protect", "start": 383.961, "end": 384.301}, {"word": "your", "start": 384.341, "end": 384.462}, {"word": "mind.", "start": 384.502, "end": 384.862}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "That's a really useful toolkit.", "start": 385.022, "end": 386.765, "words": [{"word": "That's", "start": 385.022, "end": 385.223}, {"word": "a", "start": 385.283, "end": 385.303}, {"word": "really", "start": 385.483, "end": 385.804}, {"word": "useful", "start": 385.984, "end": 386.244}, {"word": "toolkit.", "start": 386.304, "end": 386.765}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Focus on the inside, celebrate differences, and ignore the negative messages.", "start": 387.226, "end": 391.792, "words": [{"word": "Focus", "start": 387.226, "end": 387.526}, {"word": "on", "start": 387.586, "end": 387.626}, {"word": "the", "start": 387.666, "end": 387.726}, {"word": "inside,", "start": 387.807, "end": 388.187}, {"word": "celebrate", "start": 388.628, "end": 389.088}, {"word": "differences,", "start": 389.148, "end": 389.649}, {"word": "and", "start": 390.11, "end": 390.19}, {"word": "ignore", "start": 390.25, "end": 390.771}, {"word": "the", "start": 390.811, "end": 391.051}, {"word": "negative", "start": 391.091, "end": 391.372}, {"word": "messages.", "start": 391.412, "end": 391.792}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It really is.", "start": 392.353, "end": 392.854, "words": [{"word": "It", "start": 392.353, "end": 392.453}, {"word": "really", "start": 392.473, "end": 392.714}, {"word": "is.", "start": 392.774, "end": 392.854}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It helps you build respect for yourself from the inside out.", "start": 392.894, "end": 395.618, "words": [{"word": "It", "start": 392.894, "end": 392.934}, {"word": "helps", "start": 392.994, "end": 393.154}, {"word": "you", "start": 393.194, "end": 393.275}, {"word": "build", "start": 393.335, "end": 393.515}, {"word": "respect", "start": 393.555, "end": 393.936}, {"word": "for", "start": 393.976, "end": 394.056}, {"word": "yourself", "start": 394.096, "end": 394.456}, {"word": "from", "start": 394.536, "end": 394.657}, {"word": "the", "start": 394.697, "end": 394.777}, {"word": "inside", "start": 394.857, "end": 395.217}, {"word": "out.", "start": 395.318, "end": 395.618}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "So to wrap up our deep dive, what are the main things we should remember?", "start": 395.75, "end": 399.699, "words": [{"word": "So", "start": 395.75, "end": 395.991}, {"word": "to", "start": 396.091, "end": 396.191}, {"word": "wrap", "start": 396.271, "end": 396.552}, {"word": "up", "start": 396.632, "end": 396.712}, {"word": "our", "start": 396.792, "end": 396.872}, {"word": "deep", "start": 396.913, "end": 397.093}, {"word": "dive,", "start": 397.113, "end": 397.414}, {"word": "what", "start": 398.075, "end": 398.175}, {"word": "are", "start": 398.215, "end": 398.276}, {"word": "the", "start": 398.316, "end": 398.376}, {"word": "main", "start": 398.476, "end": 398.697}, {"word": "things", "start": 398.757, "end": 398.977}, {"word": "we", "start": 399.017, "end": 399.097}, {"word": "should", "start": 399.117, "end": 399.278}, {"word": "remember?", "start": 399.338, "end": 399.699}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "OK, first, body image is a thought and a feeling, not just what's in the mirror.", "start": 400.22, "end": 405.812, "words": [{"word": "OK,", "start": 400.22, "end": 400.48}, {"word": "first,", "start": 400.641, "end": 401.062}, {"word": "body", "start": 401.743, "end": 402.084}, {"word": "image", "start": 402.164, "end": 402.485}, {"word": "is", "start": 402.525, "end": 402.745}, {"word": "a", "start": 402.765, "end": 402.786}, {"word": "thought", "start": 403.066, "end": 403.407}, {"word": "and", "start": 403.708, "end": 403.788}, {"word": "a", "start": 403.828, "end": 403.848}, {"word": "feeling,", "start": 403.988, "end": 404.409}, {"word": "not", "start": 404.69, "end": 404.87}, {"word": "just", "start": 404.91, "end": 405.071}, {"word": "what's", "start": 405.131, "end": 405.291}, {"word": "in", "start": 405.351, "end": 405.391}, {"word": "the", "start": 405.431, "end": 405.492}, {"word": "mirror.", "start": 405.532, "end": 405.812}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Right.", "start": 405.953, "end": 406.153, "words": [{"word": "Right.", "start": 405.953, "end": 406.153}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "And second, it's totally normal to worry sometimes, especially during puberty.", "start": 406.353, "end": 410.202, "words": [{"word": "And", "start": 406.353, "end": 406.434}, {"word": "second,", "start": 406.514, "end": 406.855}, {"word": "it's", "start": 407.295, "end": 407.396}, {"word": "totally", "start": 407.436, "end": 407.757}, {"word": "normal", "start": 407.837, "end": 408.157}, {"word": "to", "start": 408.197, "end": 408.298}, {"word": "worry", "start": 408.358, "end": 408.618}, {"word": "sometimes,", "start": 408.659, "end": 409.079}, {"word": "especially", "start": 409.14, "end": 409.52}, {"word": "during", "start": 409.56, "end": 409.761}, {"word": "puberty.", "start": 409.821, "end": 410.202}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "But we shouldn't let that worry control us.", "start": 410.803, "end": 412.527, "words": [{"word": "But", "start": 410.803, "end": 410.903}, {"word": "we", "start": 410.944, "end": 411.004}, {"word": "shouldn't", "start": 411.024, "end": 411.244}, {"word": "let", "start": 411.264, "end": 411.364}, {"word": "that", "start": 411.385, "end": 411.505}, {"word": "worry", "start": 411.565, "end": 411.805}, {"word": "control", "start": 411.866, "end": 412.226}, {"word": "us.", "start": 412.307, "end": 412.527}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Third, we should think of our bodies as these amazing instruments that let us do cool things, not just as ornaments to be looked at.", "start": 412.709, "end": 419.477, "words": [{"word": "Third,", "start": 412.709, "end": 413.029}, {"word": "we", "start": 413.49, "end": 413.57}, {"word": "should", "start": 413.61, "end": 413.75}, {"word": "think", "start": 413.79, "end": 413.95}, {"word": "of", "start": 414.01, "end": 414.05}, {"word": "our", "start": 414.131, "end": 414.211}, {"word": "bodies", "start": 414.251, "end": 414.571}, {"word": "as", "start": 414.651, "end": 414.711}, {"word": "these", "start": 414.771, "end": 414.931}, {"word": "amazing", "start": 415.032, "end": 415.512}, {"word": "instruments", "start": 415.532, "end": 416.053}, {"word": "that", "start": 416.113, "end": 416.253}, {"word": "let", "start": 416.313, "end": 416.453}, {"word": "us", "start": 416.513, "end": 416.573}, {"word": "do", "start": 416.673, "end": 416.834}, {"word": "cool", "start": 416.914, "end": 417.154}, {"word": "things,", "start": 417.214, "end": 417.514}, {"word": "not", "start": 417.655, "end": 417.855}, {"word": "just", "start": 417.915, "end": 418.075}, {"word": "as", "start": 418.155, "end": 418.235}, {"word": "ornaments", "start": 418.255, "end": 418.756}, {"word": "to", "start": 418.796, "end": 418.856}, {"word": "be", "start": 418.916, "end": 418.976}, {"word": "looked", "start": 419.016, "end": 419.256}, {"word": "at.", "start": 419.376, "end": 419.477}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "And finally, our value comes from our personality.", "start": 419.677, "end": 422.78, "words": [{"word": "And", "start": 419.677, "end": 419.777}, {"word": "finally,", "start": 419.897, "end": 420.337}, {"word": "our", "start": 420.938, "end": 421.018}, {"word": "value", "start": 421.118, "end": 421.519}, {"word": "comes", "start": 421.579, "end": 421.759}, {"word": "from", "start": 421.799, "end": 421.899}, {"word": "our", "start": 421.959, "end": 422.039}, {"word": "personality.", "start": 422.099, "end": 422.78}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "And since there are eight billion different bodies, being unique is what we're supposed to be.", "start": 423.301, "end": 427.906, "words": [{"word": "And", "start": 423.301, "end": 423.381}, {"word": "since", "start": 423.421, "end": 423.601}, {"word": "there", "start": 423.641, "end": 423.781}, {"word": "are", "start": 423.841, "end": 423.921}, {"word": "eight", "start": 423.962, "end": 424.222}, {"word": "billion", "start": 424.362, "end": 424.742}, {"word": "different", "start": 424.782, "end": 425.043}, {"word": "bodies,", "start": 425.103, "end": 425.503}, {"word": "being", "start": 426.304, "end": 426.524}, {"word": "unique", "start": 426.624, "end": 426.965}, {"word": "is", "start": 427.045, "end": 427.085}, {"word": "what", "start": 427.125, "end": 427.225}, {"word": "we're", "start": 427.265, "end": 427.365}, {"word": "supposed", "start": 427.385, "end": 427.646}, {"word": "to", "start": 427.686, "end": 427.766}, {"word": "be.", "start": 427.786, "end": 427.906}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "I think that covers it perfectly.", "start": 428.106, "end": 429.307, "words": [{"word": "I", "start": 428.106, "end": 428.166}, {"word": "think", "start": 428.186, "end": 428.326}, {"word": "that", "start": 428.366, "end": 428.467}, {"word": "covers", "start": 428.507, "end": 428.707}, {"word": "it", "start": 428.767, "end": 428.807}, {"word": "perfectly.", "start": 428.847, "end": 429.307}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Before we go, I want to encourage everyone listening to try something today.", "start": 429.928, "end": 433.412, "words": [{"word": "Before", "start": 429.928, "end": 430.188}, {"word": "we", "start": 430.249, "end": 430.329}, {"word": "go,", "start": 430.369, "end": 430.569}, {"word": "I", "start": 430.609, "end": 430.789}, {"word": "want", "start": 430.809, "end": 430.969}, {"word": "to", "start": 430.989, "end": 431.049}, {"word": "encourage", "start": 431.109, "end": 431.57}, {"word": "everyone", "start": 431.71, "end": 432.01}, {"word": "listening", "start": 432.051, "end": 432.371}, {"word": "to", "start": 432.411, "end": 432.491}, {"word": "try", "start": 432.551, "end": 432.731}, {"word": "something", "start": 432.791, "end": 433.092}, {"word": "today.", "start": 433.152, "end": 433.412}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "A challenge.", "start": 433.652, "end": 434.193, "words": [{"word": "A", "start": 433.652, "end": 433.692}, {"word": "challenge.", "start": 433.752, "end": 434.193}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "I like it.", "start": 434.493, "end": 434.854, "words": [{"word": "I", "start": 434.493, "end": 434.553}, {"word": "like", "start": 434.593, "end": 434.734}, {"word": "it.", "start": 434.794, "end": 434.854}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Just take a moment, a few seconds, and think of one awesome thing your body allowed you to do today.", "start": 434.894, "end": 439.579, "words": [{"word": "Just", "start": 434.894, "end": 435.034}, {"word": "take", "start": 435.074, "end": 435.214}, {"word": "a", "start": 435.274, "end": 435.294}, {"word": "moment,", "start": 435.334, "end": 435.655}, {"word": "a", "start": 435.735, "end": 435.755}, {"word": "few", "start": 435.815, "end": 435.955}, {"word": "seconds,", "start": 436.015, "end": 436.395}, {"word": "and", "start": 436.516, "end": 436.596}, {"word": "think", "start": 436.616, "end": 436.796}, {"word": "of", "start": 436.856, "end": 436.896}, {"word": "one", "start": 436.916, "end": 437.236}, {"word": "awesome", "start": 437.417, "end": 437.697}, {"word": "thing", "start": 437.737, "end": 437.937}, {"word": "your", "start": 437.977, "end": 438.117}, {"word": "body", "start": 438.177, "end": 438.478}, {"word": "allowed", "start": 438.538, "end": 438.798}, {"word": "you", "start": 438.838, "end": 438.938}, {"word": "to", "start": 438.978, "end": 439.038}, {"word": "do", "start": 439.098, "end": 439.219}, {"word": "today.", "start": 439.279, "end": 439.579}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Maybe it was playing a game or creating some art.", "start": 439.959, "end": 442.362, "words": [{"word": "Maybe", "start": 439.959, "end": 440.18}, {"word": "it", "start": 440.2, "end": 440.24}, {"word": "was", "start": 440.28, "end": 440.38}, {"word": "playing", "start": 440.56, "end": 440.8}, {"word": "a", "start": 440.84, "end": 440.86}, {"word": "game", "start": 440.9, "end": 441.201}, {"word": "or", "start": 441.441, "end": 441.521}, {"word": "creating", "start": 441.581, "end": 441.902}, {"word": "some", "start": 441.962, "end": 442.082}, {"word": "art.", "start": 442.162, "end": 442.362}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Or maybe just giving someone a hug, whatever it is, just novice it and maybe say a quiet thank you to your body.", "start": 442.595, "end": 450.193, "words": [{"word": "Or", "start": 442.595, "end": 442.795}, {"word": "maybe", "start": 442.836, "end": 443.156}, {"word": "just", "start": 443.176, "end": 443.397}, {"word": "giving", "start": 443.437, "end": 443.658}, {"word": "someone", "start": 443.718, "end": 443.938}, {"word": "a", "start": 443.958, "end": 443.978}, {"word": "hug,", "start": 444.018, "end": 444.279}, {"word": "whatever", "start": 444.76, "end": 445.081}, {"word": "it", "start": 445.101, "end": 445.181}, {"word": "is,", "start": 445.301, "end": 445.402}, {"word": "just", "start": 445.762, "end": 445.903}, {"word": "novice", "start": 446.023, "end": 446.424}, {"word": "it", "start": 446.524, "end": 446.604}, {"word": "and", "start": 446.625, "end": 447.266}, {"word": "maybe", "start": 447.326, "end": 447.547}, {"word": "say", "start": 447.607, "end": 447.747}, {"word": "a", "start": 447.767, "end": 447.787}, {"word": "quiet", "start": 447.988, "end": 448.369}, {"word": "thank", "start": 448.389, "end": 448.83}, {"word": "you", "start": 448.87, "end": 449.03}, {"word": "to", "start": 449.05, "end": 449.09}, {"word": "your", "start": 449.752, "end": 449.872}, {"word": "body.", "start": 449.912, "end": 450.193}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Treat it with the respect it deserves.", "start": 450.754, "end": 452.218, "words": [{"word": "Treat", "start": 450.754, "end": 450.935}, {"word": "it", "start": 450.955, "end": 450.995}, {"word": "with", "start": 451.035, "end": 451.135}, {"word": "the", "start": 451.155, "end": 451.215}, {"word": "respect", "start": 451.235, "end": 451.676}, {"word": "it", "start": 451.696, "end": 451.777}, {"word": "deserves.", "start": 451.817, "end": 452.218}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Exactly.", "start": 452.478, "end": 453.0, "words": [{"word": "Exactly.", "start": 452.478, "end": 453.0}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "And for everyone using this podcast to practice their English, please go back and read the original article.", "start": 453.601, "end": 458.713, "words": [{"word": "And", "start": 453.601, "end": 453.681}, {"word": "for", "start": 453.761, "end": 453.882}, {"word": "everyone", "start": 454.082, "end": 454.463}, {"word": "using", "start": 454.503, "end": 454.764}, {"word": "this", "start": 454.784, "end": 454.884}, {"word": "podcast", "start": 454.944, "end": 455.325}, {"word": "to", "start": 455.345, "end": 455.425}, {"word": "practice", "start": 455.465, "end": 455.806}, {"word": "their", "start": 455.846, "end": 455.987}, {"word": "English,", "start": 456.067, "end": 456.388}, {"word": "please", "start": 456.748, "end": 457.029}, {"word": "go", "start": 457.089, "end": 457.189}, {"word": "back", "start": 457.23, "end": 457.41}, {"word": "and", "start": 457.47, "end": 457.53}, {"word": "read", "start": 457.59, "end": 457.711}, {"word": "the", "start": 457.751, "end": 457.811}, {"word": "original", "start": 457.851, "end": 458.192}, {"word": "article.", "start": 458.272, "end": 458.713}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Yeah, seeing the words we talked about, like psychologist or discrimination, will really help you remember them.", "start": 458.727, "end": 464.737, "words": [{"word": "Yeah,", "start": 458.727, "end": 459.068}, {"word": "seeing", "start": 459.088, "end": 459.308}, {"word": "the", "start": 459.348, "end": 459.448}, {"word": "words", "start": 459.488, "end": 459.729}, {"word": "we", "start": 459.769, "end": 459.889}, {"word": "talked", "start": 459.929, "end": 460.169}, {"word": "about,", "start": 460.21, "end": 460.49}, {"word": "like", "start": 460.51, "end": 460.71}, {"word": "psychologist", "start": 461.051, "end": 461.832}, {"word": "or", "start": 461.872, "end": 461.953}, {"word": "discrimination,", "start": 461.993, "end": 462.834}, {"word": "will", "start": 462.854, "end": 463.555}, {"word": "really", "start": 463.575, "end": 463.796}, {"word": "help", "start": 463.856, "end": 464.036}, {"word": "you", "start": 464.076, "end": 464.196}, {"word": "remember", "start": 464.237, "end": 464.577}, {"word": "them.", "start": 464.617, "end": 464.737}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It's the best way to learn.", "start": 464.938, "end": 465.96, "words": [{"word": "It's", "start": 464.938, "end": 465.058}, {"word": "the", "start": 465.138, "end": 465.218}, {"word": "best", "start": 465.258, "end": 465.459}, {"word": "way", "start": 465.499, "end": 465.619}, {"word": "to", "start": 465.659, "end": 465.739}, {"word": "learn.", "start": 465.759, "end": 465.96}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Well, that's all the time we have for today.", "start": 466.02, "end": 467.903, "words": [{"word": "Well,", "start": 466.02, "end": 466.721}, {"word": "that's", "start": 466.741, "end": 466.881}, {"word": "all", "start": 466.901, "end": 466.981}, {"word": "the", "start": 467.021, "end": 467.081}, {"word": "time", "start": 467.122, "end": 467.222}, {"word": "we", "start": 467.262, "end": 467.342}, {"word": "have", "start": 467.382, "end": 467.502}, {"word": "for", "start": 467.542, "end": 467.622}, {"word": "today.", "start": 467.683, "end": 467.903}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Thank you so much for exploring this with us.", "start": 468.003, "end": 470.287, "words": [{"word": "Thank", "start": 468.003, "end": 468.163}, {"word": "you", "start": 468.203, "end": 468.324}, {"word": "so", "start": 468.384, "end": 468.524}, {"word": "much", "start": 468.564, "end": 468.764}, {"word": "for", "start": 468.824, "end": 469.005}, {"word": "exploring", "start": 469.045, "end": 469.726}, {"word": "this", "start": 469.766, "end": 469.906}, {"word": "with", "start": 469.946, "end": 470.087}, {"word": "us.", "start": 470.207, "end": 470.287}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "It was great.", "start": 470.527, "end": 471.048, "words": [{"word": "It", "start": 470.527, "end": 470.588}, {"word": "was", "start": 470.608, "end": 470.728}, {"word": "great.", "start": 470.788, "end": 471.048}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Thanks, everyone.", "start": 471.169, "end": 471.81, "words": [{"word": "Thanks,", "start": 471.169, "end": 471.429}, {"word": "everyone.", "start": 471.489, "end": 471.81}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Remember, treat yourself with kindness.", "start": 472.09, "end": 473.953, "words": [{"word": "Remember,", "start": 472.09, "end": 472.531}, {"word": "treat", "start": 472.791, "end": 472.992}, {"word": "yourself", "start": 473.012, "end": 473.312}, {"word": "with", "start": 473.352, "end": 473.453}, {"word": "kindness.", "start": 473.513, "end": 473.953}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Keep reading and keep exploring the world.", "start": 474.354, "end": 476.758, "words": [{"word": "Keep", "start": 474.354, "end": 474.554}, {"word": "reading", "start": 474.635, "end": 475.015}, {"word": "and", "start": 475.055, "end": 475.476}, {"word": "keep", "start": 475.576, "end": 475.817}, {"word": "exploring", "start": 475.857, "end": 476.338}, {"word": "the", "start": 476.378, "end": 476.458}, {"word": "world.", "start": 476.498, "end": 476.758}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Keep reading and keep exploring the world.", "start": 477.079, "end": 479.343, "words": [{"word": "Keep", "start": 477.079, "end": 477.319}, {"word": "reading", "start": 477.359, "end": 477.72}, {"word": "and", "start": 477.76, "end": 478.02}, {"word": "keep", "start": 478.121, "end": 478.341}, {"word": "exploring", "start": 478.361, "end": 478.922}, {"word": "the", "start": 478.942, "end": 479.042}, {"word": "world.", "start": 479.082, "end": 479.343}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Bye, everyone.", "start": 479.563, "end": 480.685, "words": [{"word": "Bye,", "start": 479.563, "end": 479.844}, {"word": "everyone.", "start": 479.924, "end": 480.685}]}];
+
+    // ==========================================
+
+    const audio = document.getElementById('audioPlayer');
+    const container = document.getElementById('transcriptContainer');
+    const recordBtn = document.getElementById('recordBtn');
+    const uiControls = document.getElementById('uiControls');
+    const progressFill = document.getElementById('progressFill');
+    const progressBarContainer = document.getElementById('progressBarContainer');
+    const debugTime = document.getElementById('debugTime');
+
+    let isRecordingMode = false;
+    let processedData = []; 
+    let currentActiveBlockIndex = -1;
+    let currentActiveWordElement = null;
+    let animationFrameId;
+
+    function mergeTranscriptSegments(rawData) {
+        if (!rawData || rawData.length === 0) return [];
+        
+        const merged = [];
+        let currentBlock = {
+            speaker: rawData[0].speaker,
+            start: rawData[0].start,
+            end: rawData[0].end,
+            words: [...(rawData[0].words || [])]
+        };
+
+        for (let i = 1; i < rawData.length; i++) {
+            const nextSegment = rawData[i];
+            const projectedDuration = nextSegment.end - currentBlock.start;
+            
+            if (nextSegment.speaker === currentBlock.speaker && projectedDuration <= 10.0) {
+                currentBlock.end = nextSegment.end;
+                if (nextSegment.words) {
+                    currentBlock.words = currentBlock.words.concat(nextSegment.words);
+                }
+            } else {
+                merged.push(currentBlock);
+                currentBlock = {
+                    speaker: nextSegment.speaker,
+                    start: nextSegment.start,
+                    end: nextSegment.end,
+                    words: [...(nextSegment.words || [])]
+                };
+            }
+        }
+        merged.push(currentBlock);
+        return merged;
+    }
+
+    function initTranscript() {
+        if (!rawTranscriptData || rawTranscriptData.length === 0) {
+            container.innerHTML = '<div style="padding:20px; text-align:center; color:#666; margin-top:50px;">暂无字幕数据</div>';
+            return;
+        }
+
+        processedData = mergeTranscriptSegments(rawTranscriptData);
+        container.innerHTML = '';
+        
+        processedData.forEach((block, index) => {
+            const div = document.createElement('div');
+            div.className = 'transcript-item';
+            div.dataset.start = block.start;
+            div.dataset.end = block.end;
+            div.dataset.index = index;
+
+            const speakerSpan = document.createElement('span');
+            const speakerClass = block.speaker ? block.speaker.toLowerCase() : 'unknown';
+            speakerSpan.className = `speaker-tag speaker-${speakerClass}`;
+            speakerSpan.textContent = block.speaker || 'Unknown';
+            div.appendChild(speakerSpan);
+
+            const p = document.createElement('p');
+            p.className = 'text-content';
+
+            if (block.words) {
+                block.words.forEach((wordObj, wIndex) => {
+                    const wordSpan = document.createElement('span');
+                    wordSpan.className = 'word-span';
+                    wordSpan.textContent = wordObj.word; 
+                    wordSpan.dataset.start = wordObj.start;
+                    wordSpan.dataset.end = wordObj.end;
+                    p.appendChild(wordSpan);
+
+                    if (wIndex < block.words.length - 1) {
+                        p.appendChild(document.createTextNode(" "));
+                    }
+                });
+            } else {
+                p.textContent = block.sentence;
+            }
+
+            div.appendChild(p);
+            container.appendChild(div);
+
+            div.addEventListener('click', (e) => {
+                if (e.target.classList.contains('word-span')) {
+                    audio.currentTime = parseFloat(e.target.dataset.start);
+                } else {
+                    audio.currentTime = block.start;
+                }
+                if (audio.paused) audio.play();
+            });
+        });
+    }
+
+    function renderLoop() {
+        if (!audio.paused) {
+            updateTranscript();
+        }
+        animationFrameId = requestAnimationFrame(renderLoop);
+    }
+
+    function updateTranscript() {
+        const t = audio.currentTime;
+        let activeBlockIndex = -1;
+        for (let i = 0; i < processedData.length; i++) {
+            if (t >= processedData[i].start && t < processedData[i].end) {
+                activeBlockIndex = i;
+                break;
+            }
+        }
+
+        if (activeBlockIndex !== -1 && activeBlockIndex !== currentActiveBlockIndex) {
+            const prev = document.querySelector('.transcript-item.active');
+            if (prev) prev.classList.remove('active');
+
+            const current = container.children[activeBlockIndex];
+            if (current) {
+                current.classList.add('active');
+                current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            currentActiveBlockIndex = activeBlockIndex;
+        }
+
+        if (currentActiveBlockIndex !== -1) {
+            const activeBlockElement = container.children[currentActiveBlockIndex];
+            const wordSpans = activeBlockElement.querySelectorAll('.word-span');
+            let foundWord = false;
+
+            for (let span of wordSpans) {
+                const start = parseFloat(span.dataset.start);
+                const end = parseFloat(span.dataset.end);
+
+                if (t >= start && t < end + 0.05) { 
+                    if (currentActiveWordElement !== span) {
+                        if (currentActiveWordElement) currentActiveWordElement.classList.remove('word-active');
+                        span.classList.add('word-active');
+                        currentActiveWordElement = span;
+                    }
+                    foundWord = true;
+                    break; 
+                }
+            }
+            
+            if (!foundWord && currentActiveWordElement) {
+                currentActiveWordElement.classList.remove('word-active');
+                currentActiveWordElement = null;
+            }
+        }
+    }
+
+    audio.addEventListener('play', () => {
+        cancelAnimationFrame(animationFrameId);
+        renderLoop();
+    });
+
+    audio.addEventListener('pause', () => {
+        cancelAnimationFrame(animationFrameId);
+    });
+
+    audio.addEventListener('timeupdate', () => {
+        if (!audio.duration) return;
+        const percent = (audio.currentTime / audio.duration) * 100;
+        progressFill.style.width = percent + '%';
+        if(!isRecordingMode) debugTime.textContent = audio.currentTime.toFixed(3);
+    });
+
+    recordBtn.addEventListener('click', () => {
+        if (!isRecordingMode) {
+            isRecordingMode = true;
+            document.body.classList.add('recording-mode');
+            uiControls.classList.add('hidden-ui');
+            recordBtn.style.opacity = '0';
+            setTimeout(() => recordBtn.style.display = 'none', 300);
+            
+            console.log("准备录制... 5秒倒计时");
+            setTimeout(() => {
+                audio.play();
+            }, 5000);
+        }
+    });
+
+    progressBarContainer.addEventListener('click', (e) => {
+        const rect = progressBarContainer.getBoundingClientRect();
+        const pos = (e.clientX - rect.left) / rect.width;
+        audio.currentTime = pos * audio.duration;
+        updateTranscript();
+    });
+
+    initTranscript();
+
+</script>
+
 </body>
 </html>
