@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Week Junior Handout - Respect Your Body</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700&family=Noto+Sans+SC:wght@300;400;500;700&family=Lato:wght@400;700;900&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<style>
+    :root {
+        /* --- 动态主题色 (由 JS 注入) --- */
+        --theme-color: #2c3e50; 
+
+        /* --- 严格词性配色 (固定) --- */
+        --bg-noun: #D6EAF8; /* 名-蓝 */
+        --bg-verb: #D5F5E3; /* 动-绿 */
+        --bg-adj: #E8DAEF;  /* 修饰-紫 */
+        
+        /* 词性文字颜色 */
+        --t-subj: #C0392B; --t-verb: #2980B9; --t-obj: #27AE60; --t-mod: #D35400; --t-prep: #8E44AD; --t-conn: #7F8C8D;
+        
+        /* 长难句背景 */
+        --bg-trunk: #EBF5FB; --bg-clause-1: #FEF5E7; --bg-clause-2: #E9F7EF;
+        /* 边框色 */
+        --bd-trunk: #3498DB; --bd-clause-1: #F39C12; --bd-clause-2: #2ECC71; --bd-struct: #2C3E50;
+        
+        /* 通用布局 */
+        --text-main: #2c3e50; --bg: #ffffff; --supp-bg: #F0F8FF;
+        --p-w: 1080px; --p-h: 1440px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; }
+    body { background: #444; display: flex; flex-direction: column; align-items: center; padding: 40px 0; gap: 40px; font-family: 'Noto Sans SC', sans-serif; }
+    
+    /* 容器 */
+    .card { width: var(--p-w); height: var(--p-h); background: var(--bg); display: flex; flex-direction: column; overflow: hidden; position: relative; box-shadow: 0 30px 80px rgba(0,0,0,0.6); flex-shrink: 0; }
+    .card.cover-page { padding: 0; } .card.normal-page { padding: 50px 60px; }
+    .content-body { flex-grow: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 0; overflow: hidden; width: 100%; }
+    .cover-page .content-body { padding: 0 60px; } .normal-page .content-body { padding: 0; }
+
+    /* 首页 (960px Height) */
+    .hero-section { width: 100%; height: 960px; background: #e0e0e0; cursor: pointer; border-bottom: 8px solid var(--theme-color); position: relative; flex-shrink: 0; }
+    .hero-img { width: 100%; height: 100%; object-fit: cover; display: none; }
+    .hero-placeholder { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #777; font-size: 20pt; font-family: 'Lato'; text-align: center; border: 3px dashed #bbb; padding: 15px 30px; border-radius: 10px; }
+    
+    .cover-header { padding: 30px 60px 10px 60px; display: flex; flex-direction: column; align-items: center; text-align: center; flex-shrink: 0; }
+    .meta-tag { background: var(--theme-color); color: white; padding: 6px 20px; border-radius: 50px; font-family: 'Lato'; font-weight: 900; font-size: 12pt; margin-bottom: 15px; letter-spacing: 1px; }
+    
+    /* V38 Update: Title 60pt / Subtitle 40pt */
+    .poster-title { font-family: 'Lora'; font-size: 60pt; font-weight: 700; color: var(--text-main); line-height: 1.0; margin-bottom: 10px; }
+    .poster-subtitle { font-family: 'Noto Sans SC'; font-size: 40pt; color: #5d6d7e; font-weight: 400; margin-bottom: 20px; position: relative; display: inline-block; }
+    .poster-subtitle::after { content: ""; display: block; width: 60px; height: 3px; background: var(--theme-color); margin: 10px auto 0 auto; }
+
+    /* 续页头 (V38: Remove background from continued-tag) */
+    .mini-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #ccc; padding-bottom: 15px; margin-bottom: 20px; height: 60px; flex-shrink: 0; width: 100%; }
+    .mini-title { font-family: 'Lora'; font-weight: 700; font-size: 16pt; color: var(--text-main); }
+    .continued-tag { font-family: 'Lato'; font-weight: 700; font-style: italic; background: transparent; padding: 5px 0; border-radius: 0; font-size: 11pt; color: #666; }
+
+    /* 正文 */
+    .row { display: flex; gap: 40px; width: 100%; padding: 20px 0; border-bottom: 1px solid #f9f9f9; align-items: flex-start; flex-shrink: 0; }
+    .col-eng { flex: 6; font-family: 'Lora'; font-size: 18pt; line-height: 1.8; text-align: justify; padding-right: 25px; border-right: 2px solid #f0f0f0; }
+    .col-chi { flex: 4; font-family: 'Noto Sans SC'; font-size: 16pt; line-height: 1.8; color: #5d6d7e; text-align: justify; font-weight: 400; padding-top: 2px; }
+
+    /* 边栏 (一致布局 + 动态色) */
+    .row.supp-style { background: var(--supp-bg); padding: 25px; border-radius: 12px; margin: 15px 0; border: none; }
+    .row.supp-style .col-eng { border-right: 2px solid #aec6cf; font-size: 16pt; line-height: 1.6; }
+    .row.supp-style .col-chi { font-size: 14pt !important; line-height: 1.6; color: #555; }
+    h3 { font-family: 'Lato'; font-weight: 900; font-size: 18pt; color: var(--theme-color); margin: 0 0 10px 0; display: block; border-left: 8px solid var(--theme-color); padding-left: 15px; }
+    .row.supp-style h3 { font-size: 16pt !important; border-left-width: 5px; }
+
+    /* 词性高亮 (必须严格对应) */
+    .hl { padding: 0 4px; border-radius: 4px; font-weight: 600; display: inline-block; }
+    .hl-n { background-color: var(--bg-noun); } 
+    .hl-v { background-color: var(--bg-verb); } 
+    .hl-adj { background-color: var(--bg-adj); }
+    sup { color: #555; font-size: 0.6em; vertical-align: super; font-weight: 700; margin-left: 2px; }
+
+    /* 附录 */
+    .app-h { font-size: 18pt; font-weight: 700; color: var(--text-main); border-left: 6px solid #555; padding-left: 12px; display: block; margin: 25px 0 20px 0; font-family: 'Noto Sans SC'; flex-shrink: 0; width: 100%; }
+    
+    /* 词汇表 */
+    .vocab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px 40px; width: 100%; margin-bottom: 30px; flex-shrink: 0; }
+    .vocab-item { background: #fff; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 5px; display: flex; flex-direction: column; gap: 6px; }
+    .v-line-1 { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+    .v-word { font-family: 'Lora'; font-weight: 700; font-size: 19pt; color: #2c3e50; padding: 0 5px; border-radius: 4px; }
+    .v-idx { background: #333; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 11pt; text-align: center; line-height: 22px; display: inline-block; transform: translateY(-2px); }
+    .v-ipa { font-family: 'Arial'; color: #95a5a6; font-size: 13pt; }
+    .v-mean { font-size: 15pt; color: #444; font-weight: 500; margin-left: auto; }
+    .v-pos { color: var(--theme-color); font-weight: bold; font-family: 'Times New Roman'; font-style: italic; font-size: 13pt; margin-right: 2px;}
+    .v-line-2 { font-size: 14pt; color: #d35400; font-family: 'Roboto Mono'; font-weight: 500; }
+    .v-line-3 { font-size: 14pt; color: #7f8c8d; font-style: italic; font-family: 'Lora'; line-height: 1.4; margin-top: 2px; }
+
+    /* 长难句 (V33 Fixed) */
+    .sa-sentence-wrapper { display: flex; flex-wrap: wrap; column-gap: 0; row-gap: 35px; line-height: 1.5; margin-bottom: 25px; padding-top: 10px; align-items: flex-end; width: 100%; }
+    .chunk { display: inline-flex; flex-direction: column; align-items: center; margin: 0; vertical-align: bottom; }
+    .chunk-text { font-family: 'Lora'; font-size: 20pt; color: #2c3e50; padding: 4px 5px; font-weight: 500; border-radius: 0; }
+    .chunk-group { border-bottom: 3px solid #ccc; padding-bottom: 2px; margin: 0 3px; }
+    .chunk-group .chunk-text { padding-bottom: 0; } 
+    .chunk-lbl { font-size: 10pt; font-family: 'Noto Sans SC'; font-weight: 800; margin-top: 4px; white-space: nowrap; width: 100%; text-align: center; height: 15px; }
+    .chunk-lbl:empty { height: 0; margin-top: 0; }
+    .bracket { font-size: 20pt; color: #d35400; font-family: 'Lato'; font-weight: 300; padding: 4px 6px; display: inline-block; }
+    
+    .bg-trunk .chunk-text { background-color: var(--bg-trunk); }
+    .bg-clause-1 .chunk-text { background-color: var(--bg-clause-1); }
+    .bg-clause-1.bracket { background-color: var(--bg-clause-1); }
+    .bg-clause-2 .chunk-text { background-color: var(--bg-clause-2); }
+    .bg-clause-2.bracket { background-color: var(--bg-clause-2); }
+    
+    .l-subj { color: var(--t-subj); border-color: var(--t-subj); } 
+    .l-verb { color: var(--t-verb); border-color: var(--t-verb); } 
+    .l-obj { color: var(--t-obj); border-color: var(--t-obj); } 
+    .l-conn { color: var(--t-conn); border-color: var(--t-conn); }
+
+    /* 解析 & Quiz */
+    .sa-step-box, .q-card { background: #fdfefe; padding: 20px 25px; border-radius: 8px; border: 1px solid #eee; box-shadow: 2px 2px 8px rgba(0,0,0,0.02); margin-bottom: 12px; width: 100%; }
+    .bd-struct { border-left: 5px solid var(--bd-struct); }
+    .bd-trunk { border-left: 5px solid var(--bd-trunk); background-color: #FDFEFE; }
+    .bd-clause-1 { border-left: 5px solid var(--bd-clause-1); background-color: #FEF9E7; }
+    .bd-clause-2 { border-left: 5px solid var(--bd-clause-2); background-color: #E9F7EF; }
+    .q-card { border-left: 5px solid var(--theme-color); }
+    
+    .sa-trans { font-size: 16pt; color: #444; font-weight: 600; font-style: italic; margin-bottom: 20px; padding: 15px; border: 1px dashed #ccc; border-radius: 8px; width: 100%; background: #fff; }
+    .sa-step { margin-bottom: 12px; font-size: 15pt; color: #555; line-height: 1.6; }
+    .sa-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11pt; margin-right: 10px; font-weight: 800; color: #fff; background: #555; font-family: 'Lato'; text-transform: uppercase; }
+
+    /* Quiz 内容 */
+    .q-header { display: flex; align-items: baseline; margin-bottom: 5px; }
+    .q-num { color: var(--theme-color); font-size: 18pt; font-weight: 900; margin-right: 10px; font-family: 'Lato'; }
+    .q-text { font-size: 18pt; color: #2c3e50; font-weight: 600; font-family: 'Lora'; }
+    .q-opts { display: flex; gap: 25px; flex-wrap: wrap; margin-left: 0; margin-top: 5px; }
+    .q-opt { font-size: 15pt; color: #555; font-family: 'Lato'; }
+    .q-blank { border-bottom: 2px solid #333; width: 100px; display: inline-block; }
+
+    /* 页脚 */
+    .footer { margin-top: auto; display: flex; justify-content: space-between; border-top: 1px solid #eee; padding: 0 60px; font-size: 11pt; color: #95a5a6; flex-shrink: 0; height: 70px; align-items: center; width: 100%; box-sizing: border-box; font-family: 'Lato'; }
+    .normal-page .footer { padding: 0; }
+    .footer-right { font-weight: 700; color: #333; }
+
+    /* 截图按钮 */
+    #btn-download { position: fixed; bottom: 20px; right: 20px; z-index: 9999; padding: 15px 25px; background: #2c3e50; color: white; border: none; border-radius: 50px; cursor: pointer; font-family: sans-serif; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.2s; }
+    #btn-download:hover { transform: scale(1.05); background: #34495e; }
+    #btn-download:active { transform: scale(0.95); }
+    
+    /* 隐藏上传触发器 */
+    #upload-trigger { display: none; }
+</style>
+</head>
+<body>
+
+<div id="card-container"></div>
+<button id="btn-download" onclick="downloadAllPages()">Download Images</button>
+<input type="file" id="upload-trigger" accept="image/*" onchange="loadFile(event)">
+
+<script>
+    // --- Global Error Trap ---
+    window.onerror = function(message, source, lineno, colno, error) {
+        alert("Render Error: " + message + "\\nLine: " + lineno);
+    };
+
+    // --- Phase 4: Data Injection ---
+    const META = { 
+        issue: "17 January 2026", 
+        title: "Respect Your Body", 
+        subtitle: "善待并欣赏你的身体",
+        themeColor: "#E67E22" // Warm Orange for Wellbeing
+    };
+    
+    // 2. 正文数据 (使用了严格词性配色)
+    const MAIN_CONTENT = [
+        {
+            type: 'text',
+            eng: "Having a <span class='hl hl-adj'>positive</span> body image means <span class='hl hl-v'>respecting</span> all the <span class='hl hl-adj'>amazing</span> things your body can do.",
+            chi: "拥有积极的身体意象意味着尊重你的身体所能做的所有奇妙的事情。"
+        },
+        {
+            type: 'text',
+            eng: "<h3>What is body image?</h3>This is how you <span class='hl hl-v'>think</span> and <span class='hl hl-v'>feel</span> about the way you look. Having a <span class='hl hl-adj'>positive</span> body image means you <span class='hl hl-v'>appreciate</span> your body, whatever it looks like or can do.",
+            chi: "什么是身体意象？这是你对自己外表的想法和感受。拥有积极的身体意象意味着你欣赏自己的身体，无论它看起来如何或能做什么。"
+        },
+        {
+            type: 'text',
+            eng: "Dr Tharaka Gunarathne is a <span class='hl hl-n'>psychologist</span> (someone who helps people <span class='hl hl-v'>understand</span> their <span class='hl hl-n'>emotions</span>). He says body image can be <span class='hl hl-v'>influenced</span> by what you see on TV and social media, as well as friends and family.",
+            chi: "Tharaka Gunarathne 博士是一位心理学家（帮助人们理解自己情绪的人）。他说身体意象会受到你在电视和社交媒体上看到的内容，以及朋友和家人的影响。"
+        },
+        {
+            type: 'text',
+            eng: "It’s also <span class='hl hl-v'>affected</span> by the way you feel about yourself. <span class='hl hl-n'>Puberty</span>, when a child’s body <span class='hl hl-v'>develops</span> and <span class='hl hl-v'>changes</span> as they become an adult, can make a difference too.",
+            chi: "它也受到你对自己感觉的影响。青春期，即孩子的身体发育并变为成人的过程，也会产生影响。"
+        },
+        {
+            type: 'text',
+            eng: "<h3>Why does it matter?</h3>Research shows that when you <span class='hl hl-v'>understand</span> how <span class='hl hl-adj'>amazing</span> your body is, you are more likely to <span class='hl hl-v'>treat</span> it with <span class='hl hl-n'>respect</span> and <span class='hl hl-n'>kindness</span>.",
+            chi: "为什么这很重要？研究表明，当你明白你的身体有多么奇妙时，你就更有可能以尊重和善意来对待它。"
+        },
+        {
+            type: 'text',
+            eng: "Molly Forbes, the author of <i>Every Body</i>, says the secret to having a good body image is to <span class='hl hl-v'>focus</span> on who you are inside. \"Know that the way you look is the <span class='hl hl-adj'>least</span> <span class='hl hl-adj'>interesting</span> or <span class='hl hl-adj'>important</span> thing about you,\" Forbes says.",
+            chi: "《Every Body》的作者莫莉·福布斯说，拥有良好身体意象的秘诀在于关注你的内在。“要知道，你的外表是你最无趣或最不重要的部分，”福布斯说。"
+        },
+        {
+            type: 'supp',
+            eng: "<h3>DIFFERENT DESIGNS</h3>There are more than eight billion human bodies on Earth, and every one is <span class='hl hl-adj'>different</span>. When everyone is taught to <span class='hl hl-v'>value</span> one body image more than another it can <span class='hl hl-v'>lead</span> to <span class='hl hl-adj'>unfair</span> treatment or <span class='hl hl-n'>discrimination</span>.",
+            chi: "不同的设计：地球上有超过八十亿具人类身体，每一具都是独一无二的。当每个人都被教导去重视某种身体形象胜过其他形象时，这可能会导致不公平的待遇或歧视。"
+        }
+    ];
+    
+    // 3. 词汇表
+    const VOCAB_LIST = [
+        { w: "psychologist", ipa: "saɪˈkɒlədʒɪst", p: "n.", m: "心理学家", c: "someone who studies the mind", e: "Dr Gunarathne is a psychologist." },
+        { w: "appreciate", ipa: "əˈpriːʃieɪt", p: "v.", m: "欣赏；感激", c: "to recognize the good qualities of", e: "Appreciate your body for what it can do." },
+        { w: "influence", ipa: "ˈɪnfluəns", p: "v.", m: "影响", c: "to have an effect on", e: "Body image can be influenced by TV." },
+        { w: "puberty", ipa: "ˈpjuːbəti", p: "n.", m: "青春期", c: "time when a child's body changes", e: "Puberty can affect how you feel." },
+        { w: "discrimination", ipa: "dɪˌskrɪmɪˈneɪʃn", p: "n.", m: "歧视", c: "unfair treatment of people", e: "It can lead to unfair discrimination." },
+        { w: "positive", ipa: "ˈpɒzətɪv", p: "adj.", m: "积极的", c: "good or useful", e: "Having a positive body image is key." }
+    ];
+    
+    // 4. 长难句
+    const SA_CHUNKS = [
+        { t: 'chunk bg-trunk', l: 'l-subj', w: 'Research', txt: '主语' },
+        { t: 'chunk bg-trunk', l: 'l-verb', w: 'shows', txt: '谓语' },
+        { t: 'chunk', l: 'l-conn', w: 'that', txt: '连接词' },
+        { t: 'chunk bg-clause-1', w: 'when', txt: '状语从句' },
+        { t: 'chunk bg-clause-1', w: 'you', txt: '' },
+        { t: 'chunk bg-clause-1', w: 'understand', txt: '' },
+        { t: 'chunk bg-clause-2', w: 'how', txt: '宾语从句' },
+        { t: 'chunk bg-clause-2', w: 'amazing', txt: '' },
+        { t: 'chunk bg-clause-2', w: 'your', txt: '' },
+        { t: 'chunk bg-clause-2', w: 'body', txt: '' },
+        { t: 'chunk bg-clause-2', w: 'is', txt: '' },
+        { t: 'chunk bg-clause-1', w: ',', txt: '' },
+        { t: 'chunk bg-clause-1', w: 'you', txt: '' },
+        { t: 'chunk bg-clause-1', w: 'are', txt: '' },
+        { t: 'chunk bg-clause-1', w: 'more', txt: '' },
+        { t: 'chunk bg-clause-1', w: 'likely', txt: '' },
+        { t: 'chunk bg-clause-1', w: 'to', txt: '' },
+        { t: 'chunk bg-clause-1', w: 'treat', txt: '' },
+        { t: 'chunk bg-clause-1', w: 'it', txt: '' },
+        { t: 'chunk bg-clause-1', w: 'with', txt: '' },
+        { t: 'chunk bg-clause-1', w: 'respect', txt: '' },
+        { t: 'chunk bg-clause-1', w: '.', txt: '' }
+    ];
+    
+    const SA_TRANS = "研究表明，当你明白你的身体有多么奇妙时，你就更有可能以尊重和善意来对待它。";
+    
+    const SA_STEPS = [
+        { type: 'bd-trunk', label: '主句结构', text: "<b>Research shows that ...</b>：主语是 Research，谓语是 shows，that 引导一个宾语从句，说明研究显示的内容。" },
+        { type: 'bd-clause-1', label: '从句分析', text: "<b>when you understand...</b>：这是 that 从句中的时间状语从句。而在 understand 后面，又嵌套了一个由 <b>how</b> 引导的宾语从句 (how amazing your body is)。" },
+        { type: 'bd-struct', label: '核心语法', text: "<b>be likely to do something</b>：意思是“很有可能做某事”。这里用了 more likely，表示“更有可能”。" }
+    ];
+
+    const QUIZ_ITEMS = [
+        { q: "1. What is 'body image'?", a: "<span class='q-opt'>A. Your height</span><span class='q-opt'>B. How you think and feel about your looks</span><span class='q-opt'>C. A photo of you</span>" },
+        { q: "2. According to Molly Forbes, what is the least important thing about you?", a: "<span class='q-opt'>A. Your kindness</span><span class='q-opt'>B. The way you look</span><span class='q-opt'>C. Your skills</span>" },
+        { q: "3. What should we treat our bodies with?", a: "<span class='q-opt'>A. Respect and kindness</span><span class='q-opt'>B. Worry and stress</span><span class='q-opt'>C. Anger</span>" }
+    ];
+
+    // --- Core Logic ---
+    function render() {
+        try {
+            // 应用动态主题色
+            document.documentElement.style.setProperty('--theme-color', META.themeColor);
+
+            const root = document.getElementById('card-container');
+            let cardIdx = 1;
+            let currentCard = createCoverPage();
+            root.appendChild(currentCard);
+            let container = currentCard.querySelector('.content-body');
+            const SAFE_BOTTOM = 1350; 
+
+            // 1. Content
+            if (MAIN_CONTENT && MAIN_CONTENT.length > 0) {
+                MAIN_CONTENT.forEach(item => {
+                    const row = createContentRow(item);
+                    container.appendChild(row);
+                    checkAndMove(row, SAFE_BOTTOM);
+                });
+            }
+
+            cardIdx++;
+            currentCard = createNormalPage(cardIdx);
+            root.appendChild(currentCard);
+            container = currentCard.querySelector('.content-body');
+
+            // 2. Vocab
+            appendWithCheck(createTitle('中考高频词汇 (Vocab)'));
+            let grid = document.createElement('div'); grid.className = 'vocab-grid';
+            container.appendChild(grid);
+            if (VOCAB_LIST) {
+                VOCAB_LIST.forEach((v, i) => {
+                    const item = createVocabItem(v, i+1); grid.appendChild(item);
+                    if ((grid.getBoundingClientRect().bottom - currentCard.getBoundingClientRect().top) > SAFE_BOTTOM) {
+                        grid.removeChild(item); createNewPage();
+                        grid = document.createElement('div'); grid.className = 'vocab-grid';
+                        container.appendChild(grid); grid.appendChild(item);
+                    }
+                });
+            }
+
+            // 3. Sentence Analysis
+            appendWithCheck(createTitle('长难句分析 (Sentence Analysis)'));
+            let saWrapper = document.createElement('div'); saWrapper.className = 'sa-sentence-wrapper';
+            container.appendChild(saWrapper);
+            if (SA_CHUNKS) {
+                SA_CHUNKS.forEach(chunk => {
+                    let el = createSaChunk(chunk);
+                    if (el) { 
+                        saWrapper.appendChild(el);
+                        if ((saWrapper.getBoundingClientRect().bottom - currentCard.getBoundingClientRect().top) > SAFE_BOTTOM) {
+                            saWrapper.removeChild(el); createNewPage();
+                            saWrapper = document.createElement('div'); saWrapper.className = 'sa-sentence-wrapper';
+                            container.appendChild(saWrapper); saWrapper.appendChild(el);
+                        }
+                    }
+                });
+            }
+
+            const transEl = document.createElement('div'); transEl.className = 'sa-trans'; transEl.innerHTML = SA_TRANS || "";
+            appendWithCheck(transEl);
+
+            if (SA_STEPS) {
+                SA_STEPS.forEach(step => { const el = createSaStep(step); container.appendChild(el); checkAndMove(el, SAFE_BOTTOM); });
+            }
+
+            // 4. Quiz
+            appendWithCheck(createTitle('趣闻挑战 (Little Quiz)'));
+            if (QUIZ_ITEMS) {
+                QUIZ_ITEMS.forEach((q, i) => {
+                    const qCard = document.createElement('div'); qCard.className = 'q-card';
+                    qCard.innerHTML = `<div class="q-header"><div class="q-num">${i+1}</div><div class="q-text">${q.q}</div></div><div class="q-opts">${q.a}</div>`;
+                    container.appendChild(qCard); checkAndMove(qCard, SAFE_BOTTOM);
+                });
+            }
+
+            updateFooters(cardIdx);
+
+            function createNewPage() {
+                cardIdx++; currentCard = createNormalPage(cardIdx);
+                root.appendChild(currentCard); container = currentCard.querySelector('.content-body');
+            }
+            function checkAndMove(el, limit) {
+                const rect = el.getBoundingClientRect();
+                const cardTop = currentCard.getBoundingClientRect().top;
+                if ((rect.bottom - cardTop) > limit) {
+                    container.removeChild(el); createNewPage(); container.appendChild(el);
+                }
+            }
+            function appendWithCheck(el) { container.appendChild(el); checkAndMove(el, SAFE_BOTTOM); }
+        } catch(e) {
+            console.error(e);
+            alert("Render Error: " + e.message);
+        }
+    }
+
+    function createCoverPage() {
+        const d = document.createElement('div'); d.className = 'card cover-page';
+        d.innerHTML = `<div class="hero-section" onclick="document.getElementById('upload-trigger').click()"><img id="hero-img" class="hero-img"><div class="hero-placeholder" id="hero-txt">Tap to Upload Cover</div></div><div class="cover-header"><div class="meta-tag">${META.issue}</div><div class="poster-title">${META.title}</div><div class="poster-subtitle">${META.subtitle}</div></div><div class="content-body" style="padding:0 60px;"></div><div class="footer"><span class="footer-left">Designed for Educational Purpose</span><span class="footer-right page-num"></span></div>`;
+        return d;
+    }
+    function createNormalPage(idx) {
+        const d = document.createElement('div'); d.className = 'card normal-page';
+        d.innerHTML = `<header class="mini-header"><div class="mini-title">${META.title}</div><div class="continued-tag">Continued...</div></header><div class="content-body"></div><div class="footer"><span class="footer-left">Designed for Educational Purpose</span><span class="footer-right page-num"></span></div>`;
+        return d;
+    }
+    function createContentRow(item) {
+        const d = document.createElement('div'); d.className = 'row';
+        if (item.type === 'supp') d.classList.add('supp-style');
+        d.innerHTML = `<div class="col-eng">${item.eng}</div><div class="col-chi">${item.chi}</div>`;
+        return d;
+    }
+    function createTitle(text) { const d = document.createElement('div'); d.className = 'app-h'; d.innerText = text; return d; }
+    
+    function createVocabItem(v, idx) {
+        let bgClass = '';
+        if (v.p.includes('n.')) bgClass = 'hl-n';
+        else if (v.p.includes('v.')) bgClass = 'hl-v';
+        else if (v.p.includes('adj') || v.p.includes('adv')) bgClass = 'hl-adj';
+        else bgClass = 'hl-n'; 
+        const d = document.createElement('div'); d.className = 'vocab-item';
+        d.innerHTML = `<div class="v-line-1"><span class="v-word ${bgClass}">${v.w}</span><span class="v-idx">${idx}</span><span class="v-ipa">[${v.ipa}]</span><span class="v-pos">${v.p}</span><span class="v-mean">${v.m}</span></div><div class="v-line-2">${v.c}</div><div class="v-line-3">"${v.e}"</div>`;
+        return d;
+    }
+    
+    function createSaChunk(c) {
+        if (!c || !c.t) return null;
+
+        const d = document.createElement('div'); 
+        d.className = `chunk ${c.t}`;
+        
+        if (c.t.includes('chunk-group')) {
+            const color = c.l ? `var(--${c.l.replace('l-', 't-')})` : '#ccc';
+            d.style.borderBottomColor = color;
+        }
+
+        const label = c.l ? c.l : '';
+        const txt = c.txt ? c.txt : '';
+        
+        d.innerHTML = `<span class="chunk-lbl ${label}">${txt}</span><span class="chunk-text">${c.w}</span>`;
+        return d;
+    }
+    function createSaStep(s) {
+        const d = document.createElement('div'); d.className = `sa-step-box ${s.type}`;
+        d.innerHTML = `<div class="sa-step"><span class="sa-tag">${s.label}</span>${s.text}</div>`;
+        return d;
+    }
+    function updateFooters(total) { document.querySelectorAll('.page-num').forEach((el, i) => el.innerText = `Page ${i+1}/${total}`); }
+    
+    async function downloadAllPages() {
+        const btn = document.getElementById('btn-download');
+        const originalText = btn.innerText;
+        btn.innerText = "Processing... (Please Wait)";
+        btn.style.opacity = "0.7";
+        btn.disabled = true;
+
+        try {
+            const cards = document.querySelectorAll('.card');
+            for (let i = 0; i < cards.length; i++) {
+                const canvas = await html2canvas(cards[i], {
+                    scale: 2, 
+                    useCORS: true, 
+                    allowTaint: false, 
+                    backgroundColor: '#ffffff', 
+                    logging: false
+                });
+
+                canvas.toBlob(function(blob) {
+                    if (!blob) {
+                        alert("Security Error: Please open this HTML with a Local Server. File:// protocol prevents saving.");
+                        return;
+                    }
+                    const link = document.createElement('a');
+                    link.download = `TheWeekJunior_BodyPositivity_${i + 1}.png`;
+                    link.href = URL.createObjectURL(blob);
+                    link.click();
+                    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+                }, 'image/png');
+                
+                await new Promise(r => setTimeout(r, 500));
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Error: " + e.message);
+        } finally {
+            btn.innerText = originalText;
+            btn.style.opacity = "1";
+            btn.disabled = false;
+        }
+    }
+
+    window.loadFile = function(e) { document.getElementById('hero-img').src = URL.createObjectURL(e.target.files[0]); document.getElementById('hero-img').style.display='block'; document.getElementById('hero-txt').style.display='none'; };
+    window.onload = render;
+</script>
+</body>
+</html>
