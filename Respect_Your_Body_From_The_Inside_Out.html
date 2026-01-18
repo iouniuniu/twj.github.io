@@ -1,216 +1,243 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Week Junior - Seal Rescues (V34.0 Safe Mode)</title>
-    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700&family=Noto+Sans+SC:wght@300;400;500;700&family=Lato:wght@400;700;900&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-    <style>
-        :root {
-            /* 动态主题色 */
-            --theme-color: #2980b9; 
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Week Junior Handout - Respect Your Body</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700&family=Noto+Sans+SC:wght@300;400;500;700&family=Lato:wght@400;700;900&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<style>
+    :root {
+        /* --- 动态主题色 (由 JS 注入) --- */
+        --theme-color: #E67E22; 
 
-            /* 词性颜色 */
-            --t-subj: #C0392B; --t-verb: #2980B9; --t-obj: #27AE60; --t-mod: #D35400; --t-prep: #8E44AD; --t-conn: #7F8C8D;
-            
-            /* 词性背景 */
-            --bg-noun: #D6EAF8; --bg-verb: #D5F5E3; --bg-adj: #E8DAEF;
-            
-            /* 长难句背景 */
-            --bg-trunk: #EBF5FB;    --bg-clause-1: #FEF5E7; --bg-clause-2: #E9F7EF;
-            
-            /* 边框色 */
-            --bd-trunk: #3498DB; --bd-clause-1: #F39C12; --bd-clause-2: #2ECC71; --bd-struct: #2C3E50;
-            
-            /* 通用 */
-            --text-main: #2c3e50; --bg: #ffffff; --date-bg: #2980b9; --supp-bg: #F0F8FF;
-            --p-w: 1080px; --p-h: 1440px;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; }
-        body { background: #444; display: flex; flex-direction: column; align-items: center; padding: 40px 0; gap: 40px; font-family: 'Noto Sans SC', sans-serif; }
+        /* --- 严格词性配色 (固定) --- */
+        --bg-noun: #D6EAF8; /* 名-蓝 */
+        --bg-verb: #D5F5E3; /* 动-绿 */
+        --bg-adj: #E8DAEF;  /* 修饰-紫 */
         
-        .card { width: var(--p-w); height: var(--p-h); background: var(--bg); display: flex; flex-direction: column; overflow: hidden; position: relative; box-shadow: 0 30px 80px rgba(0,0,0,0.6); flex-shrink: 0; }
-        .card.cover-page { padding: 0; } .card.normal-page { padding: 50px 60px; }
-        .content-body { flex-grow: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 0; overflow: hidden; width: 100%; }
-        .cover-page .content-body { padding: 0 60px; } .normal-page .content-body { padding: 0; }
-
-        /* 首页大图 960px */
-        .hero-section { width: 100%; height: 960px; background: #e0e0e0; cursor: pointer; border-bottom: 8px solid var(--theme-color); position: relative; flex-shrink: 0; }
-        .hero-img { width: 100%; height: 100%; object-fit: cover; display: none; }
-        .hero-placeholder { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #777; font-size: 20pt; font-family: 'Lato'; text-align: center; border: 3px dashed #bbb; padding: 15px 30px; border-radius: 10px; }
+        /* 词性文字颜色 */
+        --t-subj: #C0392B; --t-verb: #2980B9; --t-obj: #27AE60; --t-mod: #D35400; --t-prep: #8E44AD; --t-conn: #7F8C8D;
         
-        .cover-header { padding: 30px 60px 10px 60px; display: flex; flex-direction: column; align-items: center; text-align: center; flex-shrink: 0; }
-        .meta-tag { background: var(--theme-color); color: white; padding: 6px 20px; border-radius: 50px; font-family: 'Lato'; font-weight: 900; font-size: 12pt; margin-bottom: 15px; letter-spacing: 1px; }
-        .poster-title { font-family: 'Lora'; font-size: 46pt; font-weight: 700; color: var(--text-main); line-height: 1.0; margin-bottom: 10px; }
-        .poster-subtitle { font-family: 'Noto Sans SC'; font-size: 20pt; color: #5d6d7e; font-weight: 400; margin-bottom: 20px; position: relative; display: inline-block; }
-        .poster-subtitle::after { content: ""; display: block; width: 60px; height: 3px; background: var(--theme-color); margin: 10px auto 0 auto; }
-
-        .mini-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #ccc; padding-bottom: 15px; margin-bottom: 20px; height: 60px; flex-shrink: 0; width: 100%; }
-        .mini-title { font-family: 'Lora'; font-weight: 700; font-size: 16pt; color: var(--text-main); }
-        .continued-tag { font-family: 'Lato'; font-weight: 700; font-style: italic; background: #eee; padding: 5px 15px; border-radius: 6px; font-size: 11pt; color: #666; }
-
-        .row { display: flex; gap: 40px; width: 100%; padding: 20px 0; border-bottom: 1px solid #f9f9f9; align-items: flex-start; flex-shrink: 0; }
-        .col-eng { flex: 6; font-family: 'Lora'; font-size: 18pt; line-height: 1.8; text-align: justify; padding-right: 25px; border-right: 2px solid #f0f0f0; }
-        .col-chi { flex: 4; font-family: 'Noto Sans SC'; font-size: 16pt; line-height: 1.8; color: #5d6d7e; text-align: justify; font-weight: 400; padding-top: 2px; }
-
-        .row.supp-style { background: var(--supp-bg); padding: 25px; border-radius: 12px; margin: 15px 0; border: none; }
-        .row.supp-style .col-eng { border-right: 2px solid #aec6cf; font-size: 16pt; line-height: 1.6; }
-        .row.supp-style .col-chi { font-size: 14pt !important; line-height: 1.6; color: #555; }
-        h3 { font-family: 'Lato'; font-weight: 900; font-size: 18pt; color: var(--theme-color); margin: 0 0 10px 0; display: block; border-left: 8px solid var(--theme-color); padding-left: 15px; }
-        .row.supp-style h3 { font-size: 16pt !important; border-left-width: 5px; }
-
-        .hl { padding: 0 4px; border-radius: 4px; font-weight: 600; display: inline-block; }
-        .hl-n { background-color: var(--bg-noun); } .hl-v { background-color: var(--bg-verb); } .hl-adj { background-color: var(--bg-adj); }
-        sup { color: #555; font-size: 0.6em; vertical-align: super; font-weight: 700; margin-left: 2px; }
-
-        .app-h { font-size: 18pt; font-weight: 700; color: var(--text-main); border-left: 6px solid #555; padding-left: 12px; display: block; margin: 25px 0 20px 0; font-family: 'Noto Sans SC'; flex-shrink: 0; width: 100%; }
+        /* 长难句背景 */
+        --bg-trunk: #EBF5FB; --bg-clause-1: #FEF5E7; --bg-clause-2: #E9F7EF;
+        /* 边框色 */
+        --bd-trunk: #3498DB; --bd-clause-1: #F39C12; --bd-clause-2: #2ECC71; --bd-struct: #2C3E50;
         
-        .vocab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px 40px; width: 100%; margin-bottom: 30px; flex-shrink: 0; }
-        .vocab-item { background: #fff; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 5px; display: flex; flex-direction: column; gap: 6px; }
-        .v-line-1 { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-        .v-word { font-family: 'Lora'; font-weight: 700; font-size: 19pt; color: #2c3e50; padding: 0 5px; border-radius: 4px; }
-        .v-idx { background: #333; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 11pt; text-align: center; line-height: 22px; display: inline-block; transform: translateY(-2px); }
-        .v-ipa { font-family: 'Arial'; color: #95a5a6; font-size: 13pt; }
-        .v-mean { font-size: 15pt; color: #444; font-weight: 500; margin-left: auto; }
-        .v-pos { color: var(--theme-color); font-weight: bold; font-family: 'Times New Roman'; font-style: italic; font-size: 13pt; margin-right: 2px;}
-        .v-line-2 { font-size: 14pt; color: #d35400; font-family: 'Roboto Mono'; font-weight: 500; }
-        .v-line-3 { font-size: 14pt; color: #7f8c8d; font-style: italic; font-family: 'Lora'; line-height: 1.4; margin-top: 2px; }
+        /* 通用布局 */
+        --text-main: #2c3e50; --bg: #ffffff; --supp-bg: #FFF3E0; /* 调整为淡橙色背景适配主题 */
+        --p-w: 1080px; --p-h: 1440px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; }
+    body { background: #444; display: flex; flex-direction: column; align-items: center; padding: 40px 0; gap: 40px; font-family: 'Noto Sans SC', sans-serif; }
+    
+    /* 容器 */
+    .card { width: var(--p-w); height: var(--p-h); background: var(--bg); display: flex; flex-direction: column; overflow: hidden; position: relative; box-shadow: 0 30px 80px rgba(0,0,0,0.6); flex-shrink: 0; }
+    .card.cover-page { padding: 0; } .card.normal-page { padding: 50px 60px; }
+    .content-body { flex-grow: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 0; overflow: hidden; width: 100%; }
+    .cover-page .content-body { padding: 0 60px; } .normal-page .content-body { padding: 0; }
 
-        .sa-sentence-wrapper { display: flex; flex-wrap: wrap; column-gap: 0; row-gap: 35px; line-height: 1.5; margin-bottom: 25px; padding-top: 10px; align-items: flex-end; width: 100%; }
-        .chunk { display: inline-flex; flex-direction: column; align-items: center; margin: 0; vertical-align: bottom; }
-        .chunk-text { font-family: 'Lora'; font-size: 20pt; color: #2c3e50; padding: 4px 5px; font-weight: 500; border-radius: 0; }
-        .chunk-group { border-bottom: 3px solid #ccc; padding-bottom: 2px; margin: 0 3px; }
-        .chunk-group .chunk-text { padding-bottom: 0; } 
-        .chunk-lbl { font-size: 10pt; font-family: 'Noto Sans SC'; font-weight: 800; margin-top: 4px; white-space: nowrap; width: 100%; text-align: center; height: 15px; }
-        .chunk-lbl:empty { height: 0; margin-top: 0; }
-        .bracket { font-size: 20pt; color: #d35400; font-family: 'Lato'; font-weight: 300; padding: 4px 6px; display: inline-block; }
-        
-        .bg-trunk .chunk-text { background-color: var(--bg-trunk); }
-        .bg-clause-1 .chunk-text { background-color: var(--bg-clause-1); }
-        .bg-clause-1.bracket { background-color: var(--bg-clause-1); }
-        .bg-clause-2 .chunk-text { background-color: var(--bg-clause-2); }
-        .bg-clause-2.bracket { background-color: var(--bg-clause-2); }
-        
-        .l-subj { color: var(--t-subj); border-color: var(--t-subj); } 
-        .l-verb { color: var(--t-verb); border-color: var(--t-verb); } 
-        .l-obj { color: var(--t-obj); border-color: var(--t-obj); } 
-        .l-conn { color: var(--t-conn); border-color: var(--t-conn); }
+    /* 首页 (960px Height) */
+    .hero-section { width: 100%; height: 960px; background: #e0e0e0; cursor: pointer; border-bottom: 8px solid var(--theme-color); position: relative; flex-shrink: 0; }
+    .hero-img { width: 100%; height: 100%; object-fit: cover; display: none; }
+    .hero-placeholder { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #777; font-size: 20pt; font-family: 'Lato'; text-align: center; border: 3px dashed #bbb; padding: 15px 30px; border-radius: 10px; }
+    
+    .cover-header { padding: 30px 60px 10px 60px; display: flex; flex-direction: column; align-items: center; text-align: center; flex-shrink: 0; }
+    .meta-tag { background: var(--theme-color); color: white; padding: 6px 20px; border-radius: 50px; font-family: 'Lato'; font-weight: 900; font-size: 12pt; margin-bottom: 15px; letter-spacing: 1px; }
+    .poster-title { font-family: 'Lora'; font-size: 46pt; font-weight: 700; color: var(--text-main); line-height: 1.0; margin-bottom: 10px; }
+    .poster-subtitle { font-family: 'Noto Sans SC'; font-size: 20pt; color: #5d6d7e; font-weight: 400; margin-bottom: 20px; position: relative; display: inline-block; }
+    .poster-subtitle::after { content: ""; display: block; width: 60px; height: 3px; background: var(--theme-color); margin: 10px auto 0 auto; }
 
-        .sa-step-box, .q-card { background: #fdfefe; padding: 20px 25px; border-radius: 8px; border: 1px solid #eee; box-shadow: 2px 2px 8px rgba(0,0,0,0.02); margin-bottom: 12px; width: 100%; }
-        .bd-struct { border-left: 5px solid var(--bd-struct); }
-        .bd-trunk { border-left: 5px solid var(--bd-trunk); background-color: #FDFEFE; }
-        .bd-clause-1 { border-left: 5px solid var(--bd-clause-1); background-color: #FEF9E7; }
-        .bd-clause-2 { border-left: 5px solid var(--bd-clause-2); background-color: #E9F7EF; }
-        .q-card { border-left: 5px solid var(--theme-color); }
-        
-        .sa-trans { font-size: 16pt; color: #444; font-weight: 600; font-style: italic; margin-bottom: 20px; padding: 15px; border: 1px dashed #ccc; border-radius: 8px; width: 100%; background: #fff; }
-        .sa-step { margin-bottom: 12px; font-size: 15pt; color: #555; line-height: 1.6; }
-        .sa-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11pt; margin-right: 10px; font-weight: 800; color: #fff; background: #555; font-family: 'Lato'; text-transform: uppercase; }
+    /* 续页头 */
+    .mini-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #ccc; padding-bottom: 15px; margin-bottom: 20px; height: 60px; flex-shrink: 0; width: 100%; }
+    .mini-title { font-family: 'Lora'; font-weight: 700; font-size: 16pt; color: var(--text-main); }
+    .continued-tag { font-family: 'Lato'; font-weight: 700; font-style: italic; background: #eee; padding: 5px 15px; border-radius: 6px; font-size: 11pt; color: #666; }
 
-        .q-header { display: flex; align-items: baseline; margin-bottom: 5px; }
-        .q-num { color: var(--theme-color); font-size: 18pt; font-weight: 900; margin-right: 10px; font-family: 'Lato'; }
-        .q-text { font-size: 18pt; color: #2c3e50; font-weight: 600; font-family: 'Lora'; }
-        .q-opts { display: flex; gap: 25px; flex-wrap: wrap; margin-left: 0; margin-top: 5px; }
-        .q-opt { font-size: 15pt; color: #555; font-family: 'Lato'; }
-        .q-blank { border-bottom: 2px solid #333; width: 100px; display: inline-block; }
+    /* 正文 */
+    .row { display: flex; gap: 40px; width: 100%; padding: 20px 0; border-bottom: 1px solid #f9f9f9; align-items: flex-start; flex-shrink: 0; }
+    .col-eng { flex: 6; font-family: 'Lora'; font-size: 18pt; line-height: 1.8; text-align: justify; padding-right: 25px; border-right: 2px solid #f0f0f0; }
+    .col-chi { flex: 4; font-family: 'Noto Sans SC'; font-size: 16pt; line-height: 1.8; color: #5d6d7e; text-align: justify; font-weight: 400; padding-top: 2px; }
 
-        .footer { margin-top: auto; display: flex; justify-content: space-between; border-top: 1px solid #eee; padding: 0 60px; font-size: 11pt; color: #95a5a6; flex-shrink: 0; height: 70px; align-items: center; width: 100%; box-sizing: border-box; font-family: 'Lato'; }
-        .normal-page .footer { padding: 0; }
-        .footer-right { font-weight: 700; color: #333; }
+    /* 边栏 (一致布局 + 动态色) */
+    .row.supp-style { background: var(--supp-bg); padding: 25px; border-radius: 12px; margin: 15px 0; border: none; }
+    .row.supp-style .col-eng { border-right: 2px solid #E59866; font-size: 16pt; line-height: 1.6; }
+    .row.supp-style .col-chi { font-size: 14pt !important; line-height: 1.6; color: #555; }
+    h3 { font-family: 'Lato'; font-weight: 900; font-size: 18pt; color: var(--theme-color); margin: 0 0 10px 0; display: block; border-left: 8px solid var(--theme-color); padding-left: 15px; }
+    .row.supp-style h3 { font-size: 16pt !important; border-left-width: 5px; }
 
-        #btn-download { position: fixed; bottom: 20px; right: 20px; z-index: 9999; padding: 15px 25px; background: #2c3e50; color: white; border: none; border-radius: 50px; cursor: pointer; font-family: sans-serif; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.2s; }
-        #btn-download:hover { transform: scale(1.05); background: #34495e; }
-        #btn-download:active { transform: scale(0.95); }
-    </style>
-</head>
-<body>
-<button id="btn-download" onclick="downloadAllPages()">📸 Save Pages</button>
-<div id="card-container"></div>
-<input type="file" id="upload-trigger" style="display:none" onchange="loadFile(event)">
+    /* 词性高亮 (必须严格对应) */
+    .hl { padding: 0 4px; border-radius: 4px; font-weight: 600; display: inline-block; }
+    .hl-n { background-color: var(--bg-noun); } 
+    .hl-v { background-color: var(--bg-verb); } 
+    .hl-adj { background-color: var(--bg-adj); }
+    sup { color: #555; font-size: 0.6em; vertical-align: super; font-weight: 700; margin-left: 2px; }
 
+    /* 附录 */
+    .app-h { font-size: 18pt; font-weight: 700; color: var(--text-main); border-left: 6px solid #555; padding-left: 12px; display: block; margin: 25px 0 20px 0; font-family: 'Noto Sans SC'; flex-shrink: 0; width: 100%; }
+    
+    /* 词汇表 */
+    .vocab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px 40px; width: 100%; margin-bottom: 30px; flex-shrink: 0; }
+    .vocab-item { background: #fff; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 5px; display: flex; flex-direction: column; gap: 6px; }
+    .v-line-1 { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+    .v-word { font-family: 'Lora'; font-weight: 700; font-size: 19pt; color: #2c3e50; padding: 0 5px; border-radius: 4px; }
+    .v-idx { background: #333; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 11pt; text-align: center; line-height: 22px; display: inline-block; transform: translateY(-2px); }
+    .v-ipa { font-family: 'Arial'; color: #95a5a6; font-size: 13pt; }
+    .v-mean { font-size: 15pt; color: #444; font-weight: 500; margin-left: auto; }
+    .v-pos { color: var(--theme-color); font-weight: bold; font-family: 'Times New Roman'; font-style: italic; font-size: 13pt; margin-right: 2px;}
+    .v-line-2 { font-size: 14pt; color: #d35400; font-family: 'Roboto Mono'; font-weight: 500; }
+    .v-line-3 { font-size: 14pt; color: #7f8c8d; font-style: italic; font-family: 'Lora'; line-height: 1.4; margin-top: 2px; }
+
+    /* 长难句 (Zero-Gap + Chunk Grouping) */
+    .sa-sentence-wrapper { display: flex; flex-wrap: wrap; column-gap: 0; row-gap: 35px; line-height: 1.5; margin-bottom: 25px; padding-top: 10px; align-items: flex-end; width: 100%; }
+    .chunk { display: inline-flex; flex-direction: column; align-items: center; margin: 0; vertical-align: bottom; }
+    .chunk-text { font-family: 'Lora'; font-size: 20pt; color: #2c3e50; padding: 4px 5px; font-weight: 500; border-radius: 0; }
+    .chunk-group { border-bottom: 3px solid #ccc; padding-bottom: 2px; margin: 0 3px; }
+    .chunk-group .chunk-text { padding-bottom: 0; } 
+    .chunk-lbl { font-size: 10pt; font-family: 'Noto Sans SC'; font-weight: 800; margin-top: 4px; white-space: nowrap; width: 100%; text-align: center; height: 15px; }
+    .chunk-lbl:empty { height: 0; margin-top: 0; }
+    .bracket { font-size: 20pt; color: #d35400; font-family: 'Lato'; font-weight: 300; padding: 4px 6px; display: inline-block; }
+    
+    .bg-trunk .chunk-text { background-color: var(--bg-trunk); }
+    .bg-clause-1 .chunk-text { background-color: var(--bg-clause-1); }
+    .bg-clause-1.bracket { background-color: var(--bg-clause-1); }
+    .bg-clause-2 .chunk-text { background-color: var(--bg-clause-2); }
+    .bg-clause-2.bracket { background-color: var(--bg-clause-2); }
+    
+    .l-subj { color: var(--t-subj); border-color: var(--t-subj); } 
+    .l-verb { color: var(--t-verb); border-color: var(--t-verb); } 
+    .l-obj { color: var(--t-obj); border-color: var(--t-obj); } 
+    .l-conn { color: var(--t-conn); border-color: var(--t-conn); }
+
+    /* 解析 & Quiz */
+    .sa-step-box, .q-card { background: #fdfefe; padding: 20px 25px; border-radius: 8px; border: 1px solid #eee; box-shadow: 2px 2px 8px rgba(0,0,0,0.02); margin-bottom: 12px; width: 100%; }
+    .bd-struct { border-left: 5px solid var(--bd-struct); }
+    .bd-trunk { border-left: 5px solid var(--bd-trunk); background-color: #FDFEFE; }
+    .bd-clause-1 { border-left: 5px solid var(--bd-clause-1); background-color: #FEF9E7; }
+    .bd-clause-2 { border-left: 5px solid var(--bd-clause-2); background-color: #E9F7EF; }
+    .q-card { border-left: 5px solid var(--theme-color); }
+    
+    .sa-trans { font-size: 16pt; color: #444; font-weight: 600; font-style: italic; margin-bottom: 20px; padding: 15px; border: 1px dashed #ccc; border-radius: 8px; width: 100%; background: #fff; }
+    .sa-step { margin-bottom: 12px; font-size: 15pt; color: #555; line-height: 1.6; }
+    .sa-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11pt; margin-right: 10px; font-weight: 800; color: #fff; background: #555; font-family: 'Lato'; text-transform: uppercase; }
+
+    /* Quiz 内容 */
+    .q-header { display: flex; align-items: baseline; margin-bottom: 5px; }
+    .q-num { color: var(--theme-color); font-size: 18pt; font-weight: 900; margin-right: 10px; font-family: 'Lato'; }
+    .q-text { font-size: 18pt; color: #2c3e50; font-weight: 600; font-family: 'Lora'; }
+    .q-opts { display: flex; gap: 25px; flex-wrap: wrap; margin-left: 0; margin-top: 5px; }
+    .q-opt { font-size: 15pt; color: #555; font-family: 'Lato'; }
+    .q-blank { border-bottom: 2px solid #333; width: 100px; display: inline-block; }
+
+    /* 页脚 */
+    .footer { margin-top: auto; display: flex; justify-content: space-between; border-top: 1px solid #eee; padding: 0 60px; font-size: 11pt; color: #95a5a6; flex-shrink: 0; height: 70px; align-items: center; width: 100%; box-sizing: border-box; font-family: 'Lato'; }
+    .normal-page .footer { padding: 0; }
+    .footer-right { font-weight: 700; color: #333; }
+
+    /* 截图按钮 */
+    #btn-download { position: fixed; bottom: 20px; right: 20px; z-index: 9999; padding: 15px 25px; background: #2c3e50; color: white; border: none; border-radius: 50px; cursor: pointer; font-family: sans-serif; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.2s; }
+    #btn-download:hover { transform: scale(1.05); background: #34495e; }
+    #btn-download:active { transform: scale(0.95); }
+    
+    /* 上传按钮隐形 */
+    #upload-trigger { display: none; }
+</style>
 <script>
     // --- Global Error Trap ---
     window.onerror = function(message, source, lineno, colno, error) {
-        alert("Render Error: " + message + "\nLine: " + lineno);
+        alert("Render Error: " + message + "\\nLine: " + lineno);
     };
 
-    // --- Data Injection ---
-    const META = {
-        issue: "ISSUE 17 JAN 2026",
-        title: "Seal rescues on the rise in UK",
-        subtitle: "英国海豹救援数量激增",
-        themeColor: "#2980b9"
+    // --- Phase 4: Data Injection ---
+    const META = { 
+        issue: "17 January 2026", 
+        title: "Respect Your Body", 
+        subtitle: "Why a positive body image matters and how to build it.",
+        themeColor: "#E67E22" // Warm Orange for Wellbeing
     };
-
+    
+    // 2. 正文数据
     const MAIN_CONTENT = [
-        { eng: `Rescue charities report an <span class="hl hl-n">increase</span><sup>①</sup> in baby seals needing help this winter.`, chi: `救援慈善机构报告称，今年冬天需要帮助的海豹幼崽数量有所<span class="hl hl-n">增加</span><sup>①</sup>。` },
-        { eng: `However, the British Divers Marine Life Rescue (BDMLR) suggests this could be a positive sign that the overall grey seal <span class="hl hl-n">population</span><sup>②</sup> is increasing.`, chi: `然而，英国潜水员海洋生命救援组织 (BDMLR) 表示，这可能是一个积极的信号，表明灰海豹<span class="hl hl-n">种群</span><sup>②</sup>正在增加。` },
-        { eng: `Grey seals are one of two species <span class="hl hl-adj">native</span><sup>③</sup> to the UK (the other being common seals) and are actually more common than common seals.`, chi: `灰海豹是英国的两种<span class="hl hl-adj">本土</span><sup>③</sup>物种之一（另一种是普通海豹），实际上比普通海豹更常见。` },
-        { eng: `Adults grow to around two metres long, and males can <span class="hl hl-v">weigh</span><sup>④</sup> more than three adult humans.`, chi: `成年海豹长约两米，雄性<span class="hl hl-v">体重</span><sup>④</sup>可达三个成年人的重量。` },
-        { eng: `Their pups are born snowy white between August and October.`, chi: `它们的幼崽在 8 月到 10 月之间出生，通体雪白。` },
-        { eng: `Hundreds of calls have been reported regarding seals in trouble on beaches in south-east England.`, chi: `据报道，英格兰东南部海滩上有数百通关于海豹遇险的电话。` },
-        { eng: `Many are taken to the RSPCA's Mallydams Wood centre in East Sussex.`, chi: `许多海豹被送往东萨塞克斯郡的 RSPCA Mallydams Wood 中心。` },
-        { eng: `Winter storms and human <span class="hl hl-n">disturbance</span><sup>⑤</sup> (people walking nearby) can <span class="hl hl-v">confuse</span><sup>⑥</sup> pups, causing them to get <span class="hl hl-v">separated</span><sup>⑦</sup> from their mothers.`, chi: `冬季风暴和人类<span class="hl hl-n">干扰</span><sup>⑤</sup>（在附近行走的人）会使幼崽<span class="hl hl-v">困惑</span><sup>⑥</sup>，导致它们与母亲<span class="hl hl-v">分离</span><sup>⑦</sup>。` },
-        { eng: `Penny Taberer from the RSPCA noted that Mallydams Woods used to take in one seal a year, but now receives about 60 <span class="hl hl-adv">annually</span><sup>⑧</sup>.`, chi: `RSPCA 的 Penny Taberer 指出，Mallydams Woods 过去每年接收一只海豹，但现在<span class="hl hl-adv">每年</span><sup>⑧</sup>接收约 60 只。` },
-        { eng: `BDMLR volunteer Sarah Kennett believes the rise might also be due to increased public <span class="hl hl-n">awareness</span><sup>⑨</sup>, leading to more calls for help.`, chi: `BDMLR 志愿者 Sarah Kennett 认为，数量的增加可能也归因于公众<span class="hl hl-n">意识</span><sup>⑨</sup>的提高，从而导致了更多的求助电话。` },
-        { eng: `Kennett warned the public not to <span class="hl hl-v">approach</span><sup>⑩</sup> wild animals.`, chi: `Kennett 警告公众不要<span class="hl hl-v">靠近</span><sup>⑩</sup>野生动物。` },
-        { eng: `She highlighted dangerous situations where people try to touch seals, which <span class="hl hl-v">endangers</span><sup>⑪</sup> both the animal and the person.`, chi: `她强调了人们试图触摸海豹的危险情况，这<span class="hl hl-v">危及</span><sup>⑪</sup>了动物和人。` },
-        { type: 'supp', eng: `<h3>Seals of the UK</h3>Grey and common seals are found around the UK. Top spotting locations include Blakeney Point, Horsey Beach, and Hunstanton in Norfolk; Murlough Bay in Northern Ireland; Scotland's Shetland Islands; and the Pembrokeshire coast in Wales. It is illegal to feed or play with seals. People should stay at least 100 metres away and remain quiet, as noise can frighten mothers into abandoning their pups.`, chi: `<h3>英国的海豹</h3>英国各地都有灰海豹和普通海豹。最佳观赏地点包括诺福克的 Blakeney Point、Horsey Beach 和 Hunstanton；北爱尔兰的 Murlough Bay；苏格兰的设得兰群岛；以及威尔士的彭布罗克郡海岸。喂食或逗弄海豹是违法的。人们应保持至少 100 米的距离并保持安静，因为噪音会吓跑海豹妈妈，导致它们遗弃幼崽。` },
-        { type: 'supp', eng: `<h3>Funny Name</h3>The scientific name for grey seals is <em>Halichoerus grypus</em>, which translates to "hook-nosed sea pig".`, chi: `<h3>有趣的名字</h3>灰海豹的学名是 <em>Halichoerus grypus</em>，意为“钩鼻海猪”。` }
-    ];
-
-    const VOCAB_LIST = [
-        { w: "Increase", ipa: "/ɪnˈkriːs/", p: "n.", m: "增加", c: "an increase in", e: "There is an increase in sales." },
-        { w: "Population", ipa: "/ˌpɒpjuˈleɪʃn/", p: "n.", m: "种群", c: "seal population", e: "The population is growing." },
-        { w: "Native", ipa: "/ˈneɪtɪv/", p: "adj.", m: "本土的", c: "native to", e: "The tiger is native to India." },
-        { w: "Weigh", ipa: "/weɪ/", p: "v.", m: "重达", c: "weigh 10kg", e: "How much do you weigh?" },
-        { w: "Disturbance", ipa: "/dɪˈstɜːbəns/", p: "n.", m: "干扰", c: "human disturbance", e: "Sorry for the disturbance." },
-        { w: "Confuse", ipa: "/kənˈfjuːz/", p: "v.", m: "使困惑", c: "confuse someone", e: "The signs confused me." },
-        { w: "Separate", ipa: "/ˈsepəreɪt/", p: "v.", m: "分离", c: "separate from", e: "They were separated by war." },
-        { w: "Annually", ipa: "/ˈænjuəli/", p: "adv.", m: "每年", c: "held annually", e: "The event is held annually." },
-        { w: "Awareness", ipa: "/əˈweənəs/", p: "n.", m: "意识", c: "public awareness", e: "We need to raise awareness." },
-        { w: "Approach", ipa: "/əˈprəʊtʃ/", p: "v.", m: "靠近", c: "approach cautiously", e: "Do not approach the fire." },
-        { w: "Endanger", ipa: "/ɪnˈdeɪndʒə(r)/", p: "v.", m: "危及", c: "endanger lives", e: "Pollution endangers wildlife." }
-    ];
-
-    const SA_CHUNKS = [
-        { t: "bg-trunk", l: "l-conn", txt: "连词", w: "However," },
-        { t: "chunk-group bg-trunk", l: "l-subj", txt: "主语", w: "the British Divers Marine Life Rescue (BDMLR)" },
-        { t: "bg-trunk", l: "l-verb", txt: "谓语", w: "suggests" },
-        
-        { t: "bg-clause-1 bracket", w: "(" },
-        { t: "bg-clause-1", w: "this" },
-        { t: "bg-clause-1", w: "could" },
-        { t: "bg-clause-1", w: "be" },
-        { t: "bg-clause-1", w: "a" },
-        { t: "bg-clause-1", w: "positive" },
-        { t: "bg-clause-1", w: "sign" },
-        
-        { t: "bg-clause-2 bracket", w: "(" },
-        { t: "bg-clause-2", w: "that" },
-        { t: "chunk-group bg-clause-2", l: "", w: "the overall grey seal population" },
-        { t: "bg-clause-2", w: "is" },
-        { t: "bg-clause-2", w: "increasing" },
-        { t: "bg-clause-2 bracket", w: ")" },
-        
-        { t: "bg-clause-1 bracket", w: ")" },
-        { t: "bg-trunk", w: "." }
+        {
+            eng: "Having a good <span class='hl hl-n'>body image</span> makes you <span class='hl hl-v'>feel</span> confident and happy. Remember that all bodies are good bodies.",
+            chi: "拥有良好的身体形象会让你感到自信和快乐。请记住，所有的身体都是好身体。"
+        },
+        {
+            eng: "Try to <span class='hl hl-v'>spot</span> messages that make you <span class='hl hl-v'>think</span> some bodies are “good” or “bad”. These can come from social media, TV or people around you.",
+            chi: "试着去发现那些让你觉得某些身体是“好”或“坏”的信息。这些信息可能来自社交媒体、电视或你周围的人。"
+        },
+        {
+            eng: "<span class='hl hl-v'>Celebrate</span> differences. Even if everybody ate the same food and moved in the same way, everyone would still have <span class='hl hl-adj'>different</span> types of bodies. This is a fact of life and it’s a good thing.",
+            chi: "庆祝差异。即使每个人都吃同样的食物，以同样的方式运动，每个人的体型仍然会不同。这是生活的事实，也是一件好事。"
+        },
+        {
+            eng: "Having a <span class='hl hl-adj'>positive</span> body image means you <span class='hl hl-v'>appreciate</span> your body, whatever it looks like or can do.",
+            chi: "拥有积极的身体形象意味着你欣赏你的身体，无论它看起来如何或能做什么。"
+        },
+        {
+            type: 'supp',
+            eng: "<h3>Why does it matter?</h3>Research shows that when you <span class='hl hl-v'>understand</span> how <span class='hl hl-adj'>amazing</span> your body is, you are more likely to <span class='hl hl-v'>treat</span> it with <span class='hl hl-n'>respect</span> and kindness.",
+            chi: "<h3>为什么这很重要？</h3>研究表明，当你明白你的身体有多么神奇时，你就更有可能以尊重和善意对待它。"
+        },
+        {
+            eng: "Dr Tharaka Gunarathne says body image can be <span class='hl hl-v'>influenced</span> by what you see on TV and social media. It’s also <span class='hl hl-v'>affected</span> by the way you feel about yourself.",
+            chi: "Tharaka Gunarathne 博士说，身体形象会受到你在电视和社交媒体上看到的内容的影响。它也受到你对自己感觉的影响。"
+        },
+        {
+            eng: "<span class='hl hl-n'>Puberty</span>, when a child’s body <span class='hl hl-v'>develops</span> and changes as they become an adult, can make a difference too.",
+            chi: "青春期，即孩子的身体在发育成成人时的变化时期，也会产生影响。"
+        },
+        {
+            eng: "When everyone is taught to <span class='hl hl-v'>value</span> one body image more than another, it can lead to unfair treatment or <span class='hl hl-n'>discrimination</span>.",
+            chi: "当每个人都被教导要重视某种身体形象胜过另一种时，这可能导致不公平的待遇或歧视。"
+        },
+        {
+            type: 'supp',
+            eng: "<h3>Molly Forbes’s tips</h3>“When we start <span class='hl hl-v'>valuing</span> ourselves for who we are, not what we look like, this is really good for body image,” she says.",
+            chi: "<h3>Molly Forbes 的建议</h3>她说：“当我们开始因为我是谁，而不是我长什么样来评价自己时，这对身体形象真的很有好处。”"
+        }
     ];
     
-    const SA_TRANS = "💡 译文：然而，英国潜水员海洋生命救援组织 (BDMLR) 表示，这可能是一个积极的信号，表明灰海豹种群正在增加。";
+    // 3. 词汇表
+    const VOCAB_LIST = [
+        { w: "confident", ipa: "ˈkɒnfɪdənt", p: "adj.", m: "自信的", c: "Feeling sure about your own ability.", e: "Having a good body image makes you feel confident." },
+        { w: "appreciate", ipa: "əˈpriːʃieɪt", p: "v.", m: "欣赏；感激", c: "To recognize the good qualities of someone or something.", e: "You should appreciate your body for what it can do." },
+        { w: "influence", ipa: "ˈɪnfluəns", p: "v.", m: "影响", c: "To have an effect on the character or behavior of someone.", e: "Body image can be influenced by social media." },
+        { w: "puberty", ipa: "ˈpjuːbəti", p: "n.", m: "青春期", c: "The time when a child's body changes into an adult's.", e: "Puberty causes many changes in the body." },
+        { w: "discrimination", ipa: "dɪˌskrɪmɪˈneɪʃən", p: "n.", m: "歧视", c: "Unfair treatment of different categories of people.", e: "Valuing one body type over another can lead to discrimination." },
+        { w: "respect", ipa: "rɪˈspɛkt", p: "n./v.", m: "尊重", c: "A feeling of deep admiration for someone or something.", e: "Treat your body with respect and kindness." }
+    ];
+    
+    // 4. 长难句
+    const SA_CHUNKS = [
+        { t: "chunk-group", l: "l-subj", w: "Research", txt: "Subj" },
+        { t: "chunk-group", l: "l-verb", w: "shows", txt: "Verb" },
+        { t: "bracket bg-clause-1", w: "( that" },
+        { t: "bracket bg-clause-2", w: "( when" },
+        { t: "chunk-group bg-clause-2", l: "l-subj", w: "you", txt: "Subj" },
+        { t: "chunk-group bg-clause-2", l: "l-verb", w: "understand", txt: "Verb" },
+        { t: "chunk bg-clause-2", w: "how amazing your body is" },
+        { t: "bracket bg-clause-2", w: ") ," },
+        { t: "chunk-group bg-clause-1", l: "l-subj", w: "you", txt: "Subj" },
+        { t: "chunk-group bg-clause-1", l: "l-verb", w: "are more likely to treat", txt: "Verb Phrase" },
+        { t: "chunk bg-clause-1", w: "it" },
+        { t: "chunk bg-clause-1", w: "with respect and kindness" },
+        { t: "bracket bg-clause-1", w: ")" },
+        { t: "chunk", w: "." }
+    ];
+    
+    const SA_TRANS = "研究表明，当你明白你的身体有多么神奇时，你就更有可能以尊重和善意对待它。";
     
     const SA_STEPS = [
-        { type: "bd-struct", label: "结构分析", text: "<strong>句型判断</strong><br>这是一个主从复合句，主句谓语 suggests 后跟了一个省略了 that 的宾语从句。在宾语从句内部，名词 sign 后又跟了一个同位语从句。" },
-        { type: "bd-trunk", label: "主干拆解", text: "<strong>主句 (Main Clause)</strong><br>主语是 <em>the British Divers Marine Life Rescue (BDMLR)</em>，谓语是 <em>suggests</em> (表明/暗示)。" },
-        { type: "bd-clause-1", label: "第一层从句", text: "<strong>宾语从句 (Object Clause)</strong><br>橙色括号内的部分是宾语从句，做 suggests 的宾语。意思是“这可能是一个积极的信号”。" },
-        { type: "bd-clause-2", label: "第二层从句", text: "<strong>同位语从句 (Appositive Clause)</strong><br>绿色括号内的部分是由 <em>that</em> 引导的同位语从句，用来具体解释 <em>sign</em> (信号) 的内容，即“灰海豹种群正在增加”。" }
+        { type: "bd-trunk", label: "主句", text: "<strong>Research shows...</strong> (研究表明……)" },
+        { type: "bd-clause-1", label: "宾语从句", text: "<strong>that...</strong> 引导的内容是 shows 的宾语，说明了研究的具体结果。" },
+        { type: "bd-clause-2", label: "嵌套状语", text: "<strong>when you understand...</strong> 是宾语从句内部的时间状语从句，表示“当你理解……”的条件。" },
+        { type: "bd-struct", label: "结构点拨", text: "Be likely to do sth. 意为“很有可能做某事”。这里用 more likely 表示“更有可能”。" }
     ];
-
+    
     const QUIZ_ITEMS = [
-        { q: "What is the name of the charity mentioned?", a: "<span class='q-opt'>A. RSPCA</span> <span class='q-opt'>B. BDMLR</span> <span class='q-opt'>C. Both</span>" },
-        { q: "Why are more seals being rescued?", a: "<span class='q-opt'>A. Population rise</span> <span class='q-opt'>B. Public awareness</span> <span class='q-opt'>C. Both</span>" },
-        { q: "What should you do if you see a seal?", a: "<span class='q-opt'>A. Feed it</span> <span class='q-opt'>B. Stay 100m away</span>" }
+        { q: "What helps you feel confident and happy?", a: "<div class='q-opt'>A. Social media</div><div class='q-opt'>B. A good body image</div><div class='q-opt'>C. Eating same food</div>" },
+        { q: "According to the text, what affects body image?", a: "<div class='q-opt'>A. Only TV</div><div class='q-opt'>B. Only friends</div><div class='q-opt'>C. Media and self-feelings</div>" },
+        { q: "What happens during puberty?", a: "<div class='q-opt'>A. A child's body changes</div><div class='q-opt'>B. You stop growing</div><div class='q-opt'>C. Nothing changes</div>" }
     ];
 
     // --- Core Logic ---
@@ -225,59 +252,72 @@
             const SAFE_BOTTOM = 1350; 
 
             // 1. Content
-            MAIN_CONTENT.forEach(item => {
-                const row = createContentRow(item);
-                container.appendChild(row);
-                checkAndMove(row, SAFE_BOTTOM);
-            });
+            if (MAIN_CONTENT && MAIN_CONTENT.length > 0) {
+                MAIN_CONTENT.forEach(item => {
+                    const row = createContentRow(item);
+                    container.appendChild(row);
+                    checkAndMove(row, SAFE_BOTTOM);
+                });
+            }
 
-            cardIdx++;
-            currentCard = createNormalPage(cardIdx);
-            root.appendChild(currentCard);
-            container = currentCard.querySelector('.content-body');
+            // Move to next page for Vocab if needed, or start fresh
+            // Ensure Vocab starts on at least Page 2 for spacing if Page 1 is full
+            if (container.children.length > 4) {
+                 createNewPage();
+            } else {
+                 // Add spacer
+                 let spacer = document.createElement('div'); spacer.style.height = '40px'; container.appendChild(spacer);
+            }
 
             // 2. Vocab
             appendWithCheck(createTitle('中考高频词汇 (Vocab)'));
             let grid = document.createElement('div'); grid.className = 'vocab-grid';
             container.appendChild(grid);
-            VOCAB_LIST.forEach((v, i) => {
-                const item = createVocabItem(v, i+1); grid.appendChild(item);
-                if ((grid.getBoundingClientRect().bottom - currentCard.getBoundingClientRect().top) > SAFE_BOTTOM) {
-                    grid.removeChild(item); createNewPage();
-                    grid = document.createElement('div'); grid.className = 'vocab-grid';
-                    container.appendChild(grid); grid.appendChild(item);
-                }
-            });
+            if (VOCAB_LIST) {
+                VOCAB_LIST.forEach((v, i) => {
+                    const item = createVocabItem(v, i+1); grid.appendChild(item);
+                    if ((grid.getBoundingClientRect().bottom - currentCard.getBoundingClientRect().top) > SAFE_BOTTOM) {
+                        grid.removeChild(item); createNewPage();
+                        grid = document.createElement('div'); grid.className = 'vocab-grid';
+                        container.appendChild(grid); grid.appendChild(item);
+                    }
+                });
+            }
 
             // 3. Sentence Analysis
             appendWithCheck(createTitle('长难句分析 (Sentence Analysis)'));
             let saWrapper = document.createElement('div'); saWrapper.className = 'sa-sentence-wrapper';
             container.appendChild(saWrapper);
-            
-            SA_CHUNKS.forEach(chunk => {
-                let el = createSaChunk(chunk);
-                if (el) { // Only append if valid
-                    saWrapper.appendChild(el);
-                    if ((saWrapper.getBoundingClientRect().bottom - currentCard.getBoundingClientRect().top) > SAFE_BOTTOM) {
-                        saWrapper.removeChild(el); createNewPage();
-                        saWrapper = document.createElement('div'); saWrapper.className = 'sa-sentence-wrapper';
-                        container.appendChild(saWrapper); saWrapper.appendChild(el);
+            if (SA_CHUNKS) {
+                SA_CHUNKS.forEach(chunk => {
+                    let el = createSaChunk(chunk);
+                    if (el) { 
+                        saWrapper.appendChild(el);
+                        if ((saWrapper.getBoundingClientRect().bottom - currentCard.getBoundingClientRect().top) > SAFE_BOTTOM) {
+                            saWrapper.removeChild(el); createNewPage();
+                            saWrapper = document.createElement('div'); saWrapper.className = 'sa-sentence-wrapper';
+                            container.appendChild(saWrapper); saWrapper.appendChild(el);
+                        }
                     }
-                }
-            });
+                });
+            }
 
-            const transEl = document.createElement('div'); transEl.className = 'sa-trans'; transEl.innerHTML = SA_TRANS;
+            const transEl = document.createElement('div'); transEl.className = 'sa-trans'; transEl.innerHTML = SA_TRANS || "";
             appendWithCheck(transEl);
 
-            SA_STEPS.forEach(step => { const el = createSaStep(step); container.appendChild(el); checkAndMove(el, SAFE_BOTTOM); });
+            if (SA_STEPS) {
+                SA_STEPS.forEach(step => { const el = createSaStep(step); container.appendChild(el); checkAndMove(el, SAFE_BOTTOM); });
+            }
 
             // 4. Quiz
             appendWithCheck(createTitle('趣闻挑战 (Little Quiz)'));
-            QUIZ_ITEMS.forEach((q, i) => {
-                const qCard = document.createElement('div'); qCard.className = 'q-card';
-                qCard.innerHTML = `<div class="q-header"><div class="q-num">${i+1}</div><div class="q-text">${q.q}</div></div><div class="q-opts">${q.a}</div>`;
-                container.appendChild(qCard); checkAndMove(qCard, SAFE_BOTTOM);
-            });
+            if (QUIZ_ITEMS) {
+                QUIZ_ITEMS.forEach((q, i) => {
+                    const qCard = document.createElement('div'); qCard.className = 'q-card';
+                    qCard.innerHTML = `<div class="q-header"><div class="q-num">${i+1}</div><div class="q-text">${q.q}</div></div><div class="q-opts">${q.a}</div>`;
+                    container.appendChild(qCard); checkAndMove(qCard, SAFE_BOTTOM);
+                });
+            }
 
             updateFooters(cardIdx);
 
@@ -299,7 +339,6 @@
         }
     }
 
-    // --- Generators ---
     function createCoverPage() {
         const d = document.createElement('div'); d.className = 'card cover-page';
         d.innerHTML = `<div class="hero-section" onclick="document.getElementById('upload-trigger').click()"><img id="hero-img" class="hero-img"><div class="hero-placeholder" id="hero-txt">Tap to Upload Cover</div></div><div class="cover-header"><div class="meta-tag">${META.issue}</div><div class="poster-title">${META.title}</div><div class="poster-subtitle">${META.subtitle}</div></div><div class="content-body" style="padding:0 60px;"></div><div class="footer"><span class="footer-left">Designed for Educational Purpose</span><span class="footer-right page-num"></span></div>`;
@@ -330,14 +369,11 @@
     }
     
     function createSaChunk(c) {
-        // [V33.1 CORE FIX] 严防数据不完整导致的 Crash
-        if (!c || !c.t) return null; // 如果数据为空或没有类型，直接跳过，不渲染
-
+        if (!c || !c.t) return null; 
         const d = document.createElement('div'); 
         d.className = `chunk ${c.t}`;
         
         if (c.t.includes('chunk-group')) {
-            // 安全颜色计算：即使 l 缺失，也不会报错，只是变灰
             const color = c.l ? `var(--${c.l.replace('l-', 't-')})` : '#ccc';
             d.style.borderBottomColor = color;
         }
@@ -375,11 +411,11 @@
 
                 canvas.toBlob(function(blob) {
                     if (!blob) {
-                        alert("Security Error: Please open this HTML with a Local Server (e.g., Live Server in VS Code). File:// protocol prevents saving.");
+                        alert("Security Error: Please open this HTML with a Local Server.");
                         return;
                     }
                     const link = document.createElement('a');
-                    link.download = `TheWeekJunior_Page_${i + 1}.png`;
+                    link.download = `Respect_Your_Body_Page_${i + 1}.png`;
                     link.href = URL.createObjectURL(blob);
                     link.click();
                     setTimeout(() => URL.revokeObjectURL(link.href), 1000);
@@ -400,5 +436,10 @@
     window.loadFile = function(e) { document.getElementById('hero-img').src = URL.createObjectURL(e.target.files[0]); document.getElementById('hero-img').style.display='block'; document.getElementById('hero-txt').style.display='none'; };
     window.onload = render;
 </script>
+</head>
+<body>
+    <button id="btn-download" onclick="downloadAllPages()">Download Images</button>
+    <input type="file" id="upload-trigger" accept="image/*" onchange="loadFile(event)">
+    <div id="card-container"></div>
 </body>
 </html>
