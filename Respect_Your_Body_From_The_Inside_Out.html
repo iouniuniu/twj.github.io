@@ -3,40 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Week Junior - Seal Rescues (V33.1 Verified)</title>
+    <title>The Week Junior - Seal Rescues (V33.1 Fixed)</title>
     <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700&family=Noto+Sans+SC:wght@300;400;500;700&family=Lato:wght@400;700;900&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
         :root {
-            /* 动态主题色 (默认为海豹蓝) */
+            /* 动态主题色 */
             --theme-color: #2980b9; 
 
-            /* 词性颜色 (Ruby Text) */
+            /* 词性颜色 */
             --t-subj: #C0392B; --t-verb: #2980B9; --t-obj: #27AE60; --t-mod: #D35400; --t-prep: #8E44AD; --t-conn: #7F8C8D;
             
-            /* 词性背景 (正文/词汇表) */
+            /* 词性背景 */
             --bg-noun: #D6EAF8; --bg-verb: #D5F5E3; --bg-adj: #E8DAEF;
             
             /* 长难句背景 */
-            --bg-trunk: #EBF5FB;    --bg-clause-1: #FEF5E7; --bg-clause-2: #E9F7EF;
+            --bg-trunk: #EBF5FB; --bg-clause-1: #FEF5E7; --bg-clause-2: #E9F7EF;
             
             /* 边框色 */
             --bd-trunk: #3498DB; --bd-clause-1: #F39C12; --bd-clause-2: #2ECC71; --bd-struct: #2C3E50;
             
             /* 通用 */
-            --text-main: #2c3e50; --bg: #ffffff; --date-bg: #2980b9; --supp-bg: #F0F8FF;
+            --text-main: #2c3e50; --bg: #ffffff; --supp-bg: #F0F8FF;
             --p-w: 1080px; --p-h: 1440px;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; }
         body { background: #444; display: flex; flex-direction: column; align-items: center; padding: 40px 0; gap: 40px; font-family: 'Noto Sans SC', sans-serif; }
         
-        /* 容器 */
         .card { width: var(--p-w); height: var(--p-h); background: var(--bg); display: flex; flex-direction: column; overflow: hidden; position: relative; box-shadow: 0 30px 80px rgba(0,0,0,0.6); flex-shrink: 0; }
         .card.cover-page { padding: 0; } .card.normal-page { padding: 50px 60px; }
         .content-body { flex-grow: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 0; overflow: hidden; width: 100%; }
         .cover-page .content-body { padding: 0 60px; } .normal-page .content-body { padding: 0; }
 
-        /* 首页 (2/3 高度) */
         .hero-section { width: 100%; height: 960px; background: #e0e0e0; cursor: pointer; border-bottom: 8px solid var(--theme-color); position: relative; flex-shrink: 0; }
         .hero-img { width: 100%; height: 100%; object-fit: cover; display: none; }
         .hero-placeholder { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #777; font-size: 20pt; font-family: 'Lato'; text-align: center; border: 3px dashed #bbb; padding: 15px 30px; border-radius: 10px; }
@@ -47,34 +45,26 @@
         .poster-subtitle { font-family: 'Noto Sans SC'; font-size: 20pt; color: #5d6d7e; font-weight: 400; margin-bottom: 20px; position: relative; display: inline-block; }
         .poster-subtitle::after { content: ""; display: block; width: 60px; height: 3px; background: var(--theme-color); margin: 10px auto 0 auto; }
 
-        /* 续页头 */
         .mini-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #ccc; padding-bottom: 15px; margin-bottom: 20px; height: 60px; flex-shrink: 0; width: 100%; }
         .mini-title { font-family: 'Lora'; font-weight: 700; font-size: 16pt; color: var(--text-main); }
         .continued-tag { font-family: 'Lato'; font-weight: 700; font-style: italic; background: #eee; padding: 5px 15px; border-radius: 6px; font-size: 11pt; color: #666; }
 
-        /* 正文 */
         .row { display: flex; gap: 40px; width: 100%; padding: 20px 0; border-bottom: 1px solid #f9f9f9; align-items: flex-start; flex-shrink: 0; }
         .col-eng { flex: 6; font-family: 'Lora'; font-size: 18pt; line-height: 1.8; text-align: justify; padding-right: 25px; border-right: 2px solid #f0f0f0; }
         .col-chi { flex: 4; font-family: 'Noto Sans SC'; font-size: 16pt; line-height: 1.8; color: #5d6d7e; text-align: justify; font-weight: 400; padding-top: 2px; }
 
-        /* 边栏 (一致布局 + 动态色) */
         .row.supp-style { background: var(--supp-bg); padding: 25px; border-radius: 12px; margin: 15px 0; border: none; }
         .row.supp-style .col-eng { border-right: 2px solid #aec6cf; font-size: 16pt; line-height: 1.6; }
         .row.supp-style .col-chi { font-size: 14pt !important; line-height: 1.6; color: #555; }
         h3 { font-family: 'Lato'; font-weight: 900; font-size: 18pt; color: var(--theme-color); margin: 0 0 10px 0; display: block; border-left: 8px solid var(--theme-color); padding-left: 15px; }
         .row.supp-style h3 { font-size: 16pt !important; border-left-width: 5px; }
 
-        /* 词性高亮 */
         .hl { padding: 0 4px; border-radius: 4px; font-weight: 600; display: inline-block; }
-        .hl-n { background-color: var(--bg-noun); } 
-        .hl-v { background-color: var(--bg-verb); } 
-        .hl-adj { background-color: var(--bg-adj); }
+        .hl-n { background-color: var(--bg-noun); } .hl-v { background-color: var(--bg-verb); } .hl-adj { background-color: var(--bg-adj); }
         sup { color: #555; font-size: 0.6em; vertical-align: super; font-weight: 700; margin-left: 2px; }
 
-        /* 附录 */
         .app-h { font-size: 18pt; font-weight: 700; color: var(--text-main); border-left: 6px solid #555; padding-left: 12px; display: block; margin: 25px 0 20px 0; font-family: 'Noto Sans SC'; flex-shrink: 0; width: 100%; }
         
-        /* 词汇表 */
         .vocab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px 40px; width: 100%; margin-bottom: 30px; flex-shrink: 0; }
         .vocab-item { background: #fff; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 5px; display: flex; flex-direction: column; gap: 6px; }
         .v-line-1 { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
@@ -86,7 +76,6 @@
         .v-line-2 { font-size: 14pt; color: #d35400; font-family: 'Roboto Mono'; font-weight: 500; }
         .v-line-3 { font-size: 14pt; color: #7f8c8d; font-style: italic; font-family: 'Lora'; line-height: 1.4; margin-top: 2px; }
 
-        /* 长难句 (V33 Fixed) */
         .sa-sentence-wrapper { display: flex; flex-wrap: wrap; column-gap: 0; row-gap: 35px; line-height: 1.5; margin-bottom: 25px; padding-top: 10px; align-items: flex-end; width: 100%; }
         .chunk { display: inline-flex; flex-direction: column; align-items: center; margin: 0; vertical-align: bottom; }
         .chunk-text { font-family: 'Lora'; font-size: 20pt; color: #2c3e50; padding: 4px 5px; font-weight: 500; border-radius: 0; }
@@ -107,7 +96,6 @@
         .l-obj { color: var(--t-obj); border-color: var(--t-obj); } 
         .l-conn { color: var(--t-conn); border-color: var(--t-conn); }
 
-        /* 解析 & Quiz */
         .sa-step-box, .q-card { background: #fdfefe; padding: 20px 25px; border-radius: 8px; border: 1px solid #eee; box-shadow: 2px 2px 8px rgba(0,0,0,0.02); margin-bottom: 12px; width: 100%; }
         .bd-struct { border-left: 5px solid var(--bd-struct); }
         .bd-trunk { border-left: 5px solid var(--bd-trunk); background-color: #FDFEFE; }
@@ -115,4 +103,61 @@
         .bd-clause-2 { border-left: 5px solid var(--bd-clause-2); background-color: #E9F7EF; }
         .q-card { border-left: 5px solid var(--theme-color); }
         
-        .sa-trans { font-size: 16pt; color: #444; font-weight: 600;
+        .sa-trans { font-size: 16pt; color: #444; font-weight: 600; font-style: italic; margin-bottom: 20px; padding: 15px; border: 1px dashed #ccc; border-radius: 8px; width: 100%; background: #fff; }
+        .sa-step { margin-bottom: 12px; font-size: 15pt; color: #555; line-height: 1.6; }
+        .sa-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11pt; margin-right: 10px; font-weight: 800; color: #fff; background: #555; font-family: 'Lato'; text-transform: uppercase; }
+
+        .q-header { display: flex; align-items: baseline; margin-bottom: 5px; }
+        .q-num { color: var(--theme-color); font-size: 18pt; font-weight: 900; margin-right: 10px; font-family: 'Lato'; }
+        .q-text { font-size: 18pt; color: #2c3e50; font-weight: 600; font-family: 'Lora'; }
+        .q-opts { display: flex; gap: 25px; flex-wrap: wrap; margin-left: 0; margin-top: 5px; }
+        .q-opt { font-size: 15pt; color: #555; font-family: 'Lato'; }
+        .q-blank { border-bottom: 2px solid #333; width: 100px; display: inline-block; }
+
+        .footer { margin-top: auto; display: flex; justify-content: space-between; border-top: 1px solid #eee; padding: 0 60px; font-size: 11pt; color: #95a5a6; flex-shrink: 0; height: 70px; align-items: center; width: 100%; box-sizing: border-box; font-family: 'Lato'; }
+        .normal-page .footer { padding: 0; }
+        .footer-right { font-weight: 700; color: #333; }
+
+        #btn-download { position: fixed; bottom: 20px; right: 20px; z-index: 9999; padding: 15px 25px; background: #2c3e50; color: white; border: none; border-radius: 50px; cursor: pointer; font-family: sans-serif; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.2s; }
+        #btn-download:hover { transform: scale(1.05); background: #34495e; }
+        #btn-download:active { transform: scale(0.95); }
+    </style>
+</head>
+<body>
+<button id="btn-download" onclick="downloadAllPages()">📸 Save Pages</button>
+<div id="card-container"></div>
+<input type="file" id="upload-trigger" style="display:none" onchange="loadFile(event)">
+
+<script>
+    // --- Phase 4: Data Injection ---
+    const META = {
+        issue: "ISSUE 17 JAN 2026",
+        title: "Seal rescues on the rise in UK",
+        subtitle: "英国海豹救援数量激增",
+        themeColor: "#2980b9"
+    };
+
+    const MAIN_CONTENT = [
+        { eng: `Rescue charities report an <span class="hl hl-n">increase</span><sup>①</sup> in baby seals needing help this winter.`, chi: `救援慈善机构报告称，今年冬天需要帮助的海豹幼崽数量有所<span class="hl hl-n">增加</span><sup>①</sup>。` },
+        { eng: `However, the British Divers Marine Life Rescue (BDMLR) suggests this could be a positive sign that the overall grey seal <span class="hl hl-n">population</span><sup>②</sup> is increasing.`, chi: `然而，英国潜水员海洋生命救援组织 (BDMLR) 表示，这可能是一个积极的信号，表明灰海豹<span class="hl hl-n">种群</span><sup>②</sup>正在增加。` },
+        { eng: `Grey seals are one of two species <span class="hl hl-adj">native</span><sup>③</sup> to the UK (the other being common seals) and are actually more common than common seals.`, chi: `灰海豹是英国的两种<span class="hl hl-adj">本土</span><sup>③</sup>物种之一（另一种是普通海豹），实际上比普通海豹更常见。` },
+        { eng: `Adults grow to around two metres long, and males can <span class="hl hl-v">weigh</span><sup>④</sup> more than three adult humans.`, chi: `成年海豹长约两米，雄性<span class="hl hl-v">体重</span><sup>④</sup>可达三个成年人的重量。` },
+        { eng: `Their pups are born snowy white between August and October.`, chi: `它们的幼崽在 8 月到 10 月之间出生，通体雪白。` },
+        { eng: `Hundreds of calls have been reported regarding seals in trouble on beaches in south-east England.`, chi: `据报道，英格兰东南部海滩上有数百通关于海豹遇险的电话。` },
+        { eng: `Many are taken to the RSPCA's Mallydams Wood centre in East Sussex.`, chi: `许多海豹被送往东萨塞克斯郡的 RSPCA Mallydams Wood 中心。` },
+        { eng: `Winter storms and human <span class="hl hl-n">disturbance</span><sup>⑤</sup> (people walking nearby) can <span class="hl hl-v">confuse</span><sup>⑥</sup> pups, causing them to get <span class="hl hl-v">separated</span><sup>⑦</sup> from their mothers.`, chi: `冬季风暴和人类<span class="hl hl-n">干扰</span><sup>⑤</sup>（在附近行走的人）会使幼崽<span class="hl hl-v">困惑</span><sup>⑥</sup>，导致它们与母亲<span class="hl hl-v">分离</span><sup>⑦</sup>。` },
+        { eng: `Penny Taberer from the RSPCA noted that Mallydams Woods used to take in one seal a year, but now receives about 60 <span class="hl hl-adv">annually</span><sup>⑧</sup>.`, chi: `RSPCA 的 Penny Taberer 指出，Mallydams Woods 过去每年接收一只海豹，但现在<span class="hl hl-adv">每年</span><sup>⑧</sup>接收约 60 只。` },
+        { eng: `BDMLR volunteer Sarah Kennett believes the rise might also be due to increased public <span class="hl hl-n">awareness</span><sup>⑨</sup>, leading to more calls for help.`, chi: `BDMLR 志愿者 Sarah Kennett 认为，数量的增加可能也归因于公众<span class="hl hl-n">意识</span><sup>⑨</sup>的提高，从而导致了更多的求助电话。` },
+        { eng: `Kennett warned the public not to <span class="hl hl-v">approach</span><sup>⑩</sup> wild animals.`, chi: `Kennett 警告公众不要<span class="hl hl-v">靠近</span><sup>⑩</sup>野生动物。` },
+        { eng: `She highlighted dangerous situations where people try to touch seals, which <span class="hl hl-v">endangers</span><sup>⑪</sup> both the animal and the person.`, chi: `她强调了人们试图触摸海豹的危险情况，这<span class="hl hl-v">危及</span><sup>⑪</sup>了动物和人。` },
+        { type: 'supp', eng: `<h3>Seals of the UK</h3>Grey and common seals are found around the UK. Top spotting locations include Blakeney Point, Horsey Beach, and Hunstanton in Norfolk; Murlough Bay in Northern Ireland; Scotland's Shetland Islands; and the Pembrokeshire coast in Wales. It is illegal to feed or play with seals. People should stay at least 100 metres away and remain quiet, as noise can frighten mothers into abandoning their pups.`, chi: `<h3>英国的海豹</h3>英国各地都有灰海豹和普通海豹。最佳观赏地点包括诺福克的 Blakeney Point、Horsey Beach 和 Hunstanton；北爱尔兰的 Murlough Bay；苏格兰的设得兰群岛；以及威尔士的彭布罗克郡海岸。喂食或逗弄海豹是违法的。人们应保持至少 100 米的距离并保持安静，因为噪音会吓跑海豹妈妈，导致它们遗弃幼崽。` },
+        { type: 'supp', eng: `<h3>Funny Name</h3>The scientific name for grey seals is <em>Halichoerus grypus</em>, which translates to "hook-nosed sea pig".`, chi: `<h3>有趣的名字</h3>灰海豹的学名是 <em>Halichoerus grypus</em>，意为“钩鼻海猪”。` }
+    ];
+
+    const VOCAB_LIST = [
+        { w: "Increase", ipa: "/ɪnˈkriːs/", p: "n.", m: "增加", c: "an increase in", e: "There is an increase in sales." },
+        { w: "Population", ipa: "/ˌpɒpjuˈleɪʃn/", p: "n.", m: "种群", c: "seal population", e: "The population is growing." },
+        { w: "Native", ipa: "/ˈneɪtɪv/", p: "adj.", m: "本土的", c: "native to", e: "The tiger is native to India." },
+        { w: "Weigh", ipa: "/weɪ/", p: "v.", m: "重达", c: "weigh 10kg", e: "How much do you weigh?" },
+        { w: "Disturbance", ipa: "/dɪˈstɜːbəns/", p: "n.", m: "干扰", c: "human disturbance", e: "Sorry for the disturbance." },
+        { w: "Confuse", ipa: "/kənˈfjuːz/", p: "v.", m: "使困惑", c: "confuse someone", e: "The signs confused me." },
