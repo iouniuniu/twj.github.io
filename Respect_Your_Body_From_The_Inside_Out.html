@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Week Junior Handout - Respect Your Body</title>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700&family=Noto+Sans+SC:wght@300;400;500;700&family=Lato:wght@400;700;900&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
+<title>The Week Junior Handout</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400&family=Noto+Sans+SC:wght@300;400;500;700&family=Lato:wght@400;700;900&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 <style>
     :root {
         /* --- 动态主题色 (由 JS 注入) --- */
-        --theme-color: #E67E22; 
+        --theme-color: #2c3e50; 
 
         /* --- 严格词性配色 (固定) --- */
         --bg-noun: #D6EAF8; /* 名-蓝 */
@@ -25,7 +25,7 @@
         --bd-trunk: #3498DB; --bd-clause-1: #F39C12; --bd-clause-2: #2ECC71; --bd-struct: #2C3E50;
         
         /* 通用布局 */
-        --text-main: #2c3e50; --bg: #ffffff; --supp-bg: #FFF3E0; /* 调整为淡橙色背景适配主题 */
+        --text-main: #2c3e50; --bg: #ffffff; --supp-bg: #FFF8E1; /* 侧边栏微调为暖色以匹配主题 */
         --p-w: 1080px; --p-h: 1440px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; }
@@ -60,7 +60,7 @@
 
     /* 边栏 (一致布局 + 动态色) */
     .row.supp-style { background: var(--supp-bg); padding: 25px; border-radius: 12px; margin: 15px 0; border: none; }
-    .row.supp-style .col-eng { border-right: 2px solid #E59866; font-size: 16pt; line-height: 1.6; }
+    .row.supp-style .col-eng { border-right: 2px solid #FAD7A0; font-size: 16pt; line-height: 1.6; }
     .row.supp-style .col-chi { font-size: 14pt !important; line-height: 1.6; color: #555; }
     h3 { font-family: 'Lato'; font-weight: 900; font-size: 18pt; color: var(--theme-color); margin: 0 0 10px 0; display: block; border-left: 8px solid var(--theme-color); padding-left: 15px; }
     .row.supp-style h3 { font-size: 16pt !important; border-left-width: 5px; }
@@ -87,7 +87,7 @@
     .v-line-2 { font-size: 14pt; color: #d35400; font-family: 'Roboto Mono'; font-weight: 500; }
     .v-line-3 { font-size: 14pt; color: #7f8c8d; font-style: italic; font-family: 'Lora'; line-height: 1.4; margin-top: 2px; }
 
-    /* 长难句 (Zero-Gap + Chunk Grouping) */
+    /* 长难句 (V33 Fixed: Group & Brackets) */
     .sa-sentence-wrapper { display: flex; flex-wrap: wrap; column-gap: 0; row-gap: 35px; line-height: 1.5; margin-bottom: 25px; padding-top: 10px; align-items: flex-end; width: 100%; }
     .chunk { display: inline-flex; flex-direction: column; align-items: center; margin: 0; vertical-align: bottom; }
     .chunk-text { font-family: 'Lora'; font-size: 20pt; color: #2c3e50; padding: 4px 5px; font-weight: 500; border-radius: 0; }
@@ -137,9 +137,6 @@
     #btn-download { position: fixed; bottom: 20px; right: 20px; z-index: 9999; padding: 15px 25px; background: #2c3e50; color: white; border: none; border-radius: 50px; cursor: pointer; font-family: sans-serif; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.2s; }
     #btn-download:hover { transform: scale(1.05); background: #34495e; }
     #btn-download:active { transform: scale(0.95); }
-    
-    /* 上传按钮隐形 */
-    #upload-trigger { display: none; }
 </style>
 <script>
     // --- Global Error Trap ---
@@ -151,100 +148,120 @@
     const META = { 
         issue: "17 January 2026", 
         title: "Respect Your Body", 
-        subtitle: "Why a positive body image matters and how to build it.",
-        themeColor: "#E67E22" // Warm Orange for Wellbeing
+        subtitle: "Building Confidence and Self-Love / 建立自信与关爱自我",
+        themeColor: "#F39C12" // Warm Orange from original design
     };
     
-    // 2. 正文数据
     const MAIN_CONTENT = [
         {
-            eng: "Having a good <span class='hl hl-n'>body image</span> makes you <span class='hl hl-v'>feel</span> confident and happy. Remember that all bodies are good bodies.",
-            chi: "拥有良好的身体形象会让你感到自信和快乐。请记住，所有的身体都是好身体。"
+            type: "txt",
+            eng: "Having a positive <span class='hl hl-n'>body image</span> helps you feel <span class='hl hl-adj'>confident</span> and happy. Having a <span class='hl hl-adj'>positive</span> body image means you <span class='hl hl-v'>appreciate</span> your body, whatever it looks like or can do.",
+            chi: "拥有积极的身体意象有助于你感到自信和快乐。拥有积极的身体意象意味着无论你的身体外表如何或能做什么，你都能欣赏它。"
         },
         {
-            eng: "Try to <span class='hl hl-v'>spot</span> messages that make you <span class='hl hl-v'>think</span> some bodies are “good” or “bad”. These can come from social media, TV or people around you.",
-            chi: "试着去发现那些让你觉得某些身体是“好”或“坏”的信息。这些信息可能来自社交媒体、电视或你周围的人。"
+            type: "supp",
+            eng: "<h3>Respect your body</h3>Remember that all <span class='hl hl-n'>bodies</span> are good bodies. Try to <span class='hl hl-v'>spot</span> messages that make you think some bodies are “good” or “bad”. These can come from social media, TV or people around you.",
+            chi: "<h3>尊重你的身体</h3>记住，所有的身体都是好身体。试着识别那些让你觉得某些身体是“好的”或“坏的”的信息。这些信息可能来自社交媒体、电视或你周围的人。"
         },
         {
-            eng: "<span class='hl hl-v'>Celebrate</span> differences. Even if everybody ate the same food and moved in the same way, everyone would still have <span class='hl hl-adj'>different</span> types of bodies. This is a fact of life and it’s a good thing.",
-            chi: "庆祝差异。即使每个人都吃同样的食物，以同样的方式运动，每个人的体型仍然会不同。这是生活的事实，也是一件好事。"
+            type: "supp",
+            eng: "<h3>Celebrate differences</h3>Even if everybody ate the same food and moved in the same way, everyone would still have <span class='hl hl-adj'>different</span> types of bodies. This is a fact of life and it’s a good thing.",
+            chi: "<h3>庆祝差异</h3>即使每个人吃同样的食物，以同样的方式运动，每个人仍然会有不同类型的身体。这是生活的事实，也是一件好事。"
         },
         {
-            eng: "Having a <span class='hl hl-adj'>positive</span> body image means you <span class='hl hl-v'>appreciate</span> your body, whatever it looks like or can do.",
-            chi: "拥有积极的身体形象意味着你欣赏你的身体，无论它看起来如何或能做什么。"
+            type: "supp",
+            eng: "<h3>Love your body</h3><span class='hl hl-v'>Celebrate</span> your body for what it can do. Think of the ways it lets you live your life, like playing in the park and <span class='hl hl-v'>discovering</span> the world around you.",
+            chi: "<h3>爱你的身体</h3>为你身体能做的事情而庆祝。想想它让你生活的方式，比如在公园里玩耍和探索周围的世界。"
         },
         {
-            type: 'supp',
-            eng: "<h3>Why does it matter?</h3>Research shows that when you <span class='hl hl-v'>understand</span> how <span class='hl hl-adj'>amazing</span> your body is, you are more likely to <span class='hl hl-v'>treat</span> it with <span class='hl hl-n'>respect</span> and kindness.",
-            chi: "<h3>为什么这很重要？</h3>研究表明，当你明白你的身体有多么神奇时，你就更有可能以尊重和善意对待它。"
+            type: "txt",
+            eng: "Dr Tharaka Gunarathne is a <span class='hl hl-n'>psychologist</span> (someone who helps people <span class='hl hl-v'>understand</span> their <span class='hl hl-n'>emotions</span>). He says body image can be <span class='hl hl-v'>influenced</span> by what you see on TV and social media, as well as friends and family. It’s also <span class='hl hl-v'>affected</span> by the way you feel about yourself.",
+            chi: "Tharaka Gunarathne 博士是一位心理学家（帮助人们理解情绪的人）。他说，身体意象会受到你在电视和社交媒体上看到的内容，以及朋友和家人的影响。它也会受到你对自己的感觉的影响。"
         },
         {
-            eng: "Dr Tharaka Gunarathne says body image can be <span class='hl hl-v'>influenced</span> by what you see on TV and social media. It’s also <span class='hl hl-v'>affected</span> by the way you feel about yourself.",
-            chi: "Tharaka Gunarathne 博士说，身体形象会受到你在电视和社交媒体上看到的内容的影响。它也受到你对自己感觉的影响。"
+            type: "txt",
+            eng: "<span class='hl hl-n'>Puberty</span>, when a child’s body <span class='hl hl-v'>develops</span> and changes as they become an adult, can make a difference too. It’s normal to care about how you look, Gunarathne says, but when you worry about it too much it can <span class='hl hl-v'>affect</span> your mood.",
+            chi: "青春期，即孩子的身体发育并随着成长为成年人而发生变化的时候，也会产生影响。Gunarathne 说，关心自己的外表是正常的，但当你过度担心时，它会影响你的情绪。"
         },
         {
-            eng: "<span class='hl hl-n'>Puberty</span>, when a child’s body <span class='hl hl-v'>develops</span> and changes as they become an adult, can make a difference too.",
-            chi: "青春期，即孩子的身体在发育成成人时的变化时期，也会产生影响。"
+            type: "txt",
+            eng: "<h3>Why does it matter?</h3>Research shows that when you <span class='hl hl-v'>understand</span> how <span class='hl hl-adj'>amazing</span> your body is you are more likely to treat it with <span class='hl hl-n'>respect</span> and kindness. If you’re busy worrying about having perfect hair or how tall you are, you can forget all the <span class='hl hl-adj'>brilliant</span> things your body can do like cycling, crafting, dancing or swimming.",
+            chi: "<h3>为什么这很重要？</h3>研究表明，当你明白你的身体有多么神奇时，你更有可能以尊重和善意来对待它。如果你忙着担心拥有完美的头发或身高，你可能会忘记你的身体能做的所有精彩的事情，比如骑自行车、做手工、跳舞或游泳。"
         },
         {
-            eng: "When everyone is taught to <span class='hl hl-v'>value</span> one body image more than another, it can lead to unfair treatment or <span class='hl hl-n'>discrimination</span>.",
-            chi: "当每个人都被教导要重视某种身体形象胜过另一种时，这可能导致不公平的待遇或歧视。"
+            type: "txt",
+            eng: "Molly Forbes, the author of <i>Every Body</i> (the winner of the Wellbeing category at The Week Junior Book Awards 2025), says your <span class='hl hl-n'>body image</span> affects how you treat others, “particularly those who live in bodies that might not look like our own”. When everyone is taught to <span class='hl hl-v'>value</span> one body image more than another it can lead to unfair treatment or <span class='hl hl-n'>discrimination</span>, she explains.",
+            chi: "Molly Forbes 是《Every Body》（The Week Junior 2025年图书奖健康类获奖作品）的作者，她说你的身体意象会影响你对待他人的方式，“特别是那些身体看起来可能与我们不同的人”。她解释说，当每个人都被教导要重视某种身体形象胜过另一种时，可能会导致不公平的待遇或歧视。"
         },
         {
-            type: 'supp',
-            eng: "<h3>Molly Forbes’s tips</h3>“When we start <span class='hl hl-v'>valuing</span> ourselves for who we are, not what we look like, this is really good for body image,” she says.",
-            chi: "<h3>Molly Forbes 的建议</h3>她说：“当我们开始因为我是谁，而不是我长什么样来评价自己时，这对身体形象真的很有好处。”"
+            type: "txt",
+            eng: "<h3>Feel better about your body</h3>“Know that the way you look is the least <span class='hl hl-adj'>interesting</span> or <span class='hl hl-adj'>important</span> thing about you,” Forbes says. Write down three things you like about someone you love. “Think of the way they make you feel when you’re with them,” she suggests. “Then consider how many of those things are to do with the way they look.”",
+            chi: "<h3>对自己的身体感觉更好</h3>“要知道，你的外表是你最无趣或最不重要的一点，”Forbes 说。写下你爱的某人的三个优点。“想想当你和他们在一起时他们让你感觉如何，”她建议道，“然后考虑其中有多少事情与他们的外表有关。”"
+        },
+        {
+            type: "txt",
+            eng: "Do you love your best friend because they wear great shoes or because they’re a good <span class='hl hl-n'>listener</span> and make you laugh? “The things we <span class='hl hl-v'>value</span> about the people we love rarely have anything to do with the way they look – and the same is true for the way they feel about you,” Forbes says.",
+            chi: "你爱最好的朋友是因为他们穿着很棒的鞋子，还是因为他们是一个好的倾听者并且让你开怀大笑？“我们所珍视的我们所爱之人的特质，很少与他们的外表有关——他们对你的感觉也是如此，”Forbes 说。"
+        },
+        {
+            type: "supp",
+            eng: "<h3>Different designs</h3>There are more than eight billion human bodies on Earth, and every one is <span class='hl hl-adj'>different</span>.",
+            chi: "<h3>不同的设计</h3>地球上有超过80亿的人体，每一个都是独一无二的。"
         }
     ];
     
-    // 3. 词汇表
     const VOCAB_LIST = [
-        { w: "confident", ipa: "ˈkɒnfɪdənt", p: "adj.", m: "自信的", c: "Feeling sure about your own ability.", e: "Having a good body image makes you feel confident." },
-        { w: "appreciate", ipa: "əˈpriːʃieɪt", p: "v.", m: "欣赏；感激", c: "To recognize the good qualities of someone or something.", e: "You should appreciate your body for what it can do." },
-        { w: "influence", ipa: "ˈɪnfluəns", p: "v.", m: "影响", c: "To have an effect on the character or behavior of someone.", e: "Body image can be influenced by social media." },
-        { w: "puberty", ipa: "ˈpjuːbəti", p: "n.", m: "青春期", c: "The time when a child's body changes into an adult's.", e: "Puberty causes many changes in the body." },
-        { w: "discrimination", ipa: "dɪˌskrɪmɪˈneɪʃən", p: "n.", m: "歧视", c: "Unfair treatment of different categories of people.", e: "Valuing one body type over another can lead to discrimination." },
-        { w: "respect", ipa: "rɪˈspɛkt", p: "n./v.", m: "尊重", c: "A feeling of deep admiration for someone or something.", e: "Treat your body with respect and kindness." }
+        { w: "body image", p: "n.", m: "身体意象", ipa: "ˈbɒdi ˈɪmɪdʒ", c: "对自身外貌的感知和看法。", e: "Having a positive body image helps you feel confident." },
+        { w: "appreciate", p: "v.", m: "欣赏；感激", ipa: "əˈpriːʃieɪt", c: "意识到某事物的价值并给予高度评价。", e: "Appreciate your body for what it can do." },
+        { w: "influence", p: "v.", m: "影响", ipa: "ˈɪnfluəns", c: "对他人的行为、思想或性质产生作用。", e: "Body image can be influenced by social media." },
+        { w: "puberty", p: "n.", m: "青春期", ipa: "ˈpjuːbəti", c: "儿童发育成成年人的时期。", e: "Puberty causes many changes in the body." },
+        { w: "discrimination", p: "n.", m: "歧视", ipa: "dɪˌskrɪmɪˈneɪʃn", c: "对不同类别的人或事物的不公平对待。", e: "Valuing one look over another can lead to discrimination." },
+        { w: "worthy", p: "adj.", m: "值得的", ipa: "ˈwɜːði", c: "配得上；具有价值的。", e: "Your body is worthy of respect and love." },
+        { w: "confident", p: "adj.", m: "自信的", ipa: "ˈkɒnfɪdənt", c: "对自己能力或品质有信心的。", e: "A good body image makes you feel confident." },
+        { w: "psychologist", p: "n.", m: "心理学家", ipa: "saɪˈkɒlədʒɪst", c: "研究人类心理和行为的专家。", e: "The psychologist helps people understand their emotions." }
     ];
     
-    // 4. 长难句
     const SA_CHUNKS = [
-        { t: "chunk-group", l: "l-subj", w: "Research", txt: "Subj" },
-        { t: "chunk-group", l: "l-verb", w: "shows", txt: "Verb" },
-        { t: "bracket bg-clause-1", w: "( that" },
-        { t: "bracket bg-clause-2", w: "( when" },
-        { t: "chunk-group bg-clause-2", l: "l-subj", w: "you", txt: "Subj" },
-        { t: "chunk-group bg-clause-2", l: "l-verb", w: "understand", txt: "Verb" },
-        { t: "chunk bg-clause-2", w: "how amazing your body is" },
-        { t: "bracket bg-clause-2", w: ") ," },
-        { t: "chunk-group bg-clause-1", l: "l-subj", w: "you", txt: "Subj" },
-        { t: "chunk-group bg-clause-1", l: "l-verb", w: "are more likely to treat", txt: "Verb Phrase" },
-        { t: "chunk bg-clause-1", w: "it" },
-        { t: "chunk bg-clause-1", w: "with respect and kindness" },
-        { t: "bracket bg-clause-1", w: ")" },
-        { t: "chunk", w: "." }
-    ];
-    
-    const SA_TRANS = "研究表明，当你明白你的身体有多么神奇时，你就更有可能以尊重和善意对待它。";
-    
-    const SA_STEPS = [
-        { type: "bd-trunk", label: "主句", text: "<strong>Research shows...</strong> (研究表明……)" },
-        { type: "bd-clause-1", label: "宾语从句", text: "<strong>that...</strong> 引导的内容是 shows 的宾语，说明了研究的具体结果。" },
-        { type: "bd-clause-2", label: "嵌套状语", text: "<strong>when you understand...</strong> 是宾语从句内部的时间状语从句，表示“当你理解……”的条件。" },
-        { type: "bd-struct", label: "结构点拨", text: "Be likely to do sth. 意为“很有可能做某事”。这里用 more likely 表示“更有可能”。" }
-    ];
-    
-    const QUIZ_ITEMS = [
-        { q: "What helps you feel confident and happy?", a: "<div class='q-opt'>A. Social media</div><div class='q-opt'>B. A good body image</div><div class='q-opt'>C. Eating same food</div>" },
-        { q: "According to the text, what affects body image?", a: "<div class='q-opt'>A. Only TV</div><div class='q-opt'>B. Only friends</div><div class='q-opt'>C. Media and self-feelings</div>" },
-        { q: "What happens during puberty?", a: "<div class='q-opt'>A. A child's body changes</div><div class='q-opt'>B. You stop growing</div><div class='q-opt'>C. Nothing changes</div>" }
+        { t: "chunk-group", l: "l-subj", txt: "Subject", w: "Research" },
+        { t: "chunk", l: "l-verb", txt: "Verb", w: "shows" },
+        { t: "chunk", l: "l-conn", txt: "Conn", w: "that" },
+        { t: "bracket bg-clause-1", l: "", txt: "", w: "(" },
+        { t: "chunk-group bg-clause-1", l: "l-conn", txt: "Conn", w: "when you" },
+        { t: "chunk bg-clause-1", l: "l-verb", txt: "Verb", w: "understand" },
+        { t: "bracket bg-clause-2", l: "", txt: "", w: "(" },
+        { t: "chunk-group bg-clause-2", l: "l-conn", txt: "Conn", w: "how amazing" },
+        { t: "chunk-group bg-clause-2", l: "l-subj", txt: "Subj", w: "your body" },
+        { t: "chunk bg-clause-2", l: "l-verb", txt: "Verb", w: "is" },
+        { t: "bracket bg-clause-2", l: "", txt: "", w: ")" },
+        { t: "bracket bg-clause-1", l: "", txt: "", w: ")" },
+        { t: "chunk", l: "l-subj", txt: "Subj", w: "you" },
+        { t: "chunk", l: "l-verb", txt: "Verb", w: "are" },
+        { t: "chunk-group", l: "l-mod", txt: "Comp", w: "more likely" },
+        { t: "chunk-group", l: "l-obj", txt: "Inf-Phrase", w: "to treat it" },
+        { t: "chunk-group", l: "l-mod", txt: "Prep-Phrase", w: "with respect." }
     ];
 
-    // --- Core Logic ---
+    const SA_TRANS = "研究表明，当你明白你的身体有多么神奇时，你更有可能以尊重和善意来对待它。";
+    
+    const SA_STEPS = [
+        { type: "bd-trunk", label: "主句", text: "<strong>Research shows that...</strong> (研究表明...) 是句子的主干，引出了后面的宾语从句。" },
+        { type: "bd-clause-1", label: "时间状语", text: "<strong>when you understand...</strong> (当你明白...) 是一个时间状语从句，说明了动作发生的前提条件。" },
+        { type: "bd-clause-2", label: "宾语从句", text: "<strong>how amazing your body is</strong> (你的身体有多么神奇) 嵌套在时间状语从句中，作为 understand 的宾语。" },
+        { type: "bd-struct", label: "核心搭配", text: "<strong>treat... with respect and kindness</strong> (以尊重和善意对待...) 是句子的核心建议部分。" }
+    ];
+
+    const QUIZ_ITEMS = [
+        { q: "What does having a positive body image mean?", a: "<span class='q-opt'>A. Looking perfect</span><span class='q-opt'>B. Appreciating your body</span><span class='q-opt'>C. Eating the same food</span>" },
+        { q: "According to Molly Forbes, what is the least important thing about you?", a: "<span class='q-opt'>A. Your kindness</span><span class='q-opt'>B. The way you look</span><span class='q-opt'>C. Your sense of humour</span>" },
+        { q: "What can influence body image according to the article?", a: "<span class='q-opt'>A. Social media</span><span class='q-opt'>B. Friends and family</span><span class='q-opt'>C. Both A and B</span>" }
+    ];
+
     function render() {
         try {
             document.documentElement.style.setProperty('--theme-color', META.themeColor);
             const root = document.getElementById('card-container');
+            if(!root) { console.error("Root element not found"); return; } // Safety
+            
             let cardIdx = 1;
             let currentCard = createCoverPage();
             root.appendChild(currentCard);
@@ -260,14 +277,8 @@
                 });
             }
 
-            // Move to next page for Vocab if needed, or start fresh
-            // Ensure Vocab starts on at least Page 2 for spacing if Page 1 is full
-            if (container.children.length > 4) {
-                 createNewPage();
-            } else {
-                 // Add spacer
-                 let spacer = document.createElement('div'); spacer.style.height = '40px'; container.appendChild(spacer);
-            }
+            // Force new page for Vocab
+            createNewPage();
 
             // 2. Vocab
             appendWithCheck(createTitle('中考高频词汇 (Vocab)'));
@@ -333,9 +344,9 @@
                 }
             }
             function appendWithCheck(el) { container.appendChild(el); checkAndMove(el, SAFE_BOTTOM); }
-        } catch (e) {
+        } catch(e) {
             console.error(e);
-            alert("Render Error during execution: " + e.message);
+            alert("Render Error: " + e.message);
         }
     }
 
@@ -369,18 +380,15 @@
     }
     
     function createSaChunk(c) {
-        if (!c || !c.t) return null; 
+        if (!c || !c.t) return null;
         const d = document.createElement('div'); 
         d.className = `chunk ${c.t}`;
-        
         if (c.t.includes('chunk-group')) {
             const color = c.l ? `var(--${c.l.replace('l-', 't-')})` : '#ccc';
             d.style.borderBottomColor = color;
         }
-
         const label = c.l ? c.l : '';
         const txt = c.txt ? c.txt : '';
-        
         d.innerHTML = `<span class="chunk-lbl ${label}">${txt}</span><span class="chunk-text">${c.w}</span>`;
         return d;
     }
@@ -411,11 +419,11 @@
 
                 canvas.toBlob(function(blob) {
                     if (!blob) {
-                        alert("Security Error: Please open this HTML with a Local Server.");
+                        alert("Security Error: Use Local Server.");
                         return;
                     }
                     const link = document.createElement('a');
-                    link.download = `Respect_Your_Body_Page_${i + 1}.png`;
+                    link.download = `TheWeekJunior_Page_${i + 1}.png`;
                     link.href = URL.createObjectURL(blob);
                     link.click();
                     setTimeout(() => URL.revokeObjectURL(link.href), 1000);
@@ -438,8 +446,8 @@
 </script>
 </head>
 <body>
-    <button id="btn-download" onclick="downloadAllPages()">Download Images</button>
-    <input type="file" id="upload-trigger" accept="image/*" onchange="loadFile(event)">
+    <input type="file" id="upload-trigger" style="display:none" onchange="loadFile(event)" accept="image/*">
     <div id="card-container"></div>
+    <button id="btn-download" onclick="downloadAllPages()">Download All Images</button>
 </body>
 </html>
