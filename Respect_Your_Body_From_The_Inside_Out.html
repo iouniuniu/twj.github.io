@@ -9,7 +9,7 @@
 <style>
     :root {
         /* --- 动态主题色 (由 JS 注入) --- */
-        --theme-color: #2c3e50; 
+        --theme-color: #F39C12; 
 
         /* --- 严格词性配色 (固定) --- */
         --bg-noun: #D6EAF8; /* 名-蓝 */
@@ -25,7 +25,7 @@
         --bd-trunk: #3498DB; --bd-clause-1: #F39C12; --bd-clause-2: #2ECC71; --bd-struct: #2C3E50;
         
         /* 通用布局 */
-        --text-main: #2c3e50; --bg: #ffffff; --supp-bg: #FFF8E1; /* 侧边栏微调为暖色以匹配主题 */
+        --text-main: #2c3e50; --bg: #ffffff; --supp-bg: #FFF8E1;
         --p-w: 1080px; --p-h: 1440px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; }
@@ -149,64 +149,67 @@
         issue: "17 January 2026", 
         title: "Respect Your Body", 
         subtitle: "Building Confidence and Self-Love / 建立自信与关爱自我",
-        themeColor: "#F39C12" // Warm Orange from original design
+        themeColor: "#F39C12" 
     };
     
+    // Ordered: Text first (txt), then Supplementary (supp) at the end.
+    // Highlight colors synced between English and Chinese (hl-n/v/adj).
     const MAIN_CONTENT = [
         {
             type: "txt",
             eng: "Having a positive <span class='hl hl-n'>body image</span> helps you feel <span class='hl hl-adj'>confident</span> and happy. Having a <span class='hl hl-adj'>positive</span> body image means you <span class='hl hl-v'>appreciate</span> your body, whatever it looks like or can do.",
-            chi: "拥有积极的身体意象有助于你感到自信和快乐。拥有积极的身体意象意味着无论你的身体外表如何或能做什么，你都能欣赏它。"
-        },
-        {
-            type: "supp",
-            eng: "<h3>Respect your body</h3>Remember that all <span class='hl hl-n'>bodies</span> are good bodies. Try to <span class='hl hl-v'>spot</span> messages that make you think some bodies are “good” or “bad”. These can come from social media, TV or people around you.",
-            chi: "<h3>尊重你的身体</h3>记住，所有的身体都是好身体。试着识别那些让你觉得某些身体是“好的”或“坏的”的信息。这些信息可能来自社交媒体、电视或你周围的人。"
-        },
-        {
-            type: "supp",
-            eng: "<h3>Celebrate differences</h3>Even if everybody ate the same food and moved in the same way, everyone would still have <span class='hl hl-adj'>different</span> types of bodies. This is a fact of life and it’s a good thing.",
-            chi: "<h3>庆祝差异</h3>即使每个人吃同样的食物，以同样的方式运动，每个人仍然会有不同类型的身体。这是生活的事实，也是一件好事。"
-        },
-        {
-            type: "supp",
-            eng: "<h3>Love your body</h3><span class='hl hl-v'>Celebrate</span> your body for what it can do. Think of the ways it lets you live your life, like playing in the park and <span class='hl hl-v'>discovering</span> the world around you.",
-            chi: "<h3>爱你的身体</h3>为你身体能做的事情而庆祝。想想它让你生活的方式，比如在公园里玩耍和探索周围的世界。"
+            chi: "拥有积极的<span class='hl hl-n'>身体意象</span>有助于你感到<span class='hl hl-adj'>自信</span>和快乐。拥有<span class='hl hl-adj'>积极的</span>身体意象意味着无论你的身体外表如何或能做什么，你都能<span class='hl hl-v'>欣赏</span>它。"
         },
         {
             type: "txt",
             eng: "Dr Tharaka Gunarathne is a <span class='hl hl-n'>psychologist</span> (someone who helps people <span class='hl hl-v'>understand</span> their <span class='hl hl-n'>emotions</span>). He says body image can be <span class='hl hl-v'>influenced</span> by what you see on TV and social media, as well as friends and family. It’s also <span class='hl hl-v'>affected</span> by the way you feel about yourself.",
-            chi: "Tharaka Gunarathne 博士是一位心理学家（帮助人们理解情绪的人）。他说，身体意象会受到你在电视和社交媒体上看到的内容，以及朋友和家人的影响。它也会受到你对自己的感觉的影响。"
+            chi: "Tharaka Gunarathne 博士是一位<span class='hl hl-n'>心理学家</span>（帮助人们<span class='hl hl-v'>理解</span><span class='hl hl-n'>情绪</span>的人）。他说，身体意象会受到你在电视和社交媒体上看到的内容，以及朋友和家人的<span class='hl hl-v'>影响</span>。它也会受到你对自己的感觉的<span class='hl hl-v'>影响</span>。"
         },
         {
             type: "txt",
             eng: "<span class='hl hl-n'>Puberty</span>, when a child’s body <span class='hl hl-v'>develops</span> and changes as they become an adult, can make a difference too. It’s normal to care about how you look, Gunarathne says, but when you worry about it too much it can <span class='hl hl-v'>affect</span> your mood.",
-            chi: "青春期，即孩子的身体发育并随着成长为成年人而发生变化的时候，也会产生影响。Gunarathne 说，关心自己的外表是正常的，但当你过度担心时，它会影响你的情绪。"
+            chi: "<span class='hl hl-n'>青春期</span>，即孩子的身体<span class='hl hl-v'>发育</span>并随着成长为成年人而发生变化的时候，也会产生影响。Gunarathne 说，关心自己的外表是正常的，但当你过度担心时，它会<span class='hl hl-v'>影响</span>你的情绪。"
         },
         {
             type: "txt",
             eng: "<h3>Why does it matter?</h3>Research shows that when you <span class='hl hl-v'>understand</span> how <span class='hl hl-adj'>amazing</span> your body is you are more likely to treat it with <span class='hl hl-n'>respect</span> and kindness. If you’re busy worrying about having perfect hair or how tall you are, you can forget all the <span class='hl hl-adj'>brilliant</span> things your body can do like cycling, crafting, dancing or swimming.",
-            chi: "<h3>为什么这很重要？</h3>研究表明，当你明白你的身体有多么神奇时，你更有可能以尊重和善意来对待它。如果你忙着担心拥有完美的头发或身高，你可能会忘记你的身体能做的所有精彩的事情，比如骑自行车、做手工、跳舞或游泳。"
+            chi: "<h3>为什么这很重要？</h3>研究表明，当你<span class='hl hl-v'>明白</span>你的身体有多么<span class='hl hl-adj'>神奇</span>时，你更有可能以<span class='hl hl-n'>尊重</span>和善意来对待它。如果你忙着担心拥有完美的头发或身高，你可能会忘记你的身体能做的所有<span class='hl hl-adj'>精彩</span>的事情，比如骑自行车、做手工、跳舞或游泳。"
         },
         {
             type: "txt",
             eng: "Molly Forbes, the author of <i>Every Body</i> (the winner of the Wellbeing category at The Week Junior Book Awards 2025), says your <span class='hl hl-n'>body image</span> affects how you treat others, “particularly those who live in bodies that might not look like our own”. When everyone is taught to <span class='hl hl-v'>value</span> one body image more than another it can lead to unfair treatment or <span class='hl hl-n'>discrimination</span>, she explains.",
-            chi: "Molly Forbes 是《Every Body》（The Week Junior 2025年图书奖健康类获奖作品）的作者，她说你的身体意象会影响你对待他人的方式，“特别是那些身体看起来可能与我们不同的人”。她解释说，当每个人都被教导要重视某种身体形象胜过另一种时，可能会导致不公平的待遇或歧视。"
+            chi: "Molly Forbes 是《Every Body》（The Week Junior 2025年图书奖健康类获奖作品）的作者，她说你的<span class='hl hl-n'>身体意象</span>会影响你对待他人的方式，“特别是那些身体看起来可能与我们不同的人”。她解释说，当每个人都被教导要<span class='hl hl-v'>重视</span>某种身体形象胜过另一种时，可能会导致不公平的待遇或<span class='hl hl-n'>歧视</span>。"
         },
         {
             type: "txt",
             eng: "<h3>Feel better about your body</h3>“Know that the way you look is the least <span class='hl hl-adj'>interesting</span> or <span class='hl hl-adj'>important</span> thing about you,” Forbes says. Write down three things you like about someone you love. “Think of the way they make you feel when you’re with them,” she suggests. “Then consider how many of those things are to do with the way they look.”",
-            chi: "<h3>对自己的身体感觉更好</h3>“要知道，你的外表是你最无趣或最不重要的一点，”Forbes 说。写下你爱的某人的三个优点。“想想当你和他们在一起时他们让你感觉如何，”她建议道，“然后考虑其中有多少事情与他们的外表有关。”"
+            chi: "<h3>对自己的身体感觉更好</h3>“要知道，你的外表是你最不<span class='hl hl-adj'>有趣</span>或最不<span class='hl hl-adj'>重要</span>的一点，”Forbes 说。写下你爱的某人的三个优点。“想想当你和他们在一起时他们让你感觉如何，”她建议道，“然后考虑其中有多少事情与他们的外表有关。”"
         },
         {
             type: "txt",
             eng: "Do you love your best friend because they wear great shoes or because they’re a good <span class='hl hl-n'>listener</span> and make you laugh? “The things we <span class='hl hl-v'>value</span> about the people we love rarely have anything to do with the way they look – and the same is true for the way they feel about you,” Forbes says.",
-            chi: "你爱最好的朋友是因为他们穿着很棒的鞋子，还是因为他们是一个好的倾听者并且让你开怀大笑？“我们所珍视的我们所爱之人的特质，很少与他们的外表有关——他们对你的感觉也是如此，”Forbes 说。"
+            chi: "你爱最好的朋友是因为他们穿着很棒的鞋子，还是因为他们是一个好的<span class='hl hl-n'>倾听者</span>并且让你开怀大笑？“我们所<span class='hl hl-v'>珍视</span>的我们所爱之人的特质，很少与他们的外表有关——他们对你的感觉也是如此，”Forbes 说。"
+        },
+        /* Supplementary Content (moved to the end) */
+        {
+            type: "supp",
+            eng: "<h3>Respect your body</h3>Remember that all <span class='hl hl-n'>bodies</span> are good bodies. Try to <span class='hl hl-v'>spot</span> messages that make you think some bodies are “good” or “bad”. These can come from social media, TV or people around you.",
+            chi: "<h3>尊重你的身体</h3>记住，所有的<span class='hl hl-n'>身体</span>都是好身体。试着<span class='hl hl-v'>识别</span>那些让你觉得某些身体是“好的”或“坏的”的信息。这些信息可能来自社交媒体、电视或你周围的人。"
+        },
+        {
+            type: "supp",
+            eng: "<h3>Celebrate differences</h3>Even if everybody ate the same food and moved in the same way, everyone would still have <span class='hl hl-adj'>different</span> types of bodies. This is a fact of life and it’s a good thing.",
+            chi: "<h3>庆祝差异</h3>即使每个人吃同样的食物，以同样的方式运动，每个人仍然会有<span class='hl hl-adj'>不同</span>类型的身体。这是生活的事实，也是一件好事。"
+        },
+        {
+            type: "supp",
+            eng: "<h3>Love your body</h3><span class='hl hl-v'>Celebrate</span> your body for what it can do. Think of the ways it lets you live your life, like playing in the park and <span class='hl hl-v'>discovering</span> the world around you.",
+            chi: "<h3>爱你的身体</h3>为你身体能做的事情而<span class='hl hl-v'>庆祝</span>。想想它让你生活的方式，比如在公园里玩耍和<span class='hl hl-v'>探索</span>周围的世界。"
         },
         {
             type: "supp",
             eng: "<h3>Different designs</h3>There are more than eight billion human bodies on Earth, and every one is <span class='hl hl-adj'>different</span>.",
-            chi: "<h3>不同的设计</h3>地球上有超过80亿的人体，每一个都是独一无二的。"
+            chi: "<h3>不同的设计</h3>地球上有超过80亿的人体，每一个都是<span class='hl hl-adj'>独一无二</span>的。"
         }
     ];
     
