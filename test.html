@@ -37,12 +37,12 @@
     .cover-header { padding: 30px 60px 10px 60px; display: flex; flex-direction: column; align-items: center; text-align: center; flex-shrink: 0; }
     .meta-tag { background: var(--theme-color); color: white; padding: 6px 20px; border-radius: 50px; font-family: 'Lato'; font-weight: 900; font-size: 12pt; margin-bottom: 15px; letter-spacing: 1px; }
     
-    /* V38 Update: Title 60pt / Subtitle 40pt */
+    /* V38: 60pt Title / 40pt Subtitle */
     .poster-title { font-family: 'Lora'; font-size: 60pt; font-weight: 700; color: var(--text-main); line-height: 1.0; margin-bottom: 10px; }
     .poster-subtitle { font-family: 'Noto Sans SC'; font-size: 40pt; color: #5d6d7e; font-weight: 400; margin-bottom: 20px; position: relative; display: inline-block; }
     .poster-subtitle::after { content: ""; display: block; width: 60px; height: 3px; background: var(--theme-color); margin: 10px auto 0 auto; }
 
-    /* 续页头 (V38: Remove background from continued-tag) */
+    /* 续页头 (No bg) */
     .mini-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #ccc; padding-bottom: 15px; margin-bottom: 20px; height: 60px; flex-shrink: 0; width: 100%; }
     .mini-title { font-family: 'Lora'; font-weight: 700; font-size: 16pt; color: var(--text-main); }
     .continued-tag { font-family: 'Lato'; font-weight: 700; font-style: italic; background: transparent; padding: 5px 0; border-radius: 0; font-size: 11pt; color: #666; }
@@ -81,7 +81,7 @@
     .v-line-2 { font-size: 14pt; color: #d35400; font-family: 'Roboto Mono'; font-weight: 500; }
     .v-line-3 { font-size: 14pt; color: #7f8c8d; font-style: italic; font-family: 'Lora'; line-height: 1.4; margin-top: 2px; }
 
-    /* 长难句 (V33 Fixed) */
+    /* 长难句 (Chunk Grouping) */
     .sa-sentence-wrapper { display: flex; flex-wrap: wrap; column-gap: 0; row-gap: 35px; line-height: 1.5; margin-bottom: 25px; padding-top: 10px; align-items: flex-end; width: 100%; }
     .chunk { display: inline-flex; flex-direction: column; align-items: center; margin: 0; vertical-align: bottom; }
     .chunk-text { font-family: 'Lora'; font-size: 20pt; color: #2c3e50; padding: 4px 5px; font-weight: 500; border-radius: 0; }
@@ -139,79 +139,83 @@
     // --- Phase 4: Data Injection ---
     const META = { 
         issue: "17 January 2026", 
-        title: "New Driving Rules", 
-        subtitle: "Safety Proposals for UK Roads",
-        themeColor: "#C0392B" // 警示红/橙色，符合交通规则主题
+        title: "New Driving Rules Proposed", 
+        subtitle: "UK Road Safety Updates",
+        themeColor: "#E67E22" // Safety Orange
     };
     
-    // 2. 正文数据
+    // 正文数据: 必须完整提取，必须检查双语高亮是否一一对应
     const MAIN_CONTENT = [
         {
-            type: 'text',
-            eng: "The UK Government has <span class='hl hl-v'>proposed</span> lots of new rules for <span class='hl hl-n'>drivers</span>.",
-            chi: "英国政府提出了一系列针对驾驶员的新规定。"
+            type: "para",
+            eng: "The UK Government has <span class='hl hl-v'>proposed</span> lots of new <span class='hl hl-n'>rules</span> for drivers.",
+            chi: "英国政府为司机<span class='hl hl-v'>提议</span>了许多新<span class='hl hl-n'>规定</span>。"
         },
         {
-            type: 'text',
-            eng: "These include <span class='hl hl-n'>drivers</span> over the age of 70 having their <span class='hl hl-n'>eyesight</span> checked every three years.",
-            chi: "其中包括70岁以上的司机必须每三年进行一次视力检查。"
+            type: "para",
+            eng: "These include drivers over the age of 70 having their <span class='hl hl-n'>eyesight</span> checked every three years, and <span class='hl hl-adj'>learner</span> drivers having to wait up to six months after passing their theory test before taking a <span class='hl hl-adj'>practical</span> driving test.",
+            chi: "其中包括 70 岁以上的司机每三年检查一次<span class='hl hl-n'>视力</span>，以及<span class='hl hl-adj'>实习</span>司机在通过理论考试后必须等待长达六个月才能参加<span class='hl hl-adj'>实操</span>驾驶考试。"
         },
         {
-            type: 'text',
-            eng: "Also, <span class='hl hl-n'>learner drivers</span> may have to wait up to six months after passing their <span class='hl hl-n'>theory test</span> before taking a <span class='hl hl-adj'>practical</span> driving test.",
-            chi: "此外，学习驾驶者在通过理论考试后，可能需要等待长达六个月才能参加实际路考。"
+            type: "para",
+            eng: "People who are <span class='hl hl-v'>caught</span> breaking the law while driving could face <span class='hl hl-adj'>harsher</span> <span class='hl hl-n'>punishments</span>.",
+            chi: "开车时违法被<span class='hl hl-v'>抓</span>的人可能会面临<span class='hl hl-adj'>更严厉的</span><span class='hl hl-n'>惩罚</span>。"
         },
         {
-            type: 'text',
-            eng: "People who are caught breaking the law while driving could face <span class='hl hl-adj'>harsher</span> <span class='hl hl-n'>punishments</span>.",
-            chi: "驾驶时违法的司机可能会面临更严厉的惩罚。"
-        },
-        {
-            type: 'text',
+            type: "para",
             eng: "It’s hoped these new road safety <span class='hl hl-n'>regulations</span> could <span class='hl hl-v'>reduce</span> the number of accidents and save lives.",
-            chi: "人们希望这些新的道路安全法规能够减少事故数量并挽救生命。"
+            chi: "希望这些新的道路安全<span class='hl hl-n'>法规</span>能够<span class='hl hl-v'>减少</span>事故数量并挽救生命。"
+        },
+        {
+            type: "supp",
+            eng: "<h3>Learner drivers face new rules</h3>Learner drivers may have to wait before their final test.",
+            chi: "<h3>实习司机面临新规</h3>实习司机可能需要在参加最终考试前等待一段时间。"
         }
     ];
-    
-    // 3. 词汇表
+
     const VOCAB_LIST = [
-        { w: "Propose", ipa: "prəˈpəʊz", p: "v. 提议，建议", m: "Put forward for consideration.", c: "The government proposed new laws.", e: "The committee proposed a new plan for the park." },
-        { w: "Regulation", ipa: "ˌrɛɡjʊˈleɪʃən", p: "n. 规章，条例", m: "A rule or directive made and maintained by an authority.", c: "Safety regulations.", e: "New regulations have been introduced to improve safety." },
-        { w: "Punishment", ipa: "ˈpʌnɪʃmənt", p: "n. 惩罚", m: "The infliction or imposition of a penalty.", c: "Face harsher punishments.", e: "The punishment for the crime was severe." },
-        { w: "Practical", ipa: "ˈpræktɪkəl", p: "adj. 实际的，实践的", m: "Relating to practice or action rather than theory.", c: "Practical driving test.", e: "He has excellent practical skills in mechanics." },
-        { w: "Harsher", ipa: "hɑːʃə", p: "adj. 更严厉的", m: "More severe or cruel.", c: "Harsher penalties.", e: "The winter this year was harsher than usual." }
+        { w: "propose", ipa: "prəˈpəʊz", p: "v. 提议", m: "To suggest a plan or idea.", c: "pro(forward) + pose(put)", e: "The UK Government has proposed lots of new rules." },
+        { w: "eyesight", ipa: "ˈaɪsaɪt", p: "n. 视力", m: "The ability to see.", c: "eye(眼睛) + sight(看见)", e: "Drivers over 70 must have their eyesight checked." },
+        { w: "practical", ipa: "ˈpræktɪkəl", p: "adj. 实操的", m: "Relating to what is real or actual.", c: "pract(do) + ical", e: "...before taking a practical driving test." },
+        { w: "harsh", ipa: "hɑːʃ", p: "adj. 严厉的", m: "Cruel or severe.", c: "Middle English 'harsk'", e: "People could face harsher punishments." },
+        { w: "regulation", ipa: "ˌrɛɡjʊˈleɪʃən", p: "n. 法规", m: "A rule or directive made and maintained by an authority.", c: "reg(rule) + ula + tion", e: "These new road safety regulations could reduce accidents." }
     ];
-    
-    // 4. 长难句
+
+    // 长难句: These include drivers over the age of 70 having their eyesight checked...
     const SA_CHUNKS = [
-        { t: 'chunk-group bg-trunk', l: 'l-subj', w: 'It', txt: '形式主语' },
-        { t: 'chunk-group bg-trunk', l: 'l-verb', w: 'is hoped', txt: '被动谓语' },
-        { t: 'bracket bg-clause-1', w: '(', txt: '' },
-        { t: 'chunk-group bg-clause-1', l: 'l-subj', w: 'these new regulations', txt: '从句主语' },
-        { t: 'chunk-group bg-clause-1', l: 'l-verb', w: 'could reduce', txt: '从句谓语1' },
-        { t: 'chunk bg-clause-1', w: 'accidents', txt: '' },
-        { t: 'chunk bg-clause-1', l: 'l-conn', w: 'and', txt: '连词' },
-        { t: 'chunk-group bg-clause-1', l: 'l-verb', w: 'save', txt: '从句谓语2' },
-        { t: 'chunk bg-clause-1', w: 'lives', txt: '' },
-        { t: 'bracket bg-clause-1', w: ')', txt: '' }
+        { t: "chunk", w: "These", l: "Subj" },
+        { t: "chunk", w: "include", l: "Verb" },
+        { t: "chunk-group bg-clause-1", txt: "List Item A", w: "", l: "" },
+        { t: "chunk bg-clause-1", w: "drivers", l: "" },
+        { t: "chunk bg-clause-1", w: "over the age of 70", l: "" },
+        { t: "chunk bg-clause-1", w: "having their eyesight checked", l: "" },
+        { t: "chunk", w: ",", l: "" },
+        { t: "chunk l-conn", w: "and", l: "Conj" },
+        { t: "chunk-group bg-clause-2", txt: "List Item B", w: "", l: "" },
+        { t: "chunk bg-clause-2", w: "learner drivers", l: "" },
+        { t: "chunk bg-clause-2", w: "having to wait", l: "" },
+        { t: "chunk bg-clause-2", w: "up to six months", l: "" },
+        { t: "chunk bg-clause-2", w: "after passing their theory test", l: "" },
+        { t: "chunk", w: ".", l: "" }
     ];
-    const SA_TRANS = "人们希望这些新的道路安全法规能够减少事故数量并挽救生命。";
+
+    const SA_TRANS = "其中包括70岁以上的司机每三年检查一次视力，以及实习司机在通过理论考试后必须等待六个月才能参加路考。";
+
     const SA_STEPS = [
-        { type: 'bd-trunk', label: '主句结构', text: "It is hoped... 是典型的被动语态结构，'It' 为形式主语，真正的主语是后面省略了 'that' 的从句。" },
-        { type: 'bd-clause-1', label: '宾语从句', text: "从句 (that) these new road safety regulations could reduce... 解释了被寄予希望的具体内容。" },
-        { type: 'bd-struct', label: '并列结构', text: "and 连接了两个动词词组：'reduce the number of accidents' 和 'save lives'。" }
+        { type: "bd-trunk", label: "MAIN STRUCTURE", text: "The sentence uses the verb <b>include</b> to list two main changes." },
+        { type: "bd-clause-1", label: "GROUP 1", text: "<b>Drivers over 70:</b> Requirement to have eyesight checked every 3 years." },
+        { type: "bd-clause-2", label: "GROUP 2", text: "<b>Learner drivers:</b> A mandatory waiting period (6 months) between theory and practical tests." }
     ];
+
     const QUIZ_ITEMS = [
-        { q: "How often do drivers over 70 need eye checks?", a: "<span class='q-opt'>A. Every year</span><span class='q-opt'>B. Every 3 years</span><span class='q-opt'>C. Every 5 years</span>" },
-        { q: "What must learner drivers do after passing theory?", a: "<span class='q-opt'>A. Take the practical test immediately</span><span class='q-opt'>B. Wait up to 6 months</span>" }
+        { q: "How often do drivers over 70 need to check their eyesight?", a: "<span class='q-opt'>A) Every year</span> <span class='q-opt'>B) Every 3 years</span> <span class='q-opt'>C) Every 5 years</span>" },
+        { q: "What is the proposed wait time for learner drivers?", a: "<span class='q-opt'>A) 1 month</span> <span class='q-opt'>B) 3 months</span> <span class='q-opt'>C) 6 months</span>" }
     ];
 
     // --- Core Logic ---
     function render() {
         try {
-            // 应用动态主题色
             document.documentElement.style.setProperty('--theme-color', META.themeColor);
-
             const root = document.getElementById('card-container');
             let cardIdx = 1;
             let currentCard = createCoverPage();
@@ -333,15 +337,20 @@
     }
     
     function createSaChunk(c) {
+        // [Safety Fix]
         if (!c || !c.t) return null;
+
         const d = document.createElement('div'); 
         d.className = `chunk ${c.t}`;
+        
         if (c.t.includes('chunk-group')) {
             const color = c.l ? `var(--${c.l.replace('l-', 't-')})` : '#ccc';
             d.style.borderBottomColor = color;
         }
+
         const label = c.l ? c.l : '';
         const txt = c.txt ? c.txt : '';
+        
         d.innerHTML = `<span class="chunk-lbl ${label}">${txt}</span><span class="chunk-text">${c.w}</span>`;
         return d;
     }
@@ -372,7 +381,7 @@
 
                 canvas.toBlob(function(blob) {
                     if (!blob) {
-                        alert("Security Error: Please open this HTML with a Local Server. File:// protocol prevents saving.");
+                        alert("Security Error: Please open this HTML with a Local Server (e.g., Live Server in VS Code). File:// protocol prevents saving.");
                         return;
                     }
                     const link = document.createElement('a');
@@ -395,4 +404,4 @@
     }
 
     window.loadFile = function(e) { document.getElementById('hero-img').src = URL.createObjectURL(e.target.files[0]); document.getElementById('hero-img').style.display='block'; document.getElementById('hero-txt').style.display='none'; };
-    window.onload = render;</script><input type="file" id="upload-trigger" style="display:none" onchange="loadFile(event)"><button id="btn-download" onclick="downloadAllPages()">Download Images</button><div id="card-container"></div></body></html>
+    window.onload = render;</script><div id="card-container"></div><input type="file" id="upload-trigger" accept="image/*" style="display:none" onchange="loadFile(event)"><button id="btn-download" onclick="downloadAllPages()">Download Images</button></body></html>
