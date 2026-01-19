@@ -148,97 +148,115 @@
     const META = { 
         issue: "23 January 2026", 
         title: "The brain has five key ages", 
-        subtitle: "研究发现：大脑直到三十岁才“真正成年”",
+        subtitle: "大脑发育的五个关键里程碑", 
         themeColor: "#2980b9" 
     };
     
-    // [Audit 1: Strict Content Completeness]
-    // 必须包含所有正文段落 + 所有 Sidebar 内容
+    // [Audit 1: Lead Paragraph + All Content + All Sidebars]
     const MAIN_CONTENT = [
-    {
-        eng: "Scientists scanned the brains of about 4,000 people—from babies under age 1 to 90-year-olds.",
-        chi: "科学家扫描了大约4000人的大脑——从1岁以下的婴儿到90岁的老人。"
-    },
-    {
-        eng: "The researchers <span class='hl hl-v'>identified</span><sup>①</sup> four major 'turning points' when brains <span class='hl hl-v'>rewire</span><sup>②</sup> themselves: at the ages of 9, 32, 66, and 83. This means that human brains have five distinct '<span class='hl hl-n'>eras</span><sup>③</sup>,' which help scientists understand how the brain is wired during different stages of life.",
-        chi: "研究人员<span class='hl hl-v'>确定了</span><sup>①</sup>大脑自我<span class='hl hl-v'>重塑</span><sup>②</sup>的四个主要“转折点”：分别在9岁、32岁、66岁和83岁。这意味着人类大脑有五个独特的“<span class='hl hl-n'>时期</span><sup>③</sup>”，这有助于科学家了解大脑在生命不同阶段的连接方式。"
-    },
-    {
-        eng: "The 'wiring' controls how the brain sends and receives signals and affects how people experience the world, make decisions, and form memories. It is also related to mental health and developmental conditions.",
-        chi: "这种“连线”控制着大脑如何发送和接收信号，并影响人们如何体验世界、做出决定和形成记忆。它还与心理健康和发育状况有关。"
-    },
-    {
-        eng: "From birth until age 9, children’s brains grow white and gray matter. Gray matter is a type of brain tissue that processes and <span class='hl hl-v'>interprets</span><sup>④</sup> information and is involved in memory and emotion. White matter carries signals between chunks of gray matter and helps with learning and paying attention.",
-        chi: "从出生到9岁，儿童的大脑会生长白质和灰质。灰质是一种处理和<span class='hl hl-v'>解读</span><sup>④</sup>信息的大脑组织，与记忆和情感有关。白质在灰质块之间传递信号，有助于学习和集中注意力。"
-    },
-    {
-        eng: "During this time, the many <span class='hl hl-n'>synapses</span><sup>⑤</sup> (links between nerves) between young children’s brain cells start decreasing. The researchers call this era 'childhood.'",
-        chi: "在此期间，幼儿脑细胞之间的大量<span class='hl hl-n'>突触</span><sup>⑤</sup>（神经之间的连接）开始减少。研究人员称这一时期为“童年期”。"
-    },
-    {
-        eng: "The second era, '<span class='hl hl-n'>adolescence</span><sup>⑥</sup>,' lasts from age 9 until 32. During this time, the brain continues to grow more white matter, improving communication inside the brain. People get better at remembering, paying attention, and solving problems.",
-        chi: "第二个时期是“<span class='hl hl-n'>青春期</span><sup>⑥</sup>”，从9岁持续到32岁。在此期间，大脑继续生长更多的白质，改善了大脑内部的交流。人们在记忆、注意力和解决问题方面变得更好。"
-    },
-    {
-        eng: "Alexa Mousley, a student at the University of Cambridge in the UK who led the research, told The Guardian newspaper, 'We’re definitely not saying that people in their late 20s are going to be acting like teenagers, or even that their brain looks like that of a teenager’s. It’s really the pattern of change.'",
-        chi: "领导这项研究的英国剑桥大学学生Alexa Mousley告诉《卫报》：“我们绝不是说20多岁的人会像青少年一样行事，甚至不是说他们的大脑看起来像青少年的大脑。这实际上是指变化的模式。”"
-    },
-    {
-        eng: "From 32 onward, the brain enters 'adulthood.' This is the longest era in a person’s life. The brain becomes more stable, and brain regions become more separate from each other.",
-        chi: "从32岁开始，大脑进入“成年期”。这是人一生中最长的时期。大脑变得更加稳定，大脑区域彼此之间变得更加独立。"
-    },
-    {
-        eng: "In 'early aging' (66–83 years old) and 'late aging' (from 83 onward), the connections in the brain start to decrease.",
-        chi: "在“早期衰老”（66-83岁）和“晚期衰老”（83岁以后），大脑中的连接开始减少。"
-    },
-    {
-        eng: "'These eras provide important context for what our brains might be best at, or more <span class='hl hl-adj'>vulnerable</span><sup>⑦</sup> to, at different stages of our lives,' said Mousley. She added that the findings could help scientists understand why some brains develop differently than others and how that might affect people.",
-        chi: "Mousley说：“这些时期为我们的大脑在生命不同阶段可能最擅长什么，或者更容易<span class='hl hl-adj'>受什么影响</span><sup>⑦</sup>提供了重要的背景。”她补充说，这些发现可以帮助科学家理解为什么有些大脑的发育与其他的不同，以及这可能如何影响人们。"
-    },
-    {
-        type: 'supp',
-        eng: "<h3>Six fun facts about the brain</h3>1. A baby’s brain doubles in size between birth and their first birthday.<br>2. The brain itself can’t feel pain because it doesn’t have any pain <span class='hl hl-n'>receptors</span><sup>⑧</sup> inside it.<br>3. Your brain gets smaller as you get older.<br>4. Human brains use more energy than any other organ in the body—about a fifth of all your energy.<br>5. The adult human brain weighs about 2.75 pounds—that’s about the same as a large guinea pig.<br>6. About three quarters of your brain is water, which means getting <span class='hl hl-adj'>dehydrated</span><sup>⑨</sup> affects your ability to think.",
-        chi: "<h3>关于大脑的六个有趣事实</h3>1. 婴儿的大脑在出生到一岁之间大小会翻倍。<br>2. 大脑本身感觉不到疼痛，因为它内部没有任何痛觉<span class='hl hl-n'>感受器</span><sup>⑧</sup>。<br>3. 你的大脑随着年龄增长而变小。<br>4. 人类大脑比身体任何其他器官消耗的能量都多——大约占你所有能量的五分之一。<br>5. 成人大脑重约2.75磅——大约相当于一只大豚鼠的重量。<br>6. 大脑大约四分之三是水，这意味着<span class='hl hl-adj'>脱水</span><sup>⑨</sup>会影响你的思考能力。"
-    },
-    {
-        type: 'supp',
-        eng: "<h3>High Powered</h3>The brain uses 20 watts of power to function—that’s enough energy to run a bright LED light bulb.",
-        chi: "<h3>高能耗</h3>大脑运作消耗20瓦的功率——这足以点亮一个明亮的LED灯泡。"
-    }
-]; 
+        {
+            type: 'text',
+            eng: `Your brain only goes into “adult mode” in your 30s, according to <span class="hl hl-adj">new</span><sup>①</sup> research. Scientists <span class="hl hl-v">scanned</span><sup>②</sup> the brains of about 4,000 people—from babies under age 1 to 90-year-olds.`,
+            chi: `根据<span class="hl hl-adj">最新的</span><sup>①</sup>研究，你的大脑在 30 多岁时才会进入“成人模式”。科学家<span class="hl hl-v">扫描</span><sup>②</sup>了约 4000 人的大脑——从不到 1 岁的婴儿到 90 岁的老人。`
+        },
+        {
+            type: 'text',
+            eng: `The researchers identified four major “turning points” when brains <span class="hl hl-v">rewire</span><sup>③</sup> themselves: at the ages of 9, 32, 66, and 83. This means that human brains have five <span class="hl hl-adj">distinct</span><sup>④</sup> “eras,” which help scientists understand how the brain is wired during different stages of life.`,
+            chi: `研究人员确定了大脑自我<span class="hl hl-v">重塑</span><sup>③</sup>的四个主要“转折点”：9 岁、32 岁、66 岁和 83 岁。这意味着人类大脑有五个<span class="hl hl-adj">截然不同的</span><sup>④</sup>“时期”，这有助于科学家了解大脑在生命的不同阶段是如何连接的。`
+        },
+        {
+            type: 'text',
+            eng: `The “wiring” controls how the brain sends and receives signals and affects how people experience the world, make decisions, and form memories. It is also related to mental health and developmental conditions.`,
+            chi: `这些“连接”控制着大脑如何发送和接收信号，并影响人们如何体验世界、做出决定和形成记忆。这也与心理健康和发育状况有关。`
+        },
+        {
+            type: 'text',
+            eng: `From birth until age 9, children’s brains grow white and gray matter. Gray matter is a type of brain tissue that processes and <span class="hl hl-v">interprets</span><sup>⑤</sup> information and is involved in memory and emotion. White matter carries signals between chunks of gray matter and helps with learning and paying attention.`,
+            chi: `从出生到 9 岁，儿童的大脑会生长白质和灰质。灰质是一种处理和<span class="hl hl-v">解释</span><sup>⑤</sup>信息并参与记忆和情感的大脑组织。白质在灰质块之间传递信号，有助于学习和集中注意力。`
+        },
+        {
+            type: 'text',
+            eng: `During this time, the many <span class="hl hl-n">synapses</span><sup>⑥</sup> (links between nerves) between young children’s brain cells start decreasing. The researchers call this era “childhood.”`,
+            chi: `在此期间，幼儿脑细胞之间的许多<span class="hl hl-n">突触</span><sup>⑥</sup>（神经之间的连接）开始减少。研究人员称这个时期为“童年”。`
+        },
+        {
+            type: 'text',
+            eng: `The second era, “<span class="hl hl-n">adolescence</span><sup>⑦</sup>,” lasts from age 9 until 32. During this time, the brain continues to grow more white matter, improving communication inside the brain. People get better at remembering, paying attention, and solving problems.`,
+            chi: `第二个时期是“<span class="hl hl-n">青春期</span><sup>⑦</sup>”，从 9 岁持续到 32 岁。在此期间，大脑继续生长更多的白质，改善大脑内部的交流。人们在记忆、注意力和解决问题方面变得更好。`
+        },
+        {
+            type: 'text',
+            eng: `Alexa Mousley, a student at the University of Cambridge in the UK who led the research, told The Guardian newspaper, “We’re definitely not saying that people in their late 20s are going to be acting like teenagers, or even that their brain looks like that of a teenager’s. It’s really the pattern of change.”`,
+            chi: `领导这项研究的英国剑桥大学学生亚历克萨·姆斯利告诉《卫报》：“我们绝对不是说 20 多岁的人会像青少年一样行事，甚至也不是说他们的大脑看起来像青少年的大脑。这实际上是一种变化的模式。”`
+        },
+        {
+            type: 'text',
+            eng: `From 32 onward, the brain enters “adulthood.” This is the longest era in a person’s life. The brain becomes more <span class="hl hl-adj">stable</span><sup>⑧</sup>, and brain regions become more separate from each other.`,
+            chi: `从 32 岁开始，大脑进入“成年期”。这是人一生中最长的时期。大脑变得更加<span class="hl hl-adj">稳定</span><sup>⑧</sup>，大脑区域之间变得更加独立。`
+        },
+        {
+            type: 'text',
+            eng: `In “early aging” (66–83 years old) and “late aging” (from 83 onward), the connections in the brain start to decrease.`,
+            chi: `在“早期衰老”（66-83 岁）和“晚期衰老”（83 岁以后），大脑中的连接开始减少。`
+        },
+        {
+            type: 'text',
+            eng: `“These eras provide important <span class="hl hl-n">context</span><sup>⑨</sup> for what our brains might be best at, or more <span class="hl hl-adj">vulnerable</span><sup>⑩</sup> to, at different stages of our lives,” said Mousley. She added that the findings could help scientists understand why some brains develop differently than others and how that might affect people.`,
+            chi: `“这些时期提供了重要的<span class="hl hl-n">背景</span><sup>⑨</sup>，让我们了解在生命的不同阶段，我们的大脑可能最擅长什么，或者更<span class="hl hl-adj">容易受到</span><sup>⑩</sup>什么影响，”姆斯利说。她补充说，这些发现可以帮助科学家理解为什么有些大脑的发育与众不同，以及这可能会对人们产生什么影响。`
+        },
+        {
+            type: 'supp',
+            eng: `<h3>Six fun facts about the brain</h3><br>1. A baby’s brain doubles in size between birth and their first birthday.<br>2. The brain itself can’t feel pain because it doesn’t have any pain receptors inside it.<br>3. Your brain gets smaller as you get older.<br>4. Human brains use more energy than any other organ in the body—about a fifth of all your energy.<br>5. The adult human brain weighs about 2.75 pounds—that’s about the same as a large guinea pig.<br>6. About three quarters of your brain is water, which means getting dehydrated affects your ability to think.`,
+            chi: `<h3>关于大脑的六个有趣事实</h3><br>1. 婴儿的大脑在出生到一岁之间大小会翻倍。<br>2. 大脑本身感觉不到疼痛，因为它内部没有任何痛觉感受器。<br>3. 随着年龄增长，你的大脑会变小。<br>4. 人类大脑消耗的能量比体内任何其他器官都多——大约占你总能量的五分之一。<br>5. 成年人的大脑重约 2.75 磅（约 1.25 公斤）——这大约相当于一只大豚鼠的重量。<br>6. 你大脑的大约四分之三是水，这意味着脱水会影响你的思考能力。`
+        },
+        {
+            type: 'supp',
+            eng: `<h3>High Powered</h3><br>The brain uses 20 watts of power to function—that’s enough energy to run a bright LED light bulb.`,
+            chi: `<h3>高能耗</h3><br>大脑运作需要消耗 20 瓦的功率——这足以点亮一个明亮的 LED 灯泡。`
+        }
+    ]; 
     // [Audit 2: Strict Bilingual Sync]
     const VOCAB_LIST = [
-    { w: "identify", p: "v.", m: "确定；识别", ipa: "aɪˈdentɪfaɪ", c: "identify (verb)", e: "The researchers identified four major turning points." },
-    { w: "rewire", p: "v.", m: "重塑；重新连线", ipa: "ˌriːˈwaɪər", c: "re- (again) + wire", e: "Brains rewire themselves at certain ages." },
-    { w: "era", p: "n.", m: "时代；时期", ipa: "ˈɪərə", c: "distinct eras", e: "Human brains have five distinct eras." },
-    { w: "interpret", p: "v.", m: "解读；解释", ipa: "ɪnˈtɜːprɪt", c: "interpret information", e: "Gray matter processes and interprets information." },
-    { w: "synapse", p: "n.", m: "突触", ipa: "ˈsaɪnæps", c: "links between nerves", e: "Many synapses between brain cells start decreasing." },
-    { w: "adolescence", p: "n.", m: "青春期", ipa: "ˌædəˈlesns", c: "childhood and adolescence", e: "The second era, adolescence, lasts from age 9 until 32." },
-    { w: "vulnerable", p: "adj.", m: "易受影响的；脆弱的", ipa: "ˈvʌlnərəbl", c: "vulnerable to...", e: "Our brains might be more vulnerable to stress at this stage." },
-    { w: "receptor", p: "n.", m: "感受器；受体", ipa: "rɪˈseptər", c: "pain receptors", e: "The brain doesn't have any pain receptors." },
-    { w: "dehydrated", p: "adj.", m: "脱水的", ipa: "ˌdiːhaɪˈdreɪtɪd", c: "get dehydrated", e: "Getting dehydrated affects your ability to think." }
-];
+        { w: "new", p: "adj.", m: "新的", c: "根据最新的研究，你的大脑...", e: "...according to new research.", ipa: "nuː" },
+        { w: "scan", p: "v.", m: "扫描；细看", c: "科学家扫描了约 4000 人的大脑...", e: "Scientists scanned the brains...", ipa: "skæn" },
+        { w: "rewire", p: "v.", m: "给…换新电线；重塑(神经)连接", c: "研究人员确定了大脑自我重塑的四个主要转折点...", e: "...when brains rewire themselves...", ipa: "ˌriːˈwaɪər" },
+        { w: "distinct", p: "adj.", m: "截然不同的；明显的", c: "这意味着人类大脑有五个截然不同的时期...", e: "...human brains have five distinct eras...", ipa: "dɪˈstɪŋkt" },
+        { w: "interpret", p: "v.", m: "解释；理解", c: "灰质是一种处理和解释信息的大脑组织...", e: "...brain tissue that processes and interprets information...", ipa: "ɪnˈtɜːrprət" },
+        { w: "synapse", p: "n.", m: "[解剖] 突触", c: "幼儿脑细胞之间的许多突触...", e: "...the many synapses ... between young children’s brain cells...", ipa: "ˈsaɪnæps" },
+        { w: "adolescence", p: "n.", m: "青春期", c: "第二个时期是“青春期”...", e: "The second era, adolescence...", ipa: "ˌædəˈlesns" },
+        { w: "stable", p: "adj.", m: "稳定的", c: "大脑变得更加稳定...", e: "The brain becomes more stable...", ipa: "ˈsteɪbl" },
+        { w: "context", p: "n.", m: "背景；环境；上下文", c: "这些时期提供了重要的背景...", e: "These eras provide important context...", ipa: "ˈkɑːntekst" },
+        { w: "vulnerable", p: "adj.", m: "易受伤害的；脆弱的", c: "或者更容易受到什么影响...", e: "...or more vulnerable to...", ipa: "ˈvʌlnərəbl" }
+    ];
     // [Audit 3: Syntax Localization]
     const SA_CHUNKS = [
-    { t: 'chunk-group', l: '主语 (Subject)', w: 'The \'wiring\'', txt: '“连线”' },
-    { t: 'chunk-group', l: '谓语 (Verb 1)', w: 'controls', txt: '控制' },
-    { t: 'chunk-group', l: '宾语从句 (Object Clause)', w: 'how the brain sends and receives signals', txt: '大脑如何收发信号' },
-    { t: 'chunk', l: '连词 (Conj)', w: 'and', txt: '并' },
-    { t: 'chunk-group', l: '谓语 (Verb 2)', w: 'affects', txt: '影响' },
-    { t: 'chunk-group', l: '宾语从句 (Object Clause)', w: 'how people experience the world, make decisions, and form memories.', txt: '人们如何体验世界...' }
-];
-    const SA_TRANS = "这种“连线”控制着大脑如何发送和接收信号，并影响人们如何体验世界、做出决定和形成记忆。";
+        { t: 'chunk-group', l: '主语', w: 'This', txt: '这' },
+        { t: 'chunk-group', l: '谓语', w: 'means', txt: '意味着' },
+        { t: 'bracket bg-clause-1', w: 'that' },
+        { t: 'chunk-group bg-clause-1', l: '主语', w: 'human brains', txt: '人类大脑' },
+        { t: 'chunk-group bg-clause-1', l: '谓语', w: 'have', txt: '有' },
+        { t: 'chunk-group bg-clause-1', l: '宾语', w: 'five distinct eras,', txt: '五个不同时期' },
+        { t: 'bracket bg-clause-1', w: ' ' },
+        { t: 'bracket bg-clause-2', w: 'which' },
+        { t: 'chunk-group bg-clause-2', l: '谓语', w: 'help', txt: '帮助' },
+        { t: 'chunk-group bg-clause-2', l: '宾语', w: 'scientists', txt: '科学家' },
+        { t: 'chunk-group bg-clause-2', l: '宾补', w: 'understand', txt: '理解' },
+        { t: 'bracket bg-clause-2', w: ' ' },
+        { t: 'chunk-group', l: '状语', w: 'how the brain is wired', txt: '大脑如何连接' },
+        { t: 'chunk-group', l: '状语', w: 'during different stages of life.', txt: '在生命不同阶段' }
+    ];
+    const SA_TRANS = "这意味着人类大脑有五个截然不同的“时期”，这有助于科学家了解大脑在生命的不同阶段是如何连接的。";
     const SA_STEPS = [
-    { type: 'bd-trunk', label: '主干结构', text: "The 'wiring' controls [Clause 1] and affects [Clause 2]. (主语 + 谓语1 + 宾语从句1 + 连词 + 谓语2 + 宾语从句2)" },
-    { type: 'bd-clause-1', label: '宾语从句1', text: "how the brain sends and receives signals (解释了controls的具体内容)" },
-    { type: 'bd-clause-2', label: '宾语从句2', text: "how people experience the world, make decisions, and form memories (解释了affects的具体对象，包含三个并列动作)" }
-];
+        { type: 'bd-trunk', label: '主句', text: 'This means... (这意味着...)' },
+        { type: 'bd-clause-1', label: '宾语从句', text: 'that human brains have five distinct eras (人类大脑有五个截然不同的时期)。此从句作为 means 的宾语。' },
+        { type: 'bd-clause-2', label: '定语从句', text: 'which help scientists understand... (这有助于科学家理解...)。which 指代前面的 eras，修饰 eras。' },
+        { type: 'bd-struct', label: '宾语从句', text: 'understand 后面接了一个 how 引导的宾语从句 "how the brain is wired" (大脑是如何连接的)。' }
+    ];
     const QUIZ_ITEMS = [
-    { q: "How many 'eras' does the human brain have?", a: "<span class='q-opt'>A. 3</span><span class='q-opt'>B. 4</span><span class='q-opt'>C. 5</span>" },
-    { q: "At what age does the brain enter 'adulthood'?", a: "<span class='q-opt'>A. 18</span><span class='q-opt'>B. 21</span><span class='q-opt'>C. 32</span>" },
-    { q: "What percentage of the brain is water?", a: "<span class='q-opt'>A. 50%</span><span class='q-opt'>B. 75%</span><span class='q-opt'>C. 90%</span>" },
-    { q: "Why can't the brain feel pain?", a: "<span class='q-opt'>A. It is too big</span><span class='q-opt'>B. It has no pain receptors</span><span class='q-opt'>C. It is protected by skull</span>" }
-];
+        { q: "When does the brain enter 'adult mode'?", a: "<span class='q-opt'>A. At age 18</span><span class='q-opt'>B. In your 20s</span><span class='q-opt'>C. In your 30s</span><span class='q-opt'>D. At age 66</span>" },
+        { q: "What happens to synapses during childhood (birth to age 9)?", a: "<span class='q-opt'>A. They increase rapidly</span><span class='q-opt'>B. They stay the same</span><span class='q-opt'>C. They start decreasing</span><span class='q-opt'>D. They disappear completely</span>" },
+        { q: "Which era is the longest in a person's life?", a: "<span class='q-opt'>A. Childhood</span><span class='q-opt'>B. Adolescence</span><span class='q-opt'>C. Adulthood</span><span class='q-opt'>D. Early aging</span>" }
+    ];
 
     // --- Core Logic ---
     function render() {
