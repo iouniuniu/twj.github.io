@@ -1,241 +1,256 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>The Week Junior Handout</title><link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700&family=Noto+Sans+SC:wght@300;400;500;700&family=Lato:wght@400;700;900&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet"><script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script><style>
-    :root {
-        /* --- 动态主题色 (由 JS 注入) --- */
-        --theme-color: #2c3e50; 
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Week Junior - New Driving Rules (V41.0 Fixed)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700&family=Noto+Sans+SC:wght@300;400;500;700&family=Lato:wght@400;700;900&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <style>
+        :root {
+            /* 动态主题色：交通/警示红 */
+            --theme-color: #c0392b; 
 
-        /* --- 严格词性配色 (固定) --- */
-        --bg-noun: #D6EAF8; /* 名-蓝 */
-        --bg-verb: #D5F5E3; /* 动-绿 */
-        --bg-adj: #E8DAEF;  /* 修饰-紫 */
+            /* 词性颜色 */
+            --t-subj: #C0392B; --t-verb: #2980B9; --t-obj: #27AE60; --t-mod: #D35400; --t-prep: #8E44AD; --t-conn: #7F8C8D;
+            
+            /* 词性背景 */
+            --bg-noun: #D6EAF8; --bg-verb: #D5F5E3; --bg-adj: #E8DAEF;
+            
+            /* 长难句背景 */
+            --bg-trunk: #EBF5FB; --bg-clause-1: #FEF5E7; --bg-clause-2: #E9F7EF;
+            
+            /* 边框色 */
+            --bd-trunk: #3498DB; --bd-clause-1: #F39C12; --bd-clause-2: #2ECC71; --bd-struct: #2C3E50;
+            
+            /* 通用 */
+            --text-main: #2c3e50; --bg: #ffffff; --supp-bg: #F0F8FF;
+            --p-w: 1080px; --p-h: 1440px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; }
+        body { background: #444; display: flex; flex-direction: column; align-items: center; padding: 40px 0; gap: 40px; font-family: 'Noto Sans SC', sans-serif; }
         
-        /* 词性文字颜色 */
-        --t-subj: #C0392B; --t-verb: #2980B9; --t-obj: #27AE60; --t-mod: #D35400; --t-prep: #8E44AD; --t-conn: #7F8C8D;
+        #status-bar { position: fixed; top: 0; left: 0; width: 100%; background: #e74c3c; color: white; text-align: center; padding: 10px; font-weight: bold; z-index: 9999; display: none; }
+        #loading-mask { position: fixed; inset: 0; background: white; z-index: 9998; display: flex; justify-content: center; align-items: center; font-size: 24pt; color: #555; }
+
+        .card { width: var(--p-w); height: var(--p-h); background: var(--bg); display: flex; flex-direction: column; overflow: hidden; position: relative; box-shadow: 0 30px 80px rgba(0,0,0,0.6); flex-shrink: 0; }
+        .card.cover-page { padding: 0; } .card.normal-page { padding: 50px 60px; }
+        .content-body { flex-grow: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 0; overflow: hidden; width: 100%; }
+        .cover-page .content-body { padding: 0 60px; } .normal-page .content-body { padding: 0; }
+
+        .hero-section { width: 100%; height: 960px; background: #e0e0e0; cursor: pointer; border-bottom: 8px solid var(--theme-color); position: relative; flex-shrink: 0; }
+        .hero-img { width: 100%; height: 100%; object-fit: cover; display: none; }
+        .hero-placeholder { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #777; font-size: 20pt; font-family: 'Lato'; text-align: center; border: 3px dashed #bbb; padding: 15px 30px; border-radius: 10px; }
         
-        /* 长难句背景 */
-        --bg-trunk: #EBF5FB; --bg-clause-1: #FEF5E7; --bg-clause-2: #E9F7EF;
-        /* 边框色 */
-        --bd-trunk: #3498DB; --bd-clause-1: #F39C12; --bd-clause-2: #2ECC71; --bd-struct: #2C3E50;
+        .cover-header { padding: 30px 60px 10px 60px; display: flex; flex-direction: column; align-items: center; text-align: center; flex-shrink: 0; }
+        .meta-tag { background: var(--theme-color); color: white; padding: 6px 20px; border-radius: 50px; font-family: 'Lato'; font-weight: 900; font-size: 12pt; margin-bottom: 15px; letter-spacing: 1px; }
+        .poster-title { font-family: 'Lora'; font-size: 60pt; font-weight: 700; color: var(--text-main); line-height: 1.0; margin-bottom: 10px; }
+        .poster-subtitle { font-family: 'Noto Sans SC'; font-size: 40pt; color: #5d6d7e; font-weight: 400; margin-bottom: 20px; position: relative; display: inline-block; }
+        .poster-subtitle::after { content: ""; display: block; width: 60px; height: 3px; background: var(--theme-color); margin: 10px auto 0 auto; }
+
+        .mini-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #ccc; padding-bottom: 15px; margin-bottom: 20px; height: 60px; flex-shrink: 0; width: 100%; }
+        .mini-title { font-family: 'Lora'; font-weight: 700; font-size: 16pt; color: var(--text-main); }
+        .continued-tag { font-family: 'Lato'; font-weight: 700; font-style: italic; background: transparent; padding: 5px 0; border-radius: 0; font-size: 11pt; color: #666; }
+
+        .row { display: flex; gap: 40px; width: 100%; padding: 20px 0; border-bottom: 1px solid #f9f9f9; align-items: flex-start; flex-shrink: 0; }
+        .col-eng { flex: 6; font-family: 'Lora'; font-size: 18pt; line-height: 1.8; text-align: justify; padding-right: 25px; border-right: 2px solid #f0f0f0; }
+        .col-chi { flex: 4; font-family: 'Noto Sans SC'; font-size: 16pt; line-height: 1.8; color: #5d6d7e; text-align: justify; font-weight: 400; padding-top: 2px; }
+
+        .row.supp-style { background: var(--supp-bg); padding: 25px; border-radius: 12px; margin: 15px 0; border: none; }
+        .row.supp-style .col-eng { border-right: 2px solid #aec6cf; font-size: 16pt; line-height: 1.6; }
+        .row.supp-style .col-chi { font-size: 14pt !important; line-height: 1.6; color: #555; }
+        h3 { font-family: 'Lato'; font-weight: 900; font-size: 18pt; color: var(--theme-color); margin: 0 0 10px 0; display: block; border-left: 8px solid var(--theme-color); padding-left: 15px; }
+        .row.supp-style h3 { font-size: 16pt !important; border-left-width: 5px; }
+
+        .hl { padding: 0 4px; border-radius: 4px; font-weight: 600; display: inline-block; }
+        .hl-n { background-color: var(--bg-noun); } .hl-v { background-color: var(--bg-verb); } .hl-adj { background-color: var(--bg-adj); }
+        sup { color: #555; font-size: 0.6em; vertical-align: super; font-weight: 700; margin-left: 2px; }
+
+        .app-h { font-size: 18pt; font-weight: 700; color: var(--text-main); border-left: 6px solid #555; padding-left: 12px; display: block; margin: 25px 0 20px 0; font-family: 'Noto Sans SC'; flex-shrink: 0; width: 100%; }
         
-        /* 通用布局 */
-        --text-main: #2c3e50; --bg: #ffffff; --supp-bg: #F0F8FF;
-        --p-w: 1080px; --p-h: 1440px;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; }
-    body { background: #444; display: flex; flex-direction: column; align-items: center; padding: 40px 0; gap: 40px; font-family: 'Noto Sans SC', sans-serif; }
-    
-    /* 容器 */
-    .card { width: var(--p-w); height: var(--p-h); background: var(--bg); display: flex; flex-direction: column; overflow: hidden; position: relative; box-shadow: 0 30px 80px rgba(0,0,0,0.6); flex-shrink: 0; }
-    .card.cover-page { padding: 0; } .card.normal-page { padding: 50px 60px; }
-    .content-body { flex-grow: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 0; overflow: hidden; width: 100%; }
-    .cover-page .content-body { padding: 0 60px; } .normal-page .content-body { padding: 0; }
+        .vocab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px 40px; width: 100%; margin-bottom: 30px; flex-shrink: 0; }
+        .vocab-item { background: #fff; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 5px; display: flex; flex-direction: column; gap: 6px; }
+        .v-line-1 { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+        .v-word { font-family: 'Lora'; font-weight: 700; font-size: 19pt; color: #2c3e50; padding: 0 5px; border-radius: 4px; }
+        .v-idx { background: #333; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 11pt; text-align: center; line-height: 22px; display: inline-block; transform: translateY(-2px); }
+        .v-ipa { font-family: 'Arial'; color: #95a5a6; font-size: 13pt; }
+        .v-mean { font-size: 15pt; color: #444; font-weight: 500; margin-left: auto; }
+        .v-pos { color: var(--theme-color); font-weight: bold; font-family: 'Times New Roman'; font-style: italic; font-size: 13pt; margin-right: 2px;}
+        .v-line-2 { font-size: 14pt; color: #d35400; font-family: 'Roboto Mono'; font-weight: 500; }
+        .v-line-3 { font-size: 14pt; color: #7f8c8d; font-style: italic; font-family: 'Lora'; line-height: 1.4; margin-top: 2px; }
 
-    /* 首页 (960px Height) */
-    .hero-section { width: 100%; height: 960px; background: #e0e0e0; cursor: pointer; border-bottom: 8px solid var(--theme-color); position: relative; flex-shrink: 0; }
-    .hero-img { width: 100%; height: 100%; object-fit: cover; display: none; }
-    .hero-placeholder { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #777; font-size: 20pt; font-family: 'Lato'; text-align: center; border: 3px dashed #bbb; padding: 15px 30px; border-radius: 10px; }
-    
-    .cover-header { padding: 30px 60px 10px 60px; display: flex; flex-direction: column; align-items: center; text-align: center; flex-shrink: 0; }
-    .meta-tag { background: var(--theme-color); color: white; padding: 6px 20px; border-radius: 50px; font-family: 'Lato'; font-weight: 900; font-size: 12pt; margin-bottom: 15px; letter-spacing: 1px; }
-    
-    /* V38: 60pt Title / 40pt Subtitle */
-    .poster-title { font-family: 'Lora'; font-size: 60pt; font-weight: 700; color: var(--text-main); line-height: 1.0; margin-bottom: 10px; }
-    .poster-subtitle { font-family: 'Noto Sans SC'; font-size: 40pt; color: #5d6d7e; font-weight: 400; margin-bottom: 20px; position: relative; display: inline-block; }
-    .poster-subtitle::after { content: ""; display: block; width: 60px; height: 3px; background: var(--theme-color); margin: 10px auto 0 auto; }
+        .sa-sentence-wrapper { display: flex; flex-wrap: wrap; column-gap: 0; row-gap: 35px; line-height: 1.5; margin-bottom: 25px; padding-top: 10px; align-items: flex-end; width: 100%; }
+        .chunk { display: inline-flex; flex-direction: column; align-items: center; margin: 0; vertical-align: bottom; }
+        .chunk-text { font-family: 'Lora'; font-size: 20pt; color: #2c3e50; padding: 4px 5px; font-weight: 500; border-radius: 0; }
+        .chunk-group { border-bottom: 3px solid #ccc; padding-bottom: 2px; margin: 0 3px; }
+        .chunk-group .chunk-text { padding-bottom: 0; } 
+        .chunk-lbl { font-size: 10pt; font-family: 'Noto Sans SC'; font-weight: 800; margin-top: 4px; white-space: nowrap; width: 100%; text-align: center; height: 15px; }
+        .chunk-lbl:empty { height: 0; margin-top: 0; }
+        .bracket { font-size: 20pt; color: #d35400; font-family: 'Lato'; font-weight: 300; padding: 4px 6px; display: inline-block; }
+        
+        .bg-trunk .chunk-text { background-color: var(--bg-trunk); }
+        .bg-clause-1 .chunk-text { background-color: var(--bg-clause-1); }
+        .bg-clause-1.bracket { background-color: var(--bg-clause-1); }
+        .bg-clause-2 .chunk-text { background-color: var(--bg-clause-2); }
+        .bg-clause-2.bracket { background-color: var(--bg-clause-2); }
+        
+        .l-subj { color: var(--t-subj); border-color: var(--t-subj); } 
+        .l-verb { color: var(--t-verb); border-color: var(--t-verb); } 
+        .l-obj { color: var(--t-obj); border-color: var(--t-obj); } 
+        .l-conn { color: var(--t-conn); border-color: var(--t-conn); }
 
-    /* 续页头 (No bg) */
-    .mini-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #ccc; padding-bottom: 15px; margin-bottom: 20px; height: 60px; flex-shrink: 0; width: 100%; }
-    .mini-title { font-family: 'Lora'; font-weight: 700; font-size: 16pt; color: var(--text-main); }
-    .continued-tag { font-family: 'Lato'; font-weight: 700; font-style: italic; background: transparent; padding: 5px 0; border-radius: 0; font-size: 11pt; color: #666; }
+        .sa-step-box, .q-card { background: #fdfefe; padding: 20px 25px; border-radius: 8px; border: 1px solid #eee; box-shadow: 2px 2px 8px rgba(0,0,0,0.02); margin-bottom: 12px; width: 100%; }
+        .bd-struct { border-left: 5px solid var(--bd-struct); }
+        .bd-trunk { border-left: 5px solid var(--bd-trunk); background-color: #FDFEFE; }
+        .bd-clause-1 { border-left: 5px solid var(--bd-clause-1); background-color: #FEF9E7; }
+        .bd-clause-2 { border-left: 5px solid var(--bd-clause-2); background-color: #E9F7EF; }
+        .q-card { border-left: 5px solid var(--theme-color); }
+        
+        .sa-trans { font-size: 16pt; color: #444; font-weight: 600; font-style: italic; margin-bottom: 20px; padding: 15px; border: 1px dashed #ccc; border-radius: 8px; width: 100%; background: #fff; }
+        .sa-step { margin-bottom: 12px; font-size: 15pt; color: #555; line-height: 1.6; }
+        .sa-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11pt; margin-right: 10px; font-weight: 800; color: #fff; background: #555; font-family: 'Lato'; text-transform: uppercase; }
 
-    /* 正文 */
-    .row { display: flex; gap: 40px; width: 100%; padding: 20px 0; border-bottom: 1px solid #f9f9f9; align-items: flex-start; flex-shrink: 0; }
-    .col-eng { flex: 6; font-family: 'Lora'; font-size: 18pt; line-height: 1.8; text-align: justify; padding-right: 25px; border-right: 2px solid #f0f0f0; }
-    .col-chi { flex: 4; font-family: 'Noto Sans SC'; font-size: 16pt; line-height: 1.8; color: #5d6d7e; text-align: justify; font-weight: 400; padding-top: 2px; }
+        .q-header { display: flex; align-items: baseline; margin-bottom: 5px; }
+        .q-num { color: var(--theme-color); font-size: 18pt; font-weight: 900; margin-right: 10px; font-family: 'Lato'; }
+        .q-text { font-size: 18pt; color: #2c3e50; font-weight: 600; font-family: 'Lora'; }
+        .q-opts { display: flex; gap: 25px; flex-wrap: wrap; margin-left: 0; margin-top: 5px; }
+        .q-opt { font-size: 15pt; color: #555; font-family: 'Lato'; }
+        .q-blank { border-bottom: 2px solid #333; width: 100px; display: inline-block; }
 
-    /* 边栏 (一致布局 + 动态色) */
-    .row.supp-style { background: var(--supp-bg); padding: 25px; border-radius: 12px; margin: 15px 0; border: none; }
-    .row.supp-style .col-eng { border-right: 2px solid #aec6cf; font-size: 16pt; line-height: 1.6; }
-    .row.supp-style .col-chi { font-size: 14pt !important; line-height: 1.6; color: #555; }
-    h3 { font-family: 'Lato'; font-weight: 900; font-size: 18pt; color: var(--theme-color); margin: 0 0 10px 0; display: block; border-left: 8px solid var(--theme-color); padding-left: 15px; }
-    .row.supp-style h3 { font-size: 16pt !important; border-left-width: 5px; }
+        .footer { margin-top: auto; display: flex; justify-content: space-between; border-top: 1px solid #eee; padding: 0 60px; font-size: 11pt; color: #95a5a6; flex-shrink: 0; height: 70px; align-items: center; width: 100%; box-sizing: border-box; font-family: 'Lato'; }
+        .normal-page .footer { padding: 0; }
+        .footer-right { font-weight: 700; color: #333; }
 
-    /* 词性高亮 (必须严格对应) */
-    .hl { padding: 0 4px; border-radius: 4px; font-weight: 600; display: inline-block; }
-    .hl-n { background-color: var(--bg-noun); } 
-    .hl-v { background-color: var(--bg-verb); } 
-    .hl-adj { background-color: var(--bg-adj); }
-    sup { color: #555; font-size: 0.6em; vertical-align: super; font-weight: 700; margin-left: 2px; }
+        #btn-download { position: fixed; bottom: 20px; right: 20px; z-index: 9999; padding: 15px 25px; background: #2c3e50; color: white; border: none; border-radius: 50px; cursor: pointer; font-family: sans-serif; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.2s; }
+        #btn-download:hover { transform: scale(1.05); background: #34495e; }
+        #btn-download:active { transform: scale(0.95); }
+    </style>
+</head>
+<body>
+<div id="status-bar"></div>
+<div id="loading-mask">Generating Content...</div>
+<button id="btn-download" onclick="downloadAllPages()">📸 Save Pages</button>
+<div id="card-container"></div>
+<input type="file" id="upload-trigger" style="display:none" onchange="loadFile(event)">
 
-    /* 附录 */
-    .app-h { font-size: 18pt; font-weight: 700; color: var(--text-main); border-left: 6px solid #555; padding-left: 12px; display: block; margin: 25px 0 20px 0; font-family: 'Noto Sans SC'; flex-shrink: 0; width: 100%; }
-    
-    /* 词汇表 */
-    .vocab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px 40px; width: 100%; margin-bottom: 30px; flex-shrink: 0; }
-    .vocab-item { background: #fff; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 5px; display: flex; flex-direction: column; gap: 6px; }
-    .v-line-1 { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-    .v-word { font-family: 'Lora'; font-weight: 700; font-size: 19pt; color: #2c3e50; padding: 0 5px; border-radius: 4px; }
-    .v-idx { background: #333; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 11pt; text-align: center; line-height: 22px; display: inline-block; transform: translateY(-2px); }
-    .v-ipa { font-family: 'Arial'; color: #95a5a6; font-size: 13pt; }
-    .v-mean { font-size: 15pt; color: #444; font-weight: 500; margin-left: auto; }
-    .v-pos { color: var(--theme-color); font-weight: bold; font-family: 'Times New Roman'; font-style: italic; font-size: 13pt; margin-right: 2px;}
-    .v-line-2 { font-size: 14pt; color: #d35400; font-family: 'Roboto Mono'; font-weight: 500; }
-    .v-line-3 { font-size: 14pt; color: #7f8c8d; font-style: italic; font-family: 'Lora'; line-height: 1.4; margin-top: 2px; }
-
-    /* 长难句 (Chunk Grouping) */
-    .sa-sentence-wrapper { display: flex; flex-wrap: wrap; column-gap: 0; row-gap: 35px; line-height: 1.5; margin-bottom: 25px; padding-top: 10px; align-items: flex-end; width: 100%; }
-    .chunk { display: inline-flex; flex-direction: column; align-items: center; margin: 0; vertical-align: bottom; }
-    .chunk-text { font-family: 'Lora'; font-size: 20pt; color: #2c3e50; padding: 4px 5px; font-weight: 500; border-radius: 0; }
-    .chunk-group { border-bottom: 3px solid #ccc; padding-bottom: 2px; margin: 0 3px; }
-    .chunk-group .chunk-text { padding-bottom: 0; } 
-    .chunk-lbl { font-size: 10pt; font-family: 'Noto Sans SC'; font-weight: 800; margin-top: 4px; white-space: nowrap; width: 100%; text-align: center; height: 15px; }
-    .chunk-lbl:empty { height: 0; margin-top: 0; }
-    .bracket { font-size: 20pt; color: #d35400; font-family: 'Lato'; font-weight: 300; padding: 4px 6px; display: inline-block; }
-    
-    .bg-trunk .chunk-text { background-color: var(--bg-trunk); }
-    .bg-clause-1 .chunk-text { background-color: var(--bg-clause-1); }
-    .bg-clause-1.bracket { background-color: var(--bg-clause-1); }
-    .bg-clause-2 .chunk-text { background-color: var(--bg-clause-2); }
-    .bg-clause-2.bracket { background-color: var(--bg-clause-2); }
-    
-    .l-subj { color: var(--t-subj); border-color: var(--t-subj); } 
-    .l-verb { color: var(--t-verb); border-color: var(--t-verb); } 
-    .l-obj { color: var(--t-obj); border-color: var(--t-obj); } 
-    .l-conn { color: var(--t-conn); border-color: var(--t-conn); }
-
-    /* 解析 & Quiz */
-    .sa-step-box, .q-card { background: #fdfefe; padding: 20px 25px; border-radius: 8px; border: 1px solid #eee; box-shadow: 2px 2px 8px rgba(0,0,0,0.02); margin-bottom: 12px; width: 100%; }
-    .bd-struct { border-left: 5px solid var(--bd-struct); }
-    .bd-trunk { border-left: 5px solid var(--bd-trunk); background-color: #FDFEFE; }
-    .bd-clause-1 { border-left: 5px solid var(--bd-clause-1); background-color: #FEF9E7; }
-    .bd-clause-2 { border-left: 5px solid var(--bd-clause-2); background-color: #E9F7EF; }
-    .q-card { border-left: 5px solid var(--theme-color); }
-    
-    .sa-trans { font-size: 16pt; color: #444; font-weight: 600; font-style: italic; margin-bottom: 20px; padding: 15px; border: 1px dashed #ccc; border-radius: 8px; width: 100%; background: #fff; }
-    .sa-step { margin-bottom: 12px; font-size: 15pt; color: #555; line-height: 1.6; }
-    .sa-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11pt; margin-right: 10px; font-weight: 800; color: #fff; background: #555; font-family: 'Lato'; text-transform: uppercase; }
-
-    /* Quiz 内容 */
-    .q-header { display: flex; align-items: baseline; margin-bottom: 5px; }
-    .q-num { color: var(--theme-color); font-size: 18pt; font-weight: 900; margin-right: 10px; font-family: 'Lato'; }
-    .q-text { font-size: 18pt; color: #2c3e50; font-weight: 600; font-family: 'Lora'; }
-    .q-opts { display: flex; gap: 25px; flex-wrap: wrap; margin-left: 0; margin-top: 5px; }
-    .q-opt { font-size: 15pt; color: #555; font-family: 'Lato'; }
-    .q-blank { border-bottom: 2px solid #333; width: 100px; display: inline-block; }
-
-    /* 页脚 */
-    .footer { margin-top: auto; display: flex; justify-content: space-between; border-top: 1px solid #eee; padding: 0 60px; font-size: 11pt; color: #95a5a6; flex-shrink: 0; height: 70px; align-items: center; width: 100%; box-sizing: border-box; font-family: 'Lato'; }
-    .normal-page .footer { padding: 0; }
-    .footer-right { font-weight: 700; color: #333; }
-
-    /* 截图按钮 */
-    #btn-download { position: fixed; bottom: 20px; right: 20px; z-index: 9999; padding: 15px 25px; background: #2c3e50; color: white; border: none; border-radius: 50px; cursor: pointer; font-family: sans-serif; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.2s; }
-    #btn-download:hover { transform: scale(1.05); background: #34495e; }
-    #btn-download:active { transform: scale(0.95); }</style><script>
+<script>
     // --- Global Error Trap ---
     window.onerror = function(message, source, lineno, colno, error) {
-        alert("Render Error: " + message + "\\nLine: " + lineno);
+        document.getElementById('loading-mask').style.display = 'none';
+        document.getElementById('status-bar').style.display = 'block';
+        document.getElementById('status-bar').innerText = "Render Error: " + message + " (Line: " + lineno + ")";
     };
 
     // --- Phase 4: Data Injection ---
-    const META = { 
-        issue: "17 January 2026", 
-        title: "New Driving Rules Proposed", 
-        subtitle: "UK Road Safety Updates",
-        themeColor: "#E67E22" // Safety Orange
+    const META = {
+        issue: "ISSUE 17 JAN 2026",
+        title: "New Driving Rules Proposed",
+        subtitle: "英国拟议新驾驶规则",
+        themeColor: "#c0392b"
     };
-    
-    // 正文数据: 必须完整提取，必须检查双语高亮是否一一对应
+
+    // Escape Note: all single quotes inside text must be escaped (e.g. ' -> \')
     const MAIN_CONTENT = [
-        {
-            type: "para",
-            eng: "The UK Government has <span class='hl hl-v'>proposed</span> lots of new <span class='hl hl-n'>rules</span> for drivers.",
-            chi: "英国政府为司机<span class='hl hl-v'>提议</span>了许多新<span class='hl hl-n'>规定</span>。"
-        },
-        {
-            type: "para",
-            eng: "These include drivers over the age of 70 having their <span class='hl hl-n'>eyesight</span> checked every three years, and <span class='hl hl-adj'>learner</span> drivers having to wait up to six months after passing their theory test before taking a <span class='hl hl-adj'>practical</span> driving test.",
-            chi: "其中包括 70 岁以上的司机每三年检查一次<span class='hl hl-n'>视力</span>，以及<span class='hl hl-adj'>实习</span>司机在通过理论考试后必须等待长达六个月才能参加<span class='hl hl-adj'>实操</span>驾驶考试。"
-        },
-        {
-            type: "para",
-            eng: "People who are <span class='hl hl-v'>caught</span> breaking the law while driving could face <span class='hl hl-adj'>harsher</span> <span class='hl hl-n'>punishments</span>.",
-            chi: "开车时违法被<span class='hl hl-v'>抓</span>的人可能会面临<span class='hl hl-adj'>更严厉的</span><span class='hl hl-n'>惩罚</span>。"
-        },
-        {
-            type: "para",
-            eng: "It’s hoped these new road safety <span class='hl hl-n'>regulations</span> could <span class='hl hl-v'>reduce</span> the number of accidents and save lives.",
-            chi: "希望这些新的道路安全<span class='hl hl-n'>法规</span>能够<span class='hl hl-v'>减少</span>事故数量并挽救生命。"
-        },
-        {
-            type: "supp",
-            eng: "<h3>Learner drivers face new rules</h3>Learner drivers may have to wait before their final test.",
-            chi: "<h3>实习司机面临新规</h3>实习司机可能需要在参加最终考试前等待一段时间。"
-        }
+        { eng: `The UK Government has <span class="hl hl-v">proposed</span><sup>①</sup> lots of new rules for drivers.`, chi: `英国政府为司机<span class="hl hl-v">提出</span><sup>①</sup>了许多新规则。` },
+        { eng: `These include drivers over the age of 70 having their <span class="hl hl-n">eyesight</span><sup>②</sup> checked every three years, and learner drivers having to wait up to six months after passing their theory test before taking a <span class="hl hl-adj">practical</span><sup>③</sup> driving test.`, chi: `这些规则包括 70 岁以上的司机每三年检查一次<span class="hl hl-n">视力</span><sup>②</sup>，以及实习司机在通过理论考试后必须等待长达六个月才能参加<span class="hl hl-adj">实际</span><sup>③</sup>路考。` },
+        { eng: `People who are caught breaking the law while driving could face <span class="hl hl-adj">harsher</span><sup>④</sup> <span class="hl hl-n">punishments</span><sup>⑤</sup>.`, chi: `开车时违法的司机可能会面临<span class="hl hl-adj">更严厉的</span><sup>④</sup><span class="hl hl-n">惩罚</span><sup>⑤</sup>。` },
+        { eng: `It\'s hoped these new road safety <span class="hl hl-n">regulations</span><sup>⑥</sup> could <span class="hl hl-v">reduce</span><sup>⑦</sup> the number of accidents and save lives.`, chi: `希望这些新的道路安全<span class="hl hl-n">法规</span><sup>⑥</sup>能够<span class="hl hl-v">减少</span><sup>⑦</sup>事故数量并挽救生命。` }
     ];
 
     const VOCAB_LIST = [
-        { w: "propose", ipa: "prəˈpəʊz", p: "v. 提议", m: "To suggest a plan or idea.", c: "pro(forward) + pose(put)", e: "The UK Government has proposed lots of new rules." },
-        { w: "eyesight", ipa: "ˈaɪsaɪt", p: "n. 视力", m: "The ability to see.", c: "eye(眼睛) + sight(看见)", e: "Drivers over 70 must have their eyesight checked." },
-        { w: "practical", ipa: "ˈpræktɪkəl", p: "adj. 实操的", m: "Relating to what is real or actual.", c: "pract(do) + ical", e: "...before taking a practical driving test." },
-        { w: "harsh", ipa: "hɑːʃ", p: "adj. 严厉的", m: "Cruel or severe.", c: "Middle English 'harsk'", e: "People could face harsher punishments." },
-        { w: "regulation", ipa: "ˌrɛɡjʊˈleɪʃən", p: "n. 法规", m: "A rule or directive made and maintained by an authority.", c: "reg(rule) + ula + tion", e: "These new road safety regulations could reduce accidents." }
+        { w: "Propose", ipa: "/prəˈpəʊz/", p: "v.", m: "提议", c: "propose rules", e: "He proposed a new plan." },
+        { w: "Eyesight", ipa: "/ˈaɪsaɪt/", p: "n.", m: "视力", c: "good eyesight", e: "His eyesight is failing." },
+        { w: "Practical", ipa: "/ˈpræktɪkl/", p: "adj.", m: "实际的", c: "practical test", e: "Gain practical experience." },
+        { w: "Harsh", ipa: "/hɑːʃ/", p: "adj.", m: "严厉的", c: "harsh punishment", e: "The reality is harsh." },
+        { w: "Punishment", ipa: "/ˈpʌnɪʃmənt/", p: "n.", m: "惩罚", c: "face punishment", e: "The punishment was severe." },
+        { w: "Regulation", ipa: "/ˌreɡjuˈleɪʃn/", p: "n.", m: "法规", c: "safety regulations", e: "Follow the regulations." },
+        { w: "Reduce", ipa: "/rɪˈdjuːs/", p: "v.", m: "减少", c: "reduce accidents", e: "Reduce the price." }
     ];
 
-    // 长难句: These include drivers over the age of 70 having their eyesight checked...
     const SA_CHUNKS = [
-        { t: "chunk", w: "These", l: "Subj" },
-        { t: "chunk", w: "include", l: "Verb" },
-        { t: "chunk-group bg-clause-1", txt: "List Item A", w: "", l: "" },
-        { t: "chunk bg-clause-1", w: "drivers", l: "" },
-        { t: "chunk bg-clause-1", w: "over the age of 70", l: "" },
-        { t: "chunk bg-clause-1", w: "having their eyesight checked", l: "" },
-        { t: "chunk", w: ",", l: "" },
-        { t: "chunk l-conn", w: "and", l: "Conj" },
-        { t: "chunk-group bg-clause-2", txt: "List Item B", w: "", l: "" },
-        { t: "chunk bg-clause-2", w: "learner drivers", l: "" },
-        { t: "chunk bg-clause-2", w: "having to wait", l: "" },
-        { t: "chunk bg-clause-2", w: "up to six months", l: "" },
-        { t: "chunk bg-clause-2", w: "after passing their theory test", l: "" },
-        { t: "chunk", w: ".", l: "" }
+        { t: "chunk-group bg-trunk", l: "l-subj", txt: "主语", w: "People" },
+        { t: "bg-clause-1 bracket", w: "(" },
+        { t: "bg-clause-1", w: "who" },
+        { t: "bg-clause-1", w: "are" },
+        { t: "bg-clause-1", w: "caught" },
+        { t: "bg-clause-1", w: "breaking" },
+        { t: "bg-clause-1", w: "the" },
+        { t: "bg-clause-1", w: "law" },
+        { t: "bg-clause-1 bracket", w: ")" },
+        
+        { t: "chunk-group bg-trunk", l: "l-verb", txt: "谓语", w: "could face" },
+        { t: "chunk-group bg-trunk", l: "l-obj", txt: "宾语", w: "harsher punishments" },
+        { t: "bg-trunk", w: "." }
     ];
-
-    const SA_TRANS = "其中包括70岁以上的司机每三年检查一次视力，以及实习司机在通过理论考试后必须等待六个月才能参加路考。";
-
+    
+    const SA_TRANS = "💡 译文：开车时违法的司机可能会面临更严厉的惩罚。";
+    
     const SA_STEPS = [
-        { type: "bd-trunk", label: "MAIN STRUCTURE", text: "The sentence uses the verb <b>include</b> to list two main changes." },
-        { type: "bd-clause-1", label: "GROUP 1", text: "<b>Drivers over 70:</b> Requirement to have eyesight checked every 3 years." },
-        { type: "bd-clause-2", label: "GROUP 2", text: "<b>Learner drivers:</b> A mandatory waiting period (6 months) between theory and practical tests." }
+        { type: "bd-struct", label: "结构分析", text: "<strong>句型判断</strong><br>本句是包含定语从句的复合句。主句的结构是：主语 (People) + 谓语 (could face) + 宾语 (punishments)。" },
+        { type: "bd-clause-1", label: "定语从句", text: "<strong>修饰部分</strong><br>橙色括号内的 <em>who are caught breaking the law...</em> 是一个由 <em>who</em> 引导的定语从句，用来修饰主语 <em>People</em>，明确指代那些“被抓到违法的人”。" },
+        { type: "bd-trunk", label: "核心含义", text: "<strong>主干部分</strong><br>去掉修饰语后，句子的核心意思是“人们可能面临更严厉的惩罚”。" }
     ];
 
     const QUIZ_ITEMS = [
-        { q: "How often do drivers over 70 need to check their eyesight?", a: "<span class='q-opt'>A) Every year</span> <span class='q-opt'>B) Every 3 years</span> <span class='q-opt'>C) Every 5 years</span>" },
-        { q: "What is the proposed wait time for learner drivers?", a: "<span class='q-opt'>A) 1 month</span> <span class='q-opt'>B) 3 months</span> <span class='q-opt'>C) 6 months</span>" }
+        { q: "Who needs eyesight checks every 3 years?", a: "<span class='q-opt'>A. Drivers over 70</span> <span class='q-opt'>B. Learners</span>" },
+        { q: "How long might learners have to wait?", a: "<span class='q-opt'>A. 3 months</span> <span class='q-opt'>B. 6 months</span>" },
+        { q: "What is the goal of the new rules?", a: "<span class='q-opt'>A. Save money</span> <span class='q-opt'>B. Save lives</span>" }
     ];
 
     // --- Core Logic ---
     function render() {
-        try {
-            document.documentElement.style.setProperty('--theme-color', META.themeColor);
-            const root = document.getElementById('card-container');
-            let cardIdx = 1;
-            let currentCard = createCoverPage();
-            root.appendChild(currentCard);
-            let container = currentCard.querySelector('.content-body');
-            const SAFE_BOTTOM = 1350; 
+        // --- Fix: Declare state variables OUTSIDE try block ---
+        let cardIdx = 1;
+        let currentCard;
+        let container;
+        const SAFE_BOTTOM = 1350; 
 
-            // 1. Content
-            if (MAIN_CONTENT && MAIN_CONTENT.length > 0) {
-                MAIN_CONTENT.forEach(item => {
-                    const row = createContentRow(item);
-                    container.appendChild(row);
-                    checkAndMove(row, SAFE_BOTTOM);
-                });
+        // Define helpers inside render so they share scope
+        function createNewPage() {
+            cardIdx++; 
+            currentCard = createNormalPage(cardIdx);
+            document.getElementById('card-container').appendChild(currentCard);
+            container = currentCard.querySelector('.content-body');
+        }
+
+        function checkAndMove(el, limit) {
+            const rect = el.getBoundingClientRect();
+            const cardTop = currentCard.getBoundingClientRect().top;
+            if ((rect.bottom - cardTop) > limit) {
+                container.removeChild(el); 
+                createNewPage(); 
+                container.appendChild(el);
+            }
+        }
+
+        function appendWithCheck(el) {
+            container.appendChild(el);
+            checkAndMove(el, SAFE_BOTTOM);
+        }
+
+        try {
+            // [Phase 6: Data Integrity Check]
+            if (!MAIN_CONTENT || MAIN_CONTENT.length === 0) {
+                throw new Error("MAIN_CONTENT is empty. Please check data injection.");
             }
 
-            cardIdx++;
-            currentCard = createNormalPage(cardIdx);
+            document.documentElement.style.setProperty('--theme-color', META.themeColor);
+            const root = document.getElementById('card-container');
+            
+            // Initial Page Setup
+            currentCard = createCoverPage();
             root.appendChild(currentCard);
             container = currentCard.querySelector('.content-body');
+
+            // 1. Content
+            MAIN_CONTENT.forEach(item => {
+                const row = createContentRow(item);
+                container.appendChild(row);
+                checkAndMove(row, SAFE_BOTTOM);
+            });
+
+            // Start new page for Appendix
+            createNewPage();
 
             // 2. Vocab
             appendWithCheck(createTitle('中考高频词汇 (Vocab)'));
@@ -245,7 +260,8 @@
                 VOCAB_LIST.forEach((v, i) => {
                     const item = createVocabItem(v, i+1); grid.appendChild(item);
                     if ((grid.getBoundingClientRect().bottom - currentCard.getBoundingClientRect().top) > SAFE_BOTTOM) {
-                        grid.removeChild(item); createNewPage();
+                        grid.removeChild(item); 
+                        createNewPage();
                         grid = document.createElement('div'); grid.className = 'vocab-grid';
                         container.appendChild(grid); grid.appendChild(item);
                     }
@@ -262,7 +278,8 @@
                     if (el) { 
                         saWrapper.appendChild(el);
                         if ((saWrapper.getBoundingClientRect().bottom - currentCard.getBoundingClientRect().top) > SAFE_BOTTOM) {
-                            saWrapper.removeChild(el); createNewPage();
+                            saWrapper.removeChild(el); 
+                            createNewPage();
                             saWrapper = document.createElement('div'); saWrapper.className = 'sa-sentence-wrapper';
                             container.appendChild(saWrapper); saWrapper.appendChild(el);
                         }
@@ -274,7 +291,7 @@
             appendWithCheck(transEl);
 
             if (SA_STEPS) {
-                SA_STEPS.forEach(step => { const el = createSaStep(step); container.appendChild(el); checkAndMove(el, SAFE_BOTTOM); });
+                SA_STEPS.forEach(step => { const el = createSaStep(step); appendWithCheck(el); });
             }
 
             // 4. Quiz
@@ -283,30 +300,24 @@
                 QUIZ_ITEMS.forEach((q, i) => {
                     const qCard = document.createElement('div'); qCard.className = 'q-card';
                     qCard.innerHTML = `<div class="q-header"><div class="q-num">${i+1}</div><div class="q-text">${q.q}</div></div><div class="q-opts">${q.a}</div>`;
-                    container.appendChild(qCard); checkAndMove(qCard, SAFE_BOTTOM);
+                    appendWithCheck(qCard);
                 });
             }
 
             updateFooters(cardIdx);
+            
+            // Remove loading mask if successful
+            document.getElementById('loading-mask').style.display = 'none';
 
-            function createNewPage() {
-                cardIdx++; currentCard = createNormalPage(cardIdx);
-                root.appendChild(currentCard); container = currentCard.querySelector('.content-body');
-            }
-            function checkAndMove(el, limit) {
-                const rect = el.getBoundingClientRect();
-                const cardTop = currentCard.getBoundingClientRect().top;
-                if ((rect.bottom - cardTop) > limit) {
-                    container.removeChild(el); createNewPage(); container.appendChild(el);
-                }
-            }
-            function appendWithCheck(el) { container.appendChild(el); checkAndMove(el, SAFE_BOTTOM); }
         } catch(e) {
             console.error(e);
-            alert("Render Error: " + e.message);
+            document.getElementById('loading-mask').style.display = 'none';
+            document.getElementById('status-bar').style.display = 'block';
+            document.getElementById('status-bar').innerText = "Render Error: " + e.message;
         }
     }
 
+    // --- Generators ---
     function createCoverPage() {
         const d = document.createElement('div'); d.className = 'card cover-page';
         d.innerHTML = `<div class="hero-section" onclick="document.getElementById('upload-trigger').click()"><img id="hero-img" class="hero-img"><div class="hero-placeholder" id="hero-txt">Tap to Upload Cover</div></div><div class="cover-header"><div class="meta-tag">${META.issue}</div><div class="poster-title">${META.title}</div><div class="poster-subtitle">${META.subtitle}</div></div><div class="content-body" style="padding:0 60px;"></div><div class="footer"><span class="footer-left">Designed for Educational Purpose</span><span class="footer-right page-num"></span></div>`;
@@ -337,20 +348,14 @@
     }
     
     function createSaChunk(c) {
-        // [Safety Fix]
         if (!c || !c.t) return null;
-
-        const d = document.createElement('div'); 
-        d.className = `chunk ${c.t}`;
-        
+        const d = document.createElement('div'); d.className = `chunk ${c.t}`;
         if (c.t.includes('chunk-group')) {
             const color = c.l ? `var(--${c.l.replace('l-', 't-')})` : '#ccc';
             d.style.borderBottomColor = color;
         }
-
         const label = c.l ? c.l : '';
         const txt = c.txt ? c.txt : '';
-        
         d.innerHTML = `<span class="chunk-lbl ${label}">${txt}</span><span class="chunk-text">${c.w}</span>`;
         return d;
     }
@@ -371,26 +376,15 @@
         try {
             const cards = document.querySelectorAll('.card');
             for (let i = 0; i < cards.length; i++) {
-                const canvas = await html2canvas(cards[i], {
-                    scale: 2, 
-                    useCORS: true, 
-                    allowTaint: false, 
-                    backgroundColor: '#ffffff', 
-                    logging: false
-                });
-
+                const canvas = await html2canvas(cards[i], { scale: 2, useCORS: true, allowTaint: false, backgroundColor: '#ffffff', logging: false });
                 canvas.toBlob(function(blob) {
-                    if (!blob) {
-                        alert("Security Error: Please open this HTML with a Local Server (e.g., Live Server in VS Code). File:// protocol prevents saving.");
-                        return;
-                    }
+                    if (!blob) { alert("Security Error: Use Local Server."); return; }
                     const link = document.createElement('a');
                     link.download = `TheWeekJunior_Page_${i + 1}.png`;
                     link.href = URL.createObjectURL(blob);
                     link.click();
                     setTimeout(() => URL.revokeObjectURL(link.href), 1000);
                 }, 'image/png');
-                
                 await new Promise(r => setTimeout(r, 500));
             }
         } catch (e) {
@@ -404,4 +398,7 @@
     }
 
     window.loadFile = function(e) { document.getElementById('hero-img').src = URL.createObjectURL(e.target.files[0]); document.getElementById('hero-img').style.display='block'; document.getElementById('hero-txt').style.display='none'; };
-    window.onload = render;</script><div id="card-container"></div><input type="file" id="upload-trigger" accept="image/*" style="display:none" onchange="loadFile(event)"><button id="btn-download" onclick="downloadAllPages()">Download Images</button></body></html>
+    window.onload = render;
+</script>
+</body>
+</html>
