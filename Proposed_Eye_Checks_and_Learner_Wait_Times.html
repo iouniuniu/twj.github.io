@@ -19,6 +19,7 @@
             --font-stack: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
         }
 
+        /* 基础样式 */
         body {
             font-family: var(--font-stack);
             background-color: var(--bg-color);
@@ -26,6 +27,8 @@
             margin: 0;
             padding: 0;
             height: 100vh;
+            /* 防止iOS回弹 */
+            overscroll-behavior: none; 
             overflow: hidden;
             display: flex;
             flex-direction: column;
@@ -50,15 +53,14 @@
             100% { transform: scale(1.1); }
         }
 
-        /* 顶部区域 */
         .player-header {
-            padding: 40px 20px 10px 20px;
+            padding: 40px 20px 20px 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
             z-index: 10;
-            transition: all 0.5s ease;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+            transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
             flex-shrink: 0;
         }
 
@@ -71,7 +73,7 @@
             overflow: hidden;
             background-color: #333;
             position: relative;
-            transition: all 0.5s ease;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         .artwork-img {
@@ -81,10 +83,7 @@
             display: block;
         }
 
-        .track-info { 
-            text-align: center; 
-            transition: all 0.5s ease;
-        }
+        .track-info { text-align: center; transition: all 0.5s ease; }
         .track-title { font-size: 20px; font-weight: 800; margin: 0; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
         .track-artist { font-size: 14px; color: rgba(255,255,255,0.9); margin-top: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
         .track-subtitle { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 4px; font-weight: 400; letter-spacing: 0.5px; }
@@ -108,13 +107,12 @@
         .progress-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; margin-bottom: 20px; cursor: pointer; }
         .progress-fill { height: 100%; background: white; border-radius: 2px; width: 0%; transition: width 0.1s linear; }
 
-        /* 歌词区域 */
         .transcript-container {
             flex: 1;
             overflow-y: auto;
-            padding: 20px 30px 150px 30px;
-            mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
-            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+            padding: 10px 30px 150px 30px;
+            mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
             scroll-behavior: smooth;
             transition: all 0.5s ease;
         }
@@ -128,7 +126,7 @@
             transform: scale(0.98);
             transform-origin: left center;
             cursor: pointer;
-            scroll-margin-top: 150px; /* 默认安全距离 */
+            scroll-margin-top: 120px; 
         }
 
         .transcript-item.active {
@@ -193,10 +191,10 @@
         .overlay-btn {
             background: white;
             color: black;
-            padding: 14px 20px;
+            padding: 14px 24px;
             border-radius: 50px;
             font-weight: 700;
-            font-size: 15px;
+            font-size: 16px;
             box-shadow: 0 10px 20px rgba(0,0,0,0.3);
             cursor: pointer;
             border: none;
@@ -208,7 +206,6 @@
         }
         .overlay-btn:active { transform: scale(0.95); }
         
-        /* 录制进度条 */
         .recording-controls {
             position: fixed;
             top: 0;
@@ -227,7 +224,7 @@
             box-shadow: 0 0 10px rgba(255, 68, 68, 0.8);
         }
 
-        /* 电脑端停止按钮 */
+        /* PC停止按钮 (热区) */
         .stop-rec-hitbox {
             position: fixed;
             top: 0;
@@ -263,7 +260,7 @@
             pointer-events: auto;
         }
 
-        /* 手机端退出按钮 (半透明悬浮) */
+        /* 手机端退出按钮 (悬浮) */
         .mobile-exit-btn {
             position: fixed;
             top: 20px;
@@ -294,16 +291,28 @@
         }
 
         /* =========================================
-           📱 手机端/PC端 统一的“沉浸模式”样式
+           🔥 终极全屏适配方案 (Pseudo-Fullscreen)
            ========================================= */
+        
+        /* 当进入录制模式时，强制 Body 填满屏幕，覆盖浏览器UI */
+        body.recording-mode {
+            position: fixed; /* 强制锁定 */
+            top: 0; 
+            left: 0; 
+            right: 0; 
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background-color: #000; /* 确保背景黑 */
+        }
+
         body.recording-mode .player-header { 
-            /* 压缩头部，给歌词留空间 */
             padding-top: 40px; 
             padding-bottom: 0px; 
         }
         
         body.recording-mode .artwork-container { 
-            /* 保持小尺寸 */
             width: 120px; 
             height: 160px; 
             margin-top: 0; 
@@ -317,9 +326,7 @@
         }
         
         body.recording-mode .transcript-container { 
-            /* 文字区向上延伸 */
             padding-top: 0px; 
-            /* 调整遮罩，让文字在中间区域更清晰 */
             mask-image: linear-gradient(to bottom, transparent 0%, black 5%, black 90%, transparent 100%);
         }
         
@@ -327,7 +334,6 @@
             color: rgba(255,255,255,0.95);
         }
         
-        /* 隐藏杂项 */
         body.recording-mode #debugTime { display: none; }
         body.recording-mode .btn-container { opacity: 0; pointer-events: none; }
         body.recording-mode .ui-controls { opacity: 0; pointer-events: none; height: 0; margin: 0;}
@@ -424,11 +430,9 @@
     // --- 设备检测 ---
     function checkDevice() {
         if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
-            // PC 端
             recordVideoBtn.style.display = 'flex';
             tips.textContent = '提示: 电脑录制请选择 "当前标签页" 并勾选 "分享音频"';
         } else {
-            // 手机/平板端
             mobileRecordBtn.style.display = 'flex';
             tips.textContent = '提示: 点击下方按钮进入全屏，然后手动开启系统录屏';
         }
@@ -620,7 +624,7 @@
 
             const audioTrack = stream.getAudioTracks()[0];
             if (!audioTrack) {
-                alert("❌ 错误：您未勾选【分享音频】。");
+                alert("❌ 错误：您未勾选【分享音频】。\n\n为了录制音乐，请重新开始并勾选该选项。");
                 stopEverything();
                 return;
             }
@@ -660,22 +664,30 @@
         }
     }
 
-    // --- 手机沉浸模式 ---
+    // --- 手机全屏逻辑 (伪全屏 + 真全屏尝试) ---
     function startMobileRecordingPrep() {
-        if (document.documentElement.requestFullscreen) {
-            document.documentElement.requestFullscreen();
+        // 1. 尝试调用浏览器原生全屏 API
+        const docEl = document.documentElement;
+        if (docEl.requestFullscreen) {
+            docEl.requestFullscreen().catch(e => console.log("全屏被拒:", e));
+        } else if (docEl.webkitRequestFullscreen) {
+            docEl.webkitRequestFullscreen(); // Safari
+        } else if (docEl.msRequestFullscreen) {
+            docEl.msRequestFullscreen();
         }
+
+        // 2. 进入 CSS 伪全屏模式 (双重保险)
         enterRecordingMode('mobile');
-        alert("已进入全屏沉浸模式。\n请下拉状态栏，开启系统的录屏功能。\n\n点击右上角「退出沉浸」可恢复。");
+        
+        alert("已进入全屏沉浸模式。\n请手动开启系统录屏。\n\n5秒后自动播放...");
         
         setTimeout(() => {
             audio.currentTime = 0;
             audio.play();
-        }, 5000); // 5秒后播放
+        }, 5000);
     }
 
     function stopEverything() {
-        // PC停止
         if (mediaRecorder && mediaRecorder.state !== 'inactive') {
             mediaRecorder.stop();
         }
@@ -722,9 +734,11 @@
         btnContainer.style.opacity = '1';
         btnContainer.style.pointerEvents = 'auto';
         
-        // 退出全屏
-        if (document.fullscreenElement && document.exitFullscreen) {
-            document.exitFullscreen();
+        // 尝试退出全屏
+        if (document.exitFullscreen) {
+            document.exitFullscreen().catch(e => {});
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
         }
     }
 
@@ -743,12 +757,9 @@
 
     playModeBtn.addEventListener('click', () => {
         if (!isRecordingMode) {
-            // 借用 PC 录制模式的 UI，但不录制
-            enterRecordingMode('pc');
-            // 隐藏 PC 特有的录制条
+            enterRecordingMode('pc'); // 复用 PC UI
             document.querySelector('.recording-controls').style.display = 'none';
             document.querySelector('.stop-rec-hitbox').style.display = 'none';
-            // 显示退出按钮方便退出
             document.querySelector('.mobile-exit-btn').style.display = 'block';
             
             console.log("5秒后播放...");
