@@ -63,17 +63,17 @@
         .col-eng { flex: 6; font-family: 'Lora'; font-size: 18pt; line-height: 1.8; text-align: justify; padding-right: 25px; border-right: 2px solid #f0f0f0; }
         .col-chi { flex: 4; font-family: 'Noto Sans SC'; font-size: 16pt; line-height: 1.8; color: #5d6d7e; text-align: justify; font-weight: 400; padding-top: 2px; }
 
-        /* 边栏 */
-        .row.supp-style { background: var(--supp-bg); padding: 25px; border-radius: 12px; margin: 15px 0; border: none; }
-        .row.supp-style .col-eng { border-right: 2px solid #aec6cf; font-size: 16pt; line-height: 1.6; }
-        .row.supp-style .col-chi { font-size: 14pt !important; line-height: 1.6; color: #555; }
+        /* 边栏 - 调整: 字体大小与正文一致 */
+        .row.supp-style { background: var(--supp-bg); padding: 25px; border-radius: 12px; margin: 10px 0; border: none; }
+        .row.supp-style .col-eng { border-right: 2px solid #aec6cf; font-size: 18pt; line-height: 1.8; }
+        .row.supp-style .col-chi { font-size: 16pt !important; line-height: 1.8; color: #555; }
         h3 { font-family: 'Lato'; font-weight: 900; font-size: 18pt; color: var(--theme-color); margin: 0 0 10px 0; display: block; border-left: 8px solid var(--theme-color); padding-left: 15px; }
-        .row.supp-style h3 { font-size: 16pt !important; border-left-width: 5px; }
+        .row.supp-style h3 { font-size: 18pt !important; border-left-width: 5px; }
 
         /* 词性高亮 */
         .hl { padding: 0 4px; border-radius: 4px; font-weight: 600; display: inline-block; }
         .hl-n { background-color: var(--bg-noun); } .hl-v { background-color: var(--bg-verb); } .hl-adj { background-color: var(--bg-adj); }
-        sup { color: #555; font-size: 0.6em; vertical-align: super; font-weight: 700; margin-left: 2px; }
+        sup { color: var(--theme-color); font-size: 0.75em; vertical-align: super; font-weight: 900; margin-left: 1px; font-family: 'Lato'; }
 
         /* 附录 */
         .app-h { font-size: 18pt; font-weight: 700; color: var(--text-main); border-left: 6px solid #555; padding-left: 12px; display: block; margin: 25px 0 20px 0; font-family: 'Noto Sans SC'; flex-shrink: 0; width: 100%; }
@@ -148,18 +148,18 @@
     const META = { 
         issue: "23 January 2026", 
         title: "The brain has five key ages", 
-        subtitle: "Your brain only goes into “adult mode” in your 30s, according to new research.",
+        subtitle: "大脑演变的五大关键纪元",
         themeColor: "#2E86C1" 
     };
     
     // [Audit 1: Check Content Integrity]
     const MAIN_CONTENT = [
         {
-            eng: "Scientists <span class='hl hl-v'>scanned</span> the brains of about 4,000 people—from babies under age 1 to 90-year-olds.",
+            eng: "Scientists <span class='hl hl-v'>scanned</span><sup>①</sup> the brains of about 4,000 people—from babies under age 1 to 90-year-olds.",
             chi: "科学家<span class='hl hl-v'>扫描</span>了大约 4,000 人的大脑——从 1 岁以下的婴儿到 90 岁的老人。"
         },
         {
-            eng: "The researchers <span class='hl hl-v'>identified</span> four major “turning points” when brains rewire themselves: at the ages of 9, 32, 66, and 83. This means that human brains have five <span class='hl hl-adj'>distinct</span> “eras,” which help scientists understand how the brain is wired during different stages of life.",
+            eng: "The researchers <span class='hl hl-v'>identified</span><sup>②</sup> four major “turning points” when brains rewire themselves: at the ages of 9, 32, 66, and 83. This means that human brains have five <span class='hl hl-adj'>distinct</span><sup>③</sup> “eras,” which help scientists understand how the brain is wired during different stages of life.",
             chi: "研究人员<span class='hl hl-v'>确定</span>了大脑重新连接的四个主要“转折点”：分别在 9 岁、32 岁、66 岁和 83 岁。这意味着人类大脑有五个<span class='hl hl-adj'>独特</span>的“时期”，这有助于科学家理解大脑在生命的不同阶段是如何连接的。"
         },
         {
@@ -171,7 +171,7 @@
             chi: "从出生到 9 岁，儿童大脑的白质和灰质都在生长。"
         },
         {
-            eng: "Gray matter is a type of brain <span class='hl hl-n'>tissue</span> that processes and <span class='hl hl-v'>interprets</span> information and is involved in memory and emotion.",
+            eng: "Gray matter is a type of brain <span class='hl hl-n'>tissue</span><sup>④</sup> that processes and <span class='hl hl-v'>interprets</span><sup>⑤</sup> information and is involved in memory and emotion.",
             chi: "灰质是一种大脑<span class='hl hl-n'>组织</span>，负责处理和<span class='hl hl-v'>解释</span>信息，并参与记忆和情感活动。"
         },
         {
@@ -179,11 +179,11 @@
             chi: "白质在灰质块之间传递信号，有助于学习和保持注意力。"
         },
         {
-            eng: "During this time, the many <span class='hl hl-n'>synapses</span> (links between nerves) between young children’s brain cells start decreasing. The researchers call this era “childhood.”",
+            eng: "During this time, the many <span class='hl hl-n'>synapses</span><sup>⑥</sup> (links between nerves) between young children’s brain cells start decreasing. The researchers call this era “childhood.”",
             chi: "在此期间，幼儿脑细胞之间的大量<span class='hl hl-n'>突触</span>（神经之间的连接）开始减少。研究人员将这一时期称为“童年”。"
         },
         {
-            eng: "The second era, “<span class='hl hl-n'>adolescence</span>,” lasts from age 9 until 32. During this time, the brain continues to grow more white matter, improving communication inside the brain.",
+            eng: "The second era, “<span class='hl hl-n'>adolescence</span><sup>⑦</sup>,” lasts from age 9 until 32. During this time, the brain continues to grow more white matter, improving communication inside the brain.",
             chi: "第二个时期是“<span class='hl hl-n'>青春期</span>”，从 9 岁持续到 32 岁。在此期间，大脑继续生长更多的白质，改善了大脑内部的交流。"
         },
         {
@@ -203,7 +203,7 @@
             chi: "在“衰老早期”（66-83 岁）和“衰老晚期”（83 岁以后），大脑中的连接开始减少。"
         },
         {
-            eng: "“These eras provide important context for what our brains might be best at, or more <span class='hl hl-adj'>vulnerable</span> to, at different stages of our lives,” said Mousley.",
+            eng: "“These eras provide important context for what our brains might be best at, or more <span class='hl hl-adj'>vulnerable</span><sup>⑧</sup> to, at different stages of our lives,” said Mousley.",
             chi: "穆斯利说：“这些时期为我们的大脑在生命不同阶段可能最擅长什么，或者最容易受到什么<span class='hl hl-adj'>伤害</span>，提供了重要的背景。”"
         },
         {
@@ -217,8 +217,38 @@
         },
         {
             type: "supp",
-            eng: "<h3>Six fun facts about the brain</h3>1. A baby’s brain doubles in size between birth and their first birthday.<br>2. The brain itself can’t feel pain because it doesn’t have any pain receptors inside it.<br>3. Your brain gets smaller as you get older.<br>4. Human brains use more energy than any other organ in the body—about a fifth of all your energy.<br>5. The adult human brain weighs about 2.75 pounds—that’s about the same as a large guinea pig.<br>6. About three quarters of your brain is water, which means getting dehydrated affects your ability to think.",
-            chi: "<h3>关于大脑的六个有趣事实</h3>1. 婴儿的大脑在出生到一岁之间大小会翻倍。<br>2. 大脑本身感觉不到疼痛，因为它内部没有任何疼痛感受器。<br>3. 你的大脑随着年龄增长会变小。<br>4. 人类大脑比身体任何其他器官消耗的能量都多——大约占你所有能量的五分之一。<br>5. 成年人的大脑重约 2.75 磅——大约相当于一只大型豚鼠的重量。<br>6. 大脑约四分之三是水，这意味着脱水会影响你的思考能力。"
+            eng: "<h3>Six fun facts about the brain</h3>",
+            chi: "<h3>关于大脑的六个有趣事实</h3>"
+        },
+        {
+            type: "supp",
+            eng: "1. A baby’s brain doubles in size between birth and their first birthday.",
+            chi: "1. 婴儿的大脑在出生到一岁之间大小会翻倍。"
+        },
+        {
+            type: "supp",
+            eng: "2. The brain itself can’t feel pain because it doesn’t have any pain receptors inside it.",
+            chi: "2. 大脑本身感觉不到疼痛，因为它内部没有任何疼痛感受器。"
+        },
+        {
+            type: "supp",
+            eng: "3. Your brain gets smaller as you get older.",
+            chi: "3. 你的大脑随着年龄增长会变小。"
+        },
+        {
+            type: "supp",
+            eng: "4. Human brains use more energy than any other organ in the body—about a fifth of all your energy.",
+            chi: "4. 人类大脑比身体任何其他器官消耗的能量都多——大约占你所有能量的五分之一。"
+        },
+        {
+            type: "supp",
+            eng: "5. The adult human brain weighs about 2.75 pounds—that’s about the same as a large guinea pig.",
+            chi: "5. 成年人的大脑重约 2.75 磅——大约相当于一只大型豚鼠的重量。"
+        },
+        {
+            type: "supp",
+            eng: "6. About three quarters of your brain is water, which means getting dehydrated affects your ability to think.",
+            chi: "6. 大脑约四分之三是水，这意味着脱水会影响你的思考能力。"
         }
     ]; 
     // [Audit 2: Check Bilingual Highlights]
