@@ -261,31 +261,6 @@
             pointer-events: auto;
         }
 
-        /* 移动端退出按钮 */
-        .mobile-exit-area {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100px;
-            z-index: 3000;
-            display: none;
-        }
-        
-        .mobile-exit-btn {
-            position: absolute;
-            top: 40px;
-            right: 20px;
-            background: rgba(0,0,0,0.5);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.3);
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 12px;
-            backdrop-filter: blur(5px);
-            cursor: pointer;
-        }
-
         #debugTime {
             position: fixed;
             top: 10px;
@@ -301,7 +276,7 @@
         }
 
         /* =========================================
-           沉浸/录制模式通用样式
+           沉浸模式 (无UI状态)
            ========================================= */
         body.recording-mode {
             position: fixed; 
@@ -311,6 +286,7 @@
         }
 
         body.recording-mode .player-header { 
+            /* 调整头部间距，更紧凑 */
             padding-top: 40px; 
             padding-bottom: 0px; 
         }
@@ -337,17 +313,14 @@
             color: rgba(255,255,255,0.95);
         }
         
-        /* 隐藏 UI */
+        /* 彻底隐藏所有 UI */
         body.recording-mode #debugTime { display: none; }
         body.recording-mode .btn-container { opacity: 0; pointer-events: none; }
         body.recording-mode .ui-controls { opacity: 0; pointer-events: none; height: 0; margin: 0;}
 
-        /* PC特有 */
+        /* PC特有：仅PC模式显示录制控制条 */
         body.recording-mode.pc-mode .recording-controls { display: block; }
         body.recording-mode.pc-mode .stop-rec-hitbox { display: block; }
-
-        /* 手机特有 */
-        body.recording-mode.mobile-mode .mobile-exit-area { display: block; }
 
     </style>
 </head>
@@ -361,10 +334,6 @@
 </div>
 <div class="stop-rec-hitbox" id="stopRecHitbox">
     <button class="stop-rec-btn" id="stopRecBtn">⏹ 停止录制</button>
-</div>
-
-<div class="mobile-exit-area" id="mobileExitArea">
-    <button class="mobile-exit-btn" id="mobileExitBtn">✕ 退出沉浸模式</button>
 </div>
 
 <div class="player-header">
@@ -397,7 +366,7 @@
         🎥 电脑内录 1080P
     </button>
     <button class="overlay-btn" id="mobileRecordBtn" style="display:none;">
-        📱 手机全屏 (准备录屏)
+        📱 手机全屏 (无UI)
     </button>
 </div>
 
@@ -413,7 +382,6 @@
     const playModeBtn = document.getElementById('playModeBtn');
     const recordVideoBtn = document.getElementById('recordVideoBtn');
     const mobileRecordBtn = document.getElementById('mobileRecordBtn');
-    const mobileExitBtn = document.getElementById('mobileExitBtn');
     const stopRecBtn = document.getElementById('stopRecBtn');
     const btnContainer = document.getElementById('btnContainer');
     const uiControls = document.getElementById('uiControls');
@@ -435,13 +403,13 @@
     // --- 设备检测 ---
     function checkDevice() {
         if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
-            // PC 端
+            // PC
             recordVideoBtn.style.display = 'flex';
             tips.textContent = '提示: 电脑录制请勾选 "分享音频"';
         } else {
-            // 手机/平板
+            // Mobile
             mobileRecordBtn.style.display = 'flex';
-            tips.textContent = '提示: 点击下方按钮进入全屏，手动录屏';
+            tips.textContent = '提示: 点击下方按钮进入全屏沉浸模式';
         }
     }
     checkDevice();
@@ -495,6 +463,7 @@
             div.dataset.end = block.end;
             div.dataset.index = index;
 
+            // Speaker 逻辑
             const speakerSpan = document.createElement('span');
             const speakerId = block.speaker_id || 'unknown';
             
@@ -606,7 +575,7 @@
         }
     }
 
-    // --- PC 内录逻辑 ---
+    // --- PC 内录 ---
     async function startVideoRecording() {
         try {
             const stream = await navigator.mediaDevices.getDisplayMedia({
@@ -670,9 +639,9 @@
         }
     }
 
-    // --- 手机全屏模式 (无弹窗) ---
+    // --- 手机全屏沉浸 (无弹窗) ---
     function startMobileRecordingPrep() {
-        // 尝试系统全屏
+        // 尝试全屏
         const docEl = document.documentElement;
         if (docEl.requestFullscreen) {
             docEl.requestFullscreen().catch(e => {});
@@ -680,11 +649,10 @@
             docEl.webkitRequestFullscreen();
         }
 
-        // 进入 CSS 伪全屏
         enterRecordingMode('mobile');
         
-        // 直接静默倒计时
-        console.log("📱 手机沉浸模式，无弹窗");
+        // 直接静默倒计时播放
+        console.log("📱 手机沉浸模式，静默倒计时5秒");
         setTimeout(() => {
             audio.currentTime = 0;
             audio.play();
@@ -738,7 +706,6 @@
         btnContainer.style.opacity = '1';
         btnContainer.style.pointerEvents = 'auto';
         
-        // 退出全屏
         if (document.exitFullscreen) {
             document.exitFullscreen().catch(e => {});
         } else if (document.webkitExitFullscreen) {
@@ -761,11 +728,8 @@
 
     playModeBtn.addEventListener('click', () => {
         if (!isRecordingMode) {
-            enterRecordingMode('pc'); 
-            document.querySelector('.recording-controls').style.display = 'none';
-            document.querySelector('.stop-rec-hitbox').style.display = 'none';
-            document.querySelector('.mobile-exit-area').style.display = 'block';
-            
+            // 复用手机模式，不显示 PC 控件
+            enterRecordingMode('mobile');
             console.log("5秒后播放...");
             setTimeout(() => { audio.play(); }, 5000);
         }
@@ -775,11 +739,6 @@
     mobileRecordBtn.addEventListener('click', startMobileRecordingPrep);
     
     stopRecBtn.addEventListener('click', stopEverything);
-    
-    mobileExitBtn.addEventListener('click', () => {
-        audio.pause();
-        exitRecordingMode();
-    });
 
     progressBarContainer.addEventListener('click', (e) => {
         const rect = progressBarContainer.getBoundingClientRect();
