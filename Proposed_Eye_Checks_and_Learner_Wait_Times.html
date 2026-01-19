@@ -206,7 +206,7 @@
         }
         .overlay-btn:active { transform: scale(0.95); }
         
-        /* 录制进度条 */
+        /* 录制进度条 (PC) */
         .recording-controls {
             position: fixed;
             top: 0;
@@ -225,7 +225,7 @@
             box-shadow: 0 0 10px rgba(255, 68, 68, 0.8);
         }
 
-        /* 电脑端停止按钮 (悬停显示) */
+        /* 电脑端停止按钮 (悬停) */
         .stop-rec-hitbox {
             position: fixed;
             top: 0;
@@ -261,7 +261,7 @@
             pointer-events: auto;
         }
 
-        /* 移动端退出沉浸模式的按钮 (半透明小叉号) */
+        /* 移动端退出按钮 */
         .mobile-exit-area {
             position: fixed;
             top: 0;
@@ -304,7 +304,7 @@
            沉浸/录制模式通用样式
            ========================================= */
         body.recording-mode {
-            position: fixed; /* 手机端防抖动 */
+            position: fixed; 
             width: 100%;
             height: 100%;
             background: #000;
@@ -346,7 +346,7 @@
         body.recording-mode.pc-mode .recording-controls { display: block; }
         body.recording-mode.pc-mode .stop-rec-hitbox { display: block; }
 
-        /* 手机特有: 纯净模式显示退出按钮 */
+        /* 手机特有 */
         body.recording-mode.mobile-mode .mobile-exit-area { display: block; }
 
     </style>
@@ -364,7 +364,7 @@
 </div>
 
 <div class="mobile-exit-area" id="mobileExitArea">
-    <button class="mobile-exit-btn" id="mobileExitBtn">✕ 退出纯净模式</button>
+    <button class="mobile-exit-btn" id="mobileExitBtn">✕ 退出沉浸模式</button>
 </div>
 
 <div class="player-header">
@@ -391,10 +391,13 @@
 
 <div class="btn-container" id="btnContainer">
     <button class="overlay-btn" id="playModeBtn">
-        🎵 纯净播放
+        🎵 仅播放
     </button>
     <button class="overlay-btn" id="recordVideoBtn" style="display:none;">
-        🎥 录制 1080P
+        🎥 电脑内录 1080P
+    </button>
+    <button class="overlay-btn" id="mobileRecordBtn" style="display:none;">
+        📱 手机全屏 (准备录屏)
     </button>
 </div>
 
@@ -409,6 +412,8 @@
     const container = document.getElementById('transcriptContainer');
     const playModeBtn = document.getElementById('playModeBtn');
     const recordVideoBtn = document.getElementById('recordVideoBtn');
+    const mobileRecordBtn = document.getElementById('mobileRecordBtn');
+    const mobileExitBtn = document.getElementById('mobileExitBtn');
     const stopRecBtn = document.getElementById('stopRecBtn');
     const btnContainer = document.getElementById('btnContainer');
     const uiControls = document.getElementById('uiControls');
@@ -417,8 +422,6 @@
     const debugTime = document.getElementById('debugTime');
     const recProgressBar = document.getElementById('recProgressBar');
     const tips = document.getElementById('tips');
-    const mobileExitArea = document.getElementById('mobileExitArea');
-    const mobileExitBtn = document.getElementById('mobileExitBtn');
 
     let isRecordingMode = false;
     let processedData = []; 
@@ -432,13 +435,13 @@
     // --- 设备检测 ---
     function checkDevice() {
         if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
-            // PC 端: 显示录制按钮
+            // PC 端
             recordVideoBtn.style.display = 'flex';
             tips.textContent = '提示: 电脑录制请勾选 "分享音频"';
         } else {
-            // 手机/平板: 只显示播放按钮，隐藏录制按钮
-            recordVideoBtn.style.display = 'none';
-            tips.textContent = '提示: 手机端仅支持播放浏览';
+            // 手机/平板
+            mobileRecordBtn.style.display = 'flex';
+            tips.textContent = '提示: 点击下方按钮进入全屏，手动录屏';
         }
     }
     checkDevice();
@@ -492,7 +495,6 @@
             div.dataset.end = block.end;
             div.dataset.index = index;
 
-            // Speaker 逻辑
             const speakerSpan = document.createElement('span');
             const speakerId = block.speaker_id || 'unknown';
             
@@ -668,6 +670,27 @@
         }
     }
 
+    // --- 手机全屏模式 (无弹窗) ---
+    function startMobileRecordingPrep() {
+        // 尝试系统全屏
+        const docEl = document.documentElement;
+        if (docEl.requestFullscreen) {
+            docEl.requestFullscreen().catch(e => {});
+        } else if (docEl.webkitRequestFullscreen) {
+            docEl.webkitRequestFullscreen();
+        }
+
+        // 进入 CSS 伪全屏
+        enterRecordingMode('mobile');
+        
+        // 直接静默倒计时
+        console.log("📱 手机沉浸模式，无弹窗");
+        setTimeout(() => {
+            audio.currentTime = 0;
+            audio.play();
+        }, 5000);
+    }
+
     function stopEverything() {
         if (mediaRecorder && mediaRecorder.state !== 'inactive') {
             mediaRecorder.stop();
@@ -714,6 +737,13 @@
         uiControls.classList.remove('hidden-ui');
         btnContainer.style.opacity = '1';
         btnContainer.style.pointerEvents = 'auto';
+        
+        // 退出全屏
+        if (document.exitFullscreen) {
+            document.exitFullscreen().catch(e => {});
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        }
     }
 
     // Listeners
@@ -729,20 +759,23 @@
         if(!isRecordingMode) debugTime.textContent = audio.currentTime.toFixed(3);
     });
 
-    // 纯净播放模式 (手机/PC通用)
     playModeBtn.addEventListener('click', () => {
         if (!isRecordingMode) {
-            // 使用移动端模式 (因为它有退出按钮)
-            enterRecordingMode('mobile');
+            enterRecordingMode('pc'); 
+            document.querySelector('.recording-controls').style.display = 'none';
+            document.querySelector('.stop-rec-hitbox').style.display = 'none';
+            document.querySelector('.mobile-exit-area').style.display = 'block';
+            
             console.log("5秒后播放...");
             setTimeout(() => { audio.play(); }, 5000);
         }
     });
 
     recordVideoBtn.addEventListener('click', startVideoRecording);
+    mobileRecordBtn.addEventListener('click', startMobileRecordingPrep);
+    
     stopRecBtn.addEventListener('click', stopEverything);
     
-    // 手机退出按钮
     mobileExitBtn.addEventListener('click', () => {
         audio.pause();
         exitRecordingMode();
