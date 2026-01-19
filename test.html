@@ -1,15 +1,13 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
+<!DOCTYPE html><html lang="zh-CN"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Week Junior - Top Tech at CES (V41.0)</title>
+    <title>The Week Junior Handout</title>
     <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700&family=Noto+Sans+SC:wght@300;400;500;700&family=Lato:wght@400;700;900&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
         :root {
-            /* 动态主题色: 科技蓝 */
-            --theme-color: #2E86C1; 
+            /* 动态主题色 (由 JS 注入) */
+            --theme-color: #2c3e50; 
 
             /* 词性颜色 */
             --t-subj: #C0392B; --t-verb: #2980B9; --t-obj: #27AE60; --t-mod: #D35400; --t-prep: #8E44AD; --t-conn: #7F8C8D;
@@ -19,7 +17,6 @@
             
             /* 长难句背景 */
             --bg-trunk: #EBF5FB; --bg-clause-1: #FEF5E7; --bg-clause-2: #E9F7EF;
-            
             /* 边框色 */
             --bd-trunk: #3498DB; --bd-clause-1: #F39C12; --bd-clause-2: #2ECC71; --bd-struct: #2C3E50;
             
@@ -30,42 +27,55 @@
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; }
         body { background: #444; display: flex; flex-direction: column; align-items: center; padding: 40px 0; gap: 40px; font-family: 'Noto Sans SC', sans-serif; }
         
-        #status-bar { position: fixed; top: 0; left: 0; width: 100%; background: #e74c3c; color: white; text-align: center; padding: 10px; font-weight: bold; z-index: 9999; display: none; }
-        #loading-mask { position: fixed; inset: 0; background: white; z-index: 9998; display: flex; justify-content: center; align-items: center; font-size: 24pt; color: #555; }
+        /* 错误提示条 */
+        #status-bar { position: fixed; top: 0; left: 0; width: 100%; background: #e74c3c; color: white; text-align: center; padding: 15px; font-weight: bold; z-index: 10000; display: none; font-size: 14pt; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+        /* Loading 遮罩 */
+        #loading-mask { position: fixed; inset: 0; background: #f9f9f9; z-index: 9998; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: 'Lato'; color: #555; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #ccc; border-top-color: var(--theme-color); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
+        /* 容器 */
         .card { width: var(--p-w); height: var(--p-h); background: var(--bg); display: flex; flex-direction: column; overflow: hidden; position: relative; box-shadow: 0 30px 80px rgba(0,0,0,0.6); flex-shrink: 0; }
         .card.cover-page { padding: 0; } .card.normal-page { padding: 50px 60px; }
         .content-body { flex-grow: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 0; overflow: hidden; width: 100%; }
         .cover-page .content-body { padding: 0 60px; } .normal-page .content-body { padding: 0; }
 
+        /* 首页 (960px Height) */
         .hero-section { width: 100%; height: 960px; background: #e0e0e0; cursor: pointer; border-bottom: 8px solid var(--theme-color); position: relative; flex-shrink: 0; }
         .hero-img { width: 100%; height: 100%; object-fit: cover; display: none; }
         .hero-placeholder { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #777; font-size: 20pt; font-family: 'Lato'; text-align: center; border: 3px dashed #bbb; padding: 15px 30px; border-radius: 10px; }
         
         .cover-header { padding: 30px 60px 10px 60px; display: flex; flex-direction: column; align-items: center; text-align: center; flex-shrink: 0; }
         .meta-tag { background: var(--theme-color); color: white; padding: 6px 20px; border-radius: 50px; font-family: 'Lato'; font-weight: 900; font-size: 12pt; margin-bottom: 15px; letter-spacing: 1px; }
+        
+        /* 标题增强 */
         .poster-title { font-family: 'Lora'; font-size: 60pt; font-weight: 700; color: var(--text-main); line-height: 1.0; margin-bottom: 10px; }
         .poster-subtitle { font-family: 'Noto Sans SC'; font-size: 40pt; color: #5d6d7e; font-weight: 400; margin-bottom: 20px; position: relative; display: inline-block; }
         .poster-subtitle::after { content: ""; display: block; width: 60px; height: 3px; background: var(--theme-color); margin: 10px auto 0 auto; }
 
+        /* 续页头 */
         .mini-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #ccc; padding-bottom: 15px; margin-bottom: 20px; height: 60px; flex-shrink: 0; width: 100%; }
         .mini-title { font-family: 'Lora'; font-weight: 700; font-size: 16pt; color: var(--text-main); }
         .continued-tag { font-family: 'Lato'; font-weight: 700; font-style: italic; background: transparent; padding: 5px 0; border-radius: 0; font-size: 11pt; color: #666; }
 
+        /* 正文 */
         .row { display: flex; gap: 40px; width: 100%; padding: 20px 0; border-bottom: 1px solid #f9f9f9; align-items: flex-start; flex-shrink: 0; }
         .col-eng { flex: 6; font-family: 'Lora'; font-size: 18pt; line-height: 1.8; text-align: justify; padding-right: 25px; border-right: 2px solid #f0f0f0; }
         .col-chi { flex: 4; font-family: 'Noto Sans SC'; font-size: 16pt; line-height: 1.8; color: #5d6d7e; text-align: justify; font-weight: 400; padding-top: 2px; }
 
+        /* 边栏 */
         .row.supp-style { background: var(--supp-bg); padding: 25px; border-radius: 12px; margin: 15px 0; border: none; }
         .row.supp-style .col-eng { border-right: 2px solid #aec6cf; font-size: 16pt; line-height: 1.6; }
         .row.supp-style .col-chi { font-size: 14pt !important; line-height: 1.6; color: #555; }
         h3 { font-family: 'Lato'; font-weight: 900; font-size: 18pt; color: var(--theme-color); margin: 0 0 10px 0; display: block; border-left: 8px solid var(--theme-color); padding-left: 15px; }
         .row.supp-style h3 { font-size: 16pt !important; border-left-width: 5px; }
 
+        /* 词性高亮 */
         .hl { padding: 0 4px; border-radius: 4px; font-weight: 600; display: inline-block; }
         .hl-n { background-color: var(--bg-noun); } .hl-v { background-color: var(--bg-verb); } .hl-adj { background-color: var(--bg-adj); }
         sup { color: #555; font-size: 0.6em; vertical-align: super; font-weight: 700; margin-left: 2px; }
 
+        /* 附录 */
         .app-h { font-size: 18pt; font-weight: 700; color: var(--text-main); border-left: 6px solid #555; padding-left: 12px; display: block; margin: 25px 0 20px 0; font-family: 'Noto Sans SC'; flex-shrink: 0; width: 100%; }
         
         .vocab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px 40px; width: 100%; margin-bottom: 30px; flex-shrink: 0; }
@@ -124,104 +134,144 @@
         #btn-download { position: fixed; bottom: 20px; right: 20px; z-index: 9999; padding: 15px 25px; background: #2c3e50; color: white; border: none; border-radius: 50px; cursor: pointer; font-family: sans-serif; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.2s; }
         #btn-download:hover { transform: scale(1.05); background: #34495e; }
         #btn-download:active { transform: scale(0.95); }
-    </style>
-</head>
-<body>
-<div id="status-bar"></div>
-<div id="loading-mask">Generating Content...</div>
-<button id="btn-download" onclick="downloadAllPages()">📸 Save Pages</button>
-<div id="card-container"></div>
-<input type="file" id="upload-trigger" style="display:none" onchange="loadFile(event)">
-
-<script>
+    </style></head><body><div id="status-bar"></div><div id="loading-mask">
+    <div class="spinner"></div>
+    <div>Generating Content...</div></div><button id="btn-download" onclick="downloadAllPages()">📸 Save Pages</button><div id="card-container"></div><input type="file" id="upload-trigger" style="display:none" onchange="loadFile(event)"><script>
     // --- Global Error Trap ---
     window.onerror = function(message, source, lineno, colno, error) {
         document.getElementById('loading-mask').style.display = 'none';
         document.getElementById('status-bar').style.display = 'block';
-        document.getElementById('status-bar').innerText = "Render Error: " + message + " (Line: " + lineno + ")";
+        document.getElementById('status-bar').innerText = "System Error: " + message + " (Line " + lineno + ")";
     };
 
-    // --- Phase 4: Data Injection ---
-    const META = {
-        issue: "ISSUE 17 JAN 2026",
-        title: "Top tech on display at CES",
-        subtitle: "CES 展会上的顶尖科技",
-        themeColor: "#2E86C1"
+    // --- Phase 4: Data Injection (AI MUST FILL THIS) ---
+    const META = { 
+        issue: "23 January 2026", 
+        title: "The brain has five key ages", 
+        subtitle: "Your brain only goes into “adult mode” in your 30s, according to new research.",
+        themeColor: "#2E86C1" 
     };
-
-    // Escape Note: all single quotes inside text must be escaped (e.g. ' -> \')
+    
+    // [Audit 1: Check Content Integrity]
     const MAIN_CONTENT = [
-        { eng: `More than 148,000 visitors <span class="hl hl-v">attended</span><sup>①</sup> the Consumer Electronics Show (CES) in Las Vegas, US, from 6 to 9 January. CES is one of the world\'s biggest technology events. [cite: 803, 804]`, chi: `超过 14.8 万名观众<span class="hl hl-v">参加</span><sup>①</sup>了 1 月 6 日至 9 日在美国拉斯维加斯举行的消费电子展 (CES)。CES 是世界上最大的科技活动之一。` },
-        { eng: `Every year, the most <span class="hl hl-adj">cutting-edge</span><sup>②</sup> devices, gadgets and robots go on show. This year, lots of gadgets <span class="hl hl-v">featured</span><sup>③</sup> artificial intelligence (AI). [cite: 804, 805]`, chi: `每年，最<span class="hl hl-adj">前沿</span><sup>②</sup>的设备、小发明和机器人都会在此展出。今年，许多小发明都以人工智能 (AI) 为<span class="hl hl-v">特色</span><sup>③</sup>。` },
-        { eng: `Artificial intelligence is the name given to a computer system that is able to 'think' for itself and perform tasks that usually require human intelligence. [cite: 805]`, chi: `人工智能是被赋予给一种计算机系统的名称，这种系统能够独立“思考”并执行通常需要人类智慧才能完成的任务。` },
-        { eng: `Some gadgets have the <span class="hl hl-n">potential</span><sup>④</sup> to save lives, such as the Allergen Alert. Controlled by an AI-powered app, this <span class="hl hl-adj">portable</span><sup>⑤</sup> laboratory lets users scan food labels to avoid eating any ingredients they are <span class="hl hl-adj">allergic</span><sup>⑥</sup> to. [cite: 806, 807, 808]`, chi: `有些小发明具有拯救生命的<span class="hl hl-n">潜力</span><sup>④</sup>，例如“过敏原警报”。这个<span class="hl hl-adj">便携式</span><sup>⑤</sup>实验室由人工智能应用程序控制，用户可以扫描食品标签，以避免食用任何使他们<span class="hl hl-adj">过敏</span><sup>⑥</sup>的成分。` },
-        { eng: `Another invention, called the <span class="hl hl-adj">Amphibious</span><sup>⑦</sup> RoboTurtle, helps sealife by working as an environmental research tool. The RoboTurtle can move on land and in water. [cite: 808, 809]`, chi: `另一项名为“<span class="hl hl-adj">两栖</span><sup>⑦</sup>机器龟”的发明作为环境研究工具来帮助海洋生物。机器龟可以在陆地和水中移动。` },
-        { eng: `It has solar panels on its shell and its cameras can detect problems such as changes in water quality. It swims like a turtle so it doesn\'t disturb creatures in the way humans might. [cite: 809, 810]`, chi: `它的外壳上有太阳能电池板，它的摄像头可以检测水质变化等问题。它像海龟一样游泳，所以不会像人类那样打扰生物。` },
-        { eng: `AI-powered human-like robots that can perform <span class="hl hl-adj">household</span><sup>⑧</sup> chores were another big draw. LG\'s CLOiD can carry out tasks such as taking milk from the fridge, putting croissants into the oven and operating a washing machine. [cite: 811, 812, 813]`, chi: `能够做<span class="hl hl-adj">家务</span><sup>⑧</sup>的 AI 人形机器人是另一个巨大的吸引力。LG 的 CLOiD 可以执行诸如从冰箱里拿牛奶、把牛角面包放进烤箱以及操作洗衣机之类的任务。` },
-        { type: 'supp', eng: `<h3>Pet Robot</h3>An AI penguin that moves around on a skateboard was <span class="hl hl-v">unveiled</span><sup>⑨</sup> at this year\'s show. `, chi: `<h3>宠物机器人</h3>今年展会上<span class="hl hl-v">揭幕</span><sup>⑨</sup>了一只踩着滑板移动的 AI 企鹅。` }
-    ];
-
+        {
+            eng: "Scientists scanned the brains of about 4,000 people—from babies under age 1 to 90-year-olds.",
+            chi: "科学家扫描了大约 4,000 人的<span class='hl hl-n'>大脑</span>——从 1 岁以下的婴儿到 90 岁的老人。"
+        },
+        {
+            eng: "The researchers <span class='hl hl-v'>identified</span> four major “turning points” when brains rewire themselves: at the ages of 9, 32, 66, and 83. This means that human brains have five <span class='hl hl-adj'>distinct</span> “eras,” which help scientists understand how the brain is wired during different stages of life.",
+            chi: "研究人员<span class='hl hl-v'>确定</span>了大脑重新连接的四个主要“转折点”：分别在 9 岁、32 岁、66 岁和 83 岁。这意味着人类大脑有五个<span class='hl hl-adj'>独特</span>的“时期”，这有助于科学家理解大脑在生命的不同阶段是如何连接的。"
+        },
+        {
+            eng: "The “wiring” controls how the brain sends and receives signals and affects how people <span class='hl hl-v'>experience</span> the world, make decisions, and form memories. It is also related to mental health and developmental conditions.",
+            chi: "这种“连接”控制着大脑如何发送和接收信号，并影响人们如何<span class='hl hl-v'>体验</span>世界、做出决定和形成记忆。它还与心理健康和发育状况有关。"
+        },
+        {
+            eng: "From birth until age 9, children’s brains grow white and gray matter.",
+            chi: "从出生到 9 岁，儿童大脑的白质和灰质都在生长。"
+        },
+        {
+            eng: "Gray matter is a type of brain <span class='hl hl-n'>tissue</span> that processes and interprets information and is involved in memory and emotion.",
+            chi: "灰质是一种大脑<span class='hl hl-n'>组织</span>，负责处理和解释信息，并参与记忆和情感活动。"
+        },
+        {
+            eng: "White matter carries signals between chunks of gray matter and helps with learning and paying attention.",
+            chi: "白质在灰质块之间传递信号，有助于学习和保持注意力。"
+        },
+        {
+            eng: "During this time, the many synapses (links between nerves) between young children’s brain cells start decreasing. The researchers call this era “childhood.”",
+            chi: "在此期间，幼儿脑细胞之间的大量<span class='hl hl-n'>突触</span>（神经之间的连接）开始减少。研究人员将这一时期称为“童年”。"
+        },
+        {
+            eng: "The second era, “adolescence,” lasts from age 9 until 32. During this time, the brain continues to grow more white matter, improving communication inside the brain.",
+            chi: "第二个时期是“青春期”，从 9 岁持续到 32 岁。在此期间，大脑继续生长更多的白质，改善了大脑内部的交流。"
+        },
+        {
+            eng: "People get better at remembering, paying attention, and solving problems.",
+            chi: "人们在记忆、注意力和解决问题方面的能力变得更强。"
+        },
+        {
+            eng: "Alexa Mousley, a student at the University of Cambridge in the UK who led the research, told The Guardian newspaper, “We’re definitely not saying that people in their late 20s are going to be acting like teenagers, or even that their brain looks like that of a teenager’s. It’s really the pattern of change.”",
+            chi: "领导这项研究的英国剑桥大学学生亚历克萨·穆斯利告诉《卫报》：“我们绝不是说 20 多岁的人会表现得像青少年，甚至不是说他们的大脑看起来像青少年的大脑。这实际上是关于变化的模式。”"
+        },
+        {
+            eng: "From 32 onward, the brain enters “adulthood.” This is the longest era in a person’s life. The brain becomes more stable, and brain regions become more separate from each other.",
+            chi: "从 32 岁开始，大脑进入“成年期”。这是人一生中最长的时期。大脑变得更加稳定，大脑区域彼此之间变得更加独立。"
+        },
+        {
+            eng: "In “early aging” (66–83 years old) and “late aging” (from 83 onward), the connections in the brain start to decrease.",
+            chi: "在“衰老早期”（66-83 岁）和“衰老晚期”（83 岁以后），大脑中的连接开始减少。"
+        },
+        {
+            eng: "“These eras provide important context for what our brains might be best at, or more <span class='hl hl-adj'>vulnerable</span> to, at different stages of our lives,” said Mousley.",
+            chi: "穆斯利说：“这些时期为我们的大脑在生命不同阶段可能最擅长什么，或者最容易受到什么<span class='hl hl-adj'>伤害</span>，提供了重要的背景。”"
+        },
+        {
+            eng: "She added that the findings could help scientists understand why some brains develop differently than others and how that might affect people.",
+            chi: "她补充说，这些发现可以帮助科学家理解为什么有些大脑的发育与其他大脑不同，以及这可能如何影响人们。"
+        },
+        {
+            type: "supp",
+            eng: "<h3>HIGH POWERED</h3>The brain uses 20 watts of power to function—that’s enough energy to run a bright LED light bulb.",
+            chi: "<h3>高能量消耗</h3>大脑运作需要消耗 20 瓦的功率——这足以点亮一个明亮的 LED 灯泡。"
+        },
+        {
+            type: "supp",
+            eng: "<h3>Six fun facts about the brain</h3>1. A baby’s brain doubles in size between birth and their first birthday.<br>2. The brain itself can’t feel pain because it doesn’t have any pain receptors inside it.<br>3. Your brain gets smaller as you get older.<br>4. Human brains use more energy than any other organ in the body—about a fifth of all your energy.<br>5. The adult human brain weighs about 2.75 pounds—that’s about the same as a large guinea pig.<br>6. About three quarters of your brain is water, which means getting dehydrated affects your ability to think.",
+            chi: "<h3>关于大脑的六个有趣事实</h3>1. 婴儿的大脑在出生到一岁之间大小会翻倍。<br>2. 大脑本身感觉不到疼痛，因为它内部没有任何疼痛感受器。<br>3. 你的大脑随着年龄增长会变小。<br>4. 人类大脑比身体任何其他器官消耗的能量都多——大约占你所有能量的五分之一。<br>5. 成年人的大脑重约 2.75 磅——大约相当于一只大型豚鼠的重量。<br>6. 大脑约四分之三是水，这意味着脱水会影响你的思考能力。"
+        }
+    ]; 
+    // [Audit 2: Check Bilingual Highlights]
     const VOCAB_LIST = [
-        { w: "Attend", ipa: "/əˈtend/", p: "v.", m: "参加", c: "attend the show", e: "Thousands attended the event." },
-        { w: "Cutting-edge", ipa: "/ˌkʌtɪŋ ˈedʒ/", p: "adj.", m: "前沿的", c: "cutting-edge technology", e: "This is cutting-edge science." },
-        { w: "Feature", ipa: "/ˈfiːtʃə(r)/", p: "v.", m: "以...为特色", c: "feature AI", e: "The new car features safety AI." },
-        { w: "Potential", ipa: "/pəˈtenʃl/", p: "n.", m: "潜力", c: "have the potential", e: "She has the potential to win." },
-        { w: "Portable", ipa: "/ˈpɔːtəbl/", p: "adj.", m: "便携的", c: "portable device", e: "This radio is portable." },
-        { w: "Allergic", ipa: "/əˈlɜːdʒɪk/", p: "adj.", m: "过敏的", c: "allergic to nuts", e: "I am allergic to cats." },
-        { w: "Amphibious", ipa: "/æmˈfɪbiəs/", p: "adj.", m: "两栖的", c: "amphibious vehicle", e: "Frogs are amphibious animals." },
-        { w: "Household", ipa: "/ˈhaʊshəʊld/", p: "adj.", m: "家庭的", c: "household chores", e: "Washing dishes is a household chore." },
-        { w: "Unveil", ipa: "/ˌʌnˈveɪl/", p: "v.", m: "揭幕;展示", c: "unveil a new product", e: "They unveiled the statue today." }
+        { w: "scan", p: "v.", m: "扫描", ipa: "skæn", c: "Scientists scanned the brains of about 4,000 people.", e: "The doctor scanned the patient's brain to check for injuries." },
+        { w: "identify", p: "v.", m: "确定；识别", ipa: "aɪˈdentɪfaɪ", c: "The researchers identified four major turning points.", e: "Can you identify the man in this picture?" },
+        { w: "distinct", p: "adj.", m: "独特的；明显的", ipa: "dɪˈstɪŋkt", c: "Human brains have five distinct eras.", e: "There is a distinct smell of burning in the kitchen." },
+        { w: "tissue", p: "n.", m: "组织", ipa: "ˈtɪʃuː", c: "Gray matter is a type of brain tissue.", e: "Muscle tissue helps us move our bodies." },
+        { w: "interpret", p: "v.", m: "解释；理解", ipa: "ɪnˈtɜːrprɪt", c: "It processes and interprets information.", e: "How do you interpret this poem?" },
+        { w: "synapse", p: "n.", m: "突触", ipa: "ˈsaɪnæps", c: "The many synapses between brain cells start decreasing.", e: "A synapse is where two nerve cells meet." },
+        { w: "adolescence", p: "n.", m: "青春期", ipa: "ˌædəˈlesns", c: "The second era, adolescence, lasts from age 9 until 32.", e: "Adolescence is a time of great change for young people." },
+        { w: "vulnerable", p: "adj.", m: "易受伤害的", ipa: "ˈvʌlnərəbl", c: "Our brains might be more vulnerable at different stages.", e: "Small animals are vulnerable to predators." }
     ];
-
+    // [Audit 3: Check Syntax Localization]
     const SA_CHUNKS = [
-        { t: "bg-trunk", l: "l-conn", txt: "伴随状语", w: "Controlled by an AI-powered app," },
-        { t: "chunk-group bg-trunk", l: "l-subj", txt: "主语", w: "this portable laboratory" },
-        { t: "bg-trunk", l: "l-verb", txt: "谓语", w: "lets" },
-        { t: "bg-trunk", l: "l-obj", txt: "宾语", w: "users" },
-        { t: "bg-trunk", l: "l-obj", txt: "宾补", w: "scan food labels" },
-        
-        { t: "bg-clause-1 bracket", w: "(" },
-        { t: "bg-clause-1", w: "to" },
-        { t: "bg-clause-1", w: "avoid" },
-        { t: "bg-clause-1", w: "eating" },
-        { t: "bg-clause-1", w: "any" },
-        { t: "bg-clause-1", w: "ingredients" },
-        
-        { t: "bg-clause-2 bracket", w: "(" },
-        { t: "bg-clause-2", w: "they" },
-        { t: "bg-clause-2", w: "are" },
-        { t: "bg-clause-2", w: "allergic" },
-        { t: "bg-clause-2", w: "to" },
-        { t: "bg-clause-2 bracket", w: ")" },
-        
-        { t: "bg-clause-1 bracket", w: ")" },
-        { t: "bg-trunk", w: "." }
+        { t: "chunk-group", l: "l-subj", txt: "主语", w: "This" },
+        { t: "chunk", l: "l-verb", txt: "谓语", w: "means" },
+        { t: "bracket bg-clause-1 l-obj", l: "", txt: "", w: "(" },
+        { t: "chunk bg-clause-1", l: "l-conn", txt: "连词", w: "that" },
+        { t: "chunk-group bg-clause-1", l: "l-subj", txt: "主语", w: "human brains" },
+        { t: "chunk bg-clause-1", l: "l-verb", txt: "谓语", w: "have" },
+        { t: "chunk-group bg-clause-1", l: "l-obj", txt: "宾语", w: "five distinct “eras,”" },
+        { t: "bracket bg-clause-2 l-mod", l: "", txt: "", w: "(" },
+        { t: "chunk bg-clause-2", l: "l-conn", txt: "连词/主语", w: "which" },
+        { t: "chunk bg-clause-2", l: "l-verb", txt: "谓语", w: "help" },
+        { t: "chunk bg-clause-2", l: "l-obj", txt: "宾语", w: "scientists" },
+        { t: "chunk bg-clause-2", l: "l-verb", txt: "补语", w: "understand" },
+        { t: "chunk-group bg-clause-2", l: "l-obj", txt: "宾语从句", w: "how the brain is wired during different stages of life" },
+        { t: "bracket bg-clause-2 l-mod", l: "", txt: "", w: ")" },
+        { t: "bracket bg-clause-1 l-obj", l: "", txt: "", w: ")" }
     ];
-    
-    const SA_TRANS = "💡 译文：在这个 AI 驱动的应用程序控制下，这个便携式实验室让用户可以扫描食品标签，以避免食用任何使他们过敏的成分。";
-    
+    const SA_TRANS = "这意味着人类大脑有五个独特的“时期”，这有助于科学家理解大脑在生命的不同阶段是如何连接的。";
     const SA_STEPS = [
-        { type: "bd-struct", label: "结构分析", text: "<strong>句型判断</strong><br>这是一个主干为 let sb do sth (让某人做某事) 的简单句，前后带有修饰成分。句首是过去分词短语作状语，句尾是不定式短语作目的状语。" },
-        { type: "bd-trunk", label: "主干拆解", text: "<strong>核心成分</strong><br>主语是 <em>this portable laboratory</em>，谓语是 <em>lets</em>，宾语是 <em>users</em>，宾语补足语是 <em>scan food labels</em>。" },
-        { type: "bd-clause-1", label: "第一层修饰", text: "<strong>目的状语</strong><br>橙色括号内 <em>to avoid eating...</em> 是不定式短语，表示“扫描标签”的目的是为了避免吃到某些成分。" },
-        { type: "bd-clause-2", label: "第二层修饰", text: "<strong>定语从句</strong><br>绿色括号内 <em>(that) they are allergic to</em> 是一个省略了关系代词的定语从句，修饰前面的名词 <em>ingredients</em> (成分)。" }
+        { type: "bd-trunk", label: "主干", text: "This means (that...) <br>主语 + 谓语 + 宾语从句。" },
+        { type: "bd-clause-1", label: "宾语从句", text: "that human brains have five distinct “eras,”...<br>说明“这意味着”的具体内容。" },
+        { type: "bd-clause-2", label: "定语从句", text: "which help scientists understand...<br>修饰前面的名词 “eras” (时期)，说明这些时期的作用。" },
+        { type: "bd-struct", label: "难点", text: "这是一个包含宾语从句和定语从句的复合句。'which' 引导的非限制性定语从句修饰先行词 'five distinct eras'。" }
     ];
-
     const QUIZ_ITEMS = [
-        { q: "What does CES stand for?", a: "<span class='q-opt'>A. Computer Energy System</span> <span class='q-opt'>B. Consumer Electronics Show</span>" },
-        { q: "What is the function of the RoboTurtle?", a: "<span class='q-opt'>A. Deliver pizza</span> <span class='q-opt'>B. Environmental research</span>" },
-        { q: "Where is CES held?", a: "<span class='q-opt'>A. Las Vegas</span> <span class='q-opt'>B. New York</span> <span class='q-opt'>C. London</span>" }
+        { q: "When does the brain enter 'adulthood'?", a: "<span class='q-opt'>A. Age 18</span><span class='q-opt'>B. Age 21</span><span class='q-opt'>C. Age 32</span>", ans: "C" },
+        { q: "What happens to synapses during the 'childhood' era?", a: "<span class='q-opt'>A. They increase rapidly</span><span class='q-opt'>B. They start decreasing</span><span class='q-opt'>C. They stay the same</span>", ans: "B" },
+        { q: "Which part of the brain carries signals between chunks of gray matter?", a: "<span class='q-opt'>A. White matter</span><span class='q-opt'>B. Gray matter</span><span class='q-opt'>C. Synapses</span>", ans: "A" }
     ];
 
     // --- Core Logic ---
     function render() {
-        // --- Fix: Declare state variables OUTSIDE try block ---
+        // [Fix V41.1: Declare vars OUTSIDE try block to share scope]
         let cardIdx = 1;
         let currentCard;
         let container;
         const SAFE_BOTTOM = 1350; 
 
-        // Define helpers inside render so they share scope
+        // Helper functions needing access to container/currentCard
         function createNewPage() {
             cardIdx++; 
             currentCard = createNormalPage(cardIdx);
@@ -396,7 +446,7 @@
                 canvas.toBlob(function(blob) {
                     if (!blob) { alert("Security Error: Use Local Server."); return; }
                     const link = document.createElement('a');
-                    link.download = `TheWeekJunior_CES_Page_${i + 1}.png`;
+                    link.download = `TheWeekJunior_Page_${i + 1}.png`;
                     link.href = URL.createObjectURL(blob);
                     link.click();
                     setTimeout(() => URL.revokeObjectURL(link.href), 1000);
@@ -414,7 +464,4 @@
     }
 
     window.loadFile = function(e) { document.getElementById('hero-img').src = URL.createObjectURL(e.target.files[0]); document.getElementById('hero-img').style.display='block'; document.getElementById('hero-txt').style.display='none'; };
-    window.onload = render;
-</script>
-</body>
-</html>
+    window.onload = render;</script></body></html>
