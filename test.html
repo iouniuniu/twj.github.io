@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Week Junior - New Driving Rules (V41.0 Fixed)</title>
+    <title>The Week Junior - CES Tech (V41.0 Fixed)</title>
     <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700&family=Noto+Sans+SC:wght@300;400;500;700&family=Lato:wght@400;700;900&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
         :root {
-            /* 动态主题色：交通/警示红 */
-            --theme-color: #c0392b; 
+            /* 动态主题色：科技蓝 */
+            --theme-color: #3498db; 
 
             /* 词性颜色 */
             --t-subj: #C0392B; --t-verb: #2980B9; --t-obj: #27AE60; --t-mod: #D35400; --t-prep: #8E44AD; --t-conn: #7F8C8D;
@@ -144,57 +144,73 @@
     // --- Phase 4: Data Injection ---
     const META = {
         issue: "ISSUE 17 JAN 2026",
-        title: "New Driving Rules Proposed",
-        subtitle: "英国拟议新驾驶规则",
-        themeColor: "#c0392b"
+        title: "Top tech on display in the US",
+        subtitle: "美国展出顶尖科技",
+        themeColor: "#3498db"
     };
 
     // Escape Note: all single quotes inside text must be escaped (e.g. ' -> \')
     const MAIN_CONTENT = [
-        { eng: `The UK Government has <span class="hl hl-v">proposed</span><sup>①</sup> lots of new rules for drivers.`, chi: `英国政府为司机<span class="hl hl-v">提出</span><sup>①</sup>了许多新规则。` },
-        { eng: `These include drivers over the age of 70 having their <span class="hl hl-n">eyesight</span><sup>②</sup> checked every three years, and learner drivers having to wait up to six months after passing their theory test before taking a <span class="hl hl-adj">practical</span><sup>③</sup> driving test.`, chi: `这些规则包括 70 岁以上的司机每三年检查一次<span class="hl hl-n">视力</span><sup>②</sup>，以及实习司机在通过理论考试后必须等待长达六个月才能参加<span class="hl hl-adj">实际</span><sup>③</sup>路考。` },
-        { eng: `People who are caught breaking the law while driving could face <span class="hl hl-adj">harsher</span><sup>④</sup> <span class="hl hl-n">punishments</span><sup>⑤</sup>.`, chi: `开车时违法的司机可能会面临<span class="hl hl-adj">更严厉的</span><sup>④</sup><span class="hl hl-n">惩罚</span><sup>⑤</sup>。` },
-        { eng: `It\'s hoped these new road safety <span class="hl hl-n">regulations</span><sup>⑥</sup> could <span class="hl hl-v">reduce</span><sup>⑦</sup> the number of accidents and save lives.`, chi: `希望这些新的道路安全<span class="hl hl-n">法规</span><sup>⑥</sup>能够<span class="hl hl-v">减少</span><sup>⑦</sup>事故数量并挽救生命。` }
+        [cite_start]{ eng: `More than 148,000 <span class="hl hl-n">visitors</span><sup>①</sup> attended the Consumer Electronics Show (CES) in Las Vegas, US, from 6 to 9 January. [cite: 803]`, chi: `1月6日至9日，超过14.8万名<span class="hl hl-n">参观者</span><sup>①</sup>参加了在美国拉斯维加斯举行的消费电子展（CES）。` },
+        { eng: `CES is one of the world\'s biggest technology events. [cite_start]Every year, <span class="hl hl-adj">cutting-edge</span><sup>②</sup> devices, gadgets and robots go on show. [cite: 804]`, chi: `CES是世界上最大的科技活动之一。每年，<span class="hl hl-adj">尖端的</span><sup>②</sup>设备、小工具和机器人都会在此展出。` },
+        [cite_start]{ eng: `This year, lots of gadgets featured <span class="hl hl-n">artificial intelligence</span><sup>③</sup> (AI). [cite: 805]`, chi: `今年，许多小工具都以<span class="hl hl-n">人工智能</span><sup>③</sup>（AI）为特色。` },
+        [cite_start]{ eng: `Some gadgets have the <span class="hl hl-n">potential</span><sup>④</sup> to save lives, such as the Allergen Alert. [cite: 806]`, chi: `一些小工具有挽救生命的<span class="hl hl-n">潜力</span><sup>④</sup>，例如“过敏原警报”。` },
+        [cite_start]{ eng: `<span class="hl hl-v">Controlled</span><sup>⑤</sup> by an AI-powered app, this <span class="hl hl-adj">portable</span><sup>⑥</sup> laboratory lets users scan food labels to avoid ingredients they are allergic to. [cite: 807]`, chi: `这个<span class="hl hl-adj">便携式</span><sup>⑥</sup>实验室由AI驱动的应用程序<span class="hl hl-v">控制</span><sup>⑤</sup>，允许用户扫描食品标签以避免食用过敏成分。` },
+        [cite_start]{ eng: `Another invention, the Amphibious RoboTurtle, helps sealife by working as an <span class="hl hl-adj">environmental</span><sup>⑦</sup> research tool. [cite: 808]`, chi: `另一项发明是“两栖机器龟”，它作为<span class="hl hl-adj">环境</span><sup>⑦</sup>研究工具帮助海洋生物。` },
+        [cite_start]{ eng: `It swims like a turtle so it doesn\'t <span class="hl hl-v">disturb</span><sup>⑧</sup> creatures in the way humans might. [cite: 810]`, chi: `它像乌龟一样游泳，因此不会像人类那样<span class="hl hl-v">打扰</span><sup>⑧</sup>生物。` },
+        { eng: `AI-powered robots that can <span class="hl hl-v">perform</span><sup>⑨</sup> household chores were another big draw. [cite_start]LG\'s CLOiD can operate a washing machine. [cite: 811, 812, 813]`, chi: `能够<span class="hl hl-v">执行</span><sup>⑨</sup>家务的AI机器人是另一个巨大的吸引力。LG的CLOiD可以操作洗衣机。` },
+        [cite_start]{ type: 'supp', eng: `<h3>Pet Robot</h3>An AI penguin that moves around on a skateboard was unveiled at this year\'s show. [cite: 824]`, chi: `<h3>宠物机器人</h3>一只滑滑板的AI企鹅在今年的展会上亮相。` }
     ];
 
     const VOCAB_LIST = [
-        { w: "Propose", ipa: "/prəˈpəʊz/", p: "v.", m: "提议", c: "propose rules", e: "He proposed a new plan." },
-        { w: "Eyesight", ipa: "/ˈaɪsaɪt/", p: "n.", m: "视力", c: "good eyesight", e: "His eyesight is failing." },
-        { w: "Practical", ipa: "/ˈpræktɪkl/", p: "adj.", m: "实际的", c: "practical test", e: "Gain practical experience." },
-        { w: "Harsh", ipa: "/hɑːʃ/", p: "adj.", m: "严厉的", c: "harsh punishment", e: "The reality is harsh." },
-        { w: "Punishment", ipa: "/ˈpʌnɪʃmənt/", p: "n.", m: "惩罚", c: "face punishment", e: "The punishment was severe." },
-        { w: "Regulation", ipa: "/ˌreɡjuˈleɪʃn/", p: "n.", m: "法规", c: "safety regulations", e: "Follow the regulations." },
-        { w: "Reduce", ipa: "/rɪˈdjuːs/", p: "v.", m: "减少", c: "reduce accidents", e: "Reduce the price." }
+        { w: "Visitor", ipa: "/ˈvɪzɪtə(r)/", p: "n.", m: "参观者", c: "attract visitors", e: "The museum has many visitors." },
+        { w: "Cutting-edge", ipa: "/ˌkʌtɪŋ ˈedʒ/", p: "adj.", m: "尖端的", c: "cutting-edge technology", e: "They use cutting-edge tools." },
+        { w: "Artificial intelligence", ipa: "/ˌɑːtɪfɪʃl ɪnˈtelɪdʒəns/", p: "n.", m: "人工智能", c: "AI technology", e: "AI is changing the world." },
+        { w: "Potential", ipa: "/pəˈtenʃl/", p: "n.", m: "潜力", c: "have the potential", e: "She has great potential." },
+        { w: "Control", ipa: "/kənˈtrəʊl/", p: "v.", m: "控制", c: "controlled by", e: "The car is controlled by AI." },
+        { w: "Portable", ipa: "/ˈpɔːtəbl/", p: "adj.", m: "便携的", c: "portable device", e: "This radio is portable." },
+        { w: "Environmental", ipa: "/ɪnˌvaɪrənˈmentl/", p: "adj.", m: "环境的", c: "environmental issues", e: "We protect environmental health." },
+        { w: "Disturb", ipa: "/dɪˈstɜːb/", p: "v.", m: "打扰", c: "disturb the peace", e: "Do not disturb him." },
+        { w: "Perform", ipa: "/pəˈfɔːm/", p: "v.", m: "执行", c: "perform a task", e: "Robots perform tasks." }
     ];
 
     const SA_CHUNKS = [
-        { t: "chunk-group bg-trunk", l: "l-subj", txt: "主语", w: "People" },
+        { t: "chunk-group bg-trunk", l: "l-subj", txt: "主语", w: "Artificial intelligence" },
+        { t: "bg-trunk", l: "l-verb", txt: "谓语", w: "is" },
+        { t: "bg-trunk", l: "l-obj", txt: "宾语", w: "the name" },
+        
         { t: "bg-clause-1 bracket", w: "(" },
-        { t: "bg-clause-1", w: "who" },
-        { t: "bg-clause-1", w: "are" },
-        { t: "bg-clause-1", w: "caught" },
-        { t: "bg-clause-1", w: "breaking" },
-        { t: "bg-clause-1", w: "the" },
-        { t: "bg-clause-1", w: "law" },
+        { t: "bg-clause-1", w: "given" },
+        { t: "bg-clause-1", w: "to" },
+        { t: "bg-clause-1", w: "a" },
+        { t: "bg-clause-1", w: "computer" },
+        { t: "bg-clause-1", w: "system" },
         { t: "bg-clause-1 bracket", w: ")" },
         
-        { t: "chunk-group bg-trunk", l: "l-verb", txt: "谓语", w: "could face" },
-        { t: "chunk-group bg-trunk", l: "l-obj", txt: "宾语", w: "harsher punishments" },
+        { t: "bg-clause-2 bracket", w: "(" },
+        { t: "bg-clause-2", w: "that" },
+        { t: "bg-clause-2", w: "is" },
+        { t: "bg-clause-2", w: "able" },
+        { t: "bg-clause-2", w: "to" },
+        { t: "bg-clause-2", w: "think" },
+        { t: "bg-clause-2", w: "for" },
+        { t: "bg-clause-2", w: "itself" },
+        { t: "bg-clause-2 bracket", w: ")" },
         { t: "bg-trunk", w: "." }
     ];
     
-    const SA_TRANS = "💡 译文：开车时违法的司机可能会面临更严厉的惩罚。";
+    const SA_TRANS = "💡 译文：人工智能是赋予一种能够独立“思考”的计算机系统的名称。";
     
     const SA_STEPS = [
-        { type: "bd-struct", label: "结构分析", text: "<strong>句型判断</strong><br>本句是包含定语从句的复合句。主句的结构是：主语 (People) + 谓语 (could face) + 宾语 (punishments)。" },
-        { type: "bd-clause-1", label: "定语从句", text: "<strong>修饰部分</strong><br>橙色括号内的 <em>who are caught breaking the law...</em> 是一个由 <em>who</em> 引导的定语从句，用来修饰主语 <em>People</em>，明确指代那些“被抓到违法的人”。" },
-        { type: "bd-trunk", label: "核心含义", text: "<strong>主干部分</strong><br>去掉修饰语后，句子的核心意思是“人们可能面临更严厉的惩罚”。" }
+        { type: "bd-struct", label: "结构分析", text: "<strong>句型判断</strong><br>本句是一个包含过去分词短语作后置定语和定语从句的复合句。主句结构为：主语 + 系动词 + 表语 (name)。" },
+        { type: "bd-clause-1", label: "后置定语", text: "<strong>修饰名字</strong><br>橙色括号内的 <em>given to a computer system</em> 是过去分词短语，修饰前面的 <em>name</em>，表示“给予计算机系统的名称”。" },
+        { type: "bd-clause-2", label: "定语从句", text: "<strong>修饰系统</strong><br>绿色括号内的 <em>that is able to think...</em> 是一个由 <em>that</em> 引导的定语从句，修饰前面的 <em>computer system</em>，说明这个系统具备的能力。" }
     ];
 
     const QUIZ_ITEMS = [
-        { q: "Who needs eyesight checks every 3 years?", a: "<span class='q-opt'>A. Drivers over 70</span> <span class='q-opt'>B. Learners</span>" },
-        { q: "How long might learners have to wait?", a: "<span class='q-opt'>A. 3 months</span> <span class='q-opt'>B. 6 months</span>" },
-        { q: "What is the goal of the new rules?", a: "<span class='q-opt'>A. Save money</span> <span class='q-opt'>B. Save lives</span>" }
+        { q: "Where was CES held?", a: "<span class='q-opt'>A. London</span> <span class='q-opt'>B. Las Vegas</span>" },
+        { q: "What does the Allergen Alert do?", a: "<span class='q-opt'>A. Cooks food</span> <span class='q-opt'>B. Scans labels</span>" },
+        { q: "What animal does the RoboTurtle mimic?", a: "<span class='q-opt'>A. Fish</span> <span class='q-opt'>B. Turtle</span>" }
     ];
 
     // --- Core Logic ---
