@@ -158,105 +158,94 @@
 
     // --- Phase 4: Data Injection ---
     const META = { 
-        issue: "CLASSIC LITERATURE", 
-        title: "Before Breakfast", 
-        subtitle: "早餐之前", 
-        themeColor: "#27AE60" 
+        issue: "17 January 2026", 
+        title: "Discover the secrets of spying", 
+        subtitle: "揭秘间谍活动的奥秘", 
+        themeColor: "#2C3E50" 
     };
     
     // [Audit 1: Atomized Content]
     const MAIN_CONTENT = [
-        {
-            eng: "\"Where's Papa going with that <span class='hl hl-n'>ax<sup>①</sup></span>?\" said Fern to her mother as they were setting the table for breakfast.",
-            chi: "“爸爸拿那把<span class='hl hl-n'>斧头<sup>①</sup></span>去哪儿？”早饭前摆桌子时，芬恩问她妈妈。"
-        },
-        {
-            eng: "\"Out to the <span class='hl hl-n'>hoghouse<sup>②</sup></span>,\" replied Mrs. Arable. \"Some pigs were born last night.\"",
-            chi: "“去<span class='hl hl-n'>猪舍<sup>②</sup></span>，”阿拉布尔太太回答道，“昨天夜里生了几头小猪。”"
-        },
-        {
-            eng: "\"I don't see why he needs an ax,\" continued Fern, who was only eight.",
-            chi: "“我不明白他为什么需要斧头，”芬恩继续说，她只有八岁。"
-        },
-        {
-            eng: "\"Well,\" said her mother, \"one of the pigs is a <span class='hl hl-n'>runt<sup>③</sup></span>. It's very small and weak, and it will never <span class='hl hl-v'>amount to<sup>④</sup></span> anything.\"",
-            chi: "“嗯，”她妈妈说，“其中有一头猪是<span class='hl hl-n'>发育不全的矮个子<sup>③</sup></span>。它非常小而且虚弱，将来也不会有<span class='hl hl-v'>什么出息<sup>④</sup></span>。”"
-        },
-        {
-            eng: "\"So your father has decided to <span class='hl hl-v'>do away with<sup>⑤</sup></span> it.\"",
-            chi: "“所以你爸爸决定<span class='hl hl-v'>干掉<sup>⑤</sup></span>它。”"
-        },
-        {
-            eng: "\"Do away with it?\" <span class='hl hl-v'>shrieked<sup>⑥</sup></span> Fern. \"You mean kill it? Just because it's smaller than the others?\"",
-            chi: "“干掉它？”芬恩<span class='hl hl-v'>尖叫道<sup>⑥</sup></span>，“你的意思是杀了它？就因为它比别的猪小？”"
-        },
-        {
-            eng: "Mrs. Arable put a <span class='hl hl-n'>pitcher<sup>⑦</sup></span> of cream on the table. \"Don't yell, Fern!\" she said. \"Your father is right. The pig would probably die anyway.\"",
-            chi: "阿拉布尔太太在桌上放了一<span class='hl hl-n'>壶<sup>⑦</sup></span>奶油。“别叫，芬恩！”她说，“你爸爸是对的。这头猪反正也活不长。”"
-        },
-        {
-            eng: "Fern pushed a chair out of the way and ran outdoors. The grass was wet and the earth smelled of springtime.",
-            chi: "芬恩推开椅子跑了出去。草地湿漉漉的，空气中闻起来有春天的气息。"
-        },
-        {
-            eng: "Fern's sneakers were <span class='hl hl-adj'>sopping<sup>⑧</sup></span> by the time she caught up with her father.",
-            chi: "当芬恩追上她父亲时，她的运动鞋已经<span class='hl hl-adj'>湿透了<sup>⑧</sup></span>。"
-        },
-        {
-            eng: "\"Please don't kill it!\" she <span class='hl hl-v'>sobbed<sup>⑨</sup></span>. \"It's unfair.\"",
-            chi: "“请不要杀它！”她<span class='hl hl-v'>啜泣着<sup>⑨</sup></span>，“这不公平。”"
-        },
-        {
-            eng: "Mr. Arable stopped walking. \"Fern,\" he said gently, \"you will have to learn to control yourself.\"",
-            chi: "阿拉布尔先生停下脚步。“芬恩，”他温和地说，“你得学会控制自己。”"
-        },
-        {
-            eng: "\"Control myself?\" yelled Fern. \"This is a matter of life and death, and you talk about controlling myself.\"",
-            chi: "“控制我自己？”芬恩大喊道，“这可是生死攸关的大事，你却在谈论控制我自己。”"
-        },
-        {
-            type: "supp",
-            eng: "<h3>Did You Know?</h3><p>Runt pigs often require extra care and hand-feeding because they can't compete with larger siblings for milk.</p>",
-            chi: "<h3>你知道吗？</h3><p>发育不良的小猪（Runts）通常需要额外的照顾和人工喂养，因为它们抢不过体型较大的兄弟姐妹喝奶。</p>"
-        }
+        { eng: "A new exhibition at Imperial War Museum North in Manchester, England, is all about the history of <span class='hl hl-n'>espionage</span><sup>①</sup> (spying).", chi: "在英国曼彻斯特的帝国战争博物馆北馆，一场新的展览全面展示了<span class='hl hl-n'>间谍活动</span><sup>①</sup>的历史。" },
+        { eng: "The exhibition, <i>Spies, Lies and Deception</i>, tells visitors about some extraordinary acts of espionage from the First World War (1914–1918) to the present day.", chi: "这场名为“间谍、谎言与欺骗”的展览向参观者讲述了从第一次世界大战（1914-1918年）至今的一些非凡的间谍行动。" },
+        { eng: "It also looks at what people have done to <span class='hl hl-v'>detect</span><sup>②</sup> spies and <span class='hl hl-v'>uncover</span><sup>③</sup> their true <span class='hl hl-n'>identity</span><sup>④</sup>.", chi: "它还展示了人们为<span class='hl hl-v'>侦查</span><sup>②</sup>间谍并<span class='hl hl-v'>揭露</span><sup>③</sup>其真实<span class='hl hl-n'>身份</span><sup>④</sup>所采取的行动。" },
+        { eng: "Amanda Mason, who organised the exhibition, told <i>The Week Junior</i>, 'As soon as you start looking into spy stories, it comes down to the incredible people that are involved.'", chi: "展览组织者阿曼达·梅森告诉《The Week Junior》：“当你开始研究间谍故事时，归根结底是关于那些参与其中的不可思议的人。”" },
+        { eng: "'It’s about making sure that these people’s stories are not forgotten.'", chi: "“这是为了确保这些人的故事不会被遗忘。”" },
+        { eng: "The exhibition is very <span class='hl hl-adj'>interactive</span><sup>⑤</sup>.", chi: "这次展览非常具有<span class='hl hl-adj'>互动性</span><sup>⑤</sup>。" },
+        { eng: "Visitors can try on spy outfits, wear <span class='hl hl-n'>camouflage</span><sup>⑥</sup> clothing, and peer through an 'observation tree' to become spies themselves.", chi: "参观者可以试穿间谍装备，穿上<span class='hl hl-n'>伪装</span><sup>⑥</sup>服，通过“观察树”窥视，亲身体验做间谍的感觉。" },
+        { eng: "You can also check to see if you can spot when something has been produced using '<span class='hl hl-n'>deepfake</span><sup>⑦</sup> technology' (when fake videos or images are made to trick the viewer into thinking they’re real).", chi: "你还可以测试自己是否能识别出由“<span class='hl hl-n'>深度伪造</span><sup>⑦</sup>技术”制作的内容（即制作虚假视频或图像以欺骗观众，让他们以为是真实的）。" },
+        { eng: "There are lots of fascinating objects used for spying on display as well.", chi: "现场还展出了许多用于间谍活动的迷人物品。" },
+        { eng: "There is plenty more for families to explore, including a trail that they can pick up at the start of the exhibition.", chi: "还有更多内容供家庭探索，包括在展览开始时可以领取的路线图。" },
+        { eng: "'It’s focused around five key people in the exhibition – there are questions about all of them,' says Mason.", chi: "“它围绕展览中的五个关键人物展开——有关于他们所有人的问题，”梅森说。" },
+        { eng: "'You need to find these five people and find out facts about them.'", chi: "“你需要找到这五个人并找出关于他们的事实。”" },
+        { eng: "'As you finish the exhibition, with all these answers, you can put a code word into the screen at the end and you’ll <span class='hl hl-v'>uncover</span><sup>③</sup> a reward.'", chi: "“当你结束参观时，带着这些答案，你可以在最后的屏幕上输入代码，然后你会<span class='hl hl-v'>揭开</span><sup>③</sup>一个奖励。”" },
+        { eng: "<i>Spies, Lies and Deception</i> is free and runs until 31 August.", chi: "“间谍、谎言与欺骗”展览免费开放，将持续至8月31日。" },
+        
+        // Sidebars
+        { type: 'supp', eng: "<h3>Noor Inayat Khan</h3>In 1943, Noor Inayat Khan, who features in the exhibition, was the first female wireless <span class='hl hl-n'>operator</span><sup>⑧</sup> sent into Nazi-<span class='hl hl-adj'>occupied</span><sup>⑨</sup> France.", chi: "<h3>努尔·伊娜亚特·汗</h3>1943年，展览中特别介绍的努尔·伊娜亚特·汗是第一位被派往纳粹<span class='hl hl-adj'>占领的</span><sup>⑨</sup>法国的女性无线电<span class='hl hl-n'>操作员</span><sup>⑧</sup>。" },
+        { type: 'supp', eng: "As a wireless operator, her job was to send secret messages back to Britain via radio.", chi: "作为一名无线电操作员，她的工作是通过无线电向英国发送秘密信息。" },
+        { type: 'supp', eng: "She sent messages for four months but was eventually <span class='hl hl-v'>captured</span><sup>⑩</sup>.", chi: "她发送了四个月的信息，但最终被<span class='hl hl-v'>俘获</span><sup>⑩</sup>。" },
+        { type: 'supp', eng: "Her story helped to <span class='hl hl-v'>inspire</span><sup>⑪</sup> the book <i>Safiyyah’s War</i>, by Hiba Noor Khan.", chi: "她的故事<span class='hl hl-v'>启发</span><sup>⑪</sup>了希巴·努尔·汗创作《萨菲亚的战争》一书。" },
+        
+        { type: 'supp', eng: "<h3>Tricksters</h3>Double agents pretend to spy for one country while actually working for another.", chi: "<h3>骗术大师</h3>双重间谍假装为一个国家从事间谍活动，实际上却为另一个国家工作。" },
+        
+        { type: 'supp', eng: "<h3>Spying devices featured in the exhibition</h3><b>Dazzle ships:</b> Britain used dazzle ships during the First World War (1914–1918).", chi: "<h3>展览中的间谍设备</h3><b>迷彩船：</b>英国在第一次世界大战（1914-1918年）期间使用了迷彩船。" },
+        { type: 'supp', eng: "The patterns on the ships made it more difficult for the enemy to work out how far away they were and in which direction they were travelling.", chi: "船上的图案使敌人更难弄清楚它们有多远以及朝哪个方向航行。" },
+        { type: 'supp', eng: "<b>Footprint overshoes:</b> These strapped onto someone’s normal shoes and were designed to create fake footprints.", chi: "<b>脚印套鞋：</b>这些套在普通鞋子上，旨在制造假脚印。" },
+        { type: 'supp', eng: "They could also <span class='hl hl-v'>disguise</span><sup>⑫</sup> which way the person was walking so it was hard to follow their trail.", chi: "它们还可以<span class='hl hl-v'>伪装</span><sup>⑫</sup>行走方向，使人难以追踪。" },
+        { type: 'supp', eng: "<b>Matchbox:</b> This box contains one match adapted for writing secret messages.", chi: "<b>火柴盒：</b>这个盒子里有一根经过改装用于书写秘密信息的火柴。" },
+        { type: 'supp', eng: "Matches like these were found on Eddie Chapman, a German spy in the Second World War (1939–1945), when he was caught.", chi: "二战期间（1939-1945年），德国间谍埃迪·查普曼被捕时，身上就发现了这样的火柴。" }
     ];
     
     // [Audit 2: Sync & Dedup]
     const VOCAB_LIST = [
-        { w: "ax", ipa: "æks", p: "n.", m: "斧头", c: "needs an ax", e: "Where's Papa going with that ax?" },
-        { w: "hoghouse", ipa: "hɒɡhaʊs", p: "n.", m: "猪舍", c: "out to the hoghouse", e: "Papa is going out to the hoghouse." },
-        { w: "runt", ipa: "rʌnt", p: "n.", m: "发育不全的矮个子", c: "is a runt", e: "One of the pigs is a runt." },
-        { w: "amount to", ipa: "əˈmaʊnt tuː", p: "v. (phrasal)", m: "总计; 意味着; 有结果", c: "amount to anything", e: "It will never amount to anything." },
-        { w: "do away with", ipa: "duː əˈweɪ wɪð", p: "v. (phrasal)", m: "废除; 干掉(杀掉)", c: "decided to do away with it", e: "Father has decided to do away with it." },
-        { w: "shriek", ipa: "ʃriːk", p: "v.", m: "尖叫", c: "shrieked Fern", e: "\"Do away with it?\" shrieked Fern." },
-        { w: "pitcher", ipa: "ˈpɪtʃər", p: "n.", m: "大水罐/壶", c: "pitcher of cream", e: "She put a pitcher of cream on the table." },
-        { w: "sopping", ipa: "ˈsɒpɪŋ", p: "adj.", m: "湿透的", c: "sneakers were sopping", e: "Fern's sneakers were sopping wet." },
-        { w: "sob", ipa: "sɒb", p: "v.", m: "啜泣", c: "she sobbed", e: "\"It's unfair,\" she sobbed." },
-        { w: "injustice", ipa: "ɪnˈdʒʌstɪs", p: "n.", m: "不公正", c: "rid the world of injustice", e: "She was trying to rid the world of injustice." },
-        { w: "specimen", ipa: "ˈspɛsɪmɪn", p: "n.", m: "样本; 样品", c: "fine specimen", e: "That's a fine specimen of a pig." },
-        { w: "wobble", ipa: "ˈwɒbəl", p: "v.", m: "摇晃", c: "the carton wobbled", e: "As she approached, the carton wobbled." }
+        { w: "espionage", ipa: "ˈespiənɑːʒ", p: "n.", m: "间谍活动", c: "acts of espionage", e: "The film is a thrilling tale of espionage." },
+        { w: "detect", ipa: "dɪˈtekt", p: "v.", m: "察觉；侦查", c: "detect spies", e: "The sensor can detect the slightest movement." },
+        { w: "uncover", ipa: "ʌnˈkʌvə(r)", p: "v.", m: "揭露；发现", c: "uncover the truth", e: "They uncovered a secret plot." },
+        { w: "identity", ipa: "aɪˈdentəti", p: "n.", m: "身份", c: "true identity", e: "The spy kept his identity secret." },
+        { w: "interactive", ipa: "ˌɪntərˈæktɪv", p: "adj.", m: "互动的", c: "interactive exhibit", e: "This museum has many interactive displays." },
+        { w: "camouflage", ipa: "ˈkæməflɑːʒ", p: "n.", m: "伪装", c: "wear camouflage", e: "The soldier's camouflage helped him hide." },
+        { w: "deepfake", ipa: "ˈdiːpfeɪk", p: "n.", m: "深度伪造", c: "deepfake technology", e: "Deepfake videos can be very misleading." },
+        { w: "operator", ipa: "ˈɒpəreɪtə(r)", p: "n.", m: "操作员", c: "wireless operator", e: "The machine operator is skilled." },
+        { w: "occupied", ipa: "ˈɒkjupaɪd", p: "adj.", m: "被占领的", c: "occupied territory", e: "France was occupied during the war." },
+        { w: "capture", ipa: "ˈkæptʃə(r)", p: "v.", m: "俘虏；捕获", c: "be captured", e: "The soldier was captured by the enemy." },
+        { w: "inspire", ipa: "ɪnˈspaɪə(r)", p: "v.", m: "激励；启发", c: "inspire a book", e: "Her courage inspired everyone." },
+        { w: "disguise", ipa: "dɪsˈɡaɪz", p: "v.", m: "伪装；掩饰", c: "disguise oneself", e: "He disguised himself as a guard." }
     ];
     
     // [Audit 3: Syntax Localization]
     const SA_CHUNKS = [
-        { w: "It", t: "chunk chunk-group l-subj", l: "主语", txt: "" },
-        { w: "just shows", t: "chunk chunk-group l-verb", l: "谓语", txt: "" },
-        { w: "(", t: "bracket bg-clause-1", l: "", txt: "" },
-        { w: "what can happen", t: "chunk bg-clause-1", l: "宾语从句", txt: "" },
-        { w: "(", t: "bracket bg-clause-2", l: "", txt: "" },
-        { w: "if a person gets out of bed promptly", t: "chunk bg-clause-2", l: "条件状语从句", txt: "" },
-        { w: ")", t: "bracket bg-clause-2", l: "", txt: "" },
-        { w: ")", t: "bracket bg-clause-1", l: "", txt: "" }
+        { t: 'chunk-group', l: 'l-subj', w: 'The patterns on the ships', txt: '主语' },
+        { t: 'chunk', l: 'l-verb', w: 'made', txt: '谓语' },
+        { t: 'chunk', l: 'l-obj', w: 'it', txt: '形式宾语' },
+        { t: 'chunk', l: '', w: 'more difficult', txt: '宾补' },
+        { t: 'chunk', l: '', w: 'for the enemy', txt: '不定式逻辑主语' },
+        { t: 'chunk', l: '', w: 'to work out', txt: '真正宾语(不定式)' },
+        { t: 'bg-clause-1 bracket', w: '(', txt: '' },
+        { t: 'bg-clause-1 chunk', w: 'how far away', txt: '引导词' },
+        { t: 'bg-clause-1 chunk', w: 'they', txt: '主' },
+        { t: 'bg-clause-1 chunk', w: 'were', txt: '系' },
+        { t: 'bg-clause-1 bracket', w: ')', txt: '宾语从句1' },
+        { t: 'chunk', l: 'l-conn', w: 'and', txt: '连词' },
+        { t: 'bg-clause-2 bracket', w: '(', txt: '' },
+        { t: 'bg-clause-2 chunk', w: 'in which direction', txt: '引导词' },
+        { t: 'bg-clause-2 chunk', w: 'they', txt: '主' },
+        { t: 'bg-clause-2 chunk', w: 'were travelling', txt: '谓' },
+        { t: 'bg-clause-2 bracket', w: ')', txt: '宾语从句2' }
     ];
-    const SA_TRANS = "这句话恰好说明了，如果一个人起床够及时，会发生什么事。（指芬恩早起救了小猪一命）";
+    const SA_TRANS = "船上的图案使得敌人更难弄清楚它们距离有多远以及它们的航行方向。";
     const SA_STEPS = [
-        { type: "bd-trunk", label: "主句骨架", text: "It just shows... (这只是表明...)" },
-        { type: "bd-clause-1", label: "宾语从句", text: "shows 后面跟着一个由 <b>what</b> 引导的从句，作为 shows 的宾语，解释说明了'表明了什么内容'。" },
-        { type: "bd-clause-2", label: "条件状语从句", text: "在宾语从句内部，嵌套了一个由 <b>if</b> 引导的条件状语从句，说明'发生'的前提条件是'如果你起床及时'。" }
+        { type: 'bd-struct', label: '句型判断', text: '含形式宾语的复合句 + 两个并列的宾语从句' },
+        { type: 'bd-trunk', label: '主干拆解', text: 'The patterns (主) made (谓) it (形宾) difficult (宾补)。' },
+        { type: 'bd-trunk', label: '形式宾语', text: 'it 指代后面的不定式短语 to work out ...。' },
+        { type: 'bd-clause-1', label: '从句解析1', text: 'how far away they were 是 to work out 的第一个宾语，由 how 引导。' },
+        { type: 'bd-clause-2', label: '从句解析2', text: 'in which direction they were travelling 是第二个宾语，由 in which direction 引导，与前一个从句通过 and 并列。' }
     ];
+    
     const QUIZ_ITEMS = [
-        { q: "Why did Papa want to kill the pig?", a: "<span class='q-opt'>A. It was sick</span><span class='q-opt'>B. It was a runt (too small)</span><span class='q-opt'>C. It was too loud</span>" },
-        { q: "How did Fern feel about the pig?", a: "<span class='q-opt'>A. She was afraid</span><span class='q-opt'>B. She thought it was unfair</span><span class='q-opt'>C. She didn't care</span>" }
+        { q: "What is 'espionage' mainly about?", a: "<span class='q-opt'>A. Cooking</span><span class='q-opt'>B. Spying</span><span class='q-opt'>C. Dancing</span>" },
+        { q: "The exhibition allows visitors to detect _____.", a: "<span class='q-opt'>A. animals</span><span class='q-opt'>B. deepfakes</span><span class='q-opt'>C. weather</span>" },
+        { q: "Noor Inayat Khan was a wireless _____.", a: "<span class='q-blank'></span> (n.)" }
     ];
 
     // --- Core Logic ---
