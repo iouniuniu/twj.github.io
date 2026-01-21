@@ -3,271 +3,339 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Week Junior Handout (V52.2)</title>
+    <title>The Week Junior Handout</title>
     <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700&family=Noto+Sans+SC:wght@300;400;500;700&family=Lato:wght@400;700;900&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
         :root {
-            /* 动态主题色 */
-            --theme-color: #27AE60; 
+            /* 动态主题色 (由 JS 注入) */
+            --theme-color: #2c3e50; 
 
-            /* 语法成分颜色 (Syntax Colors) */
-            --t-subj: #C0392B; /* 主语-红 */
-            --t-verb: #2980B9; /* 谓语-蓝 */
-            --t-obj: #27AE60;  /* 宾语-绿 */
-            --t-mod: #D35400;  /* 修饰-橙 */
-            --t-conn: #7F8C8D; /* 连词-灰 */
+            /* 词性颜色 */
+            --t-subj: #C0392B; --t-verb: #2980B9; --t-obj: #27AE60; --t-mod: #D35400; --t-prep: #8E44AD; --t-conn: #7F8C8D;
             
-            /* 背景色块 */
+            /* 词性背景 */
             --bg-noun: #D6EAF8; --bg-verb: #D5F5E3; --bg-adj: #E8DAEF;
             
-            /* 长难句层级背景 */
-            --bg-trunk: #fff;         /* 主句背景 */
-            --bg-clause-1: #FEF9E7;   /* 第一层从句 (淡黄) */
-            --bg-clause-2: #E8F8F5;   /* 第二层从句 (淡青) */
-            --bg-clause-3: #F4ECF7;   /* 第三层从句 (淡紫) */
-
+            /* 长难句背景 */
+            --bg-trunk: #EBF5FB; --bg-clause-1: #FEF5E7; --bg-clause-2: #E9F7EF;
             /* 边框色 */
-            --bd-trunk: #2c3e50; 
-            --bd-clause-1: #F1C40F; 
-            --bd-clause-2: #1ABC9C;
+            --bd-trunk: #3498DB; --bd-clause-1: #F39C12; --bd-clause-2: #2ECC71; --bd-struct: #2C3E50;
             
-            /* 通用布局 */
-            --text-main: #2c3e50; --bg: #ffffff; --supp-bg: #F8F9F9;
+            /* 通用 */
+            --text-main: #2c3e50; --bg: #ffffff; --supp-bg: #F0F8FF;
             --p-w: 1080px; --p-h: 1440px;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; }
-        body { background: #555; display: flex; flex-direction: column; align-items: center; padding: 40px 0; gap: 40px; font-family: 'Noto Sans SC', sans-serif; }
+        body { background: #444; display: flex; flex-direction: column; align-items: center; padding: 40px 0; gap: 40px; font-family: 'Noto Sans SC', sans-serif; }
         
-        /* 错误条与Loading */
-        #status-bar { position: fixed; top: 0; left: 0; width: 100%; background: #e74c3c; color: white; text-align: center; padding: 15px; font-weight: bold; z-index: 10000; display: none; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+        /* 错误提示条 */
+        #status-bar { position: fixed; top: 0; left: 0; width: 100%; background: #e74c3c; color: white; text-align: center; padding: 15px; font-weight: bold; z-index: 10000; display: none; font-size: 14pt; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+        /* Loading 遮罩 */
         #loading-mask { position: fixed; inset: 0; background: #f9f9f9; z-index: 9998; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: 'Lato'; color: #555; }
         .spinner { width: 50px; height: 50px; border: 5px solid #ccc; border-top-color: var(--theme-color); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* 卡片容器 */
-        .card { width: var(--p-w); height: var(--p-h); background: var(--bg); display: flex; flex-direction: column; overflow: hidden; position: relative; box-shadow: 0 30px 80px rgba(0,0,0,0.5); flex-shrink: 0; }
+        /* 容器 */
+        .card { width: var(--p-w); height: var(--p-h); background: var(--bg); display: flex; flex-direction: column; overflow: hidden; position: relative; box-shadow: 0 30px 80px rgba(0,0,0,0.6); flex-shrink: 0; }
         .card.cover-page { padding: 0; } .card.normal-page { padding: 50px 60px; }
         .content-body { flex-grow: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 0; overflow: hidden; width: 100%; }
         .cover-page .content-body { padding: 0 60px; } .normal-page .content-body { padding: 0; }
 
-        /* 封面元素 */
+        /* 首页 (960px Height) */
         .hero-section { width: 100%; height: 960px; background: #e0e0e0; cursor: pointer; border-bottom: 8px solid var(--theme-color); position: relative; flex-shrink: 0; }
         .hero-img { width: 100%; height: 100%; object-fit: cover; display: none; }
         .hero-placeholder { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #777; font-size: 20pt; font-family: 'Lato'; text-align: center; border: 3px dashed #bbb; padding: 15px 30px; border-radius: 10px; }
         
         .cover-header { padding: 30px 60px 10px 60px; display: flex; flex-direction: column; align-items: center; text-align: center; flex-shrink: 0; }
         .meta-tag { background: var(--theme-color); color: white; padding: 6px 20px; border-radius: 50px; font-family: 'Lato'; font-weight: 900; font-size: 12pt; margin-bottom: 15px; letter-spacing: 1px; }
-        .poster-title { font-family: 'Lora'; font-size: 58pt; font-weight: 700; color: var(--text-main); line-height: 1.0; margin-bottom: 10px; }
-        .poster-subtitle { font-family: 'Noto Sans SC'; font-size: 38pt; color: #5d6d7e; font-weight: 400; margin-bottom: 20px; position: relative; display: inline-block; }
+        
+        /* 标题增强 */
+        .poster-title { font-family: 'Lora'; font-size: 60pt; font-weight: 700; color: var(--text-main); line-height: 1.0; margin-bottom: 10px; }
+        .poster-subtitle { font-family: 'Noto Sans SC'; font-size: 40pt; color: #5d6d7e; font-weight: 400; margin-bottom: 20px; position: relative; display: inline-block; }
         .poster-subtitle::after { content: ""; display: block; width: 60px; height: 3px; background: var(--theme-color); margin: 10px auto 0 auto; }
 
-        /* 页眉页脚 */
+        /* 续页头 */
         .mini-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #ccc; padding-bottom: 15px; margin-bottom: 20px; height: 60px; flex-shrink: 0; width: 100%; }
         .mini-title { font-family: 'Lora'; font-weight: 700; font-size: 16pt; color: var(--text-main); }
-        .continued-tag { font-family: 'Lato'; font-weight: 700; font-style: italic; color: #666; font-size: 11pt; }
-        .footer { margin-top: auto; display: flex; justify-content: space-between; border-top: 1px solid #eee; padding: 0 60px; font-size: 11pt; color: #95a5a6; flex-shrink: 0; height: 70px; align-items: center; width: 100%; box-sizing: border-box; font-family: 'Lato'; }
-        .normal-page .footer { padding: 0; }
+        .continued-tag { font-family: 'Lato'; font-weight: 700; font-style: italic; background: transparent; padding: 5px 0; border-radius: 0; font-size: 11pt; color: #666; }
 
-        /* 正文与侧边栏 */
+        /* 正文 */
         .row { display: flex; gap: 40px; width: 100%; padding: 15px 0; border-bottom: 1px solid #f9f9f9; align-items: flex-start; flex-shrink: 0; }
         .col-eng { flex: 6; font-family: 'Lora'; font-size: 18pt; line-height: 1.8; text-align: justify; padding-right: 25px; border-right: 2px solid #f0f0f0; }
         .col-chi { flex: 4; font-family: 'Noto Sans SC'; font-size: 16pt; line-height: 1.8; color: #5d6d7e; text-align: justify; font-weight: 400; padding-top: 2px; }
-        
-        .row.supp-style { background: var(--supp-bg); padding: 20px 25px; border-radius: 8px; margin: 8px 0; border: none; }
-        .row.supp-style .col-eng { border-right: 2px solid #aec6cf; font-size: 16pt; }
-        .row.supp-style .col-chi { font-size: 14pt !important; color: #555; }
+
+        /* 边栏 (一致布局) */
+        .row.supp-style { background: var(--supp-bg); padding: 20px 25px; border-radius: 8px; margin: 5px 0; border: none; }
+        .row.supp-style .col-eng { border-right: 2px solid #aec6cf; font-size: 16pt; line-height: 1.6; }
+        .row.supp-style .col-chi { font-size: 14pt !important; line-height: 1.6; color: #555; }
         h3 { font-family: 'Lato'; font-weight: 900; font-size: 18pt; color: var(--theme-color); margin: 0 0 10px 0; display: block; border-left: 8px solid var(--theme-color); padding-left: 15px; }
+        .row.supp-style h3 { font-size: 16pt !important; border-left-width: 5px; }
 
-        /* 词汇表 */
-        .vocab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 40px; width: 100%; margin-bottom: 30px; flex-shrink: 0; }
-        .vocab-item { background: #fff; border-bottom: 1px solid #eee; padding-bottom: 10px; display: flex; flex-direction: column; gap: 4px; }
-        .v-line-1 { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-        .v-word { font-family: 'Lora'; font-weight: 700; font-size: 19pt; color: #2c3e50; }
-        .v-idx { background: #333; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 11pt; text-align: center; line-height: 22px; display: inline-block; transform: translateY(-2px); }
-        .v-pos { color: var(--theme-color); font-weight: bold; font-family: 'Times New Roman'; font-style: italic; font-size: 13pt; }
-        .v-mean { font-size: 15pt; color: #444; font-weight: 500; margin-left: auto; }
-        .v-line-2 { font-size: 14pt; color: #d35400; font-family: 'Roboto Mono'; font-weight: 500; }
-        .v-line-3 { font-size: 14pt; color: #7f8c8d; font-style: italic; font-family: 'Lora'; line-height: 1.4; }
-
-        /* 长难句分析核心样式 */
-        .sa-sentence-wrapper { display: flex; flex-wrap: wrap; column-gap: 4px; row-gap: 30px; line-height: 1.6; margin-bottom: 30px; padding-top: 15px; align-items: flex-end; width: 100%; }
-        
-        .chunk { display: inline-flex; flex-direction: column; align-items: center; margin: 0; vertical-align: bottom; position: relative; }
-        .chunk-text { font-family: 'Lora'; font-size: 20pt; color: #2c3e50; padding: 4px 6px; font-weight: 500; border-radius: 4px; transition: all 0.2s; }
-        
-        /* 词性标记线 */
-        .chunk-group { border-bottom: 3px solid #ccc; padding-bottom: 0px; margin: 0 2px; }
-        .chunk-group .chunk-text { padding-bottom: 0; background: transparent !important; } 
-        
-        /* 语法标签 (Label) */
-        .chunk-lbl { font-size: 9pt; font-family: 'Noto Sans SC'; font-weight: 800; margin-bottom: 2px; white-space: nowrap; width: 100%; text-align: center; color: #777; letter-spacing: 0.5px; }
-        .chunk-lbl:empty { height: 0; margin-bottom: 0; }
-        
-        /* 括号 (Brackets) */
-        .bracket { font-size: 24pt; color: #d35400; font-family: 'Lato'; font-weight: 300; padding: 0 2px; display: inline-block; transform: translateY(4px); }
-        
-        /* 背景色层级 */
-        .bg-trunk .chunk-text { background-color: var(--bg-trunk); border: 1px solid #eee; }
-        .bg-clause-1 .chunk-text { background-color: var(--bg-clause-1); }
-        .bg-clause-1.bracket { color: var(--bd-clause-1); }
-        .bg-clause-2 .chunk-text { background-color: var(--bg-clause-2); }
-        .bg-clause-2.bracket { color: var(--bd-clause-2); }
-        
-        /* 成分颜色 */
-        .l-subj { color: var(--t-subj); } 
-        .l-verb { color: var(--t-verb); } 
-        .l-obj { color: var(--t-obj); } 
-        .l-conn { color: var(--t-conn); font-style: italic; }
-        
-        /* 边框着色 */
-        .chunk-group.l-verb { border-bottom-color: var(--t-verb); }
-        .chunk-group.l-subj { border-bottom-color: var(--t-subj); }
-
-        /* 分析步骤盒 */
-        .sa-step-box { background: #fdfefe; padding: 15px 20px; border-radius: 8px; border: 1px solid #eee; box-shadow: 2px 2px 8px rgba(0,0,0,0.02); margin-bottom: 10px; width: 100%; border-left-width: 5px; border-left-style: solid; }
-        .bd-trunk { border-left-color: var(--bd-trunk); }
-        .bd-clause-1 { border-left-color: var(--bd-clause-1); background-color: #FEF9E7; }
-        .bd-clause-2 { border-left-color: var(--bd-clause-2); background-color: #E8F8F5; }
-
-        /* 翻译与Quiz */
-        .sa-trans { font-size: 16pt; color: #444; font-weight: 600; font-style: italic; margin-bottom: 20px; padding: 20px; border: 1px dashed #ccc; border-radius: 8px; width: 100%; background: #fff; line-height: 1.6; }
-        .q-card { border-left: 5px solid var(--theme-color); padding: 20px; background: #fff; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); width: 100%; }
-        .q-header { display: flex; align-items: baseline; margin-bottom: 10px; }
-        .q-num { color: var(--theme-color); font-size: 18pt; font-weight: 900; margin-right: 12px; }
-        .q-text { font-size: 17pt; color: #2c3e50; font-family: 'Lora'; }
-        .q-opts { display: flex; gap: 20px; flex-wrap: wrap; margin-left: 35px; }
-        .q-opt { font-size: 15pt; color: #555; font-family: 'Lato'; }
-
-        /* 词性高亮与角标 */
-        .hl { padding: 0 4px; border-radius: 4px; font-weight: 600; }
+        /* 词性高亮 (通用) */
+        .hl { padding: 0 4px; border-radius: 4px; font-weight: 600; display: inline-block; }
         .hl-n { background-color: var(--bg-noun); } .hl-v { background-color: var(--bg-verb); } .hl-adj { background-color: var(--bg-adj); }
         sup { color: #555; font-size: 0.6em; vertical-align: super; font-weight: 700; margin-left: 2px; }
-        .app-h { font-size: 18pt; font-weight: 700; color: var(--text-main); border-left: 6px solid #555; padding-left: 12px; margin: 30px 0 20px 0; font-family: 'Noto Sans SC'; width: 100%; }
 
-        #btn-download { position: fixed; bottom: 20px; right: 20px; z-index: 9999; padding: 15px 30px; background: #2c3e50; color: white; border: none; border-radius: 50px; cursor: pointer; font-size: 14pt; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: transform 0.2s; }
+        /* 附录 */
+        .app-h { font-size: 18pt; font-weight: 700; color: var(--text-main); border-left: 6px solid #555; padding-left: 12px; display: block; margin: 25px 0 20px 0; font-family: 'Noto Sans SC'; flex-shrink: 0; width: 100%; }
+        
+        .vocab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px 40px; width: 100%; margin-bottom: 30px; flex-shrink: 0; }
+        .vocab-item { background: #fff; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 5px; display: flex; flex-direction: column; gap: 6px; }
+        .v-line-1 { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+        .v-word { font-family: 'Lora'; font-weight: 700; font-size: 19pt; color: #2c3e50; padding: 0 5px; border-radius: 4px; }
+        .v-idx { background: #333; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 11pt; text-align: center; line-height: 22px; display: inline-block; transform: translateY(-2px); }
+        .v-ipa { font-family: 'Arial'; color: #95a5a6; font-size: 13pt; }
+        .v-mean { font-size: 15pt; color: #444; font-weight: 500; margin-left: auto; }
+        .v-pos { color: var(--theme-color); font-weight: bold; font-family: 'Times New Roman'; font-style: italic; font-size: 13pt; margin-right: 2px;}
+        .v-line-2 { font-size: 14pt; color: #d35400; font-family: 'Roboto Mono'; font-weight: 500; }
+        .v-line-3 { font-size: 14pt; color: #7f8c8d; font-style: italic; font-family: 'Lora'; line-height: 1.4; margin-top: 2px; }
+
+        .sa-sentence-wrapper { display: flex; flex-wrap: wrap; column-gap: 0; row-gap: 35px; line-height: 1.5; margin-bottom: 25px; padding-top: 10px; align-items: flex-end; width: 100%; }
+        .chunk { display: inline-flex; flex-direction: column; align-items: center; margin: 0; vertical-align: bottom; }
+        .chunk-text { font-family: 'Lora'; font-size: 20pt; color: #2c3e50; padding: 4px 5px; font-weight: 500; border-radius: 0; }
+        .chunk-group { border-bottom: 3px solid #ccc; padding-bottom: 2px; margin: 0 3px; }
+        .chunk-group .chunk-text { padding-bottom: 0; } 
+        .chunk-lbl { font-size: 10pt; font-family: 'Noto Sans SC'; font-weight: 800; margin-top: 4px; white-space: nowrap; width: 100%; text-align: center; height: 15px; }
+        .chunk-lbl:empty { height: 0; margin-top: 0; }
+        .bracket { font-size: 20pt; color: #d35400; font-family: 'Lato'; font-weight: 300; padding: 4px 6px; display: inline-block; }
+        
+        .bg-trunk .chunk-text { background-color: var(--bg-trunk); }
+        .bg-clause-1 .chunk-text { background-color: var(--bg-clause-1); }
+        .bg-clause-1.bracket { background-color: var(--bg-clause-1); }
+        .bg-clause-2 .chunk-text { background-color: var(--bg-clause-2); }
+        .bg-clause-2.bracket { background-color: var(--bg-clause-2); }
+        
+        .l-subj { color: var(--t-subj); border-color: var(--t-subj); } 
+        .l-verb { color: var(--t-verb); border-color: var(--t-verb); } 
+        .l-obj { color: var(--t-obj); border-color: var(--t-obj); } 
+        .l-conn { color: var(--t-conn); border-color: var(--t-conn); }
+
+        .sa-step-box, .q-card { background: #fdfefe; padding: 20px 25px; border-radius: 8px; border: 1px solid #eee; box-shadow: 2px 2px 8px rgba(0,0,0,0.02); margin-bottom: 12px; width: 100%; }
+        .bd-struct { border-left: 5px solid var(--bd-struct); }
+        .bd-trunk { border-left: 5px solid var(--bd-trunk); background-color: #FDFEFE; }
+        .bd-clause-1 { border-left: 5px solid var(--bd-clause-1); background-color: #FEF9E7; }
+        .bd-clause-2 { border-left: 5px solid var(--bd-clause-2); background-color: #E9F7EF; }
+        .q-card { border-left: 5px solid var(--theme-color); }
+        
+        .sa-trans { font-size: 16pt; color: #444; font-weight: 600; font-style: italic; margin-bottom: 20px; padding: 15px; border: 1px dashed #ccc; border-radius: 8px; width: 100%; background: #fff; }
+        .sa-step { margin-bottom: 12px; font-size: 15pt; color: #555; line-height: 1.6; }
+        .sa-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11pt; margin-right: 10px; font-weight: 800; color: #fff; background: #555; font-family: 'Lato'; text-transform: uppercase; }
+
+        .q-header { display: flex; align-items: baseline; margin-bottom: 5px; }
+        .q-num { color: var(--theme-color); font-size: 18pt; font-weight: 900; margin-right: 10px; font-family: 'Lato'; }
+        .q-text { font-size: 18pt; color: #2c3e50; font-weight: 600; font-family: 'Lora'; }
+        .q-opts { display: flex; gap: 25px; flex-wrap: wrap; margin-left: 0; margin-top: 5px; }
+        .q-opt { font-size: 15pt; color: #555; font-family: 'Lato'; }
+        .q-blank { border-bottom: 2px solid #333; width: 100px; display: inline-block; }
+
+        .footer { margin-top: auto; display: flex; justify-content: space-between; border-top: 1px solid #eee; padding: 0 60px; font-size: 11pt; color: #95a5a6; flex-shrink: 0; height: 70px; align-items: center; width: 100%; box-sizing: border-box; font-family: 'Lato'; }
+        .normal-page .footer { padding: 0; }
+        .footer-right { font-weight: 700; color: #333; }
+
+        #btn-download { position: fixed; bottom: 20px; right: 20px; z-index: 9999; padding: 15px 25px; background: #2c3e50; color: white; border: none; border-radius: 50px; cursor: pointer; font-family: sans-serif; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.2s; }
         #btn-download:hover { transform: scale(1.05); background: #34495e; }
+        #btn-download:active { transform: scale(0.95); }
     </style>
 </head>
 <body>
 <div id="status-bar"></div>
 <div id="loading-mask">
     <div class="spinner"></div>
-    <div>Rendering Handout...</div>
+    <div>Generating Content...</div>
 </div>
-<button id="btn-download" onclick="downloadAllPages()">📸 Save as Images</button>
+<button id="btn-download" onclick="downloadAllPages()">📸 Save Pages</button>
 <div id="card-container"></div>
 <input type="file" id="upload-trigger" style="display:none" onchange="loadFile(event)">
 
 <script>
-    window.onerror = function(msg, src, line) {
+    // --- Global Error Trap ---
+    window.onerror = function(message, source, lineno, colno, error) {
         document.getElementById('loading-mask').style.display = 'none';
         document.getElementById('status-bar').style.display = 'block';
-        document.getElementById('status-bar').innerText = `Error: ${msg} (Line ${line})`;
+        document.getElementById('status-bar').innerText = "System Error: " + message + " (Line " + lineno + ")";
     };
 
-    // --- Data Injection ---
+    // --- Phase 4: Data Injection (AI MUST FILL THIS) ---
     const META = { 
         issue: "23 January 2026", 
-        title: "Updated Nutrition Guidelines", 
-        subtitle: "美国发布史上最重大营养指南更新", 
+        title: "Updated nutrition guidelines released", 
+        subtitle: "美国发布全新膳食指南", 
         themeColor: "#27AE60" 
     };
-
+    
+    // [Audit 1: Atomized Content]
     const MAIN_CONTENT = [
-        { type: 'p', eng: "New <span class='hl hl-n'>dietary guidelines</span><sup>①</sup> have been announced by the US Department of Health and Human Services (HHS).", chi: "美国卫生与公众服务部 (HHS) 公布了新的<span class='hl hl-n'>膳食指南</span><sup>①</sup>。" },
-        { type: 'p', eng: "They are a significant <span class='hl hl-n'>departure</span><sup>②</sup> from previous <span class='hl hl-n'>recommendations</span><sup>③</sup>.", chi: "它们与之前的<span class='hl hl-n'>建议</span><sup>③</sup>相比有了显著的<span class='hl hl-n'>背离</span><sup>②</sup>（改变）。" },
-        { type: 'p', eng: "<strong>What are dietary guidelines?</strong> Since 1980, the US government has released guidelines to inform Americans about the ideal foods to eat for good health.", chi: "<strong>什么是膳食指南？</strong> 自 1980 年以来，美国政府发布指南，告知美国人为了健康应食用的理想食物。" },
-        { type: 'p', eng: "The guidelines, which are updated every five years, <span class='hl hl-v'>influence</span><sup>④</sup> the meals served at schools, hospitals, and military bases.", chi: "该指南每五年更新一次，会<span class='hl hl-v'>影响</span><sup>④</sup>学校、医院和军事基地提供的膳食。" },
-        { type: 'p', eng: "A food pyramid was introduced in 1992 to visually <span class='hl hl-v'>illustrate</span><sup>⑤</sup> the guidelines.", chi: "1992 年引入了食物金字塔来直观地<span class='hl hl-v'>说明</span><sup>⑤</sup>指南。" },
-        { type: 'p', eng: "In 2011, the US changed the pyramid to an image of a plate to illustrate a healthy diet.", chi: "2011 年，美国将金字塔改为餐盘图像，以说明健康饮食。" },
-        { type: 'p', eng: "<strong>What’s in the new guidelines?</strong> The new guidelines are visually displayed as an inverted pyramid.", chi: "<strong>新指南有什么内容？</strong> 新指南直观地显示为倒金字塔。" },
-        { type: 'p', eng: "They place a greater <span class='hl hl-n'>emphasis</span><sup>⑥</sup> on <span class='hl hl-v'>consuming</span><sup>⑦</sup> <span class='hl hl-n'>protein</span><sup>⑧</sup> and full-fat dairy products.", chi: "它们更加<span class='hl hl-n'>强调</span><sup>⑥</sup><span class='hl hl-v'>摄入</span><sup>⑦</sup><span class='hl hl-n'>蛋白质</span><sup>⑧</sup>和全脂乳制品。" },
-        { type: 'p', eng: "Beef, turkey, cheese, and whole milk are shown at the top.", chi: "牛肉、火鸡、奶酪和全脂牛奶显示在顶部。" },
-        { type: 'p', eng: "An equal emphasis is placed on fruits and vegetables, with those foods also displayed at the top.", chi: "水果和蔬菜也同样受到重视，这些食物也显示在顶部。" },
-        { type: 'p', eng: "Whole grains are located at the narrowest part of the pyramid, but the guidelines don’t recommend eating less of them.", chi: "全谷物位于金字塔最窄的部分，但指南并不建议少吃它们。" },
-        { type: 'p', eng: "Rather, an emphasis is placed on avoiding sugar and ultra-processed foods, such as chips and cookies.", chi: "相反，重点在于避免糖和超加工食品，如薯片和饼干。" },
-        { type: 'p', eng: "<strong>How did people react?</strong> Robert F. Kennedy Jr. called the updated guidelines “the most significant reset of federal nutrition <span class='hl hl-n'>policy</span><sup>⑫</sup> in history.”", chi: "<strong>人们有何反应？</strong> 小罗伯特·F·肯尼迪称更新后的指南是“历史上联邦营养<span class='hl hl-n'>政策</span><sup>⑫</sup>最重大的重置”。" },
-        { type: 'p', eng: "Studies have shown that consuming red meat, which tends to be higher in <span class='hl hl-n'>sodium</span><sup>⑩</sup> and unhealthy fats, can increase a person’s risk of heart disease.", chi: "研究表明，食用红肉（往往<span class='hl hl-n'>钠</span><sup>⑩</sup>含量和不健康脂肪含量较高）会增加患心脏病和其他疾病的风险。" },
-        { type: 'p', eng: "<strong>What will happen next?</strong> The government will distribute the guidelines to agencies that work on nationwide food programs.", chi: "<strong>接下来会发生什么？</strong> 政府将把指南分发给负责全国食品项目的机构。" },
-        { type: 'p', eng: "US states will review the guidelines to determine whether they want to <span class='hl hl-v'>incorporate</span><sup>⑪</sup> the changes into their own programs.", chi: "美国各州将审查该指南，以确定是否将其变更<span class='hl hl-v'>纳入</span><sup>⑪</sup>自己的项目中。" },
-        { type: 'supp', eng: "<h3>The First Food Pyramid</h3>The first US food pyramid, released in 1992, was based on one from Sweden.", chi: "<strong>首个食物金字塔</strong><br>1992 年发布的美国首个食物金字塔是基于瑞典的一个金字塔设计的。" },
-        { type: 'supp', eng: "The bottom level showed grains; the middle level featured produce.", chi: "底层显示谷物；中间层是农产品。" },
-        { type: 'supp', eng: "The next level included eggs, dairy, meat, and fish; and the top consisted of fats and oils.", chi: "下一层包括蛋、奶制品、肉和鱼；顶层由脂肪和油组成。" }
-    ];
-
+        {
+            eng: "New <span class='hl hl-adj'>dietary</span><sup>①</sup> <span class='hl hl-n'>guidelines</span><sup>②</sup> have been <span class='hl hl-v'>announced</span><sup>③</sup> by the US Department of Health and Human Services (HHS).",
+            chi: "美国卫生与公众服务部 (HHS) 发布了新的膳食指南。"
+        },
+        {
+            eng: "They are a <span class='hl hl-adj'>significant</span><sup>④</sup> <span class='hl hl-n'>departure</span><sup>⑤</sup> from previous <span class='hl hl-n'>recommendations</span><sup>⑥</sup>.",
+            chi: "这与之前的建议相比有重大偏离。"
+        },
+        {
+            eng: "<strong>What are <span class='hl hl-adj'>dietary</span><sup>①</sup> <span class='hl hl-n'>guidelines</span><sup>②</sup>?</strong>",
+            chi: "<strong>什么是膳食指南？</strong>"
+        },
+        {
+            eng: "Since 1980, the US government has <span class='hl hl-v'>released</span><sup>⑦</sup> guidelines to <span class='hl hl-v'>inform</span> Americans about the ideal foods to eat for good health.",
+            chi: "自1980年以来，美国政府一直发布指南，告知美国人为了健康应食用的理想食物。"
+        },
+        {
+            eng: "The guidelines, which are <span class='hl hl-v'>updated</span> every five years, <span class='hl hl-v'>influence</span><sup>⑧</sup> the meals served at schools, hospitals, and military bases.",
+            chi: "这些指南每五年更新一次，影响着学校、医院和军事基地提供的膳食。"
+        },
+        {
+            eng: "A food pyramid was <span class='hl hl-v'>introduced</span> in 1992 to visually <span class='hl hl-v'>illustrate</span><sup>⑨</sup> the guidelines, and people were <span class='hl hl-v'>advised</span> to eat more of the foods from the bottom than the top.",
+            chi: "1992年引入了食物金字塔，以直观地说明这些指南，并建议人们多吃底部的食物，少吃顶部的食物。"
+        },
+        {
+            eng: "In 2011, the US changed the pyramid to an image of a plate to <span class='hl hl-v'>illustrate</span><sup>⑨</sup> a healthy diet.",
+            chi: "2011年，美国将金字塔改为盘子的图像，以说明健康的饮食。"
+        },
+        {
+            eng: "<strong>What’s in the new <span class='hl hl-n'>guidelines</span><sup>②</sup>?</strong>",
+            chi: "<strong>新指南里有什么？</strong>"
+        },
+        {
+            eng: "The new guidelines are visually <span class='hl hl-v'>displayed</span> as an inverted pyramid (widest part at the top) with a greater <span class='hl hl-n'>emphasis</span><sup>⑩</sup> on <span class='hl hl-v'>consuming</span><sup>⑪</sup> <span class='hl hl-n'>protein</span><sup>⑫</sup> and full-fat dairy products.",
+            chi: "新指南直观地显示为倒金字塔（顶部最宽），更加强调摄入蛋白质和全脂乳制品。"
+        },
+        {
+            eng: "Beef, turkey, cheese, and whole milk are shown at the top.",
+            chi: "牛肉、火鸡、奶酪和全脂牛奶显示在顶部。"
+        },
+        {
+            eng: "An equal <span class='hl hl-n'>emphasis</span><sup>⑩</sup> is placed on fruits and vegetables, with those foods also <span class='hl hl-v'>displayed</span> at the top.",
+            chi: "水果和蔬菜也同样受到重视，这些食物也显示在顶部。"
+        },
+        {
+            eng: "Whole grains are located at the narrowest part of the pyramid, but the guidelines don’t recommend eating less of them.",
+            chi: "全谷物位于金字塔最窄的部分，但指南并不建议少吃它们。"
+        },
+        {
+            eng: "Rather, an <span class='hl hl-n'>emphasis</span><sup>⑩</sup> is placed on <span class='hl hl-v'>avoiding</span> sugar and <span class='hl hl-adj'>ultra-processed</span><sup>⑬</sup> foods, such as chips and cookies.",
+            chi: "相反，重点在于避免糖和薯片、饼干等超加工食品。"
+        },
+        {
+            eng: "<strong>How did people react?</strong>",
+            chi: "<strong>人们有何反应？</strong>"
+        },
+        {
+            eng: "Robert F. Kennedy Jr., head of the HHS, called the <span class='hl hl-v'>updated</span> guidelines “the most <span class='hl hl-adj'>significant</span><sup>④</sup> reset of federal nutrition policy in history.”",
+            chi: "HHS 负责人小罗伯特·肯尼迪称更新后的指南是“历史上联邦营养政策最重要的重置”。"
+        },
+        {
+            eng: "While health experts said they are glad the guidelines continue to make fruits and vegetables a <span class='hl hl-n'>priority</span><sup>⑭</sup> and support eating fewer processed foods, many of them <span class='hl hl-v'>disagree</span> that people need more <span class='hl hl-n'>protein</span><sup>⑫</sup>, particularly from red meat.",
+            chi: "虽然健康专家表示，他们很高兴指南继续将水果和蔬菜列为优先事项，并支持少吃加工食品，但许多人不同意人们需要更多蛋白质，特别是来自红肉的蛋白质。"
+        },
+        {
+            eng: "Studies have shown that <span class='hl hl-v'>consuming</span><sup>⑪</sup> red meat, which tends to be higher in <span class='hl hl-n'>sodium</span><sup>⑮</sup> and unhealthy fats, can <span class='hl hl-v'>increase</span> a person’s risk of heart disease and other conditions.",
+            chi: "研究表明，食用红肉往往含有较高的钠和不健康的脂肪，可能会增加患心脏病和其他疾病的风险。"
+        },
+        {
+            eng: "<strong>What will happen next?</strong>",
+            chi: "<strong>接下来会发生什么？</strong>"
+        },
+        {
+            eng: "The government will <span class='hl hl-v'>distribute</span> the guidelines to agencies that work on nationwide food programs.",
+            chi: "政府将把指南分发给负责全国食品项目的机构。"
+        },
+        {
+            eng: "US states will review the guidelines to determine whether they want to <span class='hl hl-v'>incorporate</span><sup>⑯</sup> the changes into their own programs.",
+            chi: "美国各州将审查指南，以确定是否将其变更纳入自己的项目中。"
+        },
+        {
+            eng: "<h3>The first food pyramid</h3>",
+            chi: "<h3>首个食物金字塔</h3>",
+            type: "supp"
+        },
+        {
+            eng: "The first US food pyramid, <span class='hl hl-v'>released</span><sup>⑦</sup> in 1992, was based on one from Sweden.",
+            chi: "1992年发布的第一个美国食物金字塔是基于瑞典的一个金字塔。",
+            type: "supp"
+        },
+        {
+            eng: "The bottom level showed grains; the middle level featured produce.",
+            chi: "底层显示谷物；中间层以农产品为特色。",
+            type: "supp"
+        },
+        {
+            eng: "The next level included eggs, dairy, meat, and fish; and the top consisted of fats and oils.",
+            chi: "下一层包括鸡蛋、乳制品、肉类和鱼类；顶部由脂肪和油组成。",
+            type: "supp"
+        },
+        {
+            eng: "The government <span class='hl hl-v'>recommended</span> eating more foods from the bottom than the top.",
+            chi: "政府建议多吃底部的食物，少吃顶部的食物。",
+            type: "supp"
+        },
+        {
+            eng: "<h3>Health Milestone</h3>",
+            chi: "<h3>健康里程碑</h3>",
+            type: "supp"
+        },
+        {
+            eng: "In 1953, President Dwight D. Eisenhower <span class='hl hl-v'>established</span> the department that would become today’s Health and Human Services agency.",
+            chi: "1953年，德怀特·D·艾森豪威尔总统建立了后来成为今天卫生与公众服务部的部门。",
+            type: "supp"
+        }
+    ]; 
+    
+    // [Audit 2: Sync & Dedup]
     const VOCAB_LIST = [
-        { w: "guidelines", p: "n.", m: "指导方针", ipa: "ˈɡaɪdlaɪnz", c: "dietary guidelines", e: "The guidelines are updated every five years." },
-        { w: "departure", p: "n.", m: "背离; 改变", ipa: "dɪˈpɑːrtʃər", c: "a significant departure", e: "It is a departure from the old rules." },
-        { w: "recommendations", p: "n.", m: "建议", ipa: "ˌrekəmenˈdeɪʃnz", c: "follow recommendations", e: "The doctor made several recommendations." },
-        { w: "influence", p: "v.", m: "影响", ipa: "ˈɪnfluəns", c: "influence the outcome", e: "Weather can influence our plans." },
-        { w: "illustrate", p: "v.", m: "说明", ipa: "ˈɪləstreɪt", c: "visually illustrate", e: "Pictures help illustrate the story." },
-        { w: "emphasis", p: "n.", m: "重点", ipa: "ˈemfəsɪs", c: "place emphasis on", e: "There is an emphasis on safety." },
-        { w: "consume", p: "v.", m: "消耗; 食用", ipa: "kənˈsuːm", c: "consuming protein", e: "We consume too much sugar." },
-        { w: "protein", p: "n.", m: "蛋白质", ipa: "ˈproʊtiːn", c: "source of protein", e: "Meat is rich in protein." },
-        { w: "priority", p: "n.", m: "优先事项", ipa: "praɪˈɔːrəti", c: "top priority", e: "Safety is our priority." },
-        { w: "sodium", p: "n.", m: "钠 (盐分)", ipa: "ˈsoʊdiəm", c: "high in sodium", e: "Avoid foods high in sodium." },
-        { w: "incorporate", p: "v.", m: "包含; 纳入", ipa: "ɪnˈkɔːrpəreɪt", c: "incorporate changes", e: "We will incorporate your ideas." },
-        { w: "policy", p: "n.", m: "政策", ipa: "ˈpɑːləsi", c: "new policy", e: "The school has a strict policy." }
+        { w: "dietary", p: "adj.", m: "饮食的", ipa: "ˈdaɪəˌtɛri", c: "dietary guidelines", e: "New dietary guidelines have been announced." },
+        { w: "guideline", p: "n.", m: "指南；指导方针", ipa: "ˈɡaɪdˌlaɪn", c: "safety guidelines", e: "The guidelines are updated every five years." },
+        { w: "announce", p: "v.", m: "宣布", ipa: "əˈnaʊns", c: "announce a plan", e: "The new rules were announced yesterday." },
+        { w: "significant", p: "adj.", m: "重大的；显著的", ipa: "sɪɡˈnɪfɪkənt", c: "significant change", e: "This is a significant departure from the past." },
+        { w: "departure", p: "n.", m: "背离；离开", ipa: "dɪˈpɑːrtʃər", c: "a departure from tradition", e: "It is a departure from previous recommendations." },
+        { w: "recommendation", p: "n.", m: "建议；推荐", ipa: "ˌrɛkəmɛnˈdeɪʃən", c: "make a recommendation", e: "Follow the doctor's recommendations." },
+        { w: "release", p: "v.", m: "发布；释放", ipa: "rɪˈliːs", c: "release a movie", e: "The government released the report." },
+        { w: "influence", p: "v.", m: "影响", ipa: "ˈɪnfluəns", c: "influence the decision", e: "The guidelines influence school meals." },
+        { w: "illustrate", p: "v.", m: "说明；阐明", ipa: "ˈɪləˌstreɪt", c: "illustrate with examples", e: "The chart illustrates the data clearly." },
+        { w: "emphasis", p: "n.", m: "重点；强调", ipa: "ˈɛmfəsɪs", c: "place emphasis on", e: "There is a greater emphasis on protein." },
+        { w: "consume", p: "v.", m: "消耗；食用", ipa: "kənˈsuːm", c: "consume energy", e: "Consuming too much sugar is unhealthy." },
+        { w: "protein", p: "n.", m: "蛋白质", ipa: "ˈproʊˌtiːn", c: "high in protein", e: "Meat and eggs are sources of protein." },
+        { w: "ultra-processed", p: "adj.", m: "超加工的", ipa: "ˈʌltrə ˈprɑːsɛst", c: "ultra-processed foods", e: "Avoid ultra-processed foods like chips." },
+        { w: "priority", p: "n.", m: "优先事项", ipa: "praɪˈɔːrɪti", c: "top priority", e: "Safety is our main priority." },
+        { w: "sodium", p: "n.", m: "钠 (盐)", ipa: "ˈsoʊdiəm", c: "low sodium", e: "Red meat can be higher in sodium." },
+        { w: "incorporate", p: "v.", m: "包含；合并", ipa: "ɪnˈkɔːrpəˌreɪt", c: "incorporate changes", e: "They plan to incorporate the new rules." }
     ];
-
-    // --- REVISED SYNTAX ANALYSIS (Corrected) ---
-    // Sentence: "While health experts said they are glad the guidelines continue to make fruits and vegetables a priority..., many of them disagree that..."
+    
+    // [Audit 3: Syntax Localization]
     const SA_CHUNKS = [
-        { t: 'chunk-text', w: 'While', l: '连词' },
-        { t: 'chunk-text', w: 'health experts', l: '主语' },
-        { t: 'chunk-text', w: 'said', l: '谓语' },
-        // Clause 1: Object of 'said' (implicit that)
-        { t: 'bracket bg-clause-1', w: '(', l: '' },
-        { t: 'chunk-text bg-clause-1', w: 'they', l: '主语' },
-        { t: 'chunk-text bg-clause-1', w: 'are', l: '系动词' },
-        { t: 'chunk-text bg-clause-1', w: 'glad', l: '表语' },
-        // Clause 2: Object/Reason of 'glad' (implicit that)
-        { t: 'bracket bg-clause-2', w: '(', l: '' },
-        { t: 'chunk-text bg-clause-2', w: 'the guidelines', l: '主语' },
-        { t: 'chunk-group bg-clause-2', w: '<span class="chunk-text">continue</span><span class="chunk-text">to make</span>', l: '谓语', txt: '谓语' },
-        { t: 'chunk-text bg-clause-2', w: 'fruits and vegetables', l: '宾语' },
-        { t: 'chunk-text bg-clause-2', w: 'a priority', l: '宾补' },
-        { t: 'bracket bg-clause-2', w: ')', l: '' },
-        
-        { t: 'bracket bg-clause-1', w: ')', l: '' },
-        { t: 'chunk-text', w: ',', l: '' },
-        
-        // Main Clause
-        { t: 'chunk-text', w: 'many of them', l: '主语(主)' },
-        { t: 'chunk-text', w: 'disagree', l: '谓语(主)' },
-        
-        // Clause 3: Object of 'disagree'
-        { t: 'bracket bg-clause-1', w: '(', l: '' },
-        { t: 'chunk-text bg-clause-1', w: 'that', l: '连词' },
-        { t: 'chunk-text bg-clause-1', w: 'people', l: '主语' },
-        { t: 'chunk-text bg-clause-1', w: 'need', l: '谓语' },
-        { t: 'chunk-text bg-clause-1', w: 'more protein', l: '宾语' },
-        { t: 'bracket bg-clause-1', w: ')', l: '' },
-        { t: 'chunk-text', w: '.', l: '' }
+        { t: 'chunk', w: 'While', l: 'conj. 虽然' },
+        { t: 'bracket bg-clause-1', w: '( health experts said )', l: '状语从句' },
+        { t: 'chunk bg-clause-1', w: 'they are glad', l: '' },
+        { t: 'bracket bg-clause-2', w: '( the guidelines continue to make fruits ... a priority )', l: '宾语从句' },
+        { t: 'chunk', w: ',', l: '' },
+        { t: 'chunk-group l-subj', w: 'many of them', l: '主语' },
+        { t: 'chunk l-verb', w: 'disagree', l: '谓语' },
+        { t: 'bracket bg-trunk', w: '( that people need more protein ... )', l: '宾语从句' }
     ];
-
-    const SA_TRANS = "虽然健康专家表示很高兴指南继续将蔬果列为优先（事项），但其中许多人不同意“人们需要更多蛋白质”这一观点。";
-
+    const SA_TRANS = "虽然健康专家表示很高兴指南继续将水果和蔬菜列为优先事项...但许多人不同意人们需要更多蛋白质，特别是来自红肉的蛋白质。";
     const SA_STEPS = [
-        { type: 'bd-trunk', label: '主句骨架 (Trunk)', text: '<b>Many of them</b> (主语) <b>disagree</b> (谓语) + <b>that...</b> (宾语从句)。<br>主句表达了核心冲突：专家们“不同意”某个观点。' },
-        { type: 'bd-clause-1', label: '让步状语从句 (Concession)', text: '<b>While... said...</b> 引导让步状语从句，位于句首，表示“尽管/虽然”。<br>在该从句内部，<b>said</b> 后面省略了引导词 that，跟了一个宾语从句说明“说”的内容。' },
-        { type: 'bd-clause-2', label: '嵌套从句 (Nested)', text: '<b>(they are glad...)</b> 是第一层宾语从句。<br><b>(the guidelines continue...)</b> 是第二层从句，作为 <b>glad</b> 的原因/补足语，解释为什么高兴。' }
+        { type: 'bd-struct', label: '句型判断', text: '这是一个包含<b>让步状语从句</b>和多个<b>宾语从句</b>的复合句。' },
+        { type: 'bd-trunk', label: '主干拆解', text: '主句的核心是 "many of them disagree..."（许多人不同意...）。disagree 后面接了一个由 that 引导的宾语从句 "that people need more protein..." 说明了不同意的内容。' },
+        { type: 'bd-clause-1', label: '从句解析', text: '句首的 "While" 引导让步状语从句，意思是“虽然...”。在该从句中，"health experts said" 后面省略了 that，紧接一个宾语从句 "they are glad..."。' },
+        { type: 'bd-clause-2', label: '修饰关系', text: '在 "they are glad" 后面又跟了一个省略 that 的宾语从句 "the guidelines continue to make..."，解释了专家为什么高兴。整个句子层层嵌套，逻辑严密。' }
     ];
-
     const QUIZ_ITEMS = [
-        { q: "Who announced the new guidelines?", a: "<span class='q-opt'>A. The President</span><span class='q-opt'>B. HHS</span><span class='q-opt'>C. The UN</span>" },
-        { q: "What shape is the new guideline?", a: "<span class='q-opt'>A. Inverted Pyramid</span><span class='q-opt'>B. Plate</span><span class='q-opt'>C. Circle</span>" },
-        { q: "Which food is emphasized more now?", a: "<span class='q-opt'>A. Sugar</span><span class='q-opt'>B. Grains</span><span class='q-opt'>C. Protein</span>" }
+        { q: "Who announced the new dietary guidelines?", a: "<span class='q-opt'>A. The President</span><span class='q-opt'>B. The US Department of Health and Human Services</span><span class='q-opt'>C. School Principals</span>" },
+        { q: "What shape visually represents the new guidelines?", a: "<span class='q-opt'>A. A plate</span><span class='q-opt'>B. A regular pyramid</span><span class='q-opt'>C. An inverted pyramid</span>" },
+        { q: "Which food group is at the narrowest part of the new pyramid?", a: "<span class='q-opt'>A. Whole grains</span><span class='q-opt'>B. Red meat</span><span class='q-opt'>C. Fruits</span>" }
     ];
 
     // --- Core Logic ---
     function render() {
+        // [Safety Scope]
         let cardIdx = 1;
         let currentCard;
         let container;
         const SAFE_BOTTOM = 1340; 
 
+        // Helper functions
         function createNewPage() {
             cardIdx++; 
             currentCard = createNormalPage(cardIdx);
@@ -278,6 +346,8 @@
         function checkAndMove(el, limit) {
             const rect = el.getBoundingClientRect();
             const cardTop = currentCard.getBoundingClientRect().top;
+            
+            // Atomic Flow Check: If this specific atom (row/chunk) overflows, move IT and subsequent atoms to next page.
             if ((rect.bottom - cardTop) > limit) {
                 container.removeChild(el); 
                 createNewPage(); 
@@ -291,75 +361,96 @@
         }
 
         try {
+            // [Phase 6: Data Integrity Check]
+            if (!MAIN_CONTENT || MAIN_CONTENT.length === 0) {
+                throw new Error("MAIN_CONTENT is empty. Please check data injection.");
+            }
+
+            document.documentElement.style.setProperty('--theme-color', META.themeColor);
             const root = document.getElementById('card-container');
             
-            // Cover
+            // Initial Page Setup
             currentCard = createCoverPage();
             root.appendChild(currentCard);
             container = currentCard.querySelector('.content-body');
 
-            // 1. Text
+            // 1. Content (Atomic Row Flow)
             MAIN_CONTENT.forEach(item => {
                 const row = createContentRow(item);
                 container.appendChild(row);
                 checkAndMove(row, SAFE_BOTTOM);
             });
 
-            // 2. Vocab
+            // Start new page for Appendix
             createNewPage();
+
+            // 2. Vocab
             appendWithCheck(createTitle('中考高频词汇 (Vocab)'));
             let grid = document.createElement('div'); grid.className = 'vocab-grid';
             container.appendChild(grid);
-            VOCAB_LIST.forEach((v, i) => {
-                const item = createVocabItem(v, i+1); grid.appendChild(item);
-                if ((grid.getBoundingClientRect().bottom - currentCard.getBoundingClientRect().top) > SAFE_BOTTOM) {
-                    grid.removeChild(item); 
-                    createNewPage(); 
-                    grid = document.createElement('div'); grid.className = 'vocab-grid';
-                    container.appendChild(grid); grid.appendChild(item);
-                }
-            });
+            if (VOCAB_LIST) {
+                VOCAB_LIST.forEach((v, i) => {
+                    const item = createVocabItem(v, i+1); grid.appendChild(item);
+                    if ((grid.getBoundingClientRect().bottom - currentCard.getBoundingClientRect().top) > SAFE_BOTTOM) {
+                        grid.removeChild(item); 
+                        createNewPage(); 
+                        grid = document.createElement('div'); grid.className = 'vocab-grid';
+                        container.appendChild(grid); grid.appendChild(item);
+                    }
+                });
+            }
 
-            // 3. Syntax
+            // 3. Sentence Analysis
             appendWithCheck(createTitle('长难句分析 (Sentence Analysis)'));
             let saWrapper = document.createElement('div'); saWrapper.className = 'sa-sentence-wrapper';
             container.appendChild(saWrapper);
-            SA_CHUNKS.forEach(chunk => {
-                let el = createSaChunk(chunk);
-                if (el) { 
-                    saWrapper.appendChild(el);
-                    if ((saWrapper.getBoundingClientRect().bottom - currentCard.getBoundingClientRect().top) > SAFE_BOTTOM) {
-                        saWrapper.removeChild(el); 
-                        createNewPage(); 
-                        saWrapper = document.createElement('div'); saWrapper.className = 'sa-sentence-wrapper';
-                        container.appendChild(saWrapper); saWrapper.appendChild(el);
+            if (SA_CHUNKS) {
+                SA_CHUNKS.forEach(chunk => {
+                    let el = createSaChunk(chunk);
+                    if (el) { 
+                        saWrapper.appendChild(el);
+                        // Chunk Flow Check
+                        if ((saWrapper.getBoundingClientRect().bottom - currentCard.getBoundingClientRect().top) > SAFE_BOTTOM) {
+                            saWrapper.removeChild(el); 
+                            createNewPage(); 
+                            saWrapper = document.createElement('div'); saWrapper.className = 'sa-sentence-wrapper';
+                            container.appendChild(saWrapper); saWrapper.appendChild(el);
+                        }
                     }
-                }
-            });
+                });
+            }
 
-            const transEl = document.createElement('div'); transEl.className = 'sa-trans'; transEl.innerHTML = SA_TRANS;
+            const transEl = document.createElement('div'); transEl.className = 'sa-trans'; transEl.innerHTML = SA_TRANS || "";
             appendWithCheck(transEl);
-            SA_STEPS.forEach(step => appendWithCheck(createSaStep(step)));
+
+            if (SA_STEPS) {
+                SA_STEPS.forEach(step => { const el = createSaStep(step); appendWithCheck(el); });
+            }
 
             // 4. Quiz
             appendWithCheck(createTitle('趣闻挑战 (Little Quiz)'));
-            QUIZ_ITEMS.forEach((q, i) => {
-                const qCard = document.createElement('div'); qCard.className = 'q-card';
-                qCard.innerHTML = `<div class="q-header"><div class="q-num">${i+1}</div><div class="q-text">${q.q}</div></div><div class="q-opts">${q.a}</div>`;
-                appendWithCheck(qCard);
-            });
+            if (QUIZ_ITEMS) {
+                QUIZ_ITEMS.forEach((q, i) => {
+                    const qCard = document.createElement('div'); qCard.className = 'q-card';
+                    qCard.innerHTML = `<div class="q-header"><div class="q-num">${i+1}</div><div class="q-text">${q.q}</div></div><div class="q-opts">${q.a}</div>`;
+                    appendWithCheck(qCard);
+                });
+            }
 
             updateFooters(cardIdx);
+            
+            // Success: Remove loading
             document.getElementById('loading-mask').style.display = 'none';
 
         } catch(e) {
             console.error(e);
+            document.getElementById('loading-mask').style.display = 'none';
             document.getElementById('status-bar').style.display = 'block';
             document.getElementById('status-bar').innerText = "Render Error: " + e.message;
         }
     }
 
-    // --- Components ---
+    // --- Generators ---
     function createCoverPage() {
         const d = document.createElement('div'); d.className = 'card cover-page';
         d.innerHTML = `<div class="hero-section" onclick="document.getElementById('upload-trigger').click()"><img id="hero-img" class="hero-img"><div class="hero-placeholder" id="hero-txt">Tap to Upload Cover</div></div><div class="cover-header"><div class="meta-tag">${META.issue}</div><div class="poster-title">${META.title}</div><div class="poster-subtitle">${META.subtitle}</div></div><div class="content-body" style="padding:0 60px;"></div><div class="footer"><span class="footer-left">Designed for Educational Purpose</span><span class="footer-right page-num"></span></div>`;
@@ -379,67 +470,67 @@
     function createTitle(text) { const d = document.createElement('div'); d.className = 'app-h'; d.innerText = text; return d; }
     
     function createVocabItem(v, idx) {
-        let bgClass = v.p.includes('n.') ? 'hl-n' : (v.p.includes('v.') ? 'hl-v' : 'hl-adj');
+        let bgClass = '';
+        if (v.p.includes('n.')) bgClass = 'hl-n';
+        else if (v.p.includes('v.')) bgClass = 'hl-v';
+        else if (v.p.includes('adj') || v.p.includes('adv')) bgClass = 'hl-adj';
+        else bgClass = 'hl-n'; 
         const d = document.createElement('div'); d.className = 'vocab-item';
         d.innerHTML = `<div class="v-line-1"><span class="v-word ${bgClass}">${v.w}</span><span class="v-idx">${idx}</span><span class="v-ipa">[${v.ipa}]</span><span class="v-pos">${v.p}</span><span class="v-mean">${v.m}</span></div><div class="v-line-2">${v.c}</div><div class="v-line-3">"${v.e}"</div>`;
         return d;
     }
     
     function createSaChunk(c) {
-        if (!c.w) return null;
+        if (!c || !c.t) return null;
         const d = document.createElement('div'); d.className = `chunk ${c.t}`;
-        
-        // CSS Style Mapping (Chinese to CSS Class)
-        if (c.l) {
-            if (c.l.includes('主语')) d.classList.add('l-subj');
-            if (c.l.includes('谓语')) d.classList.add('l-verb');
-            if (c.l.includes('宾语')) d.classList.add('l-obj');
-            if (c.l.includes('连词')) d.classList.add('l-conn');
-        }
-
-        // Color coding borders for verb groups
         if (c.t.includes('chunk-group')) {
-            if (c.l.includes('谓语')) d.style.borderBottomColor = 'var(--t-verb)';
+            const color = c.l ? `var(--${c.l.replace('l-', 't-')})` : '#ccc';
+            d.style.borderBottomColor = color;
         }
-
-        const label = (c.l && !c.l.includes('bg-')) ? c.l : '';
+        const label = c.l ? c.l : '';
         const txt = c.txt ? c.txt : '';
-        d.innerHTML = `<span class="chunk-lbl">${label || txt}</span><span class="chunk-text">${c.w}</span>`;
+        d.innerHTML = `<span class="chunk-lbl ${label}">${txt}</span><span class="chunk-text">${c.w}</span>`;
         return d;
     }
-
     function createSaStep(s) {
         const d = document.createElement('div'); d.className = `sa-step-box ${s.type}`;
-        d.innerHTML = `<div class="sa-step">${s.text}</div>`;
+        d.innerHTML = `<div class="sa-step"><span class="sa-tag">${s.label}</span>${s.text}</div>`;
         return d;
     }
-
     function updateFooters(total) { document.querySelectorAll('.page-num').forEach((el, i) => el.innerText = `Page ${i+1}/${total}`); }
-
+    
     async function downloadAllPages() {
         const btn = document.getElementById('btn-download');
-        const oldText = btn.innerText;
-        btn.innerText = "Processing...";
+        const originalText = btn.innerText;
+        btn.innerText = "Processing... (Please Wait)";
+        btn.style.opacity = "0.7";
         btn.disabled = true;
+
         try {
             const cards = document.querySelectorAll('.card');
             for (let i = 0; i < cards.length; i++) {
-                const canvas = await html2canvas(cards[i], { scale: 2, useCORS: true, allowTaint: false, backgroundColor: '#ffffff' });
-                const link = document.createElement('a');
-                link.download = `Handout_Page_${i+1}.png`;
-                link.href = canvas.toDataURL('image/png');
-                link.click();
+                const canvas = await html2canvas(cards[i], { scale: 2, useCORS: true, allowTaint: false, backgroundColor: '#ffffff', logging: false });
+                canvas.toBlob(function(blob) {
+                    if (!blob) { alert("Security Error: Use Local Server."); return; }
+                    const link = document.createElement('a');
+                    link.download = `TheWeekJunior_Page_${i + 1}.png`;
+                    link.href = URL.createObjectURL(blob);
+                    link.click();
+                    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+                }, 'image/png');
+                await new Promise(r => setTimeout(r, 500));
             }
-        } catch (e) { alert("Error: " + e.message); }
-        btn.innerText = oldText; btn.disabled = false;
+        } catch (e) {
+            console.error(e);
+            alert("Error: " + e.message);
+        } finally {
+            btn.innerText = originalText;
+            btn.style.opacity = "1";
+            btn.disabled = false;
+        }
     }
 
-    window.loadFile = function(e) { 
-        document.getElementById('hero-img').src = URL.createObjectURL(e.target.files[0]); 
-        document.getElementById('hero-img').style.display='block'; 
-        document.getElementById('hero-txt').style.display='none'; 
-    };
-    
+    window.loadFile = function(e) { document.getElementById('hero-img').src = URL.createObjectURL(e.target.files[0]); document.getElementById('hero-img').style.display='block'; document.getElementById('hero-txt').style.display='none'; };
     window.onload = render;
 </script>
 </body>
