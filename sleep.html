@@ -2,228 +2,248 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>边城助眠 - 意象余烬录制器 V12</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>沈从文 · 边城 V12.2</title>
     <style>
-        body { margin: 0; overflow: hidden; font-family: sans-serif; background: #000; display: flex; flex-direction: column; align-items: center; height: 100vh; color: #ccc; }
-        #canvas-container { position: relative; width: 310px; height: 400px; margin-top: 10px; border: 1px solid #333; background: #111; }
-        canvas { width: 100%; height: 100%; display: block; object-fit: contain; }
-        
-        .controls { position: fixed; bottom: 0; width: 100%; background: rgba(20, 10, 10, 0.95); padding: 15px 20px 25px 20px; border-top-left-radius: 24px; border-top-right-radius: 24px; box-sizing: border-box; }
-        .progress-container { width: 100%; height: 4px; background: #221; border-radius: 2px; margin-bottom: 8px; overflow: hidden; }
-        /* 进度条改为火红色 */
-        #progress-bar { width: 0%; height: 100%; background: #ff4500; transition: width 0.2s linear; }
-        .time-info { display: flex; justify-content: space-between; font-size: 10px; color: #888; margin-bottom: 12px; }
-        .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 10px; }
-        button { border: none; padding: 12px; border-radius: 10px; color: #fff; font-weight: bold; flex: 1; font-size: 14px; box-shadow: 0 2px 8px rgba(255, 69, 0, 0.4); }
-        /* 按钮改为余烬主题色 */
-        #start-btn { background: linear-gradient(135deg, #8b0000, #ff4500); }
-        #stop-btn { background: linear-gradient(135deg, #5c1c1c, #8a2b2b); }
-        button:disabled { background: #333; color: #555; box-shadow: none; }
-        input[type="file"] { font-size: 11px; width: 130px; color: #aaa; }
-        .hint { font-size: 11px; color: #ff6347; text-align: center; margin-top: 5px; opacity: 0.8; }
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200;500;900&family=Playfair+Display:ital,wght@0,400;1,700&display=swap');
+
+        :root {
+            --accent: rgba(255, 255, 255, 0.95);
+            --panel-bg: rgba(0, 0, 0, 0.85);
+            --font-main: 'Noto Serif SC', serif;
+            --font-en: 'Playfair Display', serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body, html {
+            width: 100%; height: 100%; overflow: hidden;
+            background-color: #000;
+            font-family: var(--font-main);
+        }
+
+        #bg-layer {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-size: cover; background-position: center;
+            filter: brightness(1.2) contrast(0.9);
+            z-index: 1; transition: 1.5s ease;
+        }
+
+        #vignette {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.4) 100%);
+            z-index: 2; pointer-events: none;
+        }
+
+        canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; }
+
+        /* 艺术标识：极致聚拢布局 */
+        #branding-container {
+            position: relative; z-index: 4; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+            pointer-events: none;
+        }
+
+        .art-logo {
+            display: flex;
+            flex-direction: row-reverse; /* 右至左排布 */
+            align-items: flex-start;
+            color: var(--accent);
+            /* 给整个字组增加微弱的发光，使其在背景中更聚合 */
+            filter: drop-shadow(0 0 10px rgba(0,0,0,0.3));
+        }
+
+        /* 中文列：边城 + 沈 */
+        .main-title-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start; /* 严格左对齐 */
+            margin-left: 10px; /* 极窄间距，解决“散”的问题 */
+            position: relative;
+        }
+
+        .main-title {
+            writing-mode: vertical-rl;
+            font-size: 4.5rem; /* 字号略微缩小，提升整体感 */
+            font-weight: 900;
+            letter-spacing: 0.12em;
+            margin-bottom: 12px;
+        }
+
+        .seal {
+            width: 18px; height: 18px;
+            background-color: rgba(180, 40, 40, 0.95);
+            color: #fff;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 0.65rem; font-weight: 900;
+            border-radius: 1px;
+            box-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+            /* 绝对定位以确保左对齐 */
+            margin-left: 2px;
+        }
+
+        /* 英文作者列 */
+        .sub-title {
+            writing-mode: vertical-rl;
+            font-family: var(--font-en);
+            font-size: 1rem;
+            font-style: italic;
+            font-weight: 400;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            padding-top: 85px; /* 缩短下沉距离，增强两列的联系 */
+            opacity: 0.65;
+            border-right: 1px solid rgba(255,255,255,0.15);
+            padding-right: 6px;
+        }
+
+        /* 控制面板及进度条保持不变 */
+        #control-panel {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            z-index: 20; background: var(--panel-bg); padding: 30px; border-radius: 12px;
+            display: flex; flex-direction: column; gap: 18px; backdrop-filter: blur(25px);
+            transition: 0.6s; width: 85%; max-width: 350px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .hidden { opacity: 0; pointer-events: none; transform: translate(-50%, -45%) scale(0.95); }
+        button { padding: 12px; border: none; border-radius: 6px; background: rgba(255,255,255,0.1); color: #fff; font-size: 0.85rem; }
+        #progress-bar { position: fixed; bottom: 0; left: 0; width: 0%; height: 2px; background: rgba(255,255,255,0.6); z-index: 10; }
     </style>
 </head>
 <body>
 
-    <div id="canvas-container">
-        <canvas id="visualizer"></canvas>
+    <div id="bg-layer"></div>
+    <div id="vignette"></div>
+    <canvas id="visualizer"></canvas>
+
+    <div id="branding-container">
+        <div class="art-logo">
+            <div class="main-title-wrapper">
+                <div class="main-title">边城</div>
+                <div class="seal">沈</div>
+            </div>
+            <div class="sub-title">Shen Congwen</div>
+        </div>
     </div>
 
-    <div class="controls">
-        <div class="progress-container"><div id="progress-bar"></div></div>
-        <div class="time-info"><span id="current-time">00:00</span><span id="total-time">00:00</span></div>
-        <div class="row">
-            <div><span style="color:#888">背景:</span> <input type="file" id="bg-img" accept="image/*"></div>
-            <div><span style="color:#888">人声:</span> <input type="file" id="audio-file" accept="audio/*"></div>
-        </div>
-        <div class="row">
-            <button id="start-btn" disabled>开始录制</button>
-            <button id="stop-btn" disabled>停止并保存</button>
-        </div>
-        <div id="status" class="hint">V12 意象余烬：温暖的炉火呼吸感</div>
+    <div id="progress-bar"></div>
+
+    <div id="control-panel">
+        <div style="text-align: center; color: #666; font-size: 0.65rem; letter-spacing: 2px; margin-bottom: 5px;">V12.2 CINEMA</div>
+        <input type="file" id="img-input" accept="image/*" style="color:#ccc; font-size:0.7rem; margin-bottom:10px;">
+        <input type="file" id="audio-input" accept="audio/*" style="color:#ccc; font-size:0.7rem; margin-bottom:10px;">
+        <button onclick="toggleVisual()">RIPPLE / PARTICLES</button>
+        <button id="start-btn" style="background: #fff; color: #000; font-weight: 600;">START IMMERSION</button>
     </div>
 
     <script>
+        let audioCtx, analyser, dataArray, source, audio;
         const canvas = document.getElementById('visualizer');
         const ctx = canvas.getContext('2d');
-        const bgImgInput = document.getElementById('bg-img');
-        const audioInput = document.getElementById('audio-file');
-        const startBtn = document.getElementById('start-btn');
-        const stopBtn = document.getElementById('stop-btn');
-        const progressBar = document.getElementById('progress-bar');
-        const currentTimeSpan = document.getElementById('current-time');
-        const totalTimeSpan = document.getElementById('total-time');
-        const status = document.getElementById('status');
-
-        canvas.width = 1242; canvas.height = 1600;
-
-        let audioCtx, analyser, dataArray, source, audio;
-        let mediaRecorder, recordedChunks = [];
-        let backgroundImage = null;
-        let animationId;
+        let isPlaying = false, visualMode = 'ripple', particles = [];
         
-        const CLOUD_SEGMENTS = 80; 
-        let smoothedHeights = new Array(CLOUD_SEGMENTS).fill(0); 
-        const SMOOTHING_FACTOR = 0.1; 
-
-        function formatTime(s) {
-            const m = Math.floor(s/60); const ss = Math.floor(s%60);
-            return `${m.toString().padStart(2,'0')}:${ss.toString().padStart(2,'0')}`;
-        }
-
-        bgImgInput.onchange = (e) => {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const img = new Image();
-                img.onload = () => { backgroundImage = img; drawStaticBackground(); checkReady(); };
-                img.src = event.target.result;
-            };
-            reader.readAsDataURL(e.target.files[0]);
+        document.getElementById('img-input').onchange = (e) => {
+            const url = URL.createObjectURL(e.target.files[0]);
+            document.getElementById('bg-layer').style.backgroundImage = `url(${url})`;
         };
 
-        audioInput.onchange = (e) => {
-            const file = e.target.files[0];
-            if(!file) return;
-            const tempAudio = new Audio(URL.createObjectURL(file));
-            tempAudio.onloadedmetadata = () => {
-                totalTimeSpan.innerText = formatTime(tempAudio.duration);
-                checkReady();
-            };
+        document.getElementById('audio-input').onchange = (e) => {
+            if (audio) audio.pause();
+            audio = new Audio(URL.createObjectURL(e.target.files[0]));
+            setupAudio();
         };
 
-        function checkReady() {
-            if (audioInput.files[0] && backgroundImage) {
-                startBtn.disabled = false; status.innerText = "系统就绪，等待启动";
+        function setupAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioCtx.createAnalyser();
+                analyser.fftSize = 512;
+                source = audioCtx.createMediaElementSource(audio);
+                source.connect(analyser);
+                analyser.connect(audioCtx.destination);
+                dataArray = new Uint8Array(analyser.frequencyBinCount);
             }
-        }
-
-        function drawStaticBackground() {
-            if (!backgroundImage) return;
-            const canvasRatio = canvas.width / canvas.height;
-            const imgRatio = backgroundImage.width / backgroundImage.height;
-            let dW, dH, dX, dY;
-            if (imgRatio > canvasRatio) {
-                dH = canvas.height; dW = backgroundImage.width * (canvas.height / backgroundImage.height);
-                dX = (canvas.width - dW) / 2; dY = 0;
-            } else {
-                dW = canvas.width; dH = backgroundImage.height * (canvas.width / backgroundImage.width);
-                dX = 0; dY = (canvas.height - dH) / 2;
-            }
-            ctx.drawImage(backgroundImage, dX, dY, dW, dH);
-            // 使用较重的蒙版，压暗背景，突出炉火光芒
-            ctx.fillStyle = "rgba(0,0,0,0.7)";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-        }
-
-        async function initRecording() {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') await audioCtx.resume();
-
-            audio = new Audio(URL.createObjectURL(audioInput.files[0]));
-            source = audioCtx.createMediaElementSource(audio);
-            analyser = audioCtx.createAnalyser();
-            
-            analyser.fftSize = 256; 
-            analyser.smoothingTimeConstant = 0.85; 
-            dataArray = new Uint8Array(analyser.frequencyBinCount);
-            
-            source.connect(analyser);
-            analyser.connect(audioCtx.destination);
-
-            const dest = audioCtx.createMediaStreamDestination();
-            source.connect(dest);
-            const vStream = canvas.captureStream(30);
-            const combined = new MediaStream([...vStream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
-
-            mediaRecorder = new MediaRecorder(combined, { mimeType: 'video/webm;codecs=vp8', videoBitsPerSecond: 8000000 });
-            mediaRecorder.ondataavailable = e => recordedChunks.push(e.data);
-            mediaRecorder.onstop = () => {
-                const blob = new Blob(recordedChunks, { type: 'video/webm' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url; a.download = `EmberFlow_Visual_${Date.now()}.webm`; a.click();
-            };
-
-            mediaRecorder.start();
-            audio.play();
             audio.ontimeupdate = () => {
-                progressBar.style.width = (audio.currentTime/audio.duration)*100 + "%";
-                currentTimeSpan.innerText = formatTime(audio.currentTime);
+                document.getElementById('progress-bar').style.width = (audio.currentTime / audio.duration) * 100 + '%';
             };
-            drawLoop();
         }
 
-        startBtn.onclick = () => { initRecording(); startBtn.disabled = true; stopBtn.disabled = false; status.innerText = "录制中..."; };
-        stopBtn.onclick = () => { mediaRecorder.stop(); audio.pause(); cancelAnimationFrame(animationId); stopBtn.disabled = true; status.innerText = "录制结束"; };
+        function toggleVisual() { visualMode = visualMode === 'ripple' ? 'particles' : 'ripple'; }
 
-        function drawLoop() {
-            animationId = requestAnimationFrame(drawLoop);
-            analyser.getByteFrequencyData(dataArray);
-            drawStaticBackground();
+        document.getElementById('start-btn').onclick = () => {
+            if (!audio) return alert('请上传音频');
+            if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+            document.getElementById('control-panel').classList.add('hidden');
+            
+            setTimeout(() => {
+                audio.play();
+                isPlaying = true;
+                if (particles.length === 0) createParticles();
+                draw();
+            }, 6000);
+        };
 
-            // 移除 Screen 模式，使用自然叠加
-            ctx.globalCompositeOperation = 'source-over';
-
-            const cloudWidth = canvas.width * 0.75; 
-            const startX = (canvas.width - cloudWidth) / 2;
-            const baselineY = canvas.height - 180; 
-            const segmentWidth = cloudWidth / (CLOUD_SEGMENTS - 1);
-
-            // --- 绘制波形路径 ---
-            ctx.beginPath();
-            ctx.moveTo(startX, baselineY);
-
-            for (let i = 0; i < CLOUD_SEGMENTS; i++) {
-                const distanceFromCenter = Math.abs(i - CLOUD_SEGMENTS / 2);
-                const freqIndex = Math.floor((distanceFromCenter / (CLOUD_SEGMENTS / 2)) * 35);
-                
-                let rawHeight = (dataArray[freqIndex] / 255) * 500;
-                if (rawHeight > 300) rawHeight = 300 + (rawHeight - 300) * 0.3;
-
-                const edgeDecay = 1 - Math.pow(distanceFromCenter / (CLOUD_SEGMENTS / 2), 1.8);
-                let targetHeight = rawHeight * edgeDecay;
-
-                smoothedHeights[i] += (targetHeight - smoothedHeights[i]) * SMOOTHING_FACTOR;
-
-                const x = startX + i * segmentWidth;
-                const y = baselineY - smoothedHeights[i];
-                
-                if (i === 0) ctx.moveTo(x, y);
-                else {
-                    const prevX = startX + (i - 1) * segmentWidth;
-                    const prevY = baselineY - smoothedHeights[i - 1];
-                    const midX = (prevX + x) / 2; const midY = (prevY + y) / 2;
-                    ctx.quadraticCurveTo(prevX, prevY, midX, midY);
-                }
+        function createParticles() {
+            for (let i = 0; i < 100; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 1.5 + 0.5,
+                    speed: Math.random() * 0.12 + 0.05
+                });
             }
-
-            ctx.lineTo(startX + cloudWidth, baselineY);
-            ctx.closePath();
-
-            // --- 核心：V12 意象余烬色彩 ---
-            const gradient = ctx.createLinearGradient(0, baselineY, 0, baselineY - 450);
-            // 底部：深沉的炭火红黑
-            gradient.addColorStop(0, "rgba(40, 10, 5, 0.95)"); 
-            // 中下部：炽热的余烬橙红 (核心亮点)
-            gradient.addColorStop(0.3, "rgba(200, 50, 10, 0.85)"); 
-            // 中上部：温暖的橙色热浪
-            gradient.addColorStop(0.6, "rgba(255, 140, 20, 0.5)"); 
-            // 顶部：消散的烟气
-            gradient.addColorStop(1, "rgba(100, 50, 30, 0.0)");
-
-            ctx.fillStyle = gradient;
-
-            // --- 添加热辐射辉光 (Heat Radiance) ---
-            ctx.shadowBlur = 50; // 较大的模糊半径
-            // 使用高饱和度的橙红色光晕
-            ctx.shadowColor = "rgba(255, 69, 0, 0.6)"; 
-            
-            ctx.fill();
-            
-            // 重置阴影，避免影响下一帧背景
-            ctx.shadowBlur = 0;
         }
+
+        function draw() {
+            if (!isPlaying) return;
+            requestAnimationFrame(draw);
+            analyser.getByteFrequencyData(dataArray);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const centerX = canvas.width / 2, centerY = canvas.height / 2, baseRadius = 180;
+
+            if (visualMode === 'ripple') {
+                ctx.beginPath();
+                ctx.lineWidth = 1.2;
+                ctx.strokeStyle = `rgba(255, 255, 255, 0.4)`;
+                const points = 180;
+                for (let i = 0; i <= points; i++) {
+                    let index = Math.floor(Math.abs(i - points/2) * 0.5);
+                    let amplitude = dataArray[index] / 255;
+                    let angle = (i / points) * Math.PI * 2 - Math.PI / 2;
+                    let weight = Math.sin(i / points * Math.PI); 
+                    const r = baseRadius + (amplitude * 45 * weight); // 缩小震动幅度，保持聚拢感
+                    const x = centerX + Math.cos(angle) * r, y = centerY + Math.sin(angle) * r;
+                    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            } else {
+                particles.forEach((p, i) => {
+                    const influence = dataArray[i % 40] / 60;
+                    p.y -= (p.speed + influence);
+                    if (p.y < 0) p.y = canvas.height;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${0.12 + influence * 0.6})`;
+                    ctx.fill();
+                });
+            }
+        }
+
+        document.body.onclick = (e) => {
+            if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'INPUT') {
+                document.getElementById('control-panel').classList.toggle('hidden');
+            }
+        };
+
+        window.onresize = () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        };
+        window.onresize();
     </script>
 </body>
 </html>
