@@ -6,7 +6,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>沈从文 · 边城 V12.1</title>
+    <title>沈从文 · 边城 V12.2</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200;500;900&family=Playfair+Display:ital,wght@0,400;1,700&display=swap');
 
@@ -40,7 +40,7 @@
 
         canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; }
 
-        /* 艺术标识：极致对齐与紧凑排版 */
+        /* 艺术标识：极致聚拢布局 */
         #branding-container {
             position: relative; z-index: 4; height: 100%;
             display: flex; justify-content: center; align-items: center;
@@ -52,66 +52,64 @@
             flex-direction: row-reverse; /* 右至左排布 */
             align-items: flex-start;
             color: var(--accent);
+            /* 给整个字组增加微弱的发光，使其在背景中更聚合 */
+            filter: drop-shadow(0 0 10px rgba(0,0,0,0.3));
         }
 
-        /* 核心中文列：边城 + 沈 */
+        /* 中文列：边城 + 沈 */
         .main-title-wrapper {
             display: flex;
             flex-direction: column;
-            align-items: flex-start; /* 强制左对齐 */
-            margin-left: 20px; /* 两列文字的间距 */
+            align-items: flex-start; /* 严格左对齐 */
+            margin-left: 10px; /* 极窄间距，解决“散”的问题 */
+            position: relative;
         }
 
         .main-title {
             writing-mode: vertical-rl;
-            font-size: 5.2rem;
+            font-size: 4.5rem; /* 字号略微缩小，提升整体感 */
             font-weight: 900;
-            letter-spacing: 0.15em;
-            text-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            margin-bottom: 8px; /* 距离下方印章的距离 */
+            letter-spacing: 0.12em;
+            margin-bottom: 12px;
         }
 
         .seal {
-            width: 18px; height: 18px; /* 面积为 1/4 */
+            width: 18px; height: 18px;
             background-color: rgba(180, 40, 40, 0.95);
             color: #fff;
             display: flex; justify-content: center; align-items: center;
             font-size: 0.65rem; font-weight: 900;
             border-radius: 1px;
             box-shadow: 1px 1px 4px rgba(0,0,0,0.5);
-            /* 移除左边距，确保与边城左对齐 */
-            margin-left: 0; 
+            /* 绝对定位以确保左对齐 */
+            margin-left: 2px;
         }
 
         /* 英文作者列 */
         .sub-title {
             writing-mode: vertical-rl;
             font-family: var(--font-en);
-            font-size: 1.05rem;
+            font-size: 1rem;
             font-style: italic;
             font-weight: 400;
-            letter-spacing: 0.35em;
+            letter-spacing: 0.3em;
             text-transform: uppercase;
-            padding-top: 110px; /* 显著下沉，形成错位 */
-            opacity: 0.6;
-            border-right: 1px solid rgba(255,255,255,0.12);
-            padding-right: 8px;
+            padding-top: 85px; /* 缩短下沉距离，增强两列的联系 */
+            opacity: 0.65;
+            border-right: 1px solid rgba(255,255,255,0.15);
+            padding-right: 6px;
         }
 
-        /* 控制面板 */
+        /* 控制面板及进度条保持不变 */
         #control-panel {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             z-index: 20; background: var(--panel-bg); padding: 30px; border-radius: 12px;
             display: flex; flex-direction: column; gap: 18px; backdrop-filter: blur(25px);
-            transition: 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); width: 85%; max-width: 350px;
+            transition: 0.6s; width: 85%; max-width: 350px;
             border: 1px solid rgba(255,255,255,0.1);
         }
         .hidden { opacity: 0; pointer-events: none; transform: translate(-50%, -45%) scale(0.95); }
-
-        button {
-            padding: 12px; border: none; border-radius: 6px; background: rgba(255,255,255,0.1);
-            color: #fff; font-size: 0.85rem; cursor: pointer;
-        }
+        button { padding: 12px; border: none; border-radius: 6px; background: rgba(255,255,255,0.1); color: #fff; font-size: 0.85rem; }
         #progress-bar { position: fixed; bottom: 0; left: 0; width: 0%; height: 2px; background: rgba(255,255,255,0.6); z-index: 10; }
     </style>
 </head>
@@ -134,18 +132,10 @@
     <div id="progress-bar"></div>
 
     <div id="control-panel">
-        <div style="text-align: center; color: #666; font-size: 0.7rem; margin-bottom: 10px;">V12.1 PROFESSIONAL</div>
-        <div style="display:flex; flex-direction:column; gap:8px;">
-            <label style="color:#888; font-size:0.7rem;">IMAGE</label>
-            <input type="file" id="img-input" accept="image/*" style="color:#ccc; font-size:0.7rem;">
-        </div>
-        <div style="display:flex; flex-direction:column; gap:8px;">
-            <label style="color:#888; font-size:0.7rem;">AUDIO</label>
-            <input type="file" id="audio-input" accept="audio/*" style="color:#ccc; font-size:0.7rem;">
-        </div>
-        <div style="display:flex; gap:10px;">
-            <button style="flex:1;" onclick="toggleVisual()">RIPPLE / PARTICLES</button>
-        </div>
+        <div style="text-align: center; color: #666; font-size: 0.65rem; letter-spacing: 2px; margin-bottom: 5px;">V12.2 CINEMA</div>
+        <input type="file" id="img-input" accept="image/*" style="color:#ccc; font-size:0.7rem; margin-bottom:10px;">
+        <input type="file" id="audio-input" accept="audio/*" style="color:#ccc; font-size:0.7rem; margin-bottom:10px;">
+        <button onclick="toggleVisual()">RIPPLE / PARTICLES</button>
         <button id="start-btn" style="background: #fff; color: #000; font-weight: 600;">START IMMERSION</button>
     </div>
 
@@ -184,11 +174,10 @@
         function toggleVisual() { visualMode = visualMode === 'ripple' ? 'particles' : 'ripple'; }
 
         document.getElementById('start-btn').onclick = () => {
-            if (!audio) return alert('请上传音频文件');
+            if (!audio) return alert('请上传音频');
             if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
             document.getElementById('control-panel').classList.add('hidden');
             
-            // 6秒绝对静默启动
             setTimeout(() => {
                 audio.play();
                 isPlaying = true;
@@ -203,7 +192,7 @@
                     x: Math.random() * canvas.width,
                     y: Math.random() * canvas.height,
                     size: Math.random() * 1.5 + 0.5,
-                    speed: Math.random() * 0.15 + 0.05
+                    speed: Math.random() * 0.12 + 0.05
                 });
             }
         }
@@ -226,7 +215,7 @@
                     let amplitude = dataArray[index] / 255;
                     let angle = (i / points) * Math.PI * 2 - Math.PI / 2;
                     let weight = Math.sin(i / points * Math.PI); 
-                    const r = baseRadius + (amplitude * 50 * weight);
+                    const r = baseRadius + (amplitude * 45 * weight); // 缩小震动幅度，保持聚拢感
                     const x = centerX + Math.cos(angle) * r, y = centerY + Math.sin(angle) * r;
                     if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
                 }
@@ -238,7 +227,7 @@
                     if (p.y < 0) p.y = canvas.height;
                     ctx.beginPath();
                     ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(255, 255, 255, ${0.15 + influence * 0.6})`;
+                    ctx.fillStyle = `rgba(255, 255, 255, ${0.12 + influence * 0.6})`;
                     ctx.fill();
                 });
             }
