@@ -6,7 +6,300 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>沈从文 · 边城 V12.2</title>
+    <title>沈从文 · 边城 V12.2</title><!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>沈从文 · 边城 V12.3</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200;500;900&family=Playfair+Display:ital,wght@0,400;1,700&display=swap');
+
+        :root {
+            --accent: rgba(255, 255, 255, 0.95);
+            --panel-bg: rgba(0, 0, 0, 0.85);
+            --font-main: 'Noto Serif SC', serif;
+            --font-en: 'Playfair Display', serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body, html {
+            width: 100%; height: 100%; overflow: hidden;
+            background-color: #000;
+            font-family: var(--font-main);
+        }
+
+        #bg-layer {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-size: cover; background-position: center;
+            filter: brightness(1.2) contrast(0.9);
+            z-index: 1; transition: 1.5s ease;
+        }
+
+        #vignette {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.4) 100%);
+            z-index: 2; pointer-events: none;
+        }
+
+        canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; }
+
+        /* 艺术标识：V12.2 极致聚拢版 */
+        #branding-container {
+            position: relative; z-index: 4; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+            pointer-events: none;
+        }
+
+        .art-logo {
+            display: flex;
+            flex-direction: row-reverse;
+            align-items: flex-start;
+            color: var(--accent);
+            filter: drop-shadow(0 0 10px rgba(0,0,0,0.3));
+        }
+
+        .main-title-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin-left: 10px;
+            position: relative;
+        }
+
+        .main-title {
+            writing-mode: vertical-rl;
+            font-size: 4.5rem;
+            font-weight: 900;
+            letter-spacing: 0.12em;
+            margin-bottom: 12px;
+        }
+
+        .seal {
+            width: 18px; height: 18px;
+            background-color: rgba(180, 40, 40, 0.95);
+            color: #fff;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 0.65rem; font-weight: 900;
+            border-radius: 1px;
+            box-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+            margin-left: 2px;
+        }
+
+        .sub-title {
+            writing-mode: vertical-rl;
+            font-family: var(--font-en);
+            font-size: 1rem;
+            font-style: italic;
+            font-weight: 400;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            padding-top: 85px;
+            opacity: 0.65;
+            border-right: 1px solid rgba(255,255,255,0.15);
+            padding-right: 6px;
+        }
+
+        /* UI 面板 */
+        #control-panel {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            z-index: 20; background: var(--panel-bg); padding: 30px; border-radius: 12px;
+            display: flex; flex-direction: column; gap: 18px; backdrop-filter: blur(25px);
+            transition: 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); width: 85%; max-width: 350px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .hidden { opacity: 0; pointer-events: none; transform: translate(-50%, -45%) scale(0.95); }
+
+        button { padding: 12px; border: none; border-radius: 6px; background: rgba(255,255,255,0.1); color: #fff; font-size: 0.85rem; cursor: pointer; }
+        #progress-bar { position: fixed; bottom: 0; left: 0; width: 0%; height: 2px; background: rgba(255,255,255,0.6); z-index: 10; }
+        #mode-indicator { font-size: 0.6rem; color: #888; text-align: center; text-transform: uppercase; letter-spacing: 2px; }
+    </style>
+</head>
+<body>
+
+    <div id="bg-layer"></div>
+    <div id="vignette"></div>
+    <canvas id="visualizer"></canvas>
+
+    <div id="branding-container">
+        <div class="art-logo">
+            <div class="main-title-wrapper">
+                <div class="main-title">边城</div>
+                <div class="seal">沈</div>
+            </div>
+            <div class="sub-title">Shen Congwen</div>
+        </div>
+    </div>
+
+    <div id="progress-bar"></div>
+
+    <div id="control-panel">
+        <div id="mode-indicator">V12.3 · Xiangxi Edition</div>
+        <input type="file" id="img-input" accept="image/*" style="color:#ccc; font-size:0.7rem;">
+        <input type="file" id="audio-input" accept="audio/*" style="color:#ccc; font-size:0.7rem;">
+        <button id="mode-btn" onclick="toggleVisual()">模式：环形涟漪</button>
+        <button id="start-btn" style="background: #fff; color: #000; font-weight: 600;">开启沉浸体验</button>
+    </div>
+
+    <script>
+        let audioCtx, analyser, dataArray, source, audio;
+        const canvas = document.getElementById('visualizer');
+        const ctx = canvas.getContext('2d');
+        let isPlaying = false, visualMode = 'ripple', particles = [];
+        const modes = ['ripple', 'particles', 'mountains'];
+        const modeNames = ['环形涟漪', '悬浮微粒', '远山起伏'];
+        
+        document.getElementById('img-input').onchange = (e) => {
+            const url = URL.createObjectURL(e.target.files[0]);
+            document.getElementById('bg-layer').style.backgroundImage = `url(${url})`;
+        };
+
+        document.getElementById('audio-input').onchange = (e) => {
+            if (audio) audio.pause();
+            audio = new Audio(URL.createObjectURL(e.target.files[0]));
+            setupAudio();
+        };
+
+        function setupAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioCtx.createAnalyser();
+                analyser.fftSize = 512;
+                source = audioCtx.createMediaElementSource(audio);
+                source.connect(analyser);
+                analyser.connect(audioCtx.destination);
+                dataArray = new Uint8Array(analyser.frequencyBinCount);
+            }
+            audio.ontimeupdate = () => {
+                document.getElementById('progress-bar').style.width = (audio.currentTime / audio.duration) * 100 + '%';
+            };
+        }
+
+        function toggleVisual() {
+            let nextIndex = (modes.indexOf(visualMode) + 1) % modes.length;
+            visualMode = modes[nextIndex];
+            document.getElementById('mode-btn').innerText = `模式：${modeNames[nextIndex]}`;
+        }
+
+        document.getElementById('start-btn').onclick = () => {
+            if (!audio) return alert('请上传音频文件');
+            if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+            document.getElementById('control-panel').classList.add('hidden');
+            
+            // 6秒静默启动
+            setTimeout(() => {
+                audio.play();
+                isPlaying = true;
+                if (particles.length === 0) createParticles();
+                draw();
+            }, 6000);
+        };
+
+        function createParticles() {
+            for (let i = 0; i < 100; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 1.5 + 0.5,
+                    speed: Math.random() * 0.12 + 0.05
+                });
+            }
+        }
+
+        // 绘制逻辑
+        function draw() {
+            if (!isPlaying) return;
+            requestAnimationFrame(draw);
+            analyser.getByteFrequencyData(dataArray);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+
+            if (visualMode === 'ripple') {
+                drawRipple(centerX, centerY);
+            } else if (visualMode === 'particles') {
+                drawParticles();
+            } else if (visualMode === 'mountains') {
+                drawMountains();
+            }
+        }
+
+        function drawRipple(centerX, centerY) {
+            const baseRadius = 180;
+            ctx.beginPath();
+            ctx.lineWidth = 1.2;
+            ctx.strokeStyle = `rgba(255, 255, 255, 0.4)`;
+            const points = 180;
+            for (let i = 0; i <= points; i++) {
+                let index = Math.floor(Math.abs(i - points/2) * 0.5);
+                let amplitude = dataArray[index] / 255;
+                let angle = (i / points) * Math.PI * 2 - Math.PI / 2;
+                let weight = Math.sin(i / points * Math.PI); 
+                const r = baseRadius + (amplitude * 50 * weight);
+                const x = centerX + Math.cos(angle) * r, y = centerY + Math.sin(angle) * r;
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+        }
+
+        function drawParticles() {
+            particles.forEach((p, i) => {
+                const influence = dataArray[i % 40] / 60;
+                p.y -= (p.speed + influence);
+                if (p.y < 0) p.y = canvas.height;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${0.12 + influence * 0.6})`;
+                ctx.fill();
+            });
+        }
+
+        function drawMountains() {
+            // 绘制两层远山
+            drawSingleMountainLayer(0.1, 0.75, 5, 40);  // 后山：更淡、更高
+            drawSingleMountainLayer(0.25, 0.85, 10, 60); // 前山：稍深、稍低
+        }
+
+        function drawSingleMountainLayer(opacity, yBaseMult, freqStart, ampMult) {
+            ctx.beginPath();
+            ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+            const yBase = canvas.height * yBaseMult;
+            
+            ctx.moveTo(0, canvas.height);
+            ctx.lineTo(0, yBase);
+            
+            for (let x = 0; x <= canvas.width; x += 20) {
+                // 采样低频能量
+                let index = freqStart + Math.floor((x / canvas.width) * 10);
+                let amp = dataArray[index] / 255;
+                // 使用正弦平滑山脊
+                let y = yBase - (amp * ampMult) + Math.sin(x * 0.005) * 15;
+                ctx.lineTo(x, y);
+            }
+            
+            ctx.lineTo(canvas.width, canvas.height);
+            ctx.fill();
+        }
+
+        document.body.onclick = (e) => {
+            if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'INPUT') {
+                document.getElementById('control-panel').classList.toggle('hidden');
+            }
+        };
+
+        window.onresize = () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        };
+        window.onresize();
+    </script>
+</body>
+</html>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200;500;900&family=Playfair+Display:ital,wght@0,400;1,700&display=swap');
 
@@ -247,3 +540,4 @@
     </script>
 </body>
 </html>
+
