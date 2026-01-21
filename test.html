@@ -2,248 +2,540 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>沈从文 · 边城 V12.2</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Week Junior Handout</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700&family=Noto+Sans+SC:wght@300;400;500;700&family=Lato:wght@400;700;900&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200;500;900&family=Playfair+Display:ital,wght@0,400;1,700&display=swap');
-
         :root {
-            --accent: rgba(255, 255, 255, 0.95);
-            --panel-bg: rgba(0, 0, 0, 0.85);
-            --font-main: 'Noto Serif SC', serif;
-            --font-en: 'Playfair Display', serif;
+            /* 动态主题色 (由 JS 注入) */
+            --theme-color: #2c3e50; 
+
+            /* 词性颜色 */
+            --t-subj: #C0392B; --t-verb: #2980B9; --t-obj: #27AE60; --t-mod: #D35400; --t-prep: #8E44AD; --t-conn: #7F8C8D;
+            
+            /* 词性背景 */
+            --bg-noun: #D6EAF8; --bg-verb: #D5F5E3; --bg-adj: #E8DAEF;
+            
+            /* 长难句背景 */
+            --bg-trunk: #EBF5FB; --bg-clause-1: #FEF5E7; --bg-clause-2: #E9F7EF;
+            /* 边框色 */
+            --bd-trunk: #3498DB; --bd-clause-1: #F39C12; --bd-clause-2: #2ECC71; --bd-struct: #2C3E50;
+            
+            /* 通用 */
+            --text-main: #2c3e50; --bg: #ffffff; --supp-bg: #F0F8FF;
+            --p-w: 1080px; --p-h: 1440px;
         }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; }
+        body { background: #444; display: flex; flex-direction: column; align-items: center; padding: 40px 0; gap: 40px; font-family: 'Noto Sans SC', sans-serif; }
+        
+        /* 错误提示条 */
+        #status-bar { position: fixed; top: 0; left: 0; width: 100%; background: #e74c3c; color: white; text-align: center; padding: 15px; font-weight: bold; z-index: 10000; display: none; font-size: 14pt; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+        /* Loading 遮罩 */
+        #loading-mask { position: fixed; inset: 0; background: #f9f9f9; z-index: 9998; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: 'Lato'; color: #555; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #ccc; border-top-color: var(--theme-color); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        /* 容器 */
+        .card { width: var(--p-w); height: var(--p-h); background: var(--bg); display: flex; flex-direction: column; overflow: hidden; position: relative; box-shadow: 0 30px 80px rgba(0,0,0,0.6); flex-shrink: 0; }
+        .card.cover-page { padding: 0; } .card.normal-page { padding: 50px 60px; }
+        .content-body { flex-grow: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 0; overflow: hidden; width: 100%; }
+        .cover-page .content-body { padding: 0 60px; } .normal-page .content-body { padding: 0; }
 
-        body, html {
-            width: 100%; height: 100%; overflow: hidden;
-            background-color: #000;
-            font-family: var(--font-main);
-        }
+        /* 首页 (960px Height) */
+        .hero-section { width: 100%; height: 960px; background: #e0e0e0; cursor: pointer; border-bottom: 8px solid var(--theme-color); position: relative; flex-shrink: 0; }
+        .hero-img { width: 100%; height: 100%; object-fit: cover; display: none; }
+        .hero-placeholder { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #777; font-size: 20pt; font-family: 'Lato'; text-align: center; border: 3px dashed #bbb; padding: 15px 30px; border-radius: 10px; }
+        
+        .cover-header { padding: 30px 60px 10px 60px; display: flex; flex-direction: column; align-items: center; text-align: center; flex-shrink: 0; }
+        .meta-tag { background: var(--theme-color); color: white; padding: 6px 20px; border-radius: 50px; font-family: 'Lato'; font-weight: 900; font-size: 12pt; margin-bottom: 15px; letter-spacing: 1px; }
+        
+        /* 标题增强 */
+        .poster-title { font-family: 'Lora'; font-size: 60pt; font-weight: 700; color: var(--text-main); line-height: 1.0; margin-bottom: 10px; }
+        .poster-subtitle { font-family: 'Noto Sans SC'; font-size: 40pt; color: #5d6d7e; font-weight: 400; margin-bottom: 20px; position: relative; display: inline-block; }
+        .poster-subtitle::after { content: ""; display: block; width: 60px; height: 3px; background: var(--theme-color); margin: 10px auto 0 auto; }
 
-        #bg-layer {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-size: cover; background-position: center;
-            filter: brightness(1.2) contrast(0.9);
-            z-index: 1; transition: 1.5s ease;
-        }
+        /* 续页头 */
+        .mini-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #ccc; padding-bottom: 15px; margin-bottom: 20px; height: 60px; flex-shrink: 0; width: 100%; }
+        .mini-title { font-family: 'Lora'; font-weight: 700; font-size: 16pt; color: var(--text-main); }
+        .continued-tag { font-family: 'Lato'; font-weight: 700; font-style: italic; background: transparent; padding: 5px 0; border-radius: 0; font-size: 11pt; color: #666; }
 
-        #vignette {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.4) 100%);
-            z-index: 2; pointer-events: none;
-        }
+        /* 正文 */
+        .row { display: flex; gap: 40px; width: 100%; padding: 15px 0; border-bottom: 1px solid #f9f9f9; align-items: flex-start; flex-shrink: 0; }
+        .col-eng { flex: 6; font-family: 'Lora'; font-size: 18pt; line-height: 1.8; text-align: justify; padding-right: 25px; border-right: 2px solid #f0f0f0; }
+        .col-chi { flex: 4; font-family: 'Noto Sans SC'; font-size: 16pt; line-height: 1.8; color: #5d6d7e; text-align: justify; font-weight: 400; padding-top: 2px; }
 
-        canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; }
+        /* 边栏 (一致布局) */
+        .row.supp-style { background: var(--supp-bg); padding: 20px 25px; border-radius: 8px; margin: 5px 0; border: none; }
+        .row.supp-style .col-eng { border-right: 2px solid #aec6cf; font-size: 16pt; line-height: 1.6; }
+        .row.supp-style .col-chi { font-size: 14pt !important; line-height: 1.6; color: #555; }
+        h3 { font-family: 'Lato'; font-weight: 900; font-size: 18pt; color: var(--theme-color); margin: 0 0 10px 0; display: block; border-left: 8px solid var(--theme-color); padding-left: 15px; }
+        .row.supp-style h3 { font-size: 16pt !important; border-left-width: 5px; }
 
-        /* 艺术标识：极致聚拢布局 */
-        #branding-container {
-            position: relative; z-index: 4; height: 100%;
-            display: flex; justify-content: center; align-items: center;
-            pointer-events: none;
-        }
+        /* 词性高亮 (通用) */
+        .hl { padding: 0 4px; border-radius: 4px; font-weight: 600; display: inline-block; }
+        .hl-n { background-color: var(--bg-noun); } .hl-v { background-color: var(--bg-verb); } .hl-adj { background-color: var(--bg-adj); }
+        sup { color: #555; font-size: 0.6em; vertical-align: super; font-weight: 700; margin-left: 2px; }
 
-        .art-logo {
-            display: flex;
-            flex-direction: row-reverse; /* 右至左排布 */
-            align-items: flex-start;
-            color: var(--accent);
-            /* 给整个字组增加微弱的发光，使其在背景中更聚合 */
-            filter: drop-shadow(0 0 10px rgba(0,0,0,0.3));
-        }
+        /* 附录 */
+        .app-h { font-size: 18pt; font-weight: 700; color: var(--text-main); border-left: 6px solid #555; padding-left: 12px; display: block; margin: 25px 0 20px 0; font-family: 'Noto Sans SC'; flex-shrink: 0; width: 100%; }
+        
+        .vocab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px 40px; width: 100%; margin-bottom: 30px; flex-shrink: 0; }
+        .vocab-item { background: #fff; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 5px; display: flex; flex-direction: column; gap: 6px; }
+        .v-line-1 { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+        .v-word { font-family: 'Lora'; font-weight: 700; font-size: 19pt; color: #2c3e50; padding: 0 5px; border-radius: 4px; }
+        .v-idx { background: #333; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 11pt; text-align: center; line-height: 22px; display: inline-block; transform: translateY(-2px); }
+        .v-ipa { font-family: 'Arial'; color: #95a5a6; font-size: 13pt; }
+        .v-mean { font-size: 15pt; color: #444; font-weight: 500; margin-left: auto; }
+        .v-pos { color: var(--theme-color); font-weight: bold; font-family: 'Times New Roman'; font-style: italic; font-size: 13pt; margin-right: 2px;}
+        .v-line-2 { font-size: 14pt; color: #d35400; font-family: 'Roboto Mono'; font-weight: 500; }
+        .v-line-3 { font-size: 14pt; color: #7f8c8d; font-style: italic; font-family: 'Lora'; line-height: 1.4; margin-top: 2px; }
 
-        /* 中文列：边城 + 沈 */
-        .main-title-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start; /* 严格左对齐 */
-            margin-left: 10px; /* 极窄间距，解决“散”的问题 */
-            position: relative;
-        }
+        .sa-sentence-wrapper { display: flex; flex-wrap: wrap; column-gap: 0; row-gap: 35px; line-height: 1.5; margin-bottom: 25px; padding-top: 10px; align-items: flex-end; width: 100%; }
+        .chunk { display: inline-flex; flex-direction: column; align-items: center; margin: 0; vertical-align: bottom; }
+        .chunk-text { font-family: 'Lora'; font-size: 20pt; color: #2c3e50; padding: 4px 5px; font-weight: 500; border-radius: 0; }
+        .chunk-group { border-bottom: 3px solid #ccc; padding-bottom: 2px; margin: 0 3px; }
+        .chunk-group .chunk-text { padding-bottom: 0; } 
+        .chunk-lbl { font-size: 10pt; font-family: 'Noto Sans SC'; font-weight: 800; margin-top: 4px; white-space: nowrap; width: 100%; text-align: center; height: 15px; }
+        .chunk-lbl:empty { height: 0; margin-top: 0; }
+        .bracket { font-size: 20pt; color: #d35400; font-family: 'Lato'; font-weight: 300; padding: 4px 6px; display: inline-block; }
+        
+        .bg-trunk .chunk-text { background-color: var(--bg-trunk); }
+        .bg-clause-1 .chunk-text { background-color: var(--bg-clause-1); }
+        .bg-clause-1.bracket { background-color: var(--bg-clause-1); }
+        .bg-clause-2 .chunk-text { background-color: var(--bg-clause-2); }
+        .bg-clause-2.bracket { background-color: var(--bg-clause-2); }
+        
+        .l-subj { color: var(--t-subj); border-color: var(--t-subj); } 
+        .l-verb { color: var(--t-verb); border-color: var(--t-verb); } 
+        .l-obj { color: var(--t-obj); border-color: var(--t-obj); } 
+        .l-conn { color: var(--t-conn); border-color: var(--t-conn); }
 
-        .main-title {
-            writing-mode: vertical-rl;
-            font-size: 4.5rem; /* 字号略微缩小，提升整体感 */
-            font-weight: 900;
-            letter-spacing: 0.12em;
-            margin-bottom: 12px;
-        }
+        .sa-step-box, .q-card { background: #fdfefe; padding: 20px 25px; border-radius: 8px; border: 1px solid #eee; box-shadow: 2px 2px 8px rgba(0,0,0,0.02); margin-bottom: 12px; width: 100%; }
+        .bd-struct { border-left: 5px solid var(--bd-struct); }
+        .bd-trunk { border-left: 5px solid var(--bd-trunk); background-color: #FDFEFE; }
+        .bd-clause-1 { border-left: 5px solid var(--bd-clause-1); background-color: #FEF9E7; }
+        .bd-clause-2 { border-left: 5px solid var(--bd-clause-2); background-color: #E9F7EF; }
+        .q-card { border-left: 5px solid var(--theme-color); }
+        
+        .sa-trans { font-size: 16pt; color: #444; font-weight: 600; font-style: italic; margin-bottom: 20px; padding: 15px; border: 1px dashed #ccc; border-radius: 8px; width: 100%; background: #fff; }
+        .sa-step { margin-bottom: 12px; font-size: 15pt; color: #555; line-height: 1.6; }
+        .sa-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11pt; margin-right: 10px; font-weight: 800; color: #fff; background: #555; font-family: 'Lato'; text-transform: uppercase; }
 
-        .seal {
-            width: 18px; height: 18px;
-            background-color: rgba(180, 40, 40, 0.95);
-            color: #fff;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 0.65rem; font-weight: 900;
-            border-radius: 1px;
-            box-shadow: 1px 1px 4px rgba(0,0,0,0.5);
-            /* 绝对定位以确保左对齐 */
-            margin-left: 2px;
-        }
+        .q-header { display: flex; align-items: baseline; margin-bottom: 5px; }
+        .q-num { color: var(--theme-color); font-size: 18pt; font-weight: 900; margin-right: 10px; font-family: 'Lato'; }
+        .q-text { font-size: 18pt; color: #2c3e50; font-weight: 600; font-family: 'Lora'; }
+        .q-opts { display: flex; gap: 25px; flex-wrap: wrap; margin-left: 0; margin-top: 5px; }
+        .q-opt { font-size: 15pt; color: #555; font-family: 'Lato'; }
+        .q-blank { border-bottom: 2px solid #333; width: 100px; display: inline-block; }
 
-        /* 英文作者列 */
-        .sub-title {
-            writing-mode: vertical-rl;
-            font-family: var(--font-en);
-            font-size: 1rem;
-            font-style: italic;
-            font-weight: 400;
-            letter-spacing: 0.3em;
-            text-transform: uppercase;
-            padding-top: 85px; /* 缩短下沉距离，增强两列的联系 */
-            opacity: 0.65;
-            border-right: 1px solid rgba(255,255,255,0.15);
-            padding-right: 6px;
-        }
+        .footer { margin-top: auto; display: flex; justify-content: space-between; border-top: 1px solid #eee; padding: 0 60px; font-size: 11pt; color: #95a5a6; flex-shrink: 0; height: 70px; align-items: center; width: 100%; box-sizing: border-box; font-family: 'Lato'; }
+        .normal-page .footer { padding: 0; }
+        .footer-right { font-weight: 700; color: #333; }
 
-        /* 控制面板及进度条保持不变 */
-        #control-panel {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            z-index: 20; background: var(--panel-bg); padding: 30px; border-radius: 12px;
-            display: flex; flex-direction: column; gap: 18px; backdrop-filter: blur(25px);
-            transition: 0.6s; width: 85%; max-width: 350px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .hidden { opacity: 0; pointer-events: none; transform: translate(-50%, -45%) scale(0.95); }
-        button { padding: 12px; border: none; border-radius: 6px; background: rgba(255,255,255,0.1); color: #fff; font-size: 0.85rem; }
-        #progress-bar { position: fixed; bottom: 0; left: 0; width: 0%; height: 2px; background: rgba(255,255,255,0.6); z-index: 10; }
+        #btn-download { position: fixed; bottom: 20px; right: 20px; z-index: 9999; padding: 15px 25px; background: #2c3e50; color: white; border: none; border-radius: 50px; cursor: pointer; font-family: sans-serif; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.2s; }
+        #btn-download:hover { transform: scale(1.05); background: #34495e; }
+        #btn-download:active { transform: scale(0.95); }
     </style>
 </head>
 <body>
+<div id="status-bar"></div>
+<div id="loading-mask">
+    <div class="spinner"></div>
+    <div>Generating Content...</div>
+</div>
+<button id="btn-download" onclick="downloadAllPages()">📸 Save Pages</button>
+<div id="card-container"></div>
+<input type="file" id="upload-trigger" style="display:none" onchange="loadFile(event)">
 
-    <div id="bg-layer"></div>
-    <div id="vignette"></div>
-    <canvas id="visualizer"></canvas>
+<script>
+    // --- Global Error Trap ---
+    window.onerror = function(message, source, lineno, colno, error) {
+        document.getElementById('loading-mask').style.display = 'none';
+        document.getElementById('status-bar').style.display = 'block';
+        document.getElementById('status-bar').innerText = "System Error: " + message + " (Line " + lineno + ")";
+    };
 
-    <div id="branding-container">
-        <div class="art-logo">
-            <div class="main-title-wrapper">
-                <div class="main-title">边城</div>
-                <div class="seal">沈</div>
-            </div>
-            <div class="sub-title">Shen Congwen</div>
-        </div>
-    </div>
+    // --- Phase 4: Data Injection (AI MUST FILL THIS) ---
+    const META = { 
+        issue: "23 January 2026", 
+        title: "Updated nutrition guidelines released", 
+        subtitle: "美国发布史上最重大营养指南更新", 
+        themeColor: "#27AE60" 
+    };
+    
+    // [Audit 1: Atomized Content]
+    // Rule: Split long paragraphs into 1-2 sentence objects. Split sidebars by list items.
+    // Do NOT use <br><br> for alignment.
+    const MAIN_CONTENT = [
+        {
+            type: 'p',
+            eng: "New <span class='hl hl-n'>dietary guidelines</span><sup>①</sup> have been announced by the US Department of Health and Human Services (HHS).",
+            chi: "美国卫生与公众服务部 (HHS) 公布了新的<span class='hl hl-n'>膳食指南</span><sup>①</sup>。"
+        },
+        {
+            type: 'p',
+            eng: "They are a significant <span class='hl hl-n'>departure</span><sup>②</sup> from previous <span class='hl hl-n'>recommendations</span><sup>③</sup>.",
+            chi: "它们与之前的<span class='hl hl-n'>建议</span><sup>③</sup>相比有了显著的<span class='hl hl-n'>背离</span><sup>②</sup>（改变）。"
+        },
+        {
+            type: 'p',
+            eng: "<strong>What are dietary guidelines?</strong> Since 1980, the US government has released guidelines to inform Americans about the ideal foods to eat for good health.",
+            chi: "<strong>什么是膳食指南？</strong> 自 1980 年以来，美国政府发布指南，告知美国人为了健康应食用的理想食物。"
+        },
+        {
+            type: 'p',
+            eng: "The guidelines, which are updated every five years, <span class='hl hl-v'>influence</span><sup>④</sup> the meals served at schools, hospitals, and military bases.",
+            chi: "该指南每五年更新一次，会<span class='hl hl-v'>影响</span><sup>④</sup>学校、医院和军事基地提供的膳食。"
+        },
+        {
+            type: 'p',
+            eng: "A food pyramid was introduced in 1992 to visually <span class='hl hl-v'>illustrate</span><sup>⑤</sup> the guidelines, and people were advised to eat more of the foods from the bottom than the top.",
+            chi: "1992 年引入了食物金字塔来直观地<span class='hl hl-v'>说明</span><sup>⑤</sup>指南，建议人们多吃底部的食物，少吃顶部的食物。"
+        },
+        {
+            type: 'p',
+            eng: "In 2011, the US changed the pyramid to an image of a plate to illustrate a healthy diet.",
+            chi: "2011 年，美国将金字塔改为餐盘图像，以说明健康饮食。"
+        },
+        {
+            type: 'p',
+            eng: "<strong>What’s in the new guidelines?</strong> The new guidelines are visually displayed as an inverted pyramid (widest part at the top) with a greater <span class='hl hl-n'>emphasis</span><sup>⑥</sup> on <span class='hl hl-v'>consuming</span><sup>⑦</sup> <span class='hl hl-n'>protein</span><sup>⑧</sup> and full-fat dairy products.",
+            chi: "<strong>新指南有什么内容？</strong> 新指南直观地显示为倒金字塔（顶部最宽），更加<span class='hl hl-n'>强调</span><sup>⑥</sup><span class='hl hl-v'>摄入</span><sup>⑦</sup><span class='hl hl-n'>蛋白质</span><sup>⑧</sup>和全脂乳制品。"
+        },
+        {
+            type: 'p',
+            eng: "Beef, turkey, cheese, and whole milk are shown at the top.",
+            chi: "牛肉、火鸡、奶酪和全脂牛奶显示在顶部。"
+        },
+        {
+            type: 'p',
+            eng: "An equal emphasis is placed on fruits and vegetables, with those foods also displayed at the top.",
+            chi: "水果和蔬菜也同样受到重视，这些食物也显示在顶部。"
+        },
+        {
+            type: 'p',
+            eng: "Whole grains are located at the narrowest part of the pyramid, but the guidelines don’t recommend eating less of them.",
+            chi: "全谷物位于金字塔最窄的部分，但指南并不建议少吃它们。"
+        },
+        {
+            type: 'p',
+            eng: "Rather, an emphasis is placed on avoiding sugar and ultra-processed foods, such as chips and cookies.",
+            chi: "相反，重点在于避免糖和超加工食品，如薯片和饼干。"
+        },
+        {
+            type: 'p',
+            eng: "<strong>How did people react?</strong> Robert F. Kennedy Jr., head of the HHS, called the updated guidelines “the most significant reset of federal nutrition <span class='hl hl-n'>policy</span><sup>⑫</sup> in history.”",
+            chi: "<strong>人们有何反应？</strong> HHS 负责人小罗伯特·F·肯尼迪称更新后的指南是“历史上联邦营养<span class='hl hl-n'>政策</span><sup>⑫</sup>最重大的重置”。"
+        },
+        {
+            type: 'p',
+            eng: "While health experts said they are glad the guidelines continue to make fruits and vegetables a <span class='hl hl-n'>priority</span><sup>⑨</sup> and support eating fewer processed foods...",
+            chi: "虽然健康专家表示，他们很高兴指南继续将水果和蔬菜作为<span class='hl hl-n'>优先事项</span><sup>⑨</sup>，并支持少吃加工食品……"
+        },
+        {
+            type: 'p',
+            eng: "...many of them disagree that people need more protein, particularly from red meat.",
+            chi: "……但许多人不同意人们需要更多蛋白质，特别是来自红肉的蛋白质。"
+        },
+        {
+            type: 'p',
+            eng: "Studies have shown that consuming red meat, which tends to be higher in <span class='hl hl-n'>sodium</span><sup>⑩</sup> and unhealthy fats, can increase a person’s risk of heart disease and other conditions.",
+            chi: "研究表明，食用红肉（往往<span class='hl hl-n'>钠</span><sup>⑩</sup>含量和不健康脂肪含量较高）会增加患心脏病和其他疾病的风险。"
+        },
+        {
+            type: 'p',
+            eng: "<strong>What will happen next?</strong> The government will distribute the guidelines to agencies that work on nationwide food programs.",
+            chi: "<strong>接下来会发生什么？</strong> 政府将把指南分发给负责全国食品项目的机构。"
+        },
+        {
+            type: 'p',
+            eng: "US states will review the guidelines to determine whether they want to <span class='hl hl-v'>incorporate</span><sup>⑪</sup> the changes into their own programs.",
+            chi: "美国各州将审查该指南，以确定是否将其变更<span class='hl hl-v'>纳入</span><sup>⑪</sup>自己的项目中。"
+        },
+        {
+            type: 'supp',
+            eng: "<h3>The First Food Pyramid</h3>The first US food pyramid, released in 1992, was based on one from Sweden.",
+            chi: "<strong>首个食物金字塔</strong><br>1992 年发布的美国首个食物金字塔是基于瑞典的一个金字塔设计的。"
+        },
+        {
+            type: 'supp',
+            eng: "The bottom level showed grains; the middle level featured produce; the next level included eggs, dairy, meat, and fish; and the top consisted of fats and oils.",
+            chi: "底层显示谷物；中间层是农产品；下一层包括蛋、奶制品、肉和鱼；顶层由脂肪和油组成。"
+        },
+        {
+            type: 'supp',
+            eng: "The government recommended eating more foods from the bottom than the top.",
+            chi: "政府建议多吃底层的食物，少吃顶层的食物。"
+        },
+        {
+            type: 'supp',
+            eng: "<h3>Health Milestone</h3>In 1953, President Dwight D. Eisenhower established the department that would become today’s Health and Human Services agency.",
+            chi: "<strong>健康里程碑</strong><br>1953 年，德怀特·D·艾森豪威尔总统建立了后来成为今天卫生与公众服务部的部门。"
+        }
+    ]; 
+    
+    // [Audit 2: Sync & Dedup]
+    const VOCAB_LIST = [
+        { w: "guidelines", p: "n.", m: "指导方针; 准则", ipa: "ˈɡaɪdlaɪnz", c: "dietary guidelines", e: "The guidelines are updated every five years." },
+        { w: "departure", p: "n.", m: "背离; 改变", ipa: "dɪˈpɑːrtʃər", c: "a significant departure", e: "They are a significant departure from previous recommendations." },
+        { w: "recommendations", p: "n.", m: "建议", ipa: "ˌrekəmenˈdeɪʃnz", c: "previous recommendations", e: "The doctor made several recommendations for a healthy diet." },
+        { w: "influence", p: "v.", m: "影响", ipa: "ˈɪnfluəns", c: "influence the meals", e: "The weather can influence our plans." },
+        { w: "illustrate", p: "v.", m: "说明; 阐明", ipa: "ˈɪləstreɪt", c: "visually illustrate", e: "The teacher used pictures to illustrate the story." },
+        { w: "emphasis", p: "n.", m: "重点; 强调", ipa: "ˈemfəsɪs", c: "place emphasis on", e: "There is a greater emphasis on consuming protein." },
+        { w: "consume", p: "v.", m: "消耗; 食用", ipa: "kənˈsuːm", c: "consuming protein", e: "We should consume more vegetables." },
+        { w: "protein", p: "n.", m: "蛋白质", ipa: "ˈproʊtiːn", c: "high in protein", e: "Meat and eggs are good sources of protein." },
+        { w: "priority", p: "n.", m: "优先事项", ipa: "praɪˈɔːrəti", c: "make a priority", e: "Safety is our top priority." },
+        { w: "sodium", p: "n.", m: "钠 (盐分)", ipa: "ˈsoʊdiəm", c: "high in sodium", e: "Processed foods are often high in sodium." },
+        { w: "incorporate", p: "v.", m: "包含; 吸收", ipa: "ɪnˈkɔːrpəreɪt", c: "incorporate changes", e: "We will incorporate your suggestions into the plan." },
+        { w: "policy", p: "n.", m: "政策", ipa: "ˈpɑːləsi", c: "nutrition policy", e: "The school has a strict policy on bullying." }
+    ];
+    
+    // [Audit 3: Syntax Localization]
+    const SA_CHUNKS = [
+        { t: 'chunk-text', w: 'While', l: '连词' },
+        { t: 'chunk-text', w: 'health experts', l: '主语' },
+        { t: 'chunk-text', w: 'said', l: '谓语' },
+        { t: 'bracket bg-clause-1', w: '(', l: '' },
+        { t: 'chunk-text bg-clause-1', w: 'that', l: '连词' },
+        { t: 'chunk-text bg-clause-1', w: 'they', l: '主语' },
+        { t: 'chunk-text bg-clause-1', w: 'are', l: '系动词' },
+        { t: 'chunk-text bg-clause-1', w: 'glad', l: '表语' },
+        { t: 'bracket bg-clause-2', w: '(', l: '' },
+        { t: 'chunk-text bg-clause-2', w: 'the guidelines', l: '主语' },
+        { t: 'chunk-group bg-clause-2', w: '<span class="chunk-text">continue</span><span class="chunk-text">to make</span>', l: 'l-verb', txt: '谓语组' },
+        { t: 'chunk-text bg-clause-2', w: 'fruits and vegetables', l: '宾语' },
+        { t: 'chunk-text bg-clause-2', w: 'a priority', l: '宾补' },
+        { t: 'bracket bg-clause-2', w: ')', l: '' },
+        { t: 'bracket bg-clause-1', w: ')', l: '' },
+        { t: 'chunk-text', w: ',', l: '' },
+        { t: 'chunk-text', w: 'many of them', l: '主语' },
+        { t: 'chunk-text', w: 'disagree', l: '谓语' },
+        { t: 'bracket bg-clause-1', w: '(', l: '' },
+        { t: 'chunk-text bg-clause-1', w: 'that', l: '连词' },
+        { t: 'chunk-text bg-clause-1', w: 'people', l: '主语' },
+        { t: 'chunk-text bg-clause-1', w: 'need', l: '谓语' },
+        { t: 'chunk-text bg-clause-1', w: 'more protein', l: '宾语' },
+        { t: 'bracket bg-clause-1', w: ')', l: '' },
+        { t: 'chunk-text', w: '.', l: '' }
+    ];
+    const SA_TRANS = "尽管健康专家表示他们很高兴指南继续优先考虑水果和蔬菜……但其中许多人不同意人们需要更多蛋白质。";
+    const SA_STEPS = [
+        { type: 'bd-trunk', label: '主句主干', text: 'many of them (主语) disagree (谓语)。' },
+        { type: 'bd-clause-1', label: '让步状语从句', text: 'While... said... 引导让步状语从句，表示“虽然...但是...”。' },
+        { type: 'bd-clause-2', label: '宾语从句嵌套', text: 'said 后面的括号部分是宾语从句，而 glad 后面的括号部分又是嵌套在其中的原因/宾语从句。' }
+    ];
+    const QUIZ_ITEMS = [
+        { q: "Who announced the new guidelines?", a: "<span class='q-opt'>A. The President</span><span class='q-opt'>B. HHS</span><span class='q-opt'>C. The UN</span>" },
+        { q: "What shape illustrates the new guidelines?", a: "<span class='q-opt'>A. Pyramid</span><span class='q-opt'>B. Plate</span><span class='q-opt'>C. Inverted Pyramid</span>" },
+        { q: "What food is emphasized at the top?", a: "<span class='q-opt'>A. Grains</span><span class='q-opt'>B. Sugar</span><span class='q-opt'>C. Protein/Dairy</span>" }
+    ];
 
-    <div id="progress-bar"></div>
+    // --- Core Logic ---
+    function render() {
+        // [Safety Scope]
+        let cardIdx = 1;
+        let currentCard;
+        let container;
+        const SAFE_BOTTOM = 1340; 
 
-    <div id="control-panel">
-        <div style="text-align: center; color: #666; font-size: 0.65rem; letter-spacing: 2px; margin-bottom: 5px;">V12.2 CINEMA</div>
-        <input type="file" id="img-input" accept="image/*" style="color:#ccc; font-size:0.7rem; margin-bottom:10px;">
-        <input type="file" id="audio-input" accept="audio/*" style="color:#ccc; font-size:0.7rem; margin-bottom:10px;">
-        <button onclick="toggleVisual()">RIPPLE / PARTICLES</button>
-        <button id="start-btn" style="background: #fff; color: #000; font-weight: 600;">START IMMERSION</button>
-    </div>
-
-    <script>
-        let audioCtx, analyser, dataArray, source, audio;
-        const canvas = document.getElementById('visualizer');
-        const ctx = canvas.getContext('2d');
-        let isPlaying = false, visualMode = 'ripple', particles = [];
-        
-        document.getElementById('img-input').onchange = (e) => {
-            const url = URL.createObjectURL(e.target.files[0]);
-            document.getElementById('bg-layer').style.backgroundImage = `url(${url})`;
-        };
-
-        document.getElementById('audio-input').onchange = (e) => {
-            if (audio) audio.pause();
-            audio = new Audio(URL.createObjectURL(e.target.files[0]));
-            setupAudio();
-        };
-
-        function setupAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                analyser = audioCtx.createAnalyser();
-                analyser.fftSize = 512;
-                source = audioCtx.createMediaElementSource(audio);
-                source.connect(analyser);
-                analyser.connect(audioCtx.destination);
-                dataArray = new Uint8Array(analyser.frequencyBinCount);
-            }
-            audio.ontimeupdate = () => {
-                document.getElementById('progress-bar').style.width = (audio.currentTime / audio.duration) * 100 + '%';
-            };
+        // Helper functions
+        function createNewPage() {
+            cardIdx++; 
+            currentCard = createNormalPage(cardIdx);
+            document.getElementById('card-container').appendChild(currentCard);
+            container = currentCard.querySelector('.content-body');
         }
 
-        function toggleVisual() { visualMode = visualMode === 'ripple' ? 'particles' : 'ripple'; }
-
-        document.getElementById('start-btn').onclick = () => {
-            if (!audio) return alert('请上传音频');
-            if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
-            document.getElementById('control-panel').classList.add('hidden');
+        function checkAndMove(el, limit) {
+            const rect = el.getBoundingClientRect();
+            const cardTop = currentCard.getBoundingClientRect().top;
             
-            setTimeout(() => {
-                audio.play();
-                isPlaying = true;
-                if (particles.length === 0) createParticles();
-                draw();
-            }, 6000);
-        };
-
-        function createParticles() {
-            for (let i = 0; i < 100; i++) {
-                particles.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    size: Math.random() * 1.5 + 0.5,
-                    speed: Math.random() * 0.12 + 0.05
-                });
+            // Atomic Flow Check: If this specific atom (row/chunk) overflows, move IT and subsequent atoms to next page.
+            if ((rect.bottom - cardTop) > limit) {
+                container.removeChild(el); 
+                createNewPage(); 
+                container.appendChild(el);
             }
         }
 
-        function draw() {
-            if (!isPlaying) return;
-            requestAnimationFrame(draw);
-            analyser.getByteFrequencyData(dataArray);
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            const centerX = canvas.width / 2, centerY = canvas.height / 2, baseRadius = 180;
-
-            if (visualMode === 'ripple') {
-                ctx.beginPath();
-                ctx.lineWidth = 1.2;
-                ctx.strokeStyle = `rgba(255, 255, 255, 0.4)`;
-                const points = 180;
-                for (let i = 0; i <= points; i++) {
-                    let index = Math.floor(Math.abs(i - points/2) * 0.5);
-                    let amplitude = dataArray[index] / 255;
-                    let angle = (i / points) * Math.PI * 2 - Math.PI / 2;
-                    let weight = Math.sin(i / points * Math.PI); 
-                    const r = baseRadius + (amplitude * 45 * weight); // 缩小震动幅度，保持聚拢感
-                    const x = centerX + Math.cos(angle) * r, y = centerY + Math.sin(angle) * r;
-                    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-                }
-                ctx.stroke();
-            } else {
-                particles.forEach((p, i) => {
-                    const influence = dataArray[i % 40] / 60;
-                    p.y -= (p.speed + influence);
-                    if (p.y < 0) p.y = canvas.height;
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(255, 255, 255, ${0.12 + influence * 0.6})`;
-                    ctx.fill();
-                });
-            }
+        function appendWithCheck(el) {
+            container.appendChild(el);
+            checkAndMove(el, SAFE_BOTTOM);
         }
 
-        document.body.onclick = (e) => {
-            if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'INPUT') {
-                document.getElementById('control-panel').classList.toggle('hidden');
+        try {
+            // [Phase 6: Data Integrity Check]
+            if (!MAIN_CONTENT || MAIN_CONTENT.length === 0) {
+                throw new Error("MAIN_CONTENT is empty. Please check data injection.");
             }
-        };
 
-        window.onresize = () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        };
-        window.onresize();
-    </script>
+            document.documentElement.style.setProperty('--theme-color', META.themeColor);
+            const root = document.getElementById('card-container');
+            
+            // Initial Page Setup
+            currentCard = createCoverPage();
+            root.appendChild(currentCard);
+            container = currentCard.querySelector('.content-body');
+
+            // 1. Content (Atomic Row Flow)
+            MAIN_CONTENT.forEach(item => {
+                const row = createContentRow(item);
+                container.appendChild(row);
+                checkAndMove(row, SAFE_BOTTOM);
+            });
+
+            // Start new page for Appendix
+            createNewPage();
+
+            // 2. Vocab
+            appendWithCheck(createTitle('中考高频词汇 (Vocab)'));
+            let grid = document.createElement('div'); grid.className = 'vocab-grid';
+            container.appendChild(grid);
+            if (VOCAB_LIST) {
+                VOCAB_LIST.forEach((v, i) => {
+                    const item = createVocabItem(v, i+1); grid.appendChild(item);
+                    if ((grid.getBoundingClientRect().bottom - currentCard.getBoundingClientRect().top) > SAFE_BOTTOM) {
+                        grid.removeChild(item); 
+                        createNewPage(); 
+                        grid = document.createElement('div'); grid.className = 'vocab-grid';
+                        container.appendChild(grid); grid.appendChild(item);
+                    }
+                });
+            }
+
+            // 3. Sentence Analysis
+            appendWithCheck(createTitle('长难句分析 (Sentence Analysis)'));
+            let saWrapper = document.createElement('div'); saWrapper.className = 'sa-sentence-wrapper';
+            container.appendChild(saWrapper);
+            if (SA_CHUNKS) {
+                SA_CHUNKS.forEach(chunk => {
+                    let el = createSaChunk(chunk);
+                    if (el) { 
+                        saWrapper.appendChild(el);
+                        // Chunk Flow Check
+                        if ((saWrapper.getBoundingClientRect().bottom - currentCard.getBoundingClientRect().top) > SAFE_BOTTOM) {
+                            saWrapper.removeChild(el); 
+                            createNewPage(); 
+                            saWrapper = document.createElement('div'); saWrapper.className = 'sa-sentence-wrapper';
+                            container.appendChild(saWrapper); saWrapper.appendChild(el);
+                        }
+                    }
+                });
+            }
+
+            const transEl = document.createElement('div'); transEl.className = 'sa-trans'; transEl.innerHTML = SA_TRANS || "";
+            appendWithCheck(transEl);
+
+            if (SA_STEPS) {
+                SA_STEPS.forEach(step => { const el = createSaStep(step); appendWithCheck(el); });
+            }
+
+            // 4. Quiz
+            appendWithCheck(createTitle('趣闻挑战 (Little Quiz)'));
+            if (QUIZ_ITEMS) {
+                QUIZ_ITEMS.forEach((q, i) => {
+                    const qCard = document.createElement('div'); qCard.className = 'q-card';
+                    qCard.innerHTML = `<div class="q-header"><div class="q-num">${i+1}</div><div class="q-text">${q.q}</div></div><div class="q-opts">${q.a}</div>`;
+                    appendWithCheck(qCard);
+                });
+            }
+
+            updateFooters(cardIdx);
+            
+            // Success: Remove loading
+            document.getElementById('loading-mask').style.display = 'none';
+
+        } catch(e) {
+            console.error(e);
+            document.getElementById('loading-mask').style.display = 'none';
+            document.getElementById('status-bar').style.display = 'block';
+            document.getElementById('status-bar').innerText = "Render Error: " + e.message;
+        }
+    }
+
+    // --- Generators ---
+    function createCoverPage() {
+        const d = document.createElement('div'); d.className = 'card cover-page';
+        d.innerHTML = `<div class="hero-section" onclick="document.getElementById('upload-trigger').click()"><img id="hero-img" class="hero-img"><div class="hero-placeholder" id="hero-txt">Tap to Upload Cover</div></div><div class="cover-header"><div class="meta-tag">${META.issue}</div><div class="poster-title">${META.title}</div><div class="poster-subtitle">${META.subtitle}</div></div><div class="content-body" style="padding:0 60px;"></div><div class="footer"><span class="footer-left">Designed for Educational Purpose</span><span class="footer-right page-num"></span></div>`;
+        return d;
+    }
+    function createNormalPage(idx) {
+        const d = document.createElement('div'); d.className = 'card normal-page';
+        d.innerHTML = `<header class="mini-header"><div class="mini-title">${META.title}</div><div class="continued-tag">Continued...</div></header><div class="content-body"></div><div class="footer"><span class="footer-left">Designed for Educational Purpose</span><span class="footer-right page-num"></span></div>`;
+        return d;
+    }
+    function createContentRow(item) {
+        const d = document.createElement('div'); d.className = 'row';
+        if (item.type === 'supp') d.classList.add('supp-style');
+        d.innerHTML = `<div class="col-eng">${item.eng}</div><div class="col-chi">${item.chi}</div>`;
+        return d;
+    }
+    function createTitle(text) { const d = document.createElement('div'); d.className = 'app-h'; d.innerText = text; return d; }
+    
+    function createVocabItem(v, idx) {
+        let bgClass = '';
+        if (v.p.includes('n.')) bgClass = 'hl-n';
+        else if (v.p.includes('v.')) bgClass = 'hl-v';
+        else if (v.p.includes('adj') || v.p.includes('adv')) bgClass = 'hl-adj';
+        else bgClass = 'hl-n'; 
+        const d = document.createElement('div'); d.className = 'vocab-item';
+        d.innerHTML = `<div class="v-line-1"><span class="v-word ${bgClass}">${v.w}</span><span class="v-idx">${idx}</span><span class="v-ipa">[${v.ipa}]</span><span class="v-pos">${v.p}</span><span class="v-mean">${v.m}</span></div><div class="v-line-2">${v.c}</div><div class="v-line-3">"${v.e}"</div>`;
+        return d;
+    }
+    
+    function createSaChunk(c) {
+        if (!c || !c.t) return null;
+        const d = document.createElement('div'); d.className = `chunk ${c.t}`;
+        if (c.t.includes('chunk-group')) {
+            const color = c.l ? `var(--${c.l.replace('l-', 't-')})` : '#ccc';
+            d.style.borderBottomColor = color;
+        }
+        const label = c.l ? c.l : '';
+        const txt = c.txt ? c.txt : '';
+        d.innerHTML = `<span class="chunk-lbl ${label}">${txt}</span><span class="chunk-text">${c.w}</span>`;
+        return d;
+    }
+    function createSaStep(s) {
+        const d = document.createElement('div'); d.className = `sa-step-box ${s.type}`;
+        d.innerHTML = `<div class="sa-step"><span class="sa-tag">${s.label}</span>${s.text}</div>`;
+        return d;
+    }
+    function updateFooters(total) { document.querySelectorAll('.page-num').forEach((el, i) => el.innerText = `Page ${i+1}/${total}`); }
+    
+    async function downloadAllPages() {
+        const btn = document.getElementById('btn-download');
+        const originalText = btn.innerText;
+        btn.innerText = "Processing... (Please Wait)";
+        btn.style.opacity = "0.7";
+        btn.disabled = true;
+
+        try {
+            const cards = document.querySelectorAll('.card');
+            for (let i = 0; i < cards.length; i++) {
+                const canvas = await html2canvas(cards[i], { scale: 2, useCORS: true, allowTaint: false, backgroundColor: '#ffffff', logging: false });
+                canvas.toBlob(function(blob) {
+                    if (!blob) { alert("Security Error: Use Local Server."); return; }
+                    const link = document.createElement('a');
+                    link.download = `TheWeekJunior_Page_${i + 1}.png`;
+                    link.href = URL.createObjectURL(blob);
+                    link.click();
+                    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+                }, 'image/png');
+                await new Promise(r => setTimeout(r, 500));
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Error: " + e.message);
+        } finally {
+            btn.innerText = originalText;
+            btn.style.opacity = "1";
+            btn.disabled = false;
+        }
+    }
+
+    window.loadFile = function(e) { document.getElementById('hero-img').src = URL.createObjectURL(e.target.files[0]); document.getElementById('hero-img').style.display='block'; document.getElementById('hero-txt').style.display='none'; };
+    window.onload = render;
+</script>
 </body>
 </html>
