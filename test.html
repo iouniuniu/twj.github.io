@@ -6,14 +6,13 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>沈从文 · 边城 V12 Final</title>
+    <title>沈从文 · 边城 V12.1</title>
     <style>
-        /* 引入思源宋体与 Playfair Display 西文衬线 */
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200;500;900&family=Playfair+Display:ital,wght@0,400;1,700&display=swap');
 
         :root {
             --accent: rgba(255, 255, 255, 0.95);
-            --panel-bg: rgba(0, 0, 0, 0.8);
+            --panel-bg: rgba(0, 0, 0, 0.85);
             --font-main: 'Noto Serif SC', serif;
             --font-en: 'Playfair Display', serif;
         }
@@ -41,7 +40,7 @@
 
         canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; }
 
-        /* 艺术标识重构 */
+        /* 艺术标识：极致对齐与紧凑排版 */
         #branding-container {
             position: relative; z-index: 4; height: 100%;
             display: flex; justify-content: center; align-items: center;
@@ -50,77 +49,70 @@
 
         .art-logo {
             display: flex;
-            flex-direction: row-reverse;
+            flex-direction: row-reverse; /* 右至左排布 */
             align-items: flex-start;
             color: var(--accent);
         }
 
+        /* 核心中文列：边城 + 沈 */
         .main-title-wrapper {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            margin-left: 30px;
-            position: relative;
+            align-items: flex-start; /* 强制左对齐 */
+            margin-left: 20px; /* 两列文字的间距 */
         }
 
         .main-title {
             writing-mode: vertical-rl;
-            font-size: 5.5rem;
+            font-size: 5.2rem;
             font-weight: 900;
-            letter-spacing: 0.25em;
-            transform: translateY(-30px);
+            letter-spacing: 0.15em;
             text-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            margin-bottom: 8px; /* 距离下方印章的距离 */
         }
 
         .seal {
-            position: absolute;
-            left: -12px; 
-            bottom: 20px; 
-            /* 面积调整为原来的 1/4 (38px -> 19px) */
-            width: 19px; height: 19px;
-            background-color: rgba(180, 40, 40, 0.9);
+            width: 18px; height: 18px; /* 面积为 1/4 */
+            background-color: rgba(180, 40, 40, 0.95);
             color: #fff;
             display: flex; justify-content: center; align-items: center;
-            font-size: 0.7rem; font-weight: 900;
+            font-size: 0.65rem; font-weight: 900;
             border-radius: 1px;
-            box-shadow: 1px 1px 5px rgba(0,0,0,0.4);
+            box-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+            /* 移除左边距，确保与边城左对齐 */
+            margin-left: 0; 
         }
 
+        /* 英文作者列 */
         .sub-title {
             writing-mode: vertical-rl;
-            font-family: var(--font-en); /* 切换为 Playfair Display */
-            font-size: 1.1rem;
+            font-family: var(--font-en);
+            font-size: 1.05rem;
             font-style: italic;
             font-weight: 400;
-            letter-spacing: 0.4em;
+            letter-spacing: 0.35em;
             text-transform: uppercase;
-            padding-top: 80px; /* 进一步拉开Y轴错落距离 */
+            padding-top: 110px; /* 显著下沉，形成错位 */
             opacity: 0.6;
-            border-right: 1px solid rgba(255,255,255,0.15);
-            padding-right: 12px;
+            border-right: 1px solid rgba(255,255,255,0.12);
+            padding-right: 8px;
         }
 
-        /* 极简面板 */
+        /* 控制面板 */
         #control-panel {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            z-index: 20; background: var(--panel-bg); padding: 35px; border-radius: 12px;
-            display: flex; flex-direction: column; gap: 20px; backdrop-filter: blur(25px);
-            transition: 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); width: 85%; max-width: 360px;
-            border: 1px solid rgba(255,255,255,0.08);
+            z-index: 20; background: var(--panel-bg); padding: 30px; border-radius: 12px;
+            display: flex; flex-direction: column; gap: 18px; backdrop-filter: blur(25px);
+            transition: 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); width: 85%; max-width: 350px;
+            border: 1px solid rgba(255,255,255,0.1);
         }
         .hidden { opacity: 0; pointer-events: none; transform: translate(-50%, -45%) scale(0.95); }
 
-        .btn-group { display: flex; flex-direction: column; gap: 8px; }
-        label { color: #888; font-size: 0.7rem; letter-spacing: 1.5px; text-transform: uppercase; }
-        input[type="file"] { color: #ccc; font-size: 0.75rem; }
-        
         button {
-            padding: 14px; border: none; border-radius: 6px; background: rgba(255,255,255,0.08);
-            color: #fff; font-size: 0.85rem; cursor: pointer; transition: 0.3s;
+            padding: 12px; border: none; border-radius: 6px; background: rgba(255,255,255,0.1);
+            color: #fff; font-size: 0.85rem; cursor: pointer;
         }
-        button:active { background: rgba(255,255,255,0.2); }
-        #progress-container { position: fixed; bottom: 0; left: 0; width: 100%; height: 2px; background: rgba(255,255,255,0.03); z-index: 10; }
-        #progress-bar { width: 0%; height: 100%; background: rgba(255,255,255,0.6); transition: width 0.1s linear; }
+        #progress-bar { position: fixed; bottom: 0; left: 0; width: 0%; height: 2px; background: rgba(255,255,255,0.6); z-index: 10; }
     </style>
 </head>
 <body>
@@ -139,30 +131,29 @@
         </div>
     </div>
 
-    <div id="progress-container"><div id="progress-bar"></div></div>
+    <div id="progress-bar"></div>
 
     <div id="control-panel">
-        <div class="btn-group">
-            <label>Background Image</label>
-            <input type="file" id="img-input" accept="image/*">
+        <div style="text-align: center; color: #666; font-size: 0.7rem; margin-bottom: 10px;">V12.1 PROFESSIONAL</div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+            <label style="color:#888; font-size:0.7rem;">IMAGE</label>
+            <input type="file" id="img-input" accept="image/*" style="color:#ccc; font-size:0.7rem;">
         </div>
-        <div class="btn-group">
-            <label>Audio File (MiniMax Clone)</label>
-            <input type="file" id="audio-input" accept="audio/*">
+        <div style="display:flex; flex-direction:column; gap:8px;">
+            <label style="color:#888; font-size:0.7rem;">AUDIO</label>
+            <input type="file" id="audio-input" accept="audio/*" style="color:#ccc; font-size:0.7rem;">
         </div>
-        <div class="btn-group" style="flex-direction: row; gap: 10px;">
-            <button style="flex: 1;" onclick="toggleVisual()">RIPPLE / PARTICLES</button>
+        <div style="display:flex; gap:10px;">
+            <button style="flex:1;" onclick="toggleVisual()">RIPPLE / PARTICLES</button>
         </div>
-        <button id="start-btn" style="background: #fff; color: #000; font-weight: 600; margin-top: 10px;">START IMMERSION</button>
+        <button id="start-btn" style="background: #fff; color: #000; font-weight: 600;">START IMMERSION</button>
     </div>
 
     <script>
         let audioCtx, analyser, dataArray, source, audio;
         const canvas = document.getElementById('visualizer');
         const ctx = canvas.getContext('2d');
-        let isPlaying = false;
-        let visualMode = 'ripple';
-        let particles = [];
+        let isPlaying = false, visualMode = 'ripple', particles = [];
         
         document.getElementById('img-input').onchange = (e) => {
             const url = URL.createObjectURL(e.target.files[0]);
@@ -193,12 +184,11 @@
         function toggleVisual() { visualMode = visualMode === 'ripple' ? 'particles' : 'ripple'; }
 
         document.getElementById('start-btn').onclick = () => {
-            if (!audio) return alert('Please upload audio.');
-            const docElm = document.documentElement;
-            if (docElm.requestFullscreen) docElm.requestFullscreen();
+            if (!audio) return alert('请上传音频文件');
+            if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
             document.getElementById('control-panel').classList.add('hidden');
             
-            // 6秒静默启动
+            // 6秒绝对静默启动
             setTimeout(() => {
                 audio.play();
                 isPlaying = true;
@@ -208,58 +198,39 @@
         };
 
         function createParticles() {
-            for (let i = 0; i < 120; i++) {
+            for (let i = 0; i < 100; i++) {
                 particles.push({
                     x: Math.random() * canvas.width,
                     y: Math.random() * canvas.height,
                     size: Math.random() * 1.5 + 0.5,
-                    speed: Math.random() * 0.2 + 0.05
+                    speed: Math.random() * 0.15 + 0.05
                 });
             }
         }
 
-        // 优化后的平滑圆环算法
         function draw() {
             if (!isPlaying) return;
             requestAnimationFrame(draw);
             analyser.getByteFrequencyData(dataArray);
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            const baseRadius = 170;
+            const centerX = canvas.width / 2, centerY = canvas.height / 2, baseRadius = 180;
 
             if (visualMode === 'ripple') {
                 ctx.beginPath();
                 ctx.lineWidth = 1.2;
                 ctx.strokeStyle = `rgba(255, 255, 255, 0.4)`;
-                
                 const points = 180;
                 for (let i = 0; i <= points; i++) {
-                    // 获取频率索引，并应用平滑窗函数，避开正上方的剧烈震动
                     let index = Math.floor(Math.abs(i - points/2) * 0.5);
                     let amplitude = dataArray[index] / 255;
-                    
-                    // 核心优化：顶部和底部权重衰减，消除尖刺
                     let angle = (i / points) * Math.PI * 2 - Math.PI / 2;
-                    let weight = Math.sin(i / points * Math.PI); // 顶部和底部(sin≈0)处震动减弱
-                    
-                    const r = baseRadius + (amplitude * 55 * weight);
-                    const x = centerX + Math.cos(angle) * r;
-                    const y = centerY + Math.sin(angle) * r;
-                    
+                    let weight = Math.sin(i / points * Math.PI); 
+                    const r = baseRadius + (amplitude * 50 * weight);
+                    const x = centerX + Math.cos(angle) * r, y = centerY + Math.sin(angle) * r;
                     if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
                 }
-                ctx.closePath();
                 ctx.stroke();
-
-                // 辅助呼吸内圈
-                ctx.beginPath();
-                const breath = Math.sin(Date.now() / 1500) * 3;
-                ctx.arc(centerX, centerY, baseRadius - 20 + breath, 0, Math.PI * 2);
-                ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-                ctx.stroke();
-
             } else {
                 particles.forEach((p, i) => {
                     const influence = dataArray[i % 40] / 60;
@@ -267,7 +238,7 @@
                     if (p.y < 0) p.y = canvas.height;
                     ctx.beginPath();
                     ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(255, 255, 255, ${0.15 + influence * 0.5})`;
+                    ctx.fillStyle = `rgba(255, 255, 255, ${0.15 + influence * 0.6})`;
                     ctx.fill();
                 });
             }
