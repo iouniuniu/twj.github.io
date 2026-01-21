@@ -6,14 +6,16 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>沈从文 · 边城 V12</title>
+    <title>沈从文 · 边城 V12 Final</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200;500;900&display=swap');
+        /* 引入思源宋体与 Playfair Display 西文衬线 */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200;500;900&family=Playfair+Display:ital,wght@0,400;1,700&display=swap');
 
         :root {
             --accent: rgba(255, 255, 255, 0.95);
-            --panel-bg: rgba(0, 0, 0, 0.75);
+            --panel-bg: rgba(0, 0, 0, 0.8);
             --font-main: 'Noto Serif SC', serif;
+            --font-en: 'Playfair Display', serif;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -27,19 +29,19 @@
         #bg-layer {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-size: cover; background-position: center;
-            filter: brightness(1.25) contrast(0.9); /* 提亮背景增强明度 */
-            z-index: 1; transition: 1.5s ease-in-out;
+            filter: brightness(1.2) contrast(0.9);
+            z-index: 1; transition: 1.5s ease;
         }
 
         #vignette {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.35) 100%);
+            background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.4) 100%);
             z-index: 2; pointer-events: none;
         }
 
         canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; }
 
-        /* 艺术标识容器 */
+        /* 艺术标识重构 */
         #branding-container {
             position: relative; z-index: 4; height: 100%;
             display: flex; justify-content: center; align-items: center;
@@ -48,18 +50,16 @@
 
         .art-logo {
             display: flex;
-            flex-direction: row-reverse; /* 竖排由右至左 */
+            flex-direction: row-reverse;
             align-items: flex-start;
             color: var(--accent);
-            text-shadow: 0 4px 20px rgba(0,0,0,0.4);
         }
 
-        /* 边城标题组 */
         .main-title-wrapper {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-left: 25px;
+            margin-left: 30px;
             position: relative;
         }
 
@@ -68,62 +68,59 @@
             font-size: 5.5rem;
             font-weight: 900;
             letter-spacing: 0.25em;
-            transform: translateY(-20px); /* 边城位置更高 */
+            transform: translateY(-30px);
+            text-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
         .seal {
             position: absolute;
-            left: -15px; /* 位于左侧 */
-            bottom: 25px; /* 位于下方 */
-            width: 38px; height: 38px;
-            background-color: rgba(180, 40, 40, 0.95);
+            left: -12px; 
+            bottom: 20px; 
+            /* 面积调整为原来的 1/4 (38px -> 19px) */
+            width: 19px; height: 19px;
+            background-color: rgba(180, 40, 40, 0.9);
             color: #fff;
             display: flex; justify-content: center; align-items: center;
-            font-size: 1.4rem; font-weight: 900;
+            font-size: 0.7rem; font-weight: 900;
             border-radius: 1px;
-            box-shadow: 2px 2px 10px rgba(0,0,0,0.4);
+            box-shadow: 1px 1px 5px rgba(0,0,0,0.4);
         }
 
-        /* 英文作者名 */
         .sub-title {
             writing-mode: vertical-rl;
-            font-size: 1rem;
-            font-weight: 200;
-            letter-spacing: 0.6em;
+            font-family: var(--font-en); /* 切换为 Playfair Display */
+            font-size: 1.1rem;
+            font-style: italic;
+            font-weight: 400;
+            letter-spacing: 0.4em;
             text-transform: uppercase;
-            padding-top: 60px; /* 英文与中文Y轴错开 */
-            opacity: 0.7;
-            border-right: 1px solid rgba(255,255,255,0.2);
-            padding-right: 10px;
+            padding-top: 80px; /* 进一步拉开Y轴错落距离 */
+            opacity: 0.6;
+            border-right: 1px solid rgba(255,255,255,0.15);
+            padding-right: 12px;
         }
 
-        /* 进度条 */
-        #progress-container {
-            position: fixed; bottom: 0; left: 0; width: 100%; height: 2px;
-            background: rgba(255,255,255,0.05); z-index: 10;
-        }
-        #progress-bar { width: 0%; height: 100%; background: var(--accent); transition: width 0.1s linear; }
-
-        /* 控制面板 */
+        /* 极简面板 */
         #control-panel {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            z-index: 20; background: var(--panel-bg); padding: 35px; border-radius: 15px;
-            display: flex; flex-direction: column; gap: 20px; backdrop-filter: blur(20px);
-            transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); width: 85%; max-width: 380px;
-            border: 1px solid rgba(255,255,255,0.1);
+            z-index: 20; background: var(--panel-bg); padding: 35px; border-radius: 12px;
+            display: flex; flex-direction: column; gap: 20px; backdrop-filter: blur(25px);
+            transition: 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); width: 85%; max-width: 360px;
+            border: 1px solid rgba(255,255,255,0.08);
         }
-        .hidden { opacity: 0; pointer-events: none; transform: translate(-50%, -40%); }
+        .hidden { opacity: 0; pointer-events: none; transform: translate(-50%, -45%) scale(0.95); }
 
         .btn-group { display: flex; flex-direction: column; gap: 8px; }
-        label { color: #999; font-size: 0.75rem; letter-spacing: 1px; }
-        input[type="file"] { color: #eee; font-size: 0.8rem; }
+        label { color: #888; font-size: 0.7rem; letter-spacing: 1.5px; text-transform: uppercase; }
+        input[type="file"] { color: #ccc; font-size: 0.75rem; }
         
         button {
-            padding: 14px; border: none; border-radius: 8px; background: rgba(255,255,255,0.1);
-            color: #fff; font-size: 0.9rem; cursor: pointer; font-family: var(--font-main);
+            padding: 14px; border: none; border-radius: 6px; background: rgba(255,255,255,0.08);
+            color: #fff; font-size: 0.85rem; cursor: pointer; transition: 0.3s;
         }
-        
-        #time-info { color: #666; font-size: 0.8rem; text-align: center; font-family: monospace; }
+        button:active { background: rgba(255,255,255,0.2); }
+        #progress-container { position: fixed; bottom: 0; left: 0; width: 100%; height: 2px; background: rgba(255,255,255,0.03); z-index: 10; }
+        #progress-bar { width: 0%; height: 100%; background: rgba(255,255,255,0.6); transition: width 0.1s linear; }
     </style>
 </head>
 <body>
@@ -138,26 +135,25 @@
                 <div class="main-title">边城</div>
                 <div class="seal">沈</div>
             </div>
-            <div class="sub-title">SHEN CONGWEN</div>
+            <div class="sub-title">Shen Congwen</div>
         </div>
     </div>
 
     <div id="progress-container"><div id="progress-bar"></div></div>
 
     <div id="control-panel">
-        <div id="time-info">待命</div>
         <div class="btn-group">
-            <label>上传背景图片</label>
+            <label>Background Image</label>
             <input type="file" id="img-input" accept="image/*">
         </div>
         <div class="btn-group">
-            <label>上传音频文件</label>
+            <label>Audio File (MiniMax Clone)</label>
             <input type="file" id="audio-input" accept="audio/*">
         </div>
-        <div class="btn-group">
-            <button onclick="toggleVisual()">切换视觉：环形 / 微粒</button>
+        <div class="btn-group" style="flex-direction: row; gap: 10px;">
+            <button style="flex: 1;" onclick="toggleVisual()">RIPPLE / PARTICLES</button>
         </div>
-        <button id="start-btn" style="background: #fff; color: #000; font-weight: 600; margin-top: 10px;">开启沉浸体验</button>
+        <button id="start-btn" style="background: #fff; color: #000; font-weight: 600; margin-top: 10px;">START IMMERSION</button>
     </div>
 
     <script>
@@ -165,10 +161,9 @@
         const canvas = document.getElementById('visualizer');
         const ctx = canvas.getContext('2d');
         let isPlaying = false;
-        let visualMode = 'ripple'; // 'ripple' 或 'particles'
+        let visualMode = 'ripple';
         let particles = [];
         
-        // 文件上传处理
         document.getElementById('img-input').onchange = (e) => {
             const url = URL.createObjectURL(e.target.files[0]);
             document.getElementById('bg-layer').style.backgroundImage = `url(${url})`;
@@ -191,28 +186,19 @@
                 dataArray = new Uint8Array(analyser.frequencyBinCount);
             }
             audio.ontimeupdate = () => {
-                const prog = (audio.currentTime / audio.duration) * 100;
-                document.getElementById('progress-bar').style.width = prog + '%';
-                const format = (t) => new Date(t * 1000 || 0).toISOString().substr(14, 5);
-                document.getElementById('time-info').innerText = `${format(audio.currentTime)} / ${format(audio.duration || 0)}`;
+                document.getElementById('progress-bar').style.width = (audio.currentTime / audio.duration) * 100 + '%';
             };
         }
 
-        function toggleVisual() {
-            visualMode = visualMode === 'ripple' ? 'particles' : 'ripple';
-        }
+        function toggleVisual() { visualMode = visualMode === 'ripple' ? 'particles' : 'ripple'; }
 
-        // 核心：点击开启体验，静默 6s
         document.getElementById('start-btn').onclick = () => {
-            if (!audio) return alert('请先上传音频文件');
-            
-            // 请求 Android 沉浸全屏
+            if (!audio) return alert('Please upload audio.');
             const docElm = document.documentElement;
             if (docElm.requestFullscreen) docElm.requestFullscreen();
-            
             document.getElementById('control-panel').classList.add('hidden');
-
-            // 静默 6s 后正式开始
+            
+            // 6秒静默启动
             setTimeout(() => {
                 audio.play();
                 isPlaying = true;
@@ -222,58 +208,66 @@
         };
 
         function createParticles() {
-            for (let i = 0; i < 100; i++) {
+            for (let i = 0; i < 120; i++) {
                 particles.push({
                     x: Math.random() * canvas.width,
                     y: Math.random() * canvas.height,
-                    size: Math.random() * 2 + 0.5,
-                    speed: Math.random() * 0.3 + 0.1
+                    size: Math.random() * 1.5 + 0.5,
+                    speed: Math.random() * 0.2 + 0.05
                 });
             }
         }
 
+        // 优化后的平滑圆环算法
         function draw() {
             if (!isPlaying) return;
             requestAnimationFrame(draw);
             analyser.getByteFrequencyData(dataArray);
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            if (visualMode === 'ripple') {
-                // 环形涟漪逻辑：镜像对称
-                const centerX = canvas.width / 2;
-                const centerY = canvas.height / 2;
-                const baseRadius = 160;
-                ctx.beginPath();
-                ctx.lineWidth = 1.5;
-                ctx.strokeStyle = `rgba(255, 255, 255, 0.5)`;
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const baseRadius = 170;
 
-                for (let i = 0; i < 120; i++) {
-                    const amplitude = dataArray[i] / 255;
-                    const r = baseRadius + amplitude * 50;
-                    const angle = (i / 120) * Math.PI - Math.PI / 2;
-                    const x1 = centerX + Math.cos(angle) * r;
-                    const y1 = centerY + Math.sin(angle) * r;
-                    if (i === 0) ctx.moveTo(x1, y1); else ctx.lineTo(x1, y1);
-                }
-                for (let i = 120; i >= 0; i--) {
-                    const amplitude = dataArray[i] / 255;
-                    const r = baseRadius + amplitude * 50;
-                    const angle = (i / 120) * Math.PI - Math.PI / 2;
-                    const x2 = centerX - Math.cos(angle) * r;
-                    const y2 = centerY + Math.sin(angle) * r;
-                    ctx.lineTo(x2, y2);
+            if (visualMode === 'ripple') {
+                ctx.beginPath();
+                ctx.lineWidth = 1.2;
+                ctx.strokeStyle = `rgba(255, 255, 255, 0.4)`;
+                
+                const points = 180;
+                for (let i = 0; i <= points; i++) {
+                    // 获取频率索引，并应用平滑窗函数，避开正上方的剧烈震动
+                    let index = Math.floor(Math.abs(i - points/2) * 0.5);
+                    let amplitude = dataArray[index] / 255;
+                    
+                    // 核心优化：顶部和底部权重衰减，消除尖刺
+                    let angle = (i / points) * Math.PI * 2 - Math.PI / 2;
+                    let weight = Math.sin(i / points * Math.PI); // 顶部和底部(sin≈0)处震动减弱
+                    
+                    const r = baseRadius + (amplitude * 55 * weight);
+                    const x = centerX + Math.cos(angle) * r;
+                    const y = centerY + Math.sin(angle) * r;
+                    
+                    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
                 }
                 ctx.closePath();
                 ctx.stroke();
+
+                // 辅助呼吸内圈
+                ctx.beginPath();
+                const breath = Math.sin(Date.now() / 1500) * 3;
+                ctx.arc(centerX, centerY, baseRadius - 20 + breath, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+                ctx.stroke();
+
             } else {
-                // 悬浮微粒逻辑
                 particles.forEach((p, i) => {
-                    const influence = dataArray[i % 30] / 50;
+                    const influence = dataArray[i % 40] / 60;
                     p.y -= (p.speed + influence);
                     if (p.y < 0) p.y = canvas.height;
                     ctx.beginPath();
                     ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(255, 255, 255, ${0.2 + influence})`;
+                    ctx.fillStyle = `rgba(255, 255, 255, ${0.15 + influence * 0.5})`;
                     ctx.fill();
                 });
             }
