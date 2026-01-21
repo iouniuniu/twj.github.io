@@ -2,457 +2,283 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Week Junior Handout</title>
-    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700&family=Noto+Sans+SC:wght@300;400;500;700&family=Lato:wght@400;700;900&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>沈从文 · 边城</title>
     <style>
         :root {
-            /* 动态主题色 (由 JS 注入) */
-            --theme-color: #2c3e50; 
-
-            /* 词性颜色 */
-            --t-subj: #C0392B; --t-verb: #2980B9; --t-obj: #27AE60; --t-mod: #D35400; --t-prep: #8E44AD; --t-conn: #7F8C8D;
-            
-            /* 词性背景 */
-            --bg-noun: #D6EAF8; --bg-verb: #D5F5E3; --bg-adj: #E8DAEF;
-            
-            /* 长难句背景 */
-            --bg-trunk: #EBF5FB; --bg-clause-1: #FEF5E7; --bg-clause-2: #E9F7EF;
-            /* 边框色 */
-            --bd-trunk: #3498DB; --bd-clause-1: #F39C12; --bd-clause-2: #2ECC71; --bd-struct: #2C3E50;
-            
-            /* 通用 */
-            --text-main: #2c3e50; --bg: #ffffff; --supp-bg: #F0F8FF;
-            --p-w: 1080px; --p-h: 1440px;
+            --accent: rgba(255, 255, 255, 0.9);
+            --panel-bg: rgba(0, 0, 0, 0.6);
+            /* 字体美化：首选思源宋体，其次是系统宋体，最后是通用衬线体 */
+            --font-family: "Source Han Serif CN", "Noto Serif SC", "SimSun", "STSong", serif;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; }
-        body { background: #444; display: flex; flex-direction: column; align-items: center; padding: 40px 0; gap: 40px; font-family: 'Noto Sans SC', sans-serif; }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body, html {
+            width: 100%; height: 100%; overflow: hidden;
+            background-color: #000;
+            font-family: var(--font-family);
+        }
+
+        #bg-layer {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-size: cover; background-position: center;
+            /* 默认背景，可替换 */
+            background-image: url('https://images.unsplash.com/photo-1495584029778-b68830398843?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80');
+            filter: brightness(1.1) contrast(0.9) blur(1px);
+            z-index: 1; transition: 0.5s ease-in-out;
+        }
+
+        #vignette {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, transparent 30%, rgba(0,0,0,0.5) 100%);
+            z-index: 2; pointer-events: none;
+        }
+
+        canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; }
+
+        #content {
+            position: relative; z-index: 4; height: 100%;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            color: var(--accent); text-align: center; padding: 0 10%;
+            pointer-events: none;
+            /* 增加文字阴影，提升可读性 */
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        #content h1 { 
+            font-weight: 300; 
+            /* 增加字间距，营造空间感 */
+            letter-spacing: 0.8em; 
+            /* 调整字体大小 */
+            font-size: 1.8rem;
+            opacity: 0.95; 
+            margin: 0; /* 移除默认边距 */
+        }
         
-        /* 错误提示条 */
-        #status-bar { position: fixed; top: 0; left: 0; width: 100%; background: #e74c3c; color: white; text-align: center; padding: 15px; font-weight: bold; z-index: 10000; display: none; font-size: 14pt; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-        /* Loading 遮罩 */
-        #loading-mask { position: fixed; inset: 0; background: #f9f9f9; z-index: 9998; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: 'Lato'; color: #555; }
-        .spinner { width: 50px; height: 50px; border: 5px solid #ccc; border-top-color: var(--theme-color); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        /* 精简后的标题，无需 p 标签 */
 
-        /* 容器 */
-        .card { width: var(--p-w); height: var(--p-h); background: var(--bg); display: flex; flex-direction: column; overflow: hidden; position: relative; box-shadow: 0 30px 80px rgba(0,0,0,0.6); flex-shrink: 0; }
-        .card.cover-page { padding: 0; } .card.normal-page { padding: 50px 60px; }
-        .content-body { flex-grow: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 0; overflow: hidden; width: 100%; }
-        .cover-page .content-body { padding: 0 60px; } .normal-page .content-body { padding: 0; }
+        #progress-container {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 2px;
+            background: rgba(255,255,255,0.1); z-index: 10;
+        }
+        #progress-bar { width: 0%; height: 100%; background: var(--accent); transition: width 0.1s linear; }
 
-        /* 首页 (960px Height) */
-        .hero-section { width: 100%; height: 960px; background: #e0e0e0; cursor: pointer; border-bottom: 8px solid var(--theme-color); position: relative; flex-shrink: 0; }
-        .hero-img { width: 100%; height: 100%; object-fit: cover; display: none; }
-        .hero-placeholder { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #777; font-size: 20pt; font-family: 'Lato'; text-align: center; border: 3px dashed #bbb; padding: 15px 30px; border-radius: 10px; }
+        #control-panel {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            z-index: 20; background: var(--panel-bg); padding: 30px; border-radius: 20px;
+            display: flex; flex-direction: column; gap: 15px; backdrop-filter: blur(10px);
+            transition: 0.3s; width: 80%; max-width: 400px;
+        }
+        .hidden { opacity: 0; pointer-events: none; }
+
+        .btn-group { display: flex; flex-direction: column; gap: 10px; }
+        label { color: #ccc; font-size: 0.8rem; margin-bottom: 5px; }
+        input[type="file"] { color: #fff; font-size: 0.8rem; }
         
-        .cover-header { padding: 30px 60px 10px 60px; display: flex; flex-direction: column; align-items: center; text-align: center; flex-shrink: 0; }
-        .meta-tag { background: var(--theme-color); color: white; padding: 6px 20px; border-radius: 50px; font-family: 'Lato'; font-weight: 900; font-size: 12pt; margin-bottom: 15px; letter-spacing: 1px; }
+        button {
+            padding: 12px; border: none; border-radius: 10px; background: rgba(255,255,255,0.2);
+            color: #fff; font-size: 0.9rem; cursor: pointer; font-family: var(--font-family);
+        }
+        button:active { background: rgba(255,255,255,0.4); }
+
+        #time-info { color: #fff; font-size: 0.8rem; text-align: center; font-family: monospace; }
         
-        /* 标题增强 */
-        .poster-title { font-family: 'Lora'; font-size: 60pt; font-weight: 700; color: var(--text-main); line-height: 1.0; margin-bottom: 10px; }
-        .poster-subtitle { font-family: 'Noto Sans SC'; font-size: 40pt; color: #5d6d7e; font-weight: 400; margin-bottom: 20px; position: relative; display: inline-block; }
-        .poster-subtitle::after { content: ""; display: block; width: 60px; height: 3px; background: var(--theme-color); margin: 10px auto 0 auto; }
-
-        /* 续页头 */
-        .mini-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #ccc; padding-bottom: 15px; margin-bottom: 20px; height: 60px; flex-shrink: 0; width: 100%; }
-        .mini-title { font-family: 'Lora'; font-weight: 700; font-size: 16pt; color: var(--text-main); }
-        .continued-tag { font-family: 'Lato'; font-weight: 700; font-style: italic; background: transparent; padding: 5px 0; border-radius: 0; font-size: 11pt; color: #666; }
-
-        /* 正文 */
-        .row { display: flex; gap: 40px; width: 100%; padding: 15px 0; border-bottom: 1px solid #f9f9f9; align-items: flex-start; flex-shrink: 0; }
-        .col-eng { flex: 6; font-family: 'Lora'; font-size: 18pt; line-height: 1.8; text-align: justify; padding-right: 25px; border-right: 2px solid #f0f0f0; }
-        .col-chi { flex: 4; font-family: 'Noto Sans SC'; font-size: 16pt; line-height: 1.8; color: #5d6d7e; text-align: justify; font-weight: 400; padding-top: 2px; }
-
-        /* 边栏 (一致布局) */
-        .row.supp-style { background: var(--supp-bg); padding: 20px 25px; border-radius: 8px; margin: 5px 0; border: none; }
-        .row.supp-style .col-eng { border-right: 2px solid #aec6cf; font-size: 16pt; line-height: 1.6; }
-        .row.supp-style .col-chi { font-size: 14pt !important; line-height: 1.6; color: #555; }
-        h3 { font-family: 'Lato'; font-weight: 900; font-size: 18pt; color: var(--theme-color); margin: 0 0 10px 0; display: block; border-left: 8px solid var(--theme-color); padding-left: 15px; }
-        .row.supp-style h3 { font-size: 16pt !important; border-left-width: 5px; }
-
-        /* 词性高亮 (通用) */
-        .hl { padding: 0 4px; border-radius: 4px; font-weight: 600; display: inline-block; }
-        .hl-n { background-color: var(--bg-noun); } .hl-v { background-color: var(--bg-verb); } .hl-adj { background-color: var(--bg-adj); }
-        sup { color: #555; font-size: 0.6em; vertical-align: super; font-weight: 700; margin-left: 2px; }
-
-        /* 附录 */
-        .app-h { font-size: 18pt; font-weight: 700; color: var(--text-main); border-left: 6px solid #555; padding-left: 12px; display: block; margin: 25px 0 20px 0; font-family: 'Noto Sans SC'; flex-shrink: 0; width: 100%; }
-        
-        .vocab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px 40px; width: 100%; margin-bottom: 30px; flex-shrink: 0; }
-        .vocab-item { background: #fff; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 5px; display: flex; flex-direction: column; gap: 6px; }
-        .v-line-1 { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-        .v-word { font-family: 'Lora'; font-weight: 700; font-size: 19pt; color: #2c3e50; padding: 0 5px; border-radius: 4px; }
-        .v-idx { background: #333; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 11pt; text-align: center; line-height: 22px; display: inline-block; transform: translateY(-2px); }
-        .v-ipa { font-family: 'Arial'; color: #95a5a6; font-size: 13pt; }
-        .v-mean { font-size: 15pt; color: #444; font-weight: 500; margin-left: auto; }
-        .v-pos { color: var(--theme-color); font-weight: bold; font-family: 'Times New Roman'; font-style: italic; font-size: 13pt; margin-right: 2px;}
-        .v-line-2 { font-size: 14pt; color: #d35400; font-family: 'Roboto Mono'; font-weight: 500; }
-        .v-line-3 { font-size: 14pt; color: #7f8c8d; font-style: italic; font-family: 'Lora'; line-height: 1.4; margin-top: 2px; }
-
-        .sa-sentence-wrapper { display: flex; flex-wrap: wrap; column-gap: 0; row-gap: 35px; line-height: 1.5; margin-bottom: 25px; padding-top: 10px; align-items: flex-end; width: 100%; }
-        .chunk { display: inline-flex; flex-direction: column; align-items: center; margin: 0; vertical-align: bottom; }
-        .chunk-text { font-family: 'Lora'; font-size: 20pt; color: #2c3e50; padding: 4px 5px; font-weight: 500; border-radius: 0; }
-        .chunk-group { border-bottom: 3px solid #ccc; padding-bottom: 2px; margin: 0 3px; }
-        .chunk-group .chunk-text { padding-bottom: 0; } 
-        .chunk-lbl { font-size: 10pt; font-family: 'Noto Sans SC'; font-weight: 800; margin-top: 4px; white-space: nowrap; width: 100%; text-align: center; height: 15px; }
-        .chunk-lbl:empty { height: 0; margin-top: 0; }
-        .bracket { font-size: 20pt; color: #d35400; font-family: 'Lato'; font-weight: 300; padding: 4px 6px; display: inline-block; }
-        
-        .bg-trunk .chunk-text { background-color: var(--bg-trunk); }
-        .bg-clause-1 .chunk-text { background-color: var(--bg-clause-1); }
-        .bg-clause-1.bracket { background-color: var(--bg-clause-1); }
-        .bg-clause-2 .chunk-text { background-color: var(--bg-clause-2); }
-        .bg-clause-2.bracket { background-color: var(--bg-clause-2); }
-        
-        .l-subj { color: var(--t-subj); border-color: var(--t-subj); } 
-        .l-verb { color: var(--t-verb); border-color: var(--t-verb); } 
-        .l-obj { color: var(--t-obj); border-color: var(--t-obj); } 
-        .l-conn { color: var(--t-conn); border-color: var(--t-conn); }
-
-        .sa-step-box, .q-card { background: #fdfefe; padding: 20px 25px; border-radius: 8px; border: 1px solid #eee; box-shadow: 2px 2px 8px rgba(0,0,0,0.02); margin-bottom: 12px; width: 100%; }
-        .bd-struct { border-left: 5px solid var(--bd-struct); }
-        .bd-trunk { border-left: 5px solid var(--bd-trunk); background-color: #FDFEFE; }
-        .bd-clause-1 { border-left: 5px solid var(--bd-clause-1); background-color: #FEF9E7; }
-        .bd-clause-2 { border-left: 5px solid var(--bd-clause-2); background-color: #E9F7EF; }
-        .q-card { border-left: 5px solid var(--theme-color); }
-        
-        .sa-trans { font-size: 16pt; color: #444; font-weight: 600; font-style: italic; margin-bottom: 20px; padding: 15px; border: 1px dashed #ccc; border-radius: 8px; width: 100%; background: #fff; }
-        .sa-step { margin-bottom: 12px; font-size: 15pt; color: #555; line-height: 1.6; }
-        .sa-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11pt; margin-right: 10px; font-weight: 800; color: #fff; background: #555; font-family: 'Lato'; text-transform: uppercase; }
-
-        .q-header { display: flex; align-items: baseline; margin-bottom: 5px; }
-        .q-num { color: var(--theme-color); font-size: 18pt; font-weight: 900; margin-right: 10px; font-family: 'Lato'; }
-        .q-text { font-size: 18pt; color: #2c3e50; font-weight: 600; font-family: 'Lora'; }
-        .q-opts { display: flex; gap: 25px; flex-wrap: wrap; margin-left: 0; margin-top: 5px; }
-        .q-opt { font-size: 15pt; color: #555; font-family: 'Lato'; }
-        .q-blank { border-bottom: 2px solid #333; width: 100px; display: inline-block; }
-
-        .footer { margin-top: auto; display: flex; justify-content: space-between; border-top: 1px solid #eee; padding: 0 60px; font-size: 11pt; color: #95a5a6; flex-shrink: 0; height: 70px; align-items: center; width: 100%; box-sizing: border-box; font-family: 'Lato'; }
-        .normal-page .footer { padding: 0; }
-        .footer-right { font-weight: 700; color: #333; }
-
-        #btn-download { position: fixed; bottom: 20px; right: 20px; z-index: 9999; padding: 15px 25px; background: #2c3e50; color: white; border: none; border-radius: 50px; cursor: pointer; font-family: sans-serif; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.2s; }
-        #btn-download:hover { transform: scale(1.05); background: #34495e; }
-        #btn-download:active { transform: scale(0.95); }
+        /* 引入思源宋体 (可选，需要网络) */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200;300;400&display=swap');
     </style>
 </head>
 <body>
-<div id="status-bar"></div>
-<div id="loading-mask">
-    <div class="spinner"></div>
-    <div>Generating Content...</div>
-</div>
-<button id="btn-download" onclick="downloadAllPages()">📸 Save Pages</button>
-<div id="card-container"></div>
-<input type="file" id="upload-trigger" style="display:none" onchange="loadFile(event)">
 
-<script>
-    // --- Global Error Trap ---
-    window.onerror = function(message, source, lineno, colno, error) {
-        document.getElementById('loading-mask').style.display = 'none';
-        document.getElementById('status-bar').style.display = 'block';
-        document.getElementById('status-bar').innerText = "System Error: " + message + " (Line " + lineno + ")";
-    };
+    <div id="bg-layer"></div>
+    <div id="vignette"></div>
+    <canvas id="visualizer"></canvas>
 
-    // --- Phase 4: Data Injection ---
-    const META = { 
-        issue: "17 January 2026", 
-        title: "Discover the secrets of spying", 
-        subtitle: "揭秘间谍活动的奥秘", 
-        themeColor: "#2C3E50" 
-    };
-    
-    // [Audit 1: Atomized Content]
-    const MAIN_CONTENT = [
-        { eng: "A new exhibition at Imperial War Museum North in Manchester, England, is all about the history of <span class='hl hl-n'>espionage</span><sup>①</sup> (spying).", chi: "在英国曼彻斯特的帝国战争博物馆北馆，一场新的展览全面展示了<span class='hl hl-n'>间谍活动</span><sup>①</sup>的历史。" },
-        { eng: "The exhibition, <i>Spies, Lies and Deception</i>, tells visitors about some extraordinary acts of espionage from the First World War (1914–1918) to the present day.", chi: "这场名为“间谍、谎言与欺骗”的展览向参观者讲述了从第一次世界大战（1914-1918年）至今的一些非凡的间谍行动。" },
-        { eng: "It also looks at what people have done to <span class='hl hl-v'>detect</span><sup>②</sup> spies and <span class='hl hl-v'>uncover</span><sup>③</sup> their true <span class='hl hl-n'>identity</span><sup>④</sup>.", chi: "它还展示了人们为<span class='hl hl-v'>侦查</span><sup>②</sup>间谍并<span class='hl hl-v'>揭露</span><sup>③</sup>其真实<span class='hl hl-n'>身份</span><sup>④</sup>所采取的行动。" },
-        { eng: "Amanda Mason, who organised the exhibition, told <i>The Week Junior</i>, 'As soon as you start looking into spy stories, it comes down to the incredible people that are involved.'", chi: "展览组织者阿曼达·梅森告诉《The Week Junior》：“当你开始研究间谍故事时，归根结底是关于那些参与其中的不可思议的人。”" },
-        { eng: "'It’s about making sure that these people’s stories are not forgotten.'", chi: "“这是为了确保这些人的故事不会被遗忘。”" },
-        { eng: "The exhibition is very <span class='hl hl-adj'>interactive</span><sup>⑤</sup>.", chi: "这次展览非常具有<span class='hl hl-adj'>互动性</span><sup>⑤</sup>。" },
-        { eng: "Visitors can try on spy outfits, wear <span class='hl hl-n'>camouflage</span><sup>⑥</sup> clothing, and peer through an 'observation tree' to become spies themselves.", chi: "参观者可以试穿间谍装备，穿上<span class='hl hl-n'>伪装</span><sup>⑥</sup>服，通过“观察树”窥视，亲身体验做间谍的感觉。" },
-        { eng: "You can also check to see if you can spot when something has been produced using '<span class='hl hl-n'>deepfake</span><sup>⑦</sup> technology' (when fake videos or images are made to trick the viewer into thinking they’re real).", chi: "你还可以测试自己是否能识别出由“<span class='hl hl-n'>深度伪造</span><sup>⑦</sup>技术”制作的内容（即制作虚假视频或图像以欺骗观众，让他们以为是真实的）。" },
-        { eng: "There are lots of fascinating objects used for spying on display as well.", chi: "现场还展出了许多用于间谍活动的迷人物品。" },
-        { eng: "There is plenty more for families to explore, including a trail that they can pick up at the start of the exhibition.", chi: "还有更多内容供家庭探索，包括在展览开始时可以领取的路线图。" },
-        { eng: "'It’s focused around five key people in the exhibition – there are questions about all of them,' says Mason.", chi: "“它围绕展览中的五个关键人物展开——有关于他们所有人的问题，”梅森说。" },
-        { eng: "'You need to find these five people and find out facts about them.'", chi: "“你需要找到这五个人并找出关于他们的事实。”" },
-        { eng: "'As you finish the exhibition, with all these answers, you can put a code word into the screen at the end and you’ll <span class='hl hl-v'>uncover</span><sup>③</sup> a reward.'", chi: "“当你结束参观时，带着这些答案，你可以在最后的屏幕上输入代码，然后你会<span class='hl hl-v'>揭开</span><sup>③</sup>一个奖励。”" },
-        { eng: "<i>Spies, Lies and Deception</i> is free and runs until 31 August.", chi: "“间谍、谎言与欺骗”展览免费开放，将持续至8月31日。" },
+    <div id="content">
+        <h1 id="title-display">沈从文 · 边城</h1>
+    </div>
+
+    <div id="progress-container"><div id="progress-bar"></div></div>
+
+    <div id="control-panel" class="hidden"> <div id="time-info">00:00 / 00:00</div>
         
-        // Sidebars
-        { type: 'supp', eng: "<h3>Noor Inayat Khan</h3>In 1943, Noor Inayat Khan, who features in the exhibition, was the first female wireless <span class='hl hl-n'>operator</span><sup>⑧</sup> sent into Nazi-<span class='hl hl-adj'>occupied</span><sup>⑨</sup> France.", chi: "<h3>努尔·伊娜亚特·汗</h3>1943年，展览中特别介绍的努尔·伊娜亚特·汗是第一位被派往纳粹<span class='hl hl-adj'>占领的</span><sup>⑨</sup>法国的女性无线电<span class='hl hl-n'>操作员</span><sup>⑧</sup>。" },
-        { type: 'supp', eng: "As a wireless operator, her job was to send secret messages back to Britain via radio.", chi: "作为一名无线电操作员，她的工作是通过无线电向英国发送秘密信息。" },
-        { type: 'supp', eng: "She sent messages for four months but was eventually <span class='hl hl-v'>captured</span><sup>⑩</sup>.", chi: "她发送了四个月的信息，但最终被<span class='hl hl-v'>俘获</span><sup>⑩</sup>。" },
-        { type: 'supp', eng: "Her story helped to <span class='hl hl-v'>inspire</span><sup>⑪</sup> the book <i>Safiyyah’s War</i>, by Hiba Noor Khan.", chi: "她的故事<span class='hl hl-v'>启发</span><sup>⑪</sup>了希巴·努尔·汗创作《萨菲亚的战争》一书。" },
+        <div class="btn-group">
+            <label>1. 选择背景图片 (建议雪景/山水)</label>
+            <input type="file" id="img-input" accept="image/*">
+        </div>
         
-        { type: 'supp', eng: "<h3>Tricksters</h3>Double agents pretend to spy for one country while actually working for another.", chi: "<h3>骗术大师</h3>双重间谍假装为一个国家从事间谍活动，实际上却为另一个国家工作。" },
+        <div class="btn-group">
+            <label>2. 选择音频文件 (MiniMax 生成)</label>
+            <input type="file" id="audio-input" accept="audio/*">
+        </div>
+
+        <div class="btn-group">
+            <label>3. 视觉效果切换</label>
+            <button onclick="toggleVisualMode()">切换：环形涟漪 / 悬浮微粒</button>
+        </div>
+
+        <button style="background: var(--accent); color: #000; font-weight: 400;" onclick="startExperience()">开始沉浸体验</button>
+    </div>
+
+    <script>
+        let audioCtx, analyser, dataArray, source, audio;
+        const canvas = document.getElementById('visualizer');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let visualMode = 'ripple';
+        let isPlaying = false;
         
-        { type: 'supp', eng: "<h3>Spying devices featured in the exhibition</h3><b>Dazzle ships:</b> Britain used dazzle ships during the First World War (1914–1918).", chi: "<h3>展览中的间谍设备</h3><b>迷彩船：</b>英国在第一次世界大战（1914-1918年）期间使用了迷彩船。" },
-        { type: 'supp', eng: "The patterns on the ships made it more difficult for the enemy to work out how far away they were and in which direction they were travelling.", chi: "船上的图案使敌人更难弄清楚它们有多远以及朝哪个方向航行。" },
-        { type: 'supp', eng: "<b>Footprint overshoes:</b> These strapped onto someone’s normal shoes and were designed to create fake footprints.", chi: "<b>脚印套鞋：</b>这些套在普通鞋子上，旨在制造假脚印。" },
-        { type: 'supp', eng: "They could also <span class='hl hl-v'>disguise</span><sup>⑫</sup> which way the person was walking so it was hard to follow their trail.", chi: "它们还可以<span class='hl hl-v'>伪装</span><sup>⑫</sup>行走方向，使人难以追踪。" },
-        { type: 'supp', eng: "<b>Matchbox:</b> This box contains one match adapted for writing secret messages.", chi: "<b>火柴盒：</b>这个盒子里有一根经过改装用于书写秘密信息的火柴。" },
-        { type: 'supp', eng: "Matches like these were found on Eddie Chapman, a German spy in the Second World War (1939–1945), when he was caught.", chi: "二战期间（1939-1945年），德国间谍埃迪·查普曼被捕时，身上就发现了这样的火柴。" }
-    ];
-    
-    // [Audit 2: Sync & Dedup]
-    const VOCAB_LIST = [
-        { w: "espionage", ipa: "ˈespiənɑːʒ", p: "n.", m: "间谍活动", c: "acts of espionage", e: "The film is a thrilling tale of espionage." },
-        { w: "detect", ipa: "dɪˈtekt", p: "v.", m: "察觉；侦查", c: "detect spies", e: "The sensor can detect the slightest movement." },
-        { w: "uncover", ipa: "ʌnˈkʌvə(r)", p: "v.", m: "揭露；发现", c: "uncover the truth", e: "They uncovered a secret plot." },
-        { w: "identity", ipa: "aɪˈdentəti", p: "n.", m: "身份", c: "true identity", e: "The spy kept his identity secret." },
-        { w: "interactive", ipa: "ˌɪntərˈæktɪv", p: "adj.", m: "互动的", c: "interactive exhibit", e: "This museum has many interactive displays." },
-        { w: "camouflage", ipa: "ˈkæməflɑːʒ", p: "n.", m: "伪装", c: "wear camouflage", e: "The soldier's camouflage helped him hide." },
-        { w: "deepfake", ipa: "ˈdiːpfeɪk", p: "n.", m: "深度伪造", c: "deepfake technology", e: "Deepfake videos can be very misleading." },
-        { w: "operator", ipa: "ˈɒpəreɪtə(r)", p: "n.", m: "操作员", c: "wireless operator", e: "The machine operator is skilled." },
-        { w: "occupied", ipa: "ˈɒkjupaɪd", p: "adj.", m: "被占领的", c: "occupied territory", e: "France was occupied during the war." },
-        { w: "capture", ipa: "ˈkæptʃə(r)", p: "v.", m: "俘虏；捕获", c: "be captured", e: "The soldier was captured by the enemy." },
-        { w: "inspire", ipa: "ɪnˈspaɪə(r)", p: "v.", m: "激励；启发", c: "inspire a book", e: "Her courage inspired everyone." },
-        { w: "disguise", ipa: "dɪsˈɡaɪz", p: "v.", m: "伪装；掩饰", c: "disguise oneself", e: "He disguised himself as a guard." }
-    ];
-    
-    // [Audit 3: Syntax Localization]
-    const SA_CHUNKS = [
-        { t: 'chunk-group', l: 'l-subj', w: 'The patterns on the ships', txt: '主语' },
-        { t: 'chunk', l: 'l-verb', w: 'made', txt: '谓语' },
-        { t: 'chunk', l: 'l-obj', w: 'it', txt: '形式宾语' },
-        { t: 'chunk', l: '', w: 'more difficult', txt: '宾补' },
-        { t: 'chunk', l: '', w: 'for the enemy', txt: '不定式逻辑主语' },
-        { t: 'chunk', l: '', w: 'to work out', txt: '真正宾语(不定式)' },
-        { t: 'bg-clause-1 bracket', w: '(', txt: '' },
-        { t: 'bg-clause-1 chunk', w: 'how far away', txt: '引导词' },
-        { t: 'bg-clause-1 chunk', w: 'they', txt: '主' },
-        { t: 'bg-clause-1 chunk', w: 'were', txt: '系' },
-        { t: 'bg-clause-1 bracket', w: ')', txt: '宾语从句1' },
-        { t: 'chunk', l: 'l-conn', w: 'and', txt: '连词' },
-        { t: 'bg-clause-2 bracket', w: '(', txt: '' },
-        { t: 'bg-clause-2 chunk', w: 'in which direction', txt: '引导词' },
-        { t: 'bg-clause-2 chunk', w: 'they', txt: '主' },
-        { t: 'bg-clause-2 chunk', w: 'were travelling', txt: '谓' },
-        { t: 'bg-clause-2 bracket', w: ')', txt: '宾语从句2' }
-    ];
-    const SA_TRANS = "船上的图案使得敌人更难弄清楚它们距离有多远以及它们的航行方向。";
-    const SA_STEPS = [
-        { type: 'bd-struct', label: '句型判断', text: '含形式宾语的复合句 + 两个并列的宾语从句' },
-        { type: 'bd-trunk', label: '主干拆解', text: 'The patterns (主) made (谓) it (形宾) difficult (宾补)。' },
-        { type: 'bd-trunk', label: '形式宾语', text: 'it 指代后面的不定式短语 to work out ...。' },
-        { type: 'bd-clause-1', label: '从句解析1', text: 'how far away they were 是 to work out 的第一个宾语，由 how 引导。' },
-        { type: 'bd-clause-2', label: '从句解析2', text: 'in which direction they were travelling 是第二个宾语，由 in which direction 引导，与前一个从句通过 and 并列。' }
-    ];
-    
-    const QUIZ_ITEMS = [
-        { q: "What is 'espionage' mainly about?", a: "<span class='q-opt'>A. Cooking</span><span class='q-opt'>B. Spying</span><span class='q-opt'>C. Dancing</span>" },
-        { q: "The exhibition allows visitors to detect _____.", a: "<span class='q-opt'>A. animals</span><span class='q-opt'>B. deepfakes</span><span class='q-opt'>C. weather</span>" },
-        { q: "Noor Inayat Khan was a wireless _____.", a: "<span class='q-blank'></span> (n.)" }
-    ];
+        document.getElementById('img-input').onchange = function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const url = URL.createObjectURL(file);
+                document.getElementById('bg-layer').style.backgroundImage = `url(${url})`;
+            }
+        };
 
-    // --- Core Logic ---
-    function render() {
-        // [Safety Scope]
-        let cardIdx = 1;
-        let currentCard;
-        let container;
-        const SAFE_BOTTOM = 1340; 
+        document.getElementById('audio-input').onchange = function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                if (audio) audio.pause();
+                const url = URL.createObjectURL(file);
+                audio = new Audio(url);
+                setupAudio();
+                // 选择音频后自动弹出控制面板
+                document.getElementById('control-panel').classList.remove('hidden');
+            }
+        };
 
-        // Helper functions
-        function createNewPage() {
-            cardIdx++; 
-            currentCard = createNormalPage(cardIdx);
-            document.getElementById('card-container').appendChild(currentCard);
-            container = currentCard.querySelector('.content-body');
+        function setupAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioCtx.createAnalyser();
+                // 增加 FFT 大小以获得更精细的频率数据
+                analyser.fftSize = 512;
+                source = audioCtx.createMediaElementSource(audio);
+                source.connect(analyser);
+                analyser.connect(audioCtx.destination);
+                dataArray = new Uint8Array(analyser.frequencyBinCount);
+            }
+            
+            audio.ontimeupdate = function() {
+                const prog = (audio.currentTime / audio.duration) * 100;
+                document.getElementById('progress-bar').style.width = prog + '%';
+                updateTimeDisplay();
+            };
+            audio.onended = function() { isPlaying = false; };
         }
 
-        function checkAndMove(el, limit) {
-            const rect = el.getBoundingClientRect();
-            const cardTop = currentCard.getBoundingClientRect().top;
+        function updateTimeDisplay() {
+            const format = (t) => new Date(t * 1000 || 0).toISOString().substr(14, 5);
+            document.getElementById('time-info').innerText = `${format(audio.currentTime)} / ${format(audio.duration || 0)}`;
+        }
+
+        function toggleVisualMode() {
+            visualMode = visualMode === 'ripple' ? 'particles' : 'ripple';
+        }
+
+        // 点击屏幕任意位置（非按钮/输入框）切换控制面板显示
+        document.body.onclick = function(e) {
+            if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'LABEL') {
+                document.getElementById('control-panel').classList.toggle('hidden');
+            }
+        };
+
+        function startExperience() {
+            if (!audio) return alert('请先选择音频文件');
             
-            // Atomic Flow Check: If this specific atom (row/chunk) overflows, move IT and subsequent atoms to next page.
-            if ((rect.bottom - cardTop) > limit) {
-                container.removeChild(el); 
-                createNewPage(); 
-                container.appendChild(el);
+            const docElm = document.documentElement;
+            if (docElm.requestFullscreen) docElm.requestFullscreen();
+            else if (docElm.webkitRequestFullScreen) docElm.webkitRequestFullScreen();
+
+            document.getElementById('control-panel').classList.add('hidden');
+            audio.play();
+            isPlaying = true;
+            if (particles.length === 0) createParticles();
+            draw();
+        }
+
+        function createParticles() {
+            for (let i = 0; i < 100; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 2 + 0.5,
+                    speed: Math.random() * 0.2 + 0.05,
+                    opacity: Math.random() * 0.5 + 0.2
+                });
             }
         }
 
-        function appendWithCheck(el) {
-            container.appendChild(el);
-            checkAndMove(el, SAFE_BOTTOM);
+        function draw() {
+            requestAnimationFrame(draw);
+            if (!analyser || !isPlaying) return;
+            analyser.getByteFrequencyData(dataArray);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 获取低频能量平均值，用于驱动视觉效果
+            let bassEnergy = 0;
+            for (let i = 0; i < 20; i++) {
+                bassEnergy += dataArray[i];
+            }
+            bassEnergy /= 20;
+            const normalizedBass = bassEnergy / 255;
+
+            if (visualMode === 'ripple') {
+                drawRipple(normalizedBass);
+            } else {
+                drawParticles(normalizedBass);
+            }
         }
 
-        try {
-            // [Phase 6: Data Integrity Check]
-            if (!MAIN_CONTENT || MAIN_CONTENT.length === 0) {
-                throw new Error("MAIN_CONTENT is empty. Please check data injection.");
-            }
-
-            document.documentElement.style.setProperty('--theme-color', META.themeColor);
-            const root = document.getElementById('card-container');
+        // 修复后的环形涟漪绘制函数
+        function drawRipple(bass) {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            // 基础半径 + 低音动态半径
+            const radius = 120 + bass * 50; 
+            // 透明度随低音变化
+            const opacity = 0.1 + bass * 0.4;
             
-            // Initial Page Setup
-            currentCard = createCoverPage();
-            root.appendChild(currentCard);
-            container = currentCard.querySelector('.content-body');
+            ctx.beginPath();
+            // 绘制完整的圆
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+            // 线条宽度也随低音微调
+            ctx.lineWidth = 1 + bass * 2;
+            ctx.stroke();
+            
+            // 可选：再画一个更细的内圈，增加层次感
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius * 0.8, 0, Math.PI * 2);
+            ctx.strokeStyle = `rgba(255, 255, 255, ${opacity * 0.5})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+        }
 
-            // 1. Content (Atomic Row Flow)
-            MAIN_CONTENT.forEach(item => {
-                const row = createContentRow(item);
-                container.appendChild(row);
-                checkAndMove(row, SAFE_BOTTOM);
+        function drawParticles(bass) {
+            particles.forEach((p) => {
+                // 速度和大小受低音影响
+                p.y -= (p.speed + bass * 0.5);
+                if (p.y < 0) p.y = canvas.height;
+                
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size * (1 + bass * 0.3), 0, Math.PI * 2);
+                // 透明度受低音影响闪烁
+                ctx.fillStyle = `rgba(255, 255, 255, ${p.opacity + bass * 0.2})`;
+                ctx.fill();
             });
-
-            // Start new page for Appendix
-            createNewPage();
-
-            // 2. Vocab
-            appendWithCheck(createTitle('中考高频词汇 (Vocab)'));
-            let grid = document.createElement('div'); grid.className = 'vocab-grid';
-            container.appendChild(grid);
-            if (VOCAB_LIST) {
-                VOCAB_LIST.forEach((v, i) => {
-                    const item = createVocabItem(v, i+1); grid.appendChild(item);
-                    if ((grid.getBoundingClientRect().bottom - currentCard.getBoundingClientRect().top) > SAFE_BOTTOM) {
-                        grid.removeChild(item); 
-                        createNewPage();
-                        grid = document.createElement('div'); grid.className = 'vocab-grid';
-                        container.appendChild(grid); grid.appendChild(item);
-                    }
-                });
-            }
-
-            // 3. Sentence Analysis
-            appendWithCheck(createTitle('长难句分析 (Sentence Analysis)'));
-            let saWrapper = document.createElement('div'); saWrapper.className = 'sa-sentence-wrapper';
-            container.appendChild(saWrapper);
-            if (SA_CHUNKS) {
-                SA_CHUNKS.forEach(chunk => {
-                    let el = createSaChunk(chunk);
-                    if (el) { 
-                        saWrapper.appendChild(el);
-                        // Chunk Flow Check
-                        if ((saWrapper.getBoundingClientRect().bottom - currentCard.getBoundingClientRect().top) > SAFE_BOTTOM) {
-                            saWrapper.removeChild(el); 
-                            createNewPage();
-                            saWrapper = document.createElement('div'); saWrapper.className = 'sa-sentence-wrapper';
-                            container.appendChild(saWrapper); saWrapper.appendChild(el);
-                        }
-                    }
-                });
-            }
-
-            const transEl = document.createElement('div'); transEl.className = 'sa-trans'; transEl.innerHTML = SA_TRANS || "";
-            appendWithCheck(transEl);
-
-            if (SA_STEPS) {
-                SA_STEPS.forEach(step => { const el = createSaStep(step); appendWithCheck(el); });
-            }
-
-            // 4. Quiz
-            appendWithCheck(createTitle('趣闻挑战 (Little Quiz)'));
-            if (QUIZ_ITEMS) {
-                QUIZ_ITEMS.forEach((q, i) => {
-                    const qCard = document.createElement('div'); qCard.className = 'q-card';
-                    qCard.innerHTML = `<div class="q-header"><div class="q-num">${i+1}</div><div class="q-text">${q.q}</div></div><div class="q-opts">${q.a}</div>`;
-                    appendWithCheck(qCard);
-                });
-            }
-
-            updateFooters(cardIdx);
-            
-            // Success: Remove loading
-            document.getElementById('loading-mask').style.display = 'none';
-
-        } catch(e) {
-            console.error(e);
-            document.getElementById('loading-mask').style.display = 'none';
-            document.getElementById('status-bar').style.display = 'block';
-            document.getElementById('status-bar').innerText = "Render Error: " + e.message;
         }
-    }
 
-    // --- Generators ---
-    function createCoverPage() {
-        const d = document.createElement('div'); d.className = 'card cover-page';
-        d.innerHTML = `<div class="hero-section" onclick="document.getElementById('upload-trigger').click()"><img id="hero-img" class="hero-img"><div class="hero-placeholder" id="hero-txt">Tap to Upload Cover</div></div><div class="cover-header"><div class="meta-tag">${META.issue}</div><div class="poster-title">${META.title}</div><div class="poster-subtitle">${META.subtitle}</div></div><div class="content-body" style="padding:0 60px;"></div><div class="footer"><span class="footer-left">Designed for Educational Purpose</span><span class="footer-right page-num"></span></div>`;
-        return d;
-    }
-    function createNormalPage(idx) {
-        const d = document.createElement('div'); d.className = 'card normal-page';
-        d.innerHTML = `<header class="mini-header"><div class="mini-title">${META.title}</div><div class="continued-tag">Continued...</div></header><div class="content-body"></div><div class="footer"><span class="footer-left">Designed for Educational Purpose</span><span class="footer-right page-num"></span></div>`;
-        return d;
-    }
-    function createContentRow(item) {
-        const d = document.createElement('div'); d.className = 'row';
-        if (item.type === 'supp') d.classList.add('supp-style');
-        d.innerHTML = `<div class="col-eng">${item.eng}</div><div class="col-chi">${item.chi}</div>`;
-        return d;
-    }
-    function createTitle(text) { const d = document.createElement('div'); d.className = 'app-h'; d.innerText = text; return d; }
-    
-    function createVocabItem(v, idx) {
-        let bgClass = '';
-        if (v.p.includes('n.')) bgClass = 'hl-n';
-        else if (v.p.includes('v.')) bgClass = 'hl-v';
-        else if (v.p.includes('adj') || v.p.includes('adv')) bgClass = 'hl-adj';
-        else bgClass = 'hl-n'; 
-        const d = document.createElement('div'); d.className = 'vocab-item';
-        d.innerHTML = `<div class="v-line-1"><span class="v-word ${bgClass}">${v.w}</span><span class="v-idx">${idx}</span><span class="v-ipa">[${v.ipa}]</span><span class="v-pos">${v.p}</span><span class="v-mean">${v.m}</span></div><div class="v-line-2">${v.c}</div><div class="v-line-3">"${v.e}"</div>`;
-        return d;
-    }
-    
-    function createSaChunk(c) {
-        if (!c || !c.t) return null;
-        const d = document.createElement('div'); d.className = `chunk ${c.t}`;
-        if (c.t.includes('chunk-group')) {
-            const color = c.l ? `var(--${c.l.replace('l-', 't-')})` : '#ccc';
-            d.style.borderBottomColor = color;
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
         }
-        const label = c.l ? c.l : '';
-        const txt = c.txt ? c.txt : '';
-        d.innerHTML = `<span class="chunk-lbl ${label}">${txt}</span><span class="chunk-text">${c.w}</span>`;
-        return d;
-    }
-    function createSaStep(s) {
-        const d = document.createElement('div'); d.className = `sa-step-box ${s.type}`;
-        d.innerHTML = `<div class="sa-step"><span class="sa-tag">${s.label}</span>${s.text}</div>`;
-        return d;
-    }
-    function updateFooters(total) { document.querySelectorAll('.page-num').forEach((el, i) => el.innerText = `Page ${i+1}/${total}`); }
-    
-    async function downloadAllPages() {
-        const btn = document.getElementById('btn-download');
-        const originalText = btn.innerText;
-        btn.innerText = "Processing... (Please Wait)";
-        btn.style.opacity = "0.7";
-        btn.disabled = true;
-
-        try {
-            const cards = document.querySelectorAll('.card');
-            for (let i = 0; i < cards.length; i++) {
-                const canvas = await html2canvas(cards[i], { scale: 2, useCORS: true, allowTaint: false, backgroundColor: '#ffffff', logging: false });
-                canvas.toBlob(function(blob) {
-                    if (!blob) { alert("Security Error: Use Local Server."); return; }
-                    const link = document.createElement('a');
-                    link.download = `TheWeekJunior_Page_${i + 1}.png`;
-                    link.href = URL.createObjectURL(blob);
-                    link.click();
-                    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
-                }, 'image/png');
-                await new Promise(r => setTimeout(r, 500));
-            }
-        } catch (e) {
-            console.error(e);
-            alert("Error: " + e.message);
-        } finally {
-            btn.innerText = originalText;
-            btn.style.opacity = "1";
-            btn.disabled = false;
-        }
-    }
-
-    window.loadFile = function(e) { document.getElementById('hero-img').src = URL.createObjectURL(e.target.files[0]); document.getElementById('hero-img').style.display='block'; document.getElementById('hero-txt').style.display='none'; };
-    window.onload = render;
-</script>
+        window.onresize = resize;
+        resize();
+    </script>
 </body>
 </html>
