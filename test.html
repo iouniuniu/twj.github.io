@@ -8,8 +8,8 @@
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
         :root {
-            /* 动态主题色 (由 JS 注入) */
-            --theme-color: #2c3e50; 
+            /* 动态主题色 */
+            --theme-color: #27ae60; 
 
             /* 词性颜色 */
             --t-subj: #C0392B; --t-verb: #2980B9; --t-obj: #27AE60; --t-mod: #D35400; --t-prep: #8E44AD; --t-conn: #7F8C8D;
@@ -51,8 +51,8 @@
         .meta-tag { background: var(--theme-color); color: white; padding: 6px 20px; border-radius: 50px; font-family: 'Lato'; font-weight: 900; font-size: 12pt; margin-bottom: 15px; letter-spacing: 1px; }
         
         /* 标题增强 */
-        .poster-title { font-family: 'Lora'; font-size: 58pt; font-weight: 700; color: var(--text-main); line-height: 1.0; margin-bottom: 10px; }
-        .poster-subtitle { font-family: 'Noto Sans SC'; font-size: 36pt; color: #5d6d7e; font-weight: 400; margin-bottom: 20px; position: relative; display: inline-block; }
+        .poster-title { font-family: 'Lora'; font-size: 60pt; font-weight: 700; color: var(--text-main); line-height: 1.0; margin-bottom: 10px; }
+        .poster-subtitle { font-family: 'Noto Sans SC'; font-size: 40pt; color: #5d6d7e; font-weight: 400; margin-bottom: 20px; position: relative; display: inline-block; }
         .poster-subtitle::after { content: ""; display: block; width: 60px; height: 3px; background: var(--theme-color); margin: 10px auto 0 auto; }
 
         /* 续页头 */
@@ -159,126 +159,181 @@
     // --- Phase 4: Data Injection (AI MUST FILL THIS) ---
     const META = { 
         issue: "23 January 2026", 
-        title: "Updated Nutrition Guidelines Released", 
+        title: "Updated nutrition guidelines released", 
         subtitle: "饮食新风尚：健康生活从“吃”开始", 
-        themeColor: "#27AE60" 
+        themeColor: "#27ae60" 
     };
     
     // [Audit 1: Atomized Content]
+    // Rule: Split long paragraphs into 1-2 sentence objects. Split sidebars by list items.
+    // Do NOT use <br><br> for alignment.
+    // [Correction]: All main content first, then supplements (sidebars) at the end.
     const MAIN_CONTENT = [
+        // --- Main Text ---
         {
-            eng: "New dietary <span class='hl hl-n'>guidelines</span><sup>①</sup> have been announced by the US Department of Health and Human Services (HHS). They are a significant <span class='hl hl-n'>departure</span><sup>②</sup> from previous <span class='hl hl-n'>recommendations</span><sup>③</sup>.",
-            chi: "美国卫生与公众服务部（HHS）发布了新的饮食<span class='hl hl-n'>指南</span><sup>①</sup>。这些指南与之前的<span class='hl hl-n'>建议</span><sup>③</sup>相比有显著的<span class='hl hl-n'>改变</span><sup>②</sup>。",
-            type: "normal"
+            type: "main",
+            eng: "New <span class='hl hl-adj'>dietary</span><sup>①</sup> <span class='hl hl-n'>guidelines</span><sup>②</sup> have been <span class='hl hl-v'>announced</span><sup>③</sup> by the US Department of Health and Human Services (HHS).",
+            chi: "美国卫生与公众服务部（HHS）<span class='hl hl-v'>宣布</span><sup>③</sup>了新的<span class='hl hl-adj'>饮食的</span><sup>①</sup><span class='hl hl-n'>指南</span><sup>②</sup>。"
         },
         {
-            eng: "What are dietary <span class='hl hl-n'>guidelines</span><sup>①</sup>? Since 1980, the US government has released <span class='hl hl-n'>guidelines</span><sup>①</sup> to inform Americans about the ideal foods to eat for good health.",
-            chi: "什么是饮食<span class='hl hl-n'>指南</span><sup>①</sup>？自 1980 年以来，美国政府一直发布<span class='hl hl-n'>指南</span><sup>①</sup>，告知民众为了保持健康应该食用的理想食物。",
-            type: "normal"
+            type: "main",
+            eng: "They are a <span class='hl hl-adj'>significant</span><sup>④</sup> <span class='hl hl-n'>departure</span><sup>⑤</sup> from previous <span class='hl hl-n'>recommendations</span><sup>⑥</sup>.",
+            chi: "这些指南与之前的<span class='hl hl-n'>建议</span><sup>⑥</sup>相比，有<span class='hl hl-adj'>重大的</span><sup>④</sup><span class='hl hl-n'>背离</span><sup>⑤</sup>。"
         },
         {
-            eng: "The <span class='hl hl-n'>guidelines</span><sup>①</sup>, which are updated every five years, <span class='hl hl-v'>influence</span><sup>④</sup> the meals served at schools, hospitals, and military bases.",
-            chi: "这些每五年更新一次的<span class='hl hl-n'>指南</span><sup>①</sup>会直接<span class='hl hl-v'>影响</span><sup>④</sup>学校、医院和军事基地提供的餐食。",
-            type: "normal"
+            type: "main",
+            eng: "What are dietary guidelines? Since 1980, the US government has released guidelines to inform Americans about the ideal foods to eat for good health.",
+            chi: "什么是饮食指南？自 1980 年以来，美国政府一直发布指南，告知美国人为了健康应食用的理想食物。"
         },
         {
-            eng: "What's in the new <span class='hl hl-n'>guidelines</span><sup>①</sup>? The new <span class='hl hl-n'>guidelines</span><sup>①</sup> are visually displayed as an <span class='hl hl-adj'>inverted</span><sup>⑤</sup> pyramid (widest part at the top) with a greater <span class='hl hl-n'>emphasis</span><sup>⑥</sup> on <span class='hl hl-v'>consuming</span><sup>⑦</sup> protein and full-fat dairy products.",
-            chi: "新<span class='hl hl-n'>指南</span><sup>①</sup>里有什么？新<span class='hl hl-n'>指南</span><sup>①</sup>在视觉上呈现为一个<span class='hl hl-adj'>倒置的</span><sup>⑤</sup>金字塔（顶部最宽），更加<span class='hl hl-n'>强调</span><sup>⑥</sup><span class='hl hl-v'>摄入</span><sup>⑦</sup>蛋白质和全脂乳制品。",
-            type: "normal"
+            type: "main",
+            eng: "The guidelines, which are updated every five years, influence the meals served at schools, hospitals, and military bases.",
+            chi: "这些指南每五年更新一次，影响学校、医院和军事基地提供的膳食。"
         },
         {
-            eng: "Beef, turkey, cheese, and whole milk are shown at the top. An equal <span class='hl hl-n'>emphasis</span><sup>⑥</sup> is placed on fruits and vegetables, with those foods also displayed at the top.",
-            chi: "牛肉、火鸡、奶酪和全脂牛奶位于顶部。同样被<span class='hl hl-n'>强调</span><sup>⑥</sup>的还有水果和蔬菜，这些食物也显示在顶部。",
-            type: "normal"
+            type: "main",
+            eng: "A food pyramid was introduced in 1992 to <span class='hl hl-adv'>visually</span><sup>⑦</sup> <span class='hl hl-v'>illustrate</span><sup>⑧</sup> the guidelines, and people were advised to eat more of the foods from the bottom than the top.",
+            chi: "1992 年引入了食物金字塔以<span class='hl hl-adv'>直观地</span><sup>⑦</sup><span class='hl hl-v'>说明</span><sup>⑧</sup>这些指南，并建议人们多吃底部的食物，少吃顶部的食物。"
         },
         {
-            eng: "Whole grains are located at the narrowest part of the pyramid, but the <span class='hl hl-n'>guidelines</span><sup>①</sup> don’t recommend eating less of them.",
-            chi: "全谷物位于金字塔最窄的部分，但这并不意味着<span class='hl hl-n'>指南</span><sup>①</sup>建议少吃它们。",
-            type: "normal"
+            type: "main",
+            eng: "In 2011, the US changed the pyramid to an image of a plate to illustrate a healthy diet.",
+            chi: "2011 年，美国将金字塔改为餐盘图像，以说明健康饮食。"
         },
         {
-            eng: "Rather, an <span class='hl hl-n'>emphasis</span><sup>⑥</sup> is placed on avoiding sugar and <span class='hl hl-adj'>ultra-processed</span><sup>⑧</sup> foods, such as chips and cookies.",
-            chi: "相反，<span class='hl hl-n'>重点</span><sup>⑥</sup>在于避免糖分和薯片、饼干等<span class='hl hl-adj'>超加工</span><sup>⑧</sup>食品。",
-            type: "normal"
+            type: "main",
+            eng: "What’s in the new guidelines? The new guidelines are visually displayed as an inverted pyramid (widest part at the top) with a greater <span class='hl hl-n'>emphasis</span><sup>⑨</sup> on <span class='hl hl-v'>consuming</span><sup>⑩</sup> protein and full-fat dairy products.",
+            chi: "新指南有什么内容？新指南直观地显示为倒金字塔（顶部最宽），更加<span class='hl hl-n'>强调</span><sup>⑨</sup><span class='hl hl-v'>食用</span><sup>⑩</sup>蛋白质和全脂乳制品。"
         },
         {
-            eng: "How did people react? Robert F. Kennedy Jr., head of the HHS, called the updated <span class='hl hl-n'>guidelines</span><sup>①</sup> \"the most significant reset of federal nutrition policy in history.\"",
-            chi: "人们作何反应？卫生与公众服务部部长小罗伯特·F·肯尼迪称此次更新的<span class='hl hl-n'>指南</span><sup>①</sup>是“历史上联邦营养政策最重要的重置”。",
-            type: "normal"
+            type: "main",
+            eng: "Beef, turkey, cheese, and whole milk are shown at the top.",
+            chi: "牛肉、火鸡、奶酪和全脂牛奶显示在顶部。"
         },
         {
-            eng: "While health experts said they are glad the <span class='hl hl-n'>guidelines</span><sup>①</sup> continue to make fruits and vegetables a priority, many of them disagree that people need more protein.",
-            chi: "虽然健康专家表示他们很高兴<span class='hl hl-n'>指南</span><sup>①</sup>继续将水果和蔬菜作为优先事项，但许多人不同意人们需要更多蛋白质的观点。",
-            type: "normal"
+            type: "main",
+            eng: "An equal emphasis is placed on fruits and vegetables, with those foods also displayed at the top.",
+            chi: "水果和蔬菜也同样受到重视，这些食物也显示在顶部。"
         },
         {
-            eng: "What will happen next? The government will distribute the <span class='hl hl-n'>guidelines</span><sup>①</sup> to agencies that work on nationwide food programs.",
-            chi: "接下来会发生什么？政府将把这些<span class='hl hl-n'>指南</span><sup>①</sup>分发给负责全国性食品项目的机构。",
-            type: "normal"
+            type: "main",
+            eng: "Whole grains are located at the narrowest part of the pyramid, but the guidelines don’t recommend eating less of them.",
+            chi: "全谷物位于金字塔最窄的部分，但指南并不建议少吃它们。"
         },
         {
-            eng: "US states will review the <span class='hl hl-n'>guidelines</span><sup>①</sup> to determine whether they want to <span class='hl hl-v'>incorporate</span><sup>⑩</sup> the changes into their own programs.",
-            chi: "美国各州将审查这些<span class='hl hl-n'>指南</span><sup>①</sup>，以决定是否将这些变化<span class='hl hl-v'>纳入</span><sup>⑩</sup>他们自己的项目中。",
-            type: "normal"
+            type: "main",
+            eng: "Rather, an emphasis is placed on avoiding sugar and <span class='hl hl-adj'>ultra-processed</span><sup>⑪</sup> foods, such as chips and cookies.",
+            chi: "相反，重点在于避免糖和<span class='hl hl-adj'>超加工</span><sup>⑪</sup>食品，如薯片和饼干。"
         },
         {
-            eng: "<h3>The First Food Pyramid</h3>The first US food pyramid, released in 1992, was based on one from Sweden.",
-            chi: "<h3>首个食物金字塔</h3>1992 年发布的美国首个食物金字塔是基于瑞典的一个模型设计的。",
-            type: "supp"
+            type: "main",
+            eng: "How did people react? Robert F. Kennedy Jr., head of the HHS, called the updated guidelines “the most significant reset of federal nutrition policy in history.”",
+            chi: "人们有何反应？HHS 负责人小罗伯特·F·肯尼迪称更新后的指南是“历史上联邦营养政策最重要的重置”。"
         },
         {
+            type: "main",
+            eng: "While health experts said they are glad the guidelines continue to make fruits and vegetables a <span class='hl hl-n'>priority</span><sup>⑫</sup> and support eating fewer processed foods, many of them disagree that people need more protein, particularly from red meat.",
+            chi: "虽然健康专家表示他们很高兴指南继续将水果和蔬菜列为<span class='hl hl-n'>优先事项</span><sup>⑫</sup>并支持少吃加工食品，但他们中有许多人不同意人们需要更多蛋白质，特别是来自红肉的蛋白质。"
+        },
+        {
+            type: "main",
+            eng: "Studies have shown that consuming red meat, which tends to be higher in <span class='hl hl-n'>sodium</span><sup>⑬</sup> and unhealthy fats, can increase a person’s risk of heart disease and other conditions.",
+            chi: "研究表明，食用往往含有较高<span class='hl hl-n'>钠</span><sup>⑬</sup>和不健康脂肪的红肉，会增加患心脏病和其他疾病的风险。"
+        },
+        {
+            type: "main",
+            eng: "What will happen next? The government will distribute the guidelines to agencies that work on nationwide food programs.",
+            chi: "接下来会发生什么？政府将把指南分发给从事全国性食品项目的机构。"
+        },
+        {
+            type: "main",
+            eng: "US states will review the guidelines to determine whether they want to <span class='hl hl-v'>incorporate</span><sup>⑭</sup> the changes into their own programs.",
+            chi: "美国各州将审查指南，以决定是否要将这些变化<span class='hl hl-v'>纳入</span><sup>⑭</sup>自己的项目中。"
+        },
+        // --- Sidebars (Strictly After Main Content) ---
+        {
+            type: "supp",
+            eng: "<h3>Food Pyramids</h3>The 2026 food pyramid illustrates the new dietary guidelines.",
+            chi: "<h3>食物金字塔</h3>2026 年的食物金字塔展示了新的饮食指南。"
+        },
+        {
+            type: "supp",
+            eng: "The first US food pyramid, released in 1992, was based on one from Sweden.",
+            chi: "美国第一个食物金字塔于 1992 年发布，是基于瑞典的一个版本。"
+        },
+        {
+            type: "supp",
             eng: "The bottom level showed grains; the middle level featured produce; the next level included eggs, dairy, meat, and fish; and the top consisted of fats and oils.",
-            chi: "底层展示谷物；中层是农产品（蔬果）；下一层包括蛋、奶、肉和鱼；顶层则由脂肪和油组成。",
-            type: "supp"
+            chi: "底层是谷物；中间层是农产品；再上一层包括蛋、奶制品、肉和鱼；顶层由脂肪和油组成。"
         },
         {
-            eng: "<h3>Health Milestone</h3>In 1953, President Dwight D. Eisenhower established the department that would become today’s Health and Human Services agency.",
-            chi: "<h3>健康里程碑</h3>1953 年，德怀特·D·艾森豪威尔总统建立了后来演变为今天卫生与公众服务部的部门。",
-            type: "supp"
+            type: "supp",
+            eng: "The government recommended eating more foods from the bottom than the top.",
+            chi: "政府建议多吃底部的食物，少吃顶部的食物。"
+        },
+        {
+            type: "supp",
+            eng: "HEALTH MILESTONE In 1953, President Dwight D. Eisenhower established the department that would become today’s Health and Human Services agency.",
+            chi: "健康里程碑：1953 年，德怀特·D·艾森豪威尔总统建立了后来成为今天的卫生与公众服务部的部门。"
         }
     ]; 
     
     // [Audit 2: Sync & Dedup]
     const VOCAB_LIST = [
-        { w: "guideline", ipa: "ˈɡaɪdlaɪn", p: "n.", m: "指南；指导方针", c: "dietary guidelines", e: "The new guidelines recommend eating more vegetables." },
-        { w: "departure", ipa: "dɪˈpɑːrtʃər", p: "n.", m: "背离；改变；出发", c: "departure from tradition", e: "This new policy is a significant departure from the old rules." },
-        { w: "recommendation", ipa: "ˌrekəmenˈdeɪʃn", p: "n.", m: "建议；推荐", c: "make a recommendation", e: "I followed her recommendation and bought the book." },
-        { w: "influence", ipa: "ˈɪnfluəns", p: "v.", m: "影响", c: "influence the decision", e: "Weather can influence how we feel." },
-        { w: "inverted", ipa: "ɪnˈvɜːrtɪd", p: "adj.", m: "倒置的；反向的", c: "inverted pyramid", e: "The image appeared inverted in the mirror." },
-        { w: "emphasis", ipa: "ˈemfəsɪs", p: "n.", m: "重点；强调", c: "place emphasis on", e: "The school puts a strong emphasis on sports." },
-        { w: "consume", ipa: "kənˈsuːm", p: "v.", m: "消耗；食用", c: "consume energy", e: "We should consume less sugar for better health." },
-        { w: "ultra-processed", ipa: "ˌʌltrəˈprɑːsest", p: "adj.", m: "超加工的", c: "ultra-processed foods", e: "Try to avoid ultra-processed foods like chips." },
-        { w: "sodium", ipa: "ˈsoʊdiəm", p: "n.", m: "钠 (盐的主要成分)", c: "high in sodium", e: "Too much sodium is bad for your heart." },
-        { w: "incorporate", ipa: "ɪnˈkɔːrpəreɪt", p: "v.", m: "包含；合并；纳入", c: "incorporate changes", e: "Please incorporate these suggestions into your report." }
+        { w: "dietary", p: "adj.", m: "饮食的", ipa: "ˈdaɪəteri", c: "dietary guidelines", e: "New dietary guidelines have been announced." },
+        { w: "guideline", p: "n.", m: "指南；指导方针", ipa: "ˈɡaɪdlaɪn", c: "dietary guidelines", e: "The guidelines are updated every five years." },
+        { w: "announce", p: "v.", m: "宣布；宣告", ipa: "əˈnaʊns", c: "announce the news", e: "New guidelines have been announced." },
+        { w: "significant", p: "adj.", m: "重大的；显著的", ipa: "sɪɡˈnɪfɪkənt", c: "significant departure", e: "They are a significant departure from previous recommendations." },
+        { w: "departure", p: "n.", m: "背离；离开", ipa: "dɪˈpɑːrtʃər", c: "departure from", e: "It is a departure from previous recommendations." },
+        { w: "recommendation", p: "n.", m: "建议；推荐", ipa: "ˌrekəmenˈdeɪʃn", c: "make a recommendation", e: "We follow the doctor's recommendations." },
+        { w: "visually", p: "adv.", m: "直观地；视觉上", ipa: "ˈvɪʒuəli", c: "visually display", e: "The data is visually displayed." },
+        { w: "illustrate", p: "v.", m: "说明；阐明", ipa: "ˈɪləstreɪt", c: "illustrate the point", e: "A pyramid was used to illustrate the guidelines." },
+        { w: "emphasis", p: "n.", m: "强调；重点", ipa: "ˈemfəsɪs", c: "emphasis on", e: "There is a greater emphasis on consuming protein." },
+        { w: "consume", p: "v.", m: "食用；消耗", ipa: "kənˈsuːm", c: "consume food", e: "We should consume more vegetables." },
+        { w: "ultra-processed", p: "adj.", m: "超加工的", ipa: "ˈʌltrə ˈprəʊsest", c: "ultra-processed foods", e: "Avoid ultra-processed foods like chips." },
+        { w: "priority", p: "n.", m: "优先事项", ipa: "praɪˈɔːrəti", c: "top priority", e: "Make fruits and vegetables a priority." },
+        { w: "sodium", p: "n.", m: "钠", ipa: "ˈsəʊdiəm", c: "high in sodium", e: "Red meat tends to be higher in sodium." },
+        { w: "incorporate", p: "v.", m: "包含；纳入", ipa: "ɪnˈkɔːrpəreɪt", c: "incorporate into", e: "States may incorporate the changes into their programs." }
     ];
     
     // [Audit 3: Syntax Localization]
     const SA_CHUNKS = [
-        { t: 'chunk-group', l: 'l-subj', w: 'Studies', txt: '主语' },
-        { t: 'chunk-group', l: 'l-verb', w: 'have shown', txt: '谓语' },
-        { t: 'bracket bg-clause-1', l: 'l-conn', w: 'that', txt: '宾从引导词' },
-        { t: 'chunk-group bg-clause-1', l: 'l-subj', w: 'consuming red meat', txt: '从句主语' },
-        { t: 'bracket bg-clause-2', l: 'l-conn', w: ',', txt: '插入语/从句开始' },
-        { t: 'chunk bg-clause-2', l: 'l-subj', w: 'which', txt: '定从主语' },
-        { t: 'chunk bg-clause-2', l: 'l-verb', w: 'tends to be', txt: '定从谓语' },
-        { t: 'chunk bg-clause-2', l: '', w: 'higher in sodium and unhealthy fats', txt: '' },
-        { t: 'bracket bg-clause-2', l: 'l-conn', w: ',', txt: '插入语/从句结束' },
-        { t: 'chunk-group bg-clause-1', l: 'l-verb', w: 'can increase', txt: '从句谓语' },
-        { t: 'chunk-group bg-clause-1', l: 'l-obj', w: 'a person’s risk', txt: '从句宾语' },
-        { t: 'chunk bg-clause-1', l: '', w: 'of heart disease', txt: '' }
+        { t: 'chunk-group', w: 'While health experts', l: 'l-conn' },
+        { t: 'chunk-group', w: 'said', l: 'l-verb' },
+        { t: 'bracket bg-clause-1', w: '(', l: '' },
+        { t: 'chunk bg-clause-1', w: 'they', l: 'l-subj' },
+        { t: 'chunk bg-clause-1', w: 'are', l: 'l-verb' },
+        { t: 'chunk bg-clause-1', w: 'glad', l: 'l-adj' },
+        { t: 'bracket bg-clause-2', w: '(', l: '' },
+        { t: 'chunk bg-clause-2', w: 'the guidelines', l: 'l-subj' },
+        { t: 'chunk bg-clause-2', w: 'continue to make', l: 'l-verb' },
+        { t: 'chunk bg-clause-2', w: 'fruits and vegetables', l: 'l-obj' },
+        { t: 'chunk bg-clause-2', w: 'a priority', l: 'l-obj' },
+        { t: 'bracket bg-clause-2', w: ')', l: '' },
+        { t: 'bracket bg-clause-1', w: ')', l: '' },
+        { t: 'chunk', w: ',', l: '' },
+        { t: 'chunk-group bg-trunk', w: 'many of them', l: 'l-subj', txt: '主语' },
+        { t: 'chunk-group bg-trunk', w: 'disagree', l: 'l-verb', txt: '谓语' },
+        { t: 'bracket bg-clause-1', w: '(', l: '' },
+        { t: 'chunk bg-clause-1', w: 'that', l: 'l-conn' },
+        { t: 'chunk bg-clause-1', w: 'people', l: 'l-subj' },
+        { t: 'chunk bg-clause-1', w: 'need', l: 'l-verb' },
+        { t: 'chunk bg-clause-1', w: 'more protein', l: 'l-obj' },
+        { t: 'bracket bg-clause-1', w: ')', l: '' },
+        { t: 'chunk', w: '.', l: '' }
     ];
-
-    const SA_TRANS = "研究表明，食用红肉（其通常含有较高的钠和不健康的脂肪）会增加一个人患心脏病和其他疾病的风险。";
-    
+    const SA_TRANS = "虽然健康专家表示他们很高兴指南继续将水果和蔬菜列为优先事项，但他们中有许多人不同意人们需要更多蛋白质（特别是来自红肉的蛋白质）的观点。";
     const SA_STEPS = [
-        { type: 'bd-trunk', label: '主句骨架', text: 'Studies (主) have shown (谓) that ... (宾语从句).' },
-        { type: 'bd-clause-1', label: '宾语从句', text: 'that (引导词) consuming red meat (主) ... can increase (谓) a person’s risk (宾)... 说明了研究的具体内容。' },
-        { type: 'bd-clause-2', label: '定语从句', text: ', which tends to be higher in sodium ..., (非限制性定语从句) 修饰主语 red meat，解释了红肉的特征（钠和不健康脂肪含量高）。' }
+        { type: 'bd-struct', label: '句型判断', text: '这是一个包含<b>让步状语从句</b>（While...）和<b>宾语从句</b>（that...）的复合句。' },
+        { type: 'bd-trunk', label: '主干拆解', text: '主句的主语是 <b>many of them</b>（他们中的许多人），谓语是 <b>disagree</b>（不同意）。' },
+        { type: 'bd-clause-1', label: '让步状语', text: '<b>While...</b> 引导的从句表示“虽然...”，其中包含一个省略了 that 的宾语从句 <b>(that) they are glad...</b>。' },
+        { type: 'bd-clause-2', label: '嵌套结构', text: '在 glad 的宾语从句中，又嵌套了一个从句：<b>the guidelines continue to make...</b>，说明了专家感到高兴的具体内容。' },
+        { type: 'bd-clause-1', label: '宾语从句', text: '主句动词 disagree 后面的 <b>that people need more protein</b> 是宾语从句，说明了他们不同意的具体观点。' }
     ];
-    
     const QUIZ_ITEMS = [
-        { q: "What shape is the new food guide?", a: "<span class='q-opt'>A. A plate</span><span class='q-opt'>B. An inverted pyramid</span><span class='q-opt'>C. A circle</span>" },
-        { q: "Which food is placed at the top of the new guide?", a: "<span class='q-opt'>A. Whole grains</span><span class='q-opt'>B. Sugar</span><span class='q-opt'>C. Beef and dairy</span>" }
+        { q: "What is the shape of the new 2026 dietary guidelines visual?", a: "<span class='q-opt'>A. A round plate</span><span class='q-opt'>B. An upright pyramid</span><span class='q-opt'>C. An inverted pyramid</span>", c: "C" },
+        { q: "Which food group is displayed at the top of the new inverted pyramid?", a: "<span class='q-opt'>A. Whole grains</span><span class='q-opt'>B. Beef, dairy, and produce</span><span class='q-opt'>C. Sugar and chips</span>", c: "B" },
+        { q: "Why are some experts concerned about the new protein recommendation?", a: "<span class='q-opt'>A. Protein is too expensive</span><span class='q-opt'>B. Red meat has health risks</span><span class='q-opt'>C. People prefer fish</span>", c: "B" }
     ];
 
     // --- Core Logic ---
@@ -301,7 +356,7 @@
             const rect = el.getBoundingClientRect();
             const cardTop = currentCard.getBoundingClientRect().top;
             
-            // Atomic Flow Check
+            // Atomic Flow Check: If this specific atom (row/chunk) overflows, move IT and subsequent atoms to next page.
             if ((rect.bottom - cardTop) > limit) {
                 container.removeChild(el); 
                 createNewPage(); 
@@ -315,6 +370,7 @@
         }
 
         try {
+            // [Phase 6: Data Integrity Check]
             if (!MAIN_CONTENT || MAIN_CONTENT.length === 0) {
                 throw new Error("MAIN_CONTENT is empty. Please check data injection.");
             }
