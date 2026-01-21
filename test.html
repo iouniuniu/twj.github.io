@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Week Junior Handout (Rev.2)</title>
+    <title>The Week Junior Handout (V52.2)</title>
     <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700&family=Noto+Sans+SC:wght@300;400;500;700&family=Lato:wght@400;700;900&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
@@ -16,13 +16,13 @@
             --t-verb: #2980B9; /* 谓语-蓝 */
             --t-obj: #27AE60;  /* 宾语-绿 */
             --t-mod: #D35400;  /* 修饰-橙 */
-            --t-conn: #7F8C8D; /* 连接词-灰 */
+            --t-conn: #7F8C8D; /* 连词-灰 */
             
             /* 背景色块 */
             --bg-noun: #D6EAF8; --bg-verb: #D5F5E3; --bg-adj: #E8DAEF;
             
             /* 长难句层级背景 */
-            --bg-trunk: #fff;         /* 主句背景 (白) */
+            --bg-trunk: #fff;         /* 主句背景 */
             --bg-clause-1: #FEF9E7;   /* 第一层从句 (淡黄) */
             --bg-clause-2: #E8F8F5;   /* 第二层从句 (淡青) */
             --bg-clause-3: #F4ECF7;   /* 第三层从句 (淡紫) */
@@ -114,7 +114,7 @@
         .bg-clause-2 .chunk-text { background-color: var(--bg-clause-2); }
         .bg-clause-2.bracket { color: var(--bd-clause-2); }
         
-        /* 成分颜色 (仅文字) */
+        /* 成分颜色 */
         .l-subj { color: var(--t-subj); } 
         .l-verb { color: var(--t-verb); } 
         .l-obj { color: var(--t-obj); } 
@@ -214,35 +214,35 @@
     // --- REVISED SYNTAX ANALYSIS (Corrected) ---
     // Sentence: "While health experts said they are glad the guidelines continue to make fruits and vegetables a priority..., many of them disagree that..."
     const SA_CHUNKS = [
-        { t: 'chunk-text', w: 'While', l: 'conn' },
-        { t: 'chunk-text', w: 'health experts', l: 'subj' },
-        { t: 'chunk-text', w: 'said', l: 'verb' },
+        { t: 'chunk-text', w: 'While', l: '连词' },
+        { t: 'chunk-text', w: 'health experts', l: '主语' },
+        { t: 'chunk-text', w: 'said', l: '谓语' },
         // Clause 1: Object of 'said' (implicit that)
         { t: 'bracket bg-clause-1', w: '(', l: '' },
-        { t: 'chunk-text bg-clause-1', w: 'they', l: 'subj' },
-        { t: 'chunk-text bg-clause-1', w: 'are', l: 'link' },
-        { t: 'chunk-text bg-clause-1', w: 'glad', l: 'adj/pred' },
+        { t: 'chunk-text bg-clause-1', w: 'they', l: '主语' },
+        { t: 'chunk-text bg-clause-1', w: 'are', l: '系动词' },
+        { t: 'chunk-text bg-clause-1', w: 'glad', l: '表语' },
         // Clause 2: Object/Reason of 'glad' (implicit that)
         { t: 'bracket bg-clause-2', w: '(', l: '' },
-        { t: 'chunk-text bg-clause-2', w: 'the guidelines', l: 'subj' },
-        { t: 'chunk-group bg-clause-2', w: '<span class="chunk-text">continue</span><span class="chunk-text">to make</span>', l: 'l-verb', txt: 'verb' },
-        { t: 'chunk-text bg-clause-2', w: 'fruits and vegetables', l: 'obj' },
-        { t: 'chunk-text bg-clause-2', w: 'a priority', l: 'obj-comp' },
+        { t: 'chunk-text bg-clause-2', w: 'the guidelines', l: '主语' },
+        { t: 'chunk-group bg-clause-2', w: '<span class="chunk-text">continue</span><span class="chunk-text">to make</span>', l: '谓语', txt: '谓语' },
+        { t: 'chunk-text bg-clause-2', w: 'fruits and vegetables', l: '宾语' },
+        { t: 'chunk-text bg-clause-2', w: 'a priority', l: '宾补' },
         { t: 'bracket bg-clause-2', w: ')', l: '' },
         
         { t: 'bracket bg-clause-1', w: ')', l: '' },
         { t: 'chunk-text', w: ',', l: '' },
         
         // Main Clause
-        { t: 'chunk-text', w: 'many of them', l: 'subj-MAIN' },
-        { t: 'chunk-text', w: 'disagree', l: 'verb-MAIN' },
+        { t: 'chunk-text', w: 'many of them', l: '主语(主)' },
+        { t: 'chunk-text', w: 'disagree', l: '谓语(主)' },
         
         // Clause 3: Object of 'disagree'
         { t: 'bracket bg-clause-1', w: '(', l: '' },
-        { t: 'chunk-text bg-clause-1', w: 'that', l: 'conn' },
-        { t: 'chunk-text bg-clause-1', w: 'people', l: 'subj' },
-        { t: 'chunk-text bg-clause-1', w: 'need', l: 'verb' },
-        { t: 'chunk-text bg-clause-1', w: 'more protein', l: 'obj' },
+        { t: 'chunk-text bg-clause-1', w: 'that', l: '连词' },
+        { t: 'chunk-text bg-clause-1', w: 'people', l: '主语' },
+        { t: 'chunk-text bg-clause-1', w: 'need', l: '谓语' },
+        { t: 'chunk-text bg-clause-1', w: 'more protein', l: '宾语' },
         { t: 'bracket bg-clause-1', w: ')', l: '' },
         { t: 'chunk-text', w: '.', l: '' }
     ];
@@ -389,18 +389,20 @@
         if (!c.w) return null;
         const d = document.createElement('div'); d.className = `chunk ${c.t}`;
         
-        // Handle special styling for subjects/verbs
-        if (c.l.includes('subj')) d.classList.add('l-subj');
-        if (c.l.includes('verb')) d.classList.add('l-verb');
-        if (c.l.includes('obj')) d.classList.add('l-obj');
-        if (c.l.includes('conn')) d.classList.add('l-conn');
+        // CSS Style Mapping (Chinese to CSS Class)
+        if (c.l) {
+            if (c.l.includes('主语')) d.classList.add('l-subj');
+            if (c.l.includes('谓语')) d.classList.add('l-verb');
+            if (c.l.includes('宾语')) d.classList.add('l-obj');
+            if (c.l.includes('连词')) d.classList.add('l-conn');
+        }
 
         // Color coding borders for verb groups
         if (c.t.includes('chunk-group')) {
-            if (c.l.includes('verb')) d.style.borderBottomColor = 'var(--t-verb)';
+            if (c.l.includes('谓语')) d.style.borderBottomColor = 'var(--t-verb)';
         }
 
-        const label = (c.l && !c.l.includes('bg-')) ? c.l.replace('l-','').replace('-MAIN','(主)').toUpperCase() : '';
+        const label = (c.l && !c.l.includes('bg-')) ? c.l : '';
         const txt = c.txt ? c.txt : '';
         d.innerHTML = `<span class="chunk-lbl">${label || txt}</span><span class="chunk-text">${c.w}</span>`;
         return d;
