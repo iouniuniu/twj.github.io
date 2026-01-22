@@ -9,16 +9,24 @@
     <style>
         :root {
             /* 动态主题色 */
-            --theme-color: #27ae60; 
+            --theme-color: #E67E22; 
 
-            /* 词性颜色 */
-            --t-subj: #C0392B; --t-verb: #2980B9; --t-obj: #27AE60; --t-mod: #D35400; --t-prep: #8E44AD; --t-conn: #7F8C8D;
+            /* 词性颜色 (用于长难句分析) */
+            --t-subj: #C0392B; /* 主语红 */
+            --t-verb: #2980B9; /* 谓语蓝 */
+            --t-obj: #27AE60;  /* 宾语绿 */
+            --t-mod: #D35400;  /* 修饰语橙 */
+            --t-prep: #8E44AD; /* 介词紫 */
+            --t-conn: #7F8C8D; /* 连词灰 */
             
-            /* 词性背景 */
+            /* 词性高亮背景 */
             --bg-noun: #D6EAF8; --bg-verb: #D5F5E3; --bg-adj: #E8DAEF;
             
-            /* 长难句背景 */
-            --bg-trunk: #EBF5FB; --bg-clause-1: #FEF5E7; --bg-clause-2: #E9F7EF;
+            /* 长难句背景块 */
+            --bg-trunk: #EBF5FB;    /* 主干背景 */
+            --bg-clause-1: #FEF5E7; /* 从句1背景 */
+            --bg-clause-2: #E9F7EF; /* 从句2背景 */
+            
             /* 边框色 */
             --bd-trunk: #3498DB; --bd-clause-1: #F39C12; --bd-clause-2: #2ECC71; --bd-struct: #2C3E50;
             
@@ -29,20 +37,16 @@
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; }
         body { background: #444; display: flex; flex-direction: column; align-items: center; padding: 40px 0; gap: 40px; font-family: 'Noto Sans SC', sans-serif; }
         
-        /* 错误提示条 */
-        #status-bar { position: fixed; top: 0; left: 0; width: 100%; background: #e74c3c; color: white; text-align: center; padding: 15px; font-weight: bold; z-index: 10000; display: none; font-size: 14pt; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-        /* Loading 遮罩 */
+        #status-bar { position: fixed; top: 0; left: 0; width: 100%; background: #e74c3c; color: white; text-align: center; padding: 15px; font-weight: bold; z-index: 10000; display: none; font-size: 14pt; }
         #loading-mask { position: fixed; inset: 0; background: #f9f9f9; z-index: 9998; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: 'Lato'; color: #555; }
         .spinner { width: 50px; height: 50px; border: 5px solid #ccc; border-top-color: var(--theme-color); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* 容器 */
         .card { width: var(--p-w); height: var(--p-h); background: var(--bg); display: flex; flex-direction: column; overflow: hidden; position: relative; box-shadow: 0 30px 80px rgba(0,0,0,0.6); flex-shrink: 0; }
         .card.cover-page { padding: 0; } .card.normal-page { padding: 50px 60px; }
         .content-body { flex-grow: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 0; overflow: hidden; width: 100%; }
         .cover-page .content-body { padding: 0 60px; } .normal-page .content-body { padding: 0; }
 
-        /* 首页 (960px Height) */
         .hero-section { width: 100%; height: 960px; background: #e0e0e0; cursor: pointer; border-bottom: 8px solid var(--theme-color); position: relative; flex-shrink: 0; }
         .hero-img { width: 100%; height: 100%; object-fit: cover; display: none; }
         .hero-placeholder { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #777; font-size: 20pt; font-family: 'Lato'; text-align: center; border: 3px dashed #bbb; padding: 15px 30px; border-radius: 10px; }
@@ -50,34 +54,28 @@
         .cover-header { padding: 30px 60px 10px 60px; display: flex; flex-direction: column; align-items: center; text-align: center; flex-shrink: 0; }
         .meta-tag { background: var(--theme-color); color: white; padding: 6px 20px; border-radius: 50px; font-family: 'Lato'; font-weight: 900; font-size: 12pt; margin-bottom: 15px; letter-spacing: 1px; }
         
-        /* 标题增强 */
         .poster-title { font-family: 'Lora'; font-size: 60pt; font-weight: 700; color: var(--text-main); line-height: 1.0; margin-bottom: 10px; }
         .poster-subtitle { font-family: 'Noto Sans SC'; font-size: 40pt; color: #5d6d7e; font-weight: 400; margin-bottom: 20px; position: relative; display: inline-block; }
         .poster-subtitle::after { content: ""; display: block; width: 60px; height: 3px; background: var(--theme-color); margin: 10px auto 0 auto; }
 
-        /* 续页头 */
         .mini-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #ccc; padding-bottom: 15px; margin-bottom: 20px; height: 60px; flex-shrink: 0; width: 100%; }
         .mini-title { font-family: 'Lora'; font-weight: 700; font-size: 16pt; color: var(--text-main); }
         .continued-tag { font-family: 'Lato'; font-weight: 700; font-style: italic; background: transparent; padding: 5px 0; border-radius: 0; font-size: 11pt; color: #666; }
 
-        /* 正文 */
         .row { display: flex; gap: 40px; width: 100%; padding: 15px 0; border-bottom: 1px solid #f9f9f9; align-items: flex-start; flex-shrink: 0; }
         .col-eng { flex: 6; font-family: 'Lora'; font-size: 18pt; line-height: 1.8; text-align: justify; padding-right: 25px; border-right: 2px solid #f0f0f0; }
         .col-chi { flex: 4; font-family: 'Noto Sans SC'; font-size: 16pt; line-height: 1.8; color: #5d6d7e; text-align: justify; font-weight: 400; padding-top: 2px; }
 
-        /* 边栏 (一致布局) */
         .row.supp-style { background: var(--supp-bg); padding: 20px 25px; border-radius: 8px; margin: 5px 0; border: none; }
         .row.supp-style .col-eng { border-right: 2px solid #aec6cf; font-size: 16pt; line-height: 1.6; }
         .row.supp-style .col-chi { font-size: 14pt !important; line-height: 1.6; color: #555; }
         h3 { font-family: 'Lato'; font-weight: 900; font-size: 18pt; color: var(--theme-color); margin: 0 0 10px 0; display: block; border-left: 8px solid var(--theme-color); padding-left: 15px; }
         .row.supp-style h3 { font-size: 16pt !important; border-left-width: 5px; }
 
-        /* 词性高亮 (通用) */
         .hl { padding: 0 4px; border-radius: 4px; font-weight: 600; display: inline-block; }
         .hl-n { background-color: var(--bg-noun); } .hl-v { background-color: var(--bg-verb); } .hl-adj { background-color: var(--bg-adj); }
         sup { color: #555; font-size: 0.6em; vertical-align: super; font-weight: 700; margin-left: 2px; }
 
-        /* 附录 */
         .app-h { font-size: 18pt; font-weight: 700; color: var(--text-main); border-left: 6px solid #555; padding-left: 12px; display: block; margin: 25px 0 20px 0; font-family: 'Noto Sans SC'; flex-shrink: 0; width: 100%; }
         
         .vocab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px 40px; width: 100%; margin-bottom: 30px; flex-shrink: 0; }
@@ -106,10 +104,12 @@
         .bg-clause-2 .chunk-text { background-color: var(--bg-clause-2); }
         .bg-clause-2.bracket { background-color: var(--bg-clause-2); }
         
+        /* CSS Classes for Grammar Colors (Linked to Labels) */
         .l-subj { color: var(--t-subj); border-color: var(--t-subj); } 
         .l-verb { color: var(--t-verb); border-color: var(--t-verb); } 
         .l-obj { color: var(--t-obj); border-color: var(--t-obj); } 
         .l-conn { color: var(--t-conn); border-color: var(--t-conn); }
+        .l-mod { color: var(--t-mod); border-color: var(--t-mod); }
 
         .sa-step-box, .q-card { background: #fdfefe; padding: 20px 25px; border-radius: 8px; border: 1px solid #eee; box-shadow: 2px 2px 8px rgba(0,0,0,0.02); margin-bottom: 12px; width: 100%; }
         .bd-struct { border-left: 5px solid var(--bd-struct); }
@@ -149,202 +149,103 @@
 <input type="file" id="upload-trigger" style="display:none" onchange="loadFile(event)">
 
 <script>
-    // --- Global Error Trap ---
     window.onerror = function(message, source, lineno, colno, error) {
         document.getElementById('loading-mask').style.display = 'none';
         document.getElementById('status-bar').style.display = 'block';
-        document.getElementById('status-bar').innerText = "System Error: " + message + " (Line " + lineno + ")";
+        document.getElementById('status-bar').innerText = "System Error: " + message;
     };
 
-    // --- Phase 4: Data Injection (AI MUST FILL THIS) ---
     const META = { 
-        issue: "23 January 2026", 
-        title: "Updated nutrition guidelines released", 
-        subtitle: "饮食新风尚：健康生活从“吃”开始", 
-        themeColor: "#27ae60" 
+        issue: "17 January 2026", 
+        title: "The Story of a Buttery Breakfast Treat", 
+        subtitle: "黄油酥皮的美味传奇", 
+        themeColor: "#E67E22" 
     };
     
-    // [Audit 1: Atomized Content]
-    // Rule: Split long paragraphs into 1-2 sentence objects. Split sidebars by list items.
-    // Do NOT use <br><br> for alignment.
-    // [Correction]: All main content first, then supplements (sidebars) at the end.
     const MAIN_CONTENT = [
-        // --- Main Text ---
-        {
-            type: "main",
-            eng: "New <span class='hl hl-adj'>dietary</span><sup>①</sup> <span class='hl hl-n'>guidelines</span><sup>②</sup> have been <span class='hl hl-v'>announced</span><sup>③</sup> by the US Department of Health and Human Services (HHS).",
-            chi: "美国卫生与公众服务部（HHS）<span class='hl hl-v'>宣布</span><sup>③</sup>了新的<span class='hl hl-adj'>饮食的</span><sup>①</sup><span class='hl hl-n'>指南</span><sup>②</sup>。"
-        },
-        {
-            type: "main",
-            eng: "They are a <span class='hl hl-adj'>significant</span><sup>④</sup> <span class='hl hl-n'>departure</span><sup>⑤</sup> from previous <span class='hl hl-n'>recommendations</span><sup>⑥</sup>.",
-            chi: "这些指南与之前的<span class='hl hl-n'>建议</span><sup>⑥</sup>相比，有<span class='hl hl-adj'>重大的</span><sup>④</sup><span class='hl hl-n'>背离</span><sup>⑤</sup>。"
-        },
-        {
-            type: "main",
-            eng: "What are dietary guidelines? Since 1980, the US government has released guidelines to inform Americans about the ideal foods to eat for good health.",
-            chi: "什么是饮食指南？自 1980 年以来，美国政府一直发布指南，告知美国人为了健康应食用的理想食物。"
-        },
-        {
-            type: "main",
-            eng: "The guidelines, which are updated every five years, influence the meals served at schools, hospitals, and military bases.",
-            chi: "这些指南每五年更新一次，影响学校、医院和军事基地提供的膳食。"
-        },
-        {
-            type: "main",
-            eng: "A food pyramid was introduced in 1992 to <span class='hl hl-adv'>visually</span><sup>⑦</sup> <span class='hl hl-v'>illustrate</span><sup>⑧</sup> the guidelines, and people were advised to eat more of the foods from the bottom than the top.",
-            chi: "1992 年引入了食物金字塔以<span class='hl hl-adv'>直观地</span><sup>⑦</sup><span class='hl hl-v'>说明</span><sup>⑧</sup>这些指南，并建议人们多吃底部的食物，少吃顶部的食物。"
-        },
-        {
-            type: "main",
-            eng: "In 2011, the US changed the pyramid to an image of a plate to illustrate a healthy diet.",
-            chi: "2011 年，美国将金字塔改为餐盘图像，以说明健康饮食。"
-        },
-        {
-            type: "main",
-            eng: "What’s in the new guidelines? The new guidelines are visually displayed as an inverted pyramid (widest part at the top) with a greater <span class='hl hl-n'>emphasis</span><sup>⑨</sup> on <span class='hl hl-v'>consuming</span><sup>⑩</sup> protein and full-fat dairy products.",
-            chi: "新指南有什么内容？新指南直观地显示为倒金字塔（顶部最宽），更加<span class='hl hl-n'>强调</span><sup>⑨</sup><span class='hl hl-v'>食用</span><sup>⑩</sup>蛋白质和全脂乳制品。"
-        },
-        {
-            type: "main",
-            eng: "Beef, turkey, cheese, and whole milk are shown at the top.",
-            chi: "牛肉、火鸡、奶酪和全脂牛奶显示在顶部。"
-        },
-        {
-            type: "main",
-            eng: "An equal emphasis is placed on fruits and vegetables, with those foods also displayed at the top.",
-            chi: "水果和蔬菜也同样受到重视，这些食物也显示在顶部。"
-        },
-        {
-            type: "main",
-            eng: "Whole grains are located at the narrowest part of the pyramid, but the guidelines don’t recommend eating less of them.",
-            chi: "全谷物位于金字塔最窄的部分，但指南并不建议少吃它们。"
-        },
-        {
-            type: "main",
-            eng: "Rather, an emphasis is placed on avoiding sugar and <span class='hl hl-adj'>ultra-processed</span><sup>⑪</sup> foods, such as chips and cookies.",
-            chi: "相反，重点在于避免糖和<span class='hl hl-adj'>超加工</span><sup>⑪</sup>食品，如薯片和饼干。"
-        },
-        {
-            type: "main",
-            eng: "How did people react? Robert F. Kennedy Jr., head of the HHS, called the updated guidelines “the most significant reset of federal nutrition policy in history.”",
-            chi: "人们有何反应？HHS 负责人小罗伯特·F·肯尼迪称更新后的指南是“历史上联邦营养政策最重要的重置”。"
-        },
-        {
-            type: "main",
-            eng: "While health experts said they are glad the guidelines continue to make fruits and vegetables a <span class='hl hl-n'>priority</span><sup>⑫</sup> and support eating fewer processed foods, many of them disagree that people need more protein, particularly from red meat.",
-            chi: "虽然健康专家表示他们很高兴指南继续将水果和蔬菜列为<span class='hl hl-n'>优先事项</span><sup>⑫</sup>并支持少吃加工食品，但他们中有许多人不同意人们需要更多蛋白质，特别是来自红肉的蛋白质。"
-        },
-        {
-            type: "main",
-            eng: "Studies have shown that consuming red meat, which tends to be higher in <span class='hl hl-n'>sodium</span><sup>⑬</sup> and unhealthy fats, can increase a person’s risk of heart disease and other conditions.",
-            chi: "研究表明，食用往往含有较高<span class='hl hl-n'>钠</span><sup>⑬</sup>和不健康脂肪的红肉，会增加患心脏病和其他疾病的风险。"
-        },
-        {
-            type: "main",
-            eng: "What will happen next? The government will distribute the guidelines to agencies that work on nationwide food programs.",
-            chi: "接下来会发生什么？政府将把指南分发给从事全国性食品项目的机构。"
-        },
-        {
-            type: "main",
-            eng: "US states will review the guidelines to determine whether they want to <span class='hl hl-v'>incorporate</span><sup>⑭</sup> the changes into their own programs.",
-            chi: "美国各州将审查指南，以决定是否要将这些变化<span class='hl hl-v'>纳入</span><sup>⑭</sup>自己的项目中。"
-        },
-        // --- Sidebars (Strictly After Main Content) ---
-        {
-            type: "supp",
-            eng: "<h3>Food Pyramids</h3>The 2026 food pyramid illustrates the new dietary guidelines.",
-            chi: "<h3>食物金字塔</h3>2026 年的食物金字塔展示了新的饮食指南。"
-        },
-        {
-            type: "supp",
-            eng: "The first US food pyramid, released in 1992, was based on one from Sweden.",
-            chi: "美国第一个食物金字塔于 1992 年发布，是基于瑞典的一个版本。"
-        },
-        {
-            type: "supp",
-            eng: "The bottom level showed grains; the middle level featured produce; the next level included eggs, dairy, meat, and fish; and the top consisted of fats and oils.",
-            chi: "底层是谷物；中间层是农产品；再上一层包括蛋、奶制品、肉和鱼；顶层由脂肪和油组成。"
-        },
-        {
-            type: "supp",
-            eng: "The government recommended eating more foods from the bottom than the top.",
-            chi: "政府建议多吃底部的食物，少吃顶部的食物。"
-        },
-        {
-            type: "supp",
-            eng: "HEALTH MILESTONE In 1953, President Dwight D. Eisenhower established the department that would become today’s Health and Human Services agency.",
-            chi: "健康里程碑：1953 年，德怀特·D·艾森豪威尔总统建立了后来成为今天的卫生与公众服务部的部门。"
-        }
-    ]; 
+        { eng: "Croissants are a classic, <span class='hl hl-adj'>crescent</span><sup>①</sup>-shaped French <span class='hl hl-n'>pastry</span><sup>②</sup>.", chi: "牛角包是一种经典的<span class='hl hl-adj'>新月</span><sup>①</sup>形法式<span class='hl hl-n'>糕点</span><sup>②</sup>。" },
+        { eng: "Find out how they became a <span class='hl hl-n'>staple</span><sup>③</sup> in bakeries, cafes, and homes around the globe.", chi: "一起来看看它们是如何成为全球面包店、咖啡馆和家庭中的<span class='hl hl-n'>主食</span><sup>③</sup>的。" },
+        { eng: "<strong>What’s a croissant?</strong> A croissant is a buttery, <span class='hl hl-adj'>flaky</span><sup>④</sup> pastry made from flour, butter, water, milk, sugar, salt, and <span class='hl hl-n'>yeast</span><sup>⑤</sup>.", chi: "<strong>什么是牛角包？</strong> 牛角包是一种充满黄油香气、<span class='hl hl-adj'>分层掉渣的</span><sup>④</sup>糕点，由面粉、黄油、水、牛奶、糖、盐和<span class='hl hl-n'>酵母</span><sup>⑤</sup>制成。" },
+        { eng: "The ingredients may be simple, but making croissants is complex and <span class='hl hl-adj'>time-consuming</span><sup>⑥</sup>.", chi: "原料虽然简单，但制作牛角包的过程却复杂且<span class='hl hl-adj'>耗时</span><sup>⑥</sup>。" },
+        { eng: "Cold butter is first layered between sheets of <span class='hl hl-n'>dough</span><sup>⑦</sup> in a process called <span class='hl hl-n'>lamination</span><sup>⑧</sup>.", chi: "首先，冷黄油被夹在<span class='hl hl-n'>面团</span><sup>⑦</sup>层之间，这个过程被称为<span class='hl hl-n'>开酥（起层）</span><sup>⑧</sup>。" },
+        { eng: "The dough is then cut into triangles and typically rolled by hand into crescent shapes from the broad end to the pointy tip.", chi: "然后将面团切成三角形，通常用手从宽的一端卷向尖端，卷成新月形状。" },
+        { eng: "During baking, water in the butter turns to steam, separating the layers and giving the croissant its puffy, flaky <span class='hl hl-n'>texture</span><sup>⑨</sup>.", chi: "在烘烤过程中，黄油中的水分变成蒸汽，将面层分离，赋予牛角包蓬松、分层的<span class='hl hl-n'>质地</span><sup>⑨</sup>。" },
+        { eng: "<strong>History of croissants.</strong> The modern croissant was inspired by the kipfel (or kipferl), an Austrian crescent-shaped baked good dating to the <span class='hl hl-adj'>medieval</span><sup>⑩</sup> period.", chi: "<strong>牛角包的历史。</strong> 现代牛角包的灵感来自 kipfel（或 kipferl），这是一种可追溯到<span class='hl hl-adj'>中世纪</span><sup>⑩</sup>时期的奥地利新月形烘焙食品。" },
+        { eng: "It was made with butter or lard and sometimes included almonds.", chi: "它是由黄油或猪油制成的，有时还包含杏仁。" },
+        { eng: "The kipfel was not flaky or layered, however, and depending on the recipe, it <span class='hl hl-v'>resembled</span><sup>⑪</sup> a cookie or a roll.", chi: "然而，kipfel 并不分层或掉渣，根据食谱的不同，它<span class='hl hl-v'>像</span><sup>⑪</sup>饼干或面包卷。" },
+        { eng: "In the 1830s, an Austrian man named August Zang opened a Viennese bakery in Paris, France.", chi: "19世纪30年代，一位名叫奥古斯特·藏的奥地利人在法国巴黎开了一家维也纳面包店。" },
+        { eng: "Parisian bakers were inspired by his kipfel recipe and adapted it to create the lighter, flakier croissants we know today.", chi: "巴黎的面包师受他的 kipfel 食谱启发，对其进行了改良，创造出了我们今天熟知的更轻盈、更酥脆的牛角包。" },
+        { eng: "<strong>Rising in popularity.</strong> The first modern French croissant recipe, featuring the lamination method, is often credited to a 1915 French cookbook by chef Sylvain Claudius Goy.", chi: "<strong>日益流行。</strong> 第一个采用开酥法的现代法式牛角包食谱，通常被认为出自厨师西尔万·克劳迪乌斯·戈伊于1915年出版的一本法国食谱。" },
+        { eng: "During the 20th century, croissants became a staple of French breakfasts and joined the country’s other <span class='hl hl-adj'>culinary</span><sup>⑫</sup> influences that were spreading around the world.", chi: "在20世纪，牛角包成为了法式早餐的主食，并加入了该国向世界各地传播的其他<span class='hl hl-adj'>烹饪</span><sup>⑫</sup>影响之列。" },
+        { eng: "In 1963, cookbook author and TV host Julia Child demonstrated how to make croissants on her popular show, <em>The French Chef</em>, demystifying a complex pastry for home cooks.", chi: "1963年，食谱作者兼电视主持人朱莉娅·蔡尔德在她受欢迎的节目《法式大厨》中演示了如何制作牛角包，为家庭烹饪者揭开了这种复杂糕点的神秘面纱。" },
+        { eng: "The mass production of croissants in the 1970s made them available in more places.", chi: "20世纪70年代牛角包的大规模生产使其在更多地方得以销售。" },
+        { eng: "In 1981, the food brand Sara Lee introduced frozen croissant dough, making it easier for people to bake the pastries at home.", chi: "1981年，食品品牌莎莉集团推出了冷冻牛角包面团，使人们更容易在家烘焙这种糕点。" },
+        { eng: "<strong>Innovative ideas.</strong> In the 2010s, chefs began experimenting with croissants, introducing two-color and rainbow varieties.", chi: "<strong>创意点子。</strong> 在21世纪10年代，厨师们开始对牛角包进行实验，推出了双色和彩虹品种。" },
+        { eng: "There was also a wave of new <span class='hl hl-n'>hybrid</span><sup>⑬</sup> croissant shapes.", chi: "还出现了一波新的<span class='hl hl-n'>混合</span><sup>⑬</sup>牛角包形状。" },
+        { eng: "Cube croissants, made from a square mold, were created in 2018. Today, there are croissants in creative flavors ranging from pumpkin pie to matcha.", chi: "方块牛角包于2018年问世，由方形模具制成。如今，有各种创意口味的牛角包，从南瓜派到抹茶味应有尽有。" },
+        { eng: "Bakeries also sell croissants with fillings including berry glaze, pistachio sauce, chocolate ganache, lychee, and pulled pork.", chi: "面包店还出售带有浆果糖衣、开心果酱、巧克力甘纳许、荔枝和手撕猪肉等馅料的牛角包。" },
+        { eng: "A new US trend imported from South Korea is flat croissants, in which the classic pastry is pressed flat and then pan-fried.", chi: "从韩国传入美国的一个新趋势是扁平牛角包，即把这种经典糕点压扁后进行煎制。" },
+        { type: 'supp', eng: "<h3>Did you know?</h3>The word 'croissant' translates to 'crescent' or 'crescent moon' in French.", chi: "<strong>你知道吗？</strong> “Croissant”一词在法语中意为“新月”或“月牙”。" },
+        { type: 'supp', eng: "<h3>Bigger is Better</h3>One type of croissant sold at bakeries in Paris and London measures about 18 inches long and weighs more than 3 pounds.", chi: "<strong>越大越好</strong> 巴黎和伦敦的面包店出售一种长约18英寸、重达3磅多的牛角包。" },
+        { type: 'supp', eng: "<h3>Croissant Hybrids</h3><strong>Cronut:</strong> This cross between a croissant and a donut was created by a French pastry chef. It’s rolled in sugar and filled with cream, then glazed.", chi: "<strong>牛角甜甜圈：</strong> 这种牛角包和甜甜圈的结合体由一位法国糕点师创造。它裹着糖，内填奶油，表面淋有糖霜。" },
+        { type: 'supp', eng: "<strong>Cruffin:</strong> Originating in Australia, this hybrid pastry is made by baking the ingredients of a croissant in a muffin tin, resulting in a mushroom shape.", chi: "<strong>牛角芬：</strong> 起源于澳大利亚，这种混合糕点是将牛角包的原料放入玛芬烤盘中烘烤而成，呈蘑菇状。" },
+        { type: 'supp', eng: "<strong>Crookie:</strong> A viral sensation from a Parisian bakery, the crookie is made by stuffing and topping a classic croissant with rich chocolate chip cookies.", chi: "<strong>牛角曲奇：</strong> 源自巴黎一家面包店的网红产品，是在经典牛角包中填充并覆盖浓郁的巧克力曲奇制成的。" },
+        { type: 'supp', eng: "<strong>Croffle:</strong> The croffle was first made popular in Seoul, South Korea. Croissant dough is pressed in a waffle iron until the result is golden and crispy.", chi: "<strong>牛角华夫：</strong> 最早在韩国首尔流行。将牛角包面团压在华夫饼机中，直至金黄酥脆。" }
+    ];
     
-    // [Audit 2: Sync & Dedup]
     const VOCAB_LIST = [
-        { w: "dietary", p: "adj.", m: "饮食的", ipa: "ˈdaɪəteri", c: "dietary guidelines", e: "New dietary guidelines have been announced." },
-        { w: "guideline", p: "n.", m: "指南；指导方针", ipa: "ˈɡaɪdlaɪn", c: "dietary guidelines", e: "The guidelines are updated every five years." },
-        { w: "announce", p: "v.", m: "宣布；宣告", ipa: "əˈnaʊns", c: "announce the news", e: "New guidelines have been announced." },
-        { w: "significant", p: "adj.", m: "重大的；显著的", ipa: "sɪɡˈnɪfɪkənt", c: "significant departure", e: "They are a significant departure from previous recommendations." },
-        { w: "departure", p: "n.", m: "背离；离开", ipa: "dɪˈpɑːrtʃər", c: "departure from", e: "It is a departure from previous recommendations." },
-        { w: "recommendation", p: "n.", m: "建议；推荐", ipa: "ˌrekəmenˈdeɪʃn", c: "make a recommendation", e: "We follow the doctor's recommendations." },
-        { w: "visually", p: "adv.", m: "直观地；视觉上", ipa: "ˈvɪʒuəli", c: "visually display", e: "The data is visually displayed." },
-        { w: "illustrate", p: "v.", m: "说明；阐明", ipa: "ˈɪləstreɪt", c: "illustrate the point", e: "A pyramid was used to illustrate the guidelines." },
-        { w: "emphasis", p: "n.", m: "强调；重点", ipa: "ˈemfəsɪs", c: "emphasis on", e: "There is a greater emphasis on consuming protein." },
-        { w: "consume", p: "v.", m: "食用；消耗", ipa: "kənˈsuːm", c: "consume food", e: "We should consume more vegetables." },
-        { w: "ultra-processed", p: "adj.", m: "超加工的", ipa: "ˈʌltrə ˈprəʊsest", c: "ultra-processed foods", e: "Avoid ultra-processed foods like chips." },
-        { w: "priority", p: "n.", m: "优先事项", ipa: "praɪˈɔːrəti", c: "top priority", e: "Make fruits and vegetables a priority." },
-        { w: "sodium", p: "n.", m: "钠", ipa: "ˈsəʊdiəm", c: "high in sodium", e: "Red meat tends to be higher in sodium." },
-        { w: "incorporate", p: "v.", m: "包含；纳入", ipa: "ɪnˈkɔːrpəreɪt", c: "incorporate into", e: "States may incorporate the changes into their programs." }
+        { w: "crescent", p: "n.", m: "新月; 月牙", ipa: "ˈkresnt", c: "crescent-shaped", e: "The moon was a crescent." },
+        { w: "pastry", p: "n.", m: "糕点; 酥皮点心", ipa: "ˈpeɪstri", c: "French pastry", e: "She loves flaky pastry." },
+        { w: "staple", p: "n.", m: "主食; 主要产品", ipa: "ˈsteɪpl", c: "staple food", e: "Rice is a staple in Asia." },
+        { w: "flaky", p: "adj.", m: "薄片的; 易剥落的", ipa: "ˈfleɪki", c: "flaky texture", e: "The pie crust is flaky." },
+        { w: "yeast", p: "n.", m: "酵母", ipa: "jiːst", c: "baker's yeast", e: "Yeast makes bread rise." },
+        { w: "time-consuming", p: "adj.", m: "耗时的", ipa: "ˈtaɪm kənˌsuːmɪŋ", c: "a time-consuming task", e: "Writing is time-consuming." },
+        { w: "dough", p: "n.", m: "面团", ipa: "dəʊ", c: "bread dough", e: "Knead the dough well." },
+        { w: "lamination", p: "n.", m: "层压; 开酥", ipa: "ˌlæmɪˈneɪʃn", c: "lamination process", e: "Lamination creates layers." },
+        { w: "texture", p: "n.", m: "质地; 口感", ipa: "ˈtekstʃər", c: "smooth texture", e: "I like the texture of silk." },
+        { w: "medieval", p: "adj.", m: "中世纪的", ipa: "ˌmediˈiːvl", c: "medieval history", e: "A medieval castle." },
+        { w: "resemble", p: "v.", m: "像; 类似", ipa: "rɪˈzembl", c: "resemble closely", e: "She resembles her mother." },
+        { w: "culinary", p: "adj.", m: "烹饪的", ipa: "ˈkʌlɪnəri", c: "culinary skills", e: "He is a culinary expert." },
+        { w: "hybrid", p: "n.", m: "混合物; 杂交品种", ipa: "ˈhaɪbrɪd", c: "hybrid car", e: "A mule is a hybrid animal." }
     ];
     
-    // [Audit 3: Syntax Localization]
+    // [Audit 3: Syntax Localization - REVISED]
+    // Rule: txt displays GRAMMAR LABEL (in Chinese), w is English. No translation.
     const SA_CHUNKS = [
-        { t: 'chunk-group', w: 'While health experts', l: 'l-conn' },
-        { t: 'chunk-group', w: 'said', l: 'l-verb' },
-        { t: 'bracket bg-clause-1', w: '(', l: '' },
-        { t: 'chunk bg-clause-1', w: 'they', l: 'l-subj' },
-        { t: 'chunk bg-clause-1', w: 'are', l: 'l-verb' },
-        { t: 'chunk bg-clause-1', w: 'glad', l: 'l-adj' },
-        { t: 'bracket bg-clause-2', w: '(', l: '' },
-        { t: 'chunk bg-clause-2', w: 'the guidelines', l: 'l-subj' },
-        { t: 'chunk bg-clause-2', w: 'continue to make', l: 'l-verb' },
-        { t: 'chunk bg-clause-2', w: 'fruits and vegetables', l: 'l-obj' },
-        { t: 'chunk bg-clause-2', w: 'a priority', l: 'l-obj' },
-        { t: 'bracket bg-clause-2', w: ')', l: '' },
-        { t: 'bracket bg-clause-1', w: ')', l: '' },
-        { t: 'chunk', w: ',', l: '' },
-        { t: 'chunk-group bg-trunk', w: 'many of them', l: 'l-subj', txt: '主语' },
-        { t: 'chunk-group bg-trunk', w: 'disagree', l: 'l-verb', txt: '谓语' },
-        { t: 'bracket bg-clause-1', w: '(', l: '' },
-        { t: 'chunk bg-clause-1', w: 'that', l: 'l-conn' },
-        { t: 'chunk bg-clause-1', w: 'people', l: 'l-subj' },
-        { t: 'chunk bg-clause-1', w: 'need', l: 'l-verb' },
-        { t: 'chunk bg-clause-1', w: 'more protein', l: 'l-obj' },
-        { t: 'bracket bg-clause-1', w: ')', l: '' },
-        { t: 'chunk', w: '.', l: '' }
-    ];
-    const SA_TRANS = "虽然健康专家表示他们很高兴指南继续将水果和蔬菜列为优先事项，但他们中有许多人不同意人们需要更多蛋白质（特别是来自红肉的蛋白质）的观点。";
-    const SA_STEPS = [
-        { type: 'bd-struct', label: '句型判断', text: '这是一个包含<b>让步状语从句</b>（While...）和<b>宾语从句</b>（that...）的复合句。' },
-        { type: 'bd-trunk', label: '主干拆解', text: '主句的主语是 <b>many of them</b>（他们中的许多人），谓语是 <b>disagree</b>（不同意）。' },
-        { type: 'bd-clause-1', label: '让步状语', text: '<b>While...</b> 引导的从句表示“虽然...”，其中包含一个省略了 that 的宾语从句 <b>(that) they are glad...</b>。' },
-        { type: 'bd-clause-2', label: '嵌套结构', text: '在 glad 的宾语从句中，又嵌套了一个从句：<b>the guidelines continue to make...</b>，说明了专家感到高兴的具体内容。' },
-        { type: 'bd-clause-1', label: '宾语从句', text: '主句动词 disagree 后面的 <b>that people need more protein</b> 是宾语从句，说明了他们不同意的具体观点。' }
-    ];
-    const QUIZ_ITEMS = [
-        { q: "What is the shape of the new 2026 dietary guidelines visual?", a: "<span class='q-opt'>A. A round plate</span><span class='q-opt'>B. An upright pyramid</span><span class='q-opt'>C. An inverted pyramid</span>", c: "C" },
-        { q: "Which food group is displayed at the top of the new inverted pyramid?", a: "<span class='q-opt'>A. Whole grains</span><span class='q-opt'>B. Beef, dairy, and produce</span><span class='q-opt'>C. Sugar and chips</span>", c: "B" },
-        { q: "Why are some experts concerned about the new protein recommendation?", a: "<span class='q-opt'>A. Protein is too expensive</span><span class='q-opt'>B. Red meat has health risks</span><span class='q-opt'>C. People prefer fish</span>", c: "B" }
+        { t: 'chunk', w: 'During baking,', txt: '时间状语' },
+        { t: 'chunk-group bg-trunk l-subj', w: 'water', txt: '主语' },
+        { t: 'chunk bracket l-mod', w: '(in the butter)', txt: '定语' },
+        { t: 'chunk-group bg-trunk l-verb', w: 'turns to', txt: '谓语' },
+        { t: 'chunk-group bg-trunk l-obj', w: 'steam,', txt: '宾语' },
+        { t: 'chunk-group bg-clause-1', w: 'separating', txt: '伴随状语' },
+        { t: 'chunk-group bg-clause-1', w: 'the layers', txt: '宾语' },
+        { t: 'chunk l-conn', w: 'and', txt: '连词' },
+        { t: 'chunk-group bg-clause-2', w: 'giving', txt: '伴随状语' },
+        { t: 'chunk-group bg-clause-2', w: 'the croissant', txt: '间接宾语' },
+        { t: 'chunk-group bg-clause-2', w: 'its puffy, flaky texture.', txt: '直接宾语' }
     ];
 
-    // --- Core Logic ---
+    const SA_TRANS = "在烘烤过程中，黄油中的水分变成蒸汽，从而将面团分层，并赋予牛角包蓬松、酥脆的质地。";
+
+    const SA_STEPS = [
+        { type: 'bd-trunk', label: '主句骨干', text: 'Water turns to steam. (主语 + 谓语 + 宾语)' },
+        { type: 'bd-struct', label: '句型判断', text: '简单句 + 两个并列的现在分词短语作状语' },
+        { type: 'bd-clause-1', label: '伴随状语1', text: 'separating the layers (现在分词 separating 及其宾语)' },
+        { type: 'bd-clause-2', label: '伴随状语2', text: 'giving the croissant its... texture (giving + 间接宾语 + 直接宾语)' }
+    ];
+
+    const QUIZ_ITEMS = [
+        { q: "What does the word 'croissant' mean in French?", a: "<span class='q-opt'>A. Butter bread</span><span class='q-opt'>B. Crescent moon</span><span class='q-opt'>C. Sweet roll</span>" },
+        { q: "Which country inspired the modern croissant?", a: "<span class='q-opt'>A. France</span><span class='q-opt'>B. Austria</span><span class='q-opt'>C. USA</span>" },
+        { q: "What process creates the layers in a croissant?", a: "<span class='q-opt'>A. Fermentation</span><span class='q-opt'>B. Lamination</span><span class='q-opt'>C. Boiling</span>" }
+    ];
+
     function render() {
-        // [Safety Scope]
         let cardIdx = 1;
         let currentCard;
         let container;
         const SAFE_BOTTOM = 1340; 
 
-        // Helper functions
         function createNewPage() {
             cardIdx++; 
             currentCard = createNormalPage(cardIdx);
@@ -355,8 +256,6 @@
         function checkAndMove(el, limit) {
             const rect = el.getBoundingClientRect();
             const cardTop = currentCard.getBoundingClientRect().top;
-            
-            // Atomic Flow Check: If this specific atom (row/chunk) overflows, move IT and subsequent atoms to next page.
             if ((rect.bottom - cardTop) > limit) {
                 container.removeChild(el); 
                 createNewPage(); 
@@ -370,92 +269,76 @@
         }
 
         try {
-            // [Phase 6: Data Integrity Check]
-            if (!MAIN_CONTENT || MAIN_CONTENT.length === 0) {
-                throw new Error("MAIN_CONTENT is empty. Please check data injection.");
-            }
-
             document.documentElement.style.setProperty('--theme-color', META.themeColor);
             const root = document.getElementById('card-container');
             
-            // Initial Page Setup
+            // Initial Page
             currentCard = createCoverPage();
             root.appendChild(currentCard);
             container = currentCard.querySelector('.content-body');
 
-            // 1. Content (Atomic Row Flow)
+            // 1. Content
             MAIN_CONTENT.forEach(item => {
                 const row = createContentRow(item);
                 container.appendChild(row);
                 checkAndMove(row, SAFE_BOTTOM);
             });
 
-            // Start new page for Appendix
+            // Appendix Start
             createNewPage();
 
             // 2. Vocab
             appendWithCheck(createTitle('中考高频词汇 (Vocab)'));
             let grid = document.createElement('div'); grid.className = 'vocab-grid';
             container.appendChild(grid);
-            if (VOCAB_LIST) {
-                VOCAB_LIST.forEach((v, i) => {
-                    const item = createVocabItem(v, i+1); grid.appendChild(item);
-                    if ((grid.getBoundingClientRect().bottom - currentCard.getBoundingClientRect().top) > SAFE_BOTTOM) {
-                        grid.removeChild(item); 
-                        createNewPage();
-                        grid = document.createElement('div'); grid.className = 'vocab-grid';
-                        container.appendChild(grid); grid.appendChild(item);
-                    }
-                });
-            }
+            VOCAB_LIST.forEach((v, i) => {
+                const item = createVocabItem(v, i+1); grid.appendChild(item);
+                if ((grid.getBoundingClientRect().bottom - currentCard.getBoundingClientRect().top) > SAFE_BOTTOM) {
+                    grid.removeChild(item); 
+                    createNewPage();
+                    grid = document.createElement('div'); grid.className = 'vocab-grid';
+                    container.appendChild(grid); grid.appendChild(item);
+                }
+            });
 
             // 3. Sentence Analysis
             appendWithCheck(createTitle('长难句分析 (Sentence Analysis)'));
             let saWrapper = document.createElement('div'); saWrapper.className = 'sa-sentence-wrapper';
             container.appendChild(saWrapper);
-            if (SA_CHUNKS) {
-                SA_CHUNKS.forEach(chunk => {
-                    let el = createSaChunk(chunk);
-                    if (el) { 
-                        saWrapper.appendChild(el);
-                        // Chunk Flow Check
-                        if ((saWrapper.getBoundingClientRect().bottom - currentCard.getBoundingClientRect().top) > SAFE_BOTTOM) {
-                            saWrapper.removeChild(el); 
-                            createNewPage();
-                            saWrapper = document.createElement('div'); saWrapper.className = 'sa-sentence-wrapper';
-                            container.appendChild(saWrapper); saWrapper.appendChild(el);
-                        }
+            
+            // Updated Rendering Logic for SA_CHUNKS
+            SA_CHUNKS.forEach(chunk => {
+                let el = createSaChunk(chunk);
+                if (el) { 
+                    saWrapper.appendChild(el);
+                    if ((saWrapper.getBoundingClientRect().bottom - currentCard.getBoundingClientRect().top) > SAFE_BOTTOM) {
+                        saWrapper.removeChild(el); 
+                        createNewPage();
+                        saWrapper = document.createElement('div'); saWrapper.className = 'sa-sentence-wrapper';
+                        container.appendChild(saWrapper); saWrapper.appendChild(el);
                     }
-                });
-            }
+                }
+            });
 
-            const transEl = document.createElement('div'); transEl.className = 'sa-trans'; transEl.innerHTML = SA_TRANS || "";
+            const transEl = document.createElement('div'); transEl.className = 'sa-trans'; transEl.innerHTML = SA_TRANS;
             appendWithCheck(transEl);
 
-            if (SA_STEPS) {
-                SA_STEPS.forEach(step => { const el = createSaStep(step); appendWithCheck(el); });
-            }
+            SA_STEPS.forEach(step => { appendWithCheck(createSaStep(step)); });
 
             // 4. Quiz
             appendWithCheck(createTitle('趣闻挑战 (Little Quiz)'));
-            if (QUIZ_ITEMS) {
-                QUIZ_ITEMS.forEach((q, i) => {
-                    const qCard = document.createElement('div'); qCard.className = 'q-card';
-                    qCard.innerHTML = `<div class="q-header"><div class="q-num">${i+1}</div><div class="q-text">${q.q}</div></div><div class="q-opts">${q.a}</div>`;
-                    appendWithCheck(qCard);
-                });
-            }
+            QUIZ_ITEMS.forEach((q, i) => {
+                const qCard = document.createElement('div'); qCard.className = 'q-card';
+                qCard.innerHTML = `<div class="q-header"><div class="q-num">${i+1}</div><div class="q-text">${q.q}</div></div><div class="q-opts">${q.a}</div>`;
+                appendWithCheck(qCard);
+            });
 
             updateFooters(cardIdx);
-            
-            // Success: Remove loading
             document.getElementById('loading-mask').style.display = 'none';
 
         } catch(e) {
             console.error(e);
-            document.getElementById('loading-mask').style.display = 'none';
-            document.getElementById('status-bar').style.display = 'block';
-            document.getElementById('status-bar').innerText = "Render Error: " + e.message;
+            alert("Error: " + e.message);
         }
     }
 
@@ -483,24 +366,38 @@
         if (v.p.includes('n.')) bgClass = 'hl-n';
         else if (v.p.includes('v.')) bgClass = 'hl-v';
         else if (v.p.includes('adj') || v.p.includes('adv')) bgClass = 'hl-adj';
-        else bgClass = 'hl-n'; 
         const d = document.createElement('div'); d.className = 'vocab-item';
         d.innerHTML = `<div class="v-line-1"><span class="v-word ${bgClass}">${v.w}</span><span class="v-idx">${idx}</span><span class="v-ipa">[${v.ipa}]</span><span class="v-pos">${v.p}</span><span class="v-mean">${v.m}</span></div><div class="v-line-2">${v.c}</div><div class="v-line-3">"${v.e}"</div>`;
         return d;
     }
     
     function createSaChunk(c) {
-        if (!c || !c.t) return null;
+        if (!c || !c.w) return null;
         const d = document.createElement('div'); d.className = `chunk ${c.t}`;
-        if (c.t.includes('chunk-group')) {
-            const color = c.l ? `var(--${c.l.replace('l-', 't-')})` : '#ccc';
-            d.style.borderBottomColor = color;
+        // Apply color based on class in c.t
+        if (c.t.includes('l-')) {
+            const match = c.t.match(/l-([a-z]+)/);
+            if (match) {
+               // Logic handled by CSS classes .l-subj etc
+            }
         }
-        const label = c.l ? c.l : '';
-        const txt = c.txt ? c.txt : '';
-        d.innerHTML = `<span class="chunk-lbl ${label}">${txt}</span><span class="chunk-text">${c.w}</span>`;
+        
+        // Use c.txt as the label (Chinese Grammar Term)
+        const labelText = c.txt ? c.txt : '';
+        const wordText = c.w;
+        
+        // Determine label color class based on c.t containing l-xxx
+        let labelClass = '';
+        if (c.t.includes('l-subj')) labelClass = 'l-subj';
+        else if (c.t.includes('l-verb')) labelClass = 'l-verb';
+        else if (c.t.includes('l-obj')) labelClass = 'l-obj';
+        else if (c.t.includes('l-conn')) labelClass = 'l-conn';
+        else if (c.t.includes('l-mod')) labelClass = 'l-mod';
+        
+        d.innerHTML = `<span class="chunk-lbl ${labelClass}">${labelText}</span><span class="chunk-text">${wordText}</span>`;
         return d;
     }
+    
     function createSaStep(s) {
         const d = document.createElement('div'); d.className = `sa-step-box ${s.type}`;
         d.innerHTML = `<div class="sa-step"><span class="sa-tag">${s.label}</span>${s.text}</div>`;
@@ -511,32 +408,20 @@
     async function downloadAllPages() {
         const btn = document.getElementById('btn-download');
         const originalText = btn.innerText;
-        btn.innerText = "Processing... (Please Wait)";
-        btn.style.opacity = "0.7";
+        btn.innerText = "Processing...";
         btn.disabled = true;
-
         try {
             const cards = document.querySelectorAll('.card');
             for (let i = 0; i < cards.length; i++) {
-                const canvas = await html2canvas(cards[i], { scale: 2, useCORS: true, allowTaint: false, backgroundColor: '#ffffff', logging: false });
-                canvas.toBlob(function(blob) {
-                    if (!blob) { alert("Security Error: Use Local Server."); return; }
-                    const link = document.createElement('a');
-                    link.download = `TheWeekJunior_Page_${i + 1}.png`;
-                    link.href = URL.createObjectURL(blob);
-                    link.click();
-                    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
-                }, 'image/png');
+                const canvas = await html2canvas(cards[i], { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+                const link = document.createElement('a');
+                link.download = `TheWeekJunior_Page_${i + 1}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
                 await new Promise(r => setTimeout(r, 500));
             }
-        } catch (e) {
-            console.error(e);
-            alert("Error: " + e.message);
-        } finally {
-            btn.innerText = originalText;
-            btn.style.opacity = "1";
-            btn.disabled = false;
-        }
+        } catch (e) { alert("Error: " + e.message); } 
+        finally { btn.innerText = originalText; btn.disabled = false; }
     }
 
     window.loadFile = function(e) { document.getElementById('hero-img').src = URL.createObjectURL(e.target.files[0]); document.getElementById('hero-img').style.display='block'; document.getElementById('hero-txt').style.display='none'; };
