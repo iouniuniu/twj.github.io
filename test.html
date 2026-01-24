@@ -1,431 +1,331 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Week Junior Handout</title>
-    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700&family=Noto+Sans+SC:wght@300;400;500;700&family=Lato:wght@400;700;900&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-    <style>
-        :root {
-            /* 动态主题色 */
-            --theme-color: #E67E22; 
-
-            /* 词性颜色 (用于长难句分析) */
-            --t-subj: #C0392B; /* 主语红 */
-            --t-verb: #2980B9; /* 谓语蓝 */
-            --t-obj: #27AE60;  /* 宾语绿 */
-            --t-mod: #D35400;  /* 修饰语橙 */
-            --t-prep: #8E44AD; /* 介词紫 */
-            --t-conn: #7F8C8D; /* 连词灰 */
-            
-            /* 词性高亮背景 */
-            --bg-noun: #D6EAF8; --bg-verb: #D5F5E3; --bg-adj: #E8DAEF;
-            
-            /* 长难句背景块 */
-            --bg-trunk: #EBF5FB;    /* 主干背景 */
-            --bg-clause-1: #FEF5E7; /* 从句1背景 */
-            --bg-clause-2: #E9F7EF; /* 从句2背景 */
-            
-            /* 边框色 */
-            --bd-trunk: #3498DB; --bd-clause-1: #F39C12; --bd-clause-2: #2ECC71; --bd-struct: #2C3E50;
-            
-            /* 通用 */
-            --text-main: #2c3e50; --bg: #ffffff; --supp-bg: #F0F8FF;
-            --p-w: 1080px; --p-h: 1440px;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; }
-        body { background: #444; display: flex; flex-direction: column; align-items: center; padding: 40px 0; gap: 40px; font-family: 'Noto Sans SC', sans-serif; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Final Typography Polish</title>
+<style>
+    :root {
+        --highlight-gold: #FFD700;
+        --silver-wave: rgba(255, 255, 255, 0.7);
+        --panel-bg: rgba(18, 18, 18, 0.75); /*稍微加深背景，增加文字对比度*/
+        --border-light: rgba(255, 255, 255, 0.12);
         
-        #status-bar { position: fixed; top: 0; left: 0; width: 100%; background: #e74c3c; color: white; text-align: center; padding: 15px; font-weight: bold; z-index: 10000; display: none; font-size: 14pt; }
-        #loading-mask { position: fixed; inset: 0; background: #f9f9f9; z-index: 9998; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: 'Lato'; color: #555; }
-        .spinner { width: 50px; height: 50px; border: 5px solid #ccc; border-top-color: var(--theme-color); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        .card { width: var(--p-w); height: var(--p-h); background: var(--bg); display: flex; flex-direction: column; overflow: hidden; position: relative; box-shadow: 0 30px 80px rgba(0,0,0,0.6); flex-shrink: 0; }
-        .card.cover-page { padding: 0; } .card.normal-page { padding: 50px 60px; }
-        .content-body { flex-grow: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 0; overflow: hidden; width: 100%; }
-        .cover-page .content-body { padding: 0 60px; } .normal-page .content-body { padding: 0; }
-
-        .hero-section { width: 100%; height: 960px; background: #e0e0e0; cursor: pointer; border-bottom: 8px solid var(--theme-color); position: relative; flex-shrink: 0; }
-        .hero-img { width: 100%; height: 100%; object-fit: cover; display: none; }
-        .hero-placeholder { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #777; font-size: 20pt; font-family: 'Lato'; text-align: center; border: 3px dashed #bbb; padding: 15px 30px; border-radius: 10px; }
+        /* 字体栈策略 */
+        /* UI 字体：使用苹果原生 SF Pro，保证界面现代感 */
+        --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
         
-        .cover-header { padding: 30px 60px 10px 60px; display: flex; flex-direction: column; align-items: center; text-align: center; flex-shrink: 0; }
-        .meta-tag { background: var(--theme-color); color: white; padding: 6px 20px; border-radius: 50px; font-family: 'Lato'; font-weight: 900; font-size: 12pt; margin-bottom: 15px; letter-spacing: 1px; }
+        /* 内容字体：使用高雅的衬线体，还原书籍阅读感 */
+        /* 优先调用 Apple 的 New York 字体，其次是 Georgia */
+        --font-content: "New York", "Times New Roman", "Songti SC", "SimSun", serif;
+    }
+    
+    body {
+        margin: 0;
+        background-color: #000;
+        /* 开启字体平滑抗锯齿 */
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility; 
         
-        .poster-title { font-family: 'Lora'; font-size: 60pt; font-weight: 700; color: var(--text-main); line-height: 1.0; margin-bottom: 10px; }
-        .poster-subtitle { font-family: 'Noto Sans SC'; font-size: 40pt; color: #5d6d7e; font-weight: 400; margin-bottom: 20px; position: relative; display: inline-block; }
-        .poster-subtitle::after { content: ""; display: block; width: 60px; height: 3px; background: var(--theme-color); margin: 10px auto 0 auto; }
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        color: white;
+    }
 
-        .mini-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #ccc; padding-bottom: 15px; margin-bottom: 20px; height: 60px; flex-shrink: 0; width: 100%; }
-        .mini-title { font-family: 'Lora'; font-weight: 700; font-size: 16pt; color: var(--text-main); }
-        .continued-tag { font-family: 'Lato'; font-weight: 700; font-style: italic; background: transparent; padding: 5px 0; border-radius: 0; font-size: 11pt; color: #666; }
+    /* iPhone 17 Pro 模拟器尺寸 */
+    .phone-mockup {
+        width: 393px; /* iPhone 15/16 Pro 宽度标准 */
+        height: 852px;
+        background: #000;
+        position: relative;
+        overflow: hidden;
+        border-radius: 55px; /* 更圆润的R角 */
+        box-shadow: 0 0 0 10px #1a1a1a, 0 0 0 12px #333; /* 模拟边框 */
+    }
 
-        .row { display: flex; gap: 40px; width: 100%; padding: 15px 0; border-bottom: 1px solid #f9f9f9; align-items: flex-start; flex-shrink: 0; }
-        .col-eng { flex: 6; font-family: 'Lora'; font-size: 18pt; line-height: 1.8; text-align: justify; padding-right: 25px; border-right: 2px solid #f0f0f0; }
-        .col-chi { flex: 4; font-family: 'Noto Sans SC'; font-size: 16pt; line-height: 1.8; color: #5d6d7e; text-align: justify; font-weight: 400; padding-top: 2px; }
+    /* 顶部灵动岛占位 (Dynamic Island Area) */
+    .dynamic-island-area {
+        position: absolute; top: 0; left: 0; right: 0; height: 54px;
+        z-index: 100;
+        pointer-events: none;
+    }
 
-        .row.supp-style { background: var(--supp-bg); padding: 20px 25px; border-radius: 8px; margin: 5px 0; border: none; }
-        .row.supp-style .col-eng { border-right: 2px solid #aec6cf; font-size: 16pt; line-height: 1.6; }
-        .row.supp-style .col-chi { font-size: 14pt !important; line-height: 1.6; color: #555; }
-        h3 { font-family: 'Lato'; font-weight: 900; font-size: 18pt; color: var(--theme-color); margin: 0 0 10px 0; display: block; border-left: 8px solid var(--theme-color); padding-left: 15px; }
-        .row.supp-style h3 { font-size: 16pt !important; border-left-width: 5px; }
+    /* 底部 Home Indicator 占位 */
+    .safe-area-bottom {
+        position: absolute; bottom: 0; left: 0; right: 0; height: 34px;
+        z-index: 100;
+    }
 
-        .hl { padding: 0 4px; border-radius: 4px; font-weight: 600; display: inline-block; }
-        .hl-n { background-color: var(--bg-noun); } .hl-v { background-color: var(--bg-verb); } .hl-adj { background-color: var(--bg-adj); }
-        sup { color: #555; font-size: 0.6em; vertical-align: super; font-weight: 700; margin-left: 2px; }
+    /* 背景层 */
+    .bg-layer {
+        position: absolute; inset: 0;
+        background-image: url('https://images.unsplash.com/photo-1491841550275-ad7854e35ca6?auto=format&fit=crop&w=800&q=80');
+        background-size: cover;
+        background-position: center;
+        filter: blur(50px) brightness(0.45); /* 降低亮度，让文字跳出来 */
+        transform: scale(1.1);
+    }
 
-        .app-h { font-size: 18pt; font-weight: 700; color: var(--text-main); border-left: 6px solid #555; padding-left: 12px; display: block; margin: 25px 0 20px 0; font-family: 'Noto Sans SC'; flex-shrink: 0; width: 100%; }
-        
-        .vocab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px 40px; width: 100%; margin-bottom: 30px; flex-shrink: 0; }
-        .vocab-item { background: #fff; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 5px; display: flex; flex-direction: column; gap: 6px; }
-        .v-line-1 { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-        .v-word { font-family: 'Lora'; font-weight: 700; font-size: 19pt; color: #2c3e50; padding: 0 5px; border-radius: 4px; }
-        .v-idx { background: #333; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 11pt; text-align: center; line-height: 22px; display: inline-block; transform: translateY(-2px); }
-        .v-ipa { font-family: 'Arial'; color: #95a5a6; font-size: 13pt; }
-        .v-mean { font-size: 15pt; color: #444; font-weight: 500; margin-left: auto; }
-        .v-pos { color: var(--theme-color); font-weight: bold; font-family: 'Times New Roman'; font-style: italic; font-size: 13pt; margin-right: 2px;}
-        .v-line-2 { font-size: 14pt; color: #d35400; font-family: 'Roboto Mono'; font-weight: 500; }
-        .v-line-3 { font-size: 14pt; color: #7f8c8d; font-style: italic; font-family: 'Lora'; line-height: 1.4; margin-top: 2px; }
+    .layout-container {
+        position: relative; z-index: 10;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        /* 避让灵动岛和底部横条 */
+        padding: 70px 24px 40px; 
+        box-sizing: border-box;
+        font-family: var(--font-ui); /* 默认UI字体 */
+    }
 
-        .sa-sentence-wrapper { display: flex; flex-wrap: wrap; column-gap: 0; row-gap: 35px; line-height: 1.5; margin-bottom: 25px; padding-top: 10px; align-items: flex-end; width: 100%; }
-        .chunk { display: inline-flex; flex-direction: column; align-items: center; margin: 0; vertical-align: bottom; }
-        .chunk-text { font-family: 'Lora'; font-size: 20pt; color: #2c3e50; padding: 4px 5px; font-weight: 500; border-radius: 0; }
-        .chunk-group { border-bottom: 3px solid #ccc; padding-bottom: 2px; margin: 0 3px; }
-        .chunk-group .chunk-text { padding-bottom: 0; } 
-        .chunk-lbl { font-size: 10pt; font-family: 'Noto Sans SC'; font-weight: 800; margin-top: 4px; white-space: nowrap; width: 100%; text-align: center; height: 15px; }
-        .chunk-lbl:empty { height: 0; margin-top: 0; }
-        .bracket { font-size: 20pt; color: #d35400; font-family: 'Lato'; font-weight: 300; padding: 4px 6px; display: inline-block; }
-        
-        .bg-trunk .chunk-text { background-color: var(--bg-trunk); }
-        .bg-clause-1 .chunk-text { background-color: var(--bg-clause-1); }
-        .bg-clause-1.bracket { background-color: var(--bg-clause-1); }
-        .bg-clause-2 .chunk-text { background-color: var(--bg-clause-2); }
-        .bg-clause-2.bracket { background-color: var(--bg-clause-2); }
-        
-        /* CSS Classes for Grammar Colors (Linked to Labels) */
-        .l-subj { color: var(--t-subj); border-color: var(--t-subj); } 
-        .l-verb { color: var(--t-verb); border-color: var(--t-verb); } 
-        .l-obj { color: var(--t-obj); border-color: var(--t-obj); } 
-        .l-conn { color: var(--t-conn); border-color: var(--t-conn); }
-        .l-mod { color: var(--t-mod); border-color: var(--t-mod); }
+    /* --- 头部区域 --- */
+    .header-group {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 24px;
+        align-items: flex-start;
+    }
 
-        .sa-step-box, .q-card { background: #fdfefe; padding: 20px 25px; border-radius: 8px; border: 1px solid #eee; box-shadow: 2px 2px 8px rgba(0,0,0,0.02); margin-bottom: 12px; width: 100%; }
-        .bd-struct { border-left: 5px solid var(--bd-struct); }
-        .bd-trunk { border-left: 5px solid var(--bd-trunk); background-color: #FDFEFE; }
-        .bd-clause-1 { border-left: 5px solid var(--bd-clause-1); background-color: #FEF9E7; }
-        .bd-clause-2 { border-left: 5px solid var(--bd-clause-2); background-color: #E9F7EF; }
-        .q-card { border-left: 5px solid var(--theme-color); }
-        
-        .sa-trans { font-size: 16pt; color: #444; font-weight: 600; font-style: italic; margin-bottom: 20px; padding: 15px; border: 1px dashed #ccc; border-radius: 8px; width: 100%; background: #fff; }
-        .sa-step { margin-bottom: 12px; font-size: 15pt; color: #555; line-height: 1.6; }
-        .sa-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11pt; margin-right: 10px; font-weight: 800; color: #fff; background: #555; font-family: 'Lato'; text-transform: uppercase; }
+    .book-cover {
+        width: 100px; height: 150px; /* 2:3 */
+        border-radius: 6px;
+        background-image: url('https://images.unsplash.com/photo-1491841550275-ad7854e35ca6?auto=format&fit=crop&w=400&q=80');
+        background-size: cover;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.5); /* 更柔和的投影 */
+        flex-shrink: 0;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
 
-        .q-header { display: flex; align-items: baseline; margin-bottom: 5px; }
-        .q-num { color: var(--theme-color); font-size: 18pt; font-weight: 900; margin-right: 10px; font-family: 'Lato'; }
-        .q-text { font-size: 18pt; color: #2c3e50; font-weight: 600; font-family: 'Lora'; }
-        .q-opts { display: flex; gap: 25px; flex-wrap: wrap; margin-left: 0; margin-top: 5px; }
-        .q-opt { font-size: 15pt; color: #555; font-family: 'Lato'; }
-        .q-blank { border-bottom: 2px solid #333; width: 100px; display: inline-block; }
+    .meta-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding-top: 4px;
+    }
 
-        .footer { margin-top: auto; display: flex; justify-content: space-between; border-top: 1px solid #eee; padding: 0 60px; font-size: 11pt; color: #95a5a6; flex-shrink: 0; height: 70px; align-items: center; width: 100%; box-sizing: border-box; font-family: 'Lato'; }
-        .normal-page .footer { padding: 0; }
-        .footer-right { font-weight: 700; color: #333; }
+    /* Creator Pill - UI 字体 */
+    .creator-pill {
+        align-self: flex-start;
+        display: inline-flex;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        padding: 4px 12px 4px 4px;
+        border-radius: 100px;
+        border: 1px solid rgba(255,255,255,0.15);
+        margin-bottom: 12px;
+    }
+    .creator-avatar {
+        width: 24px; height: 24px; border-radius: 50%;
+        background-image: url('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=60');
+        background-size: cover; margin-right: 8px;
+    }
+    .creator-name {
+        font-size: 13px;
+        font-weight: 600; /* Semibold */
+        letter-spacing: 0.3px; /* 微调间距 */
+        color: rgba(255,255,255,0.95);
+        text-transform: uppercase; /* 大写更具杂志感 */
+        font-size: 11px;
+    }
 
-        #btn-download { position: fixed; bottom: 20px; right: 20px; z-index: 9999; padding: 15px 25px; background: #2c3e50; color: white; border: none; border-radius: 50px; cursor: pointer; font-family: sans-serif; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.2s; }
-        #btn-download:hover { transform: scale(1.05); background: #34495e; }
-        #btn-download:active { transform: scale(0.95); }
-    </style>
+    /* 书名 - UI 字体 Display */
+    .main-title {
+        font-family: var(--font-ui);
+        font-size: 26px; 
+        font-weight: 700; /* Bold */
+        line-height: 1.1;
+        margin-bottom: 6px; 
+        color: #fff;
+        letter-spacing: -0.5px; /* 紧缩间距，更现代 */
+    }
+
+    .sub-title {
+        font-family: var(--font-ui);
+        font-size: 15px; 
+        color: rgba(255,255,255,0.6);
+        font-weight: 400; /* Regular */
+    }
+
+    /* --- 玻璃面板 --- */
+    .glass-panel {
+        flex: 1;
+        background: var(--panel-bg);
+        backdrop-filter: blur(30px);
+        -webkit-backdrop-filter: blur(30px);
+        border-radius: 32px;
+        border: 1px solid var(--border-light);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        /* 内部阴影增加层次 */
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.1); 
+    }
+
+    /* 内容滚动区 */
+    .lyrics-scroll-area {
+        flex: 1;
+        padding: 0 28px; /* 加宽左右边距，呼吸感更好 */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+        text-align: left;
+        /* 遮罩 */
+        mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
+        -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
+    }
+
+    /* 字体排版核心：衬线体 */
+    .lyric-line {
+        font-family: var(--font-content); /* 切换到衬线体 */
+        font-size: 19px; /* 未激活状态字号 */
+        color: rgba(255,255,255,0.4);
+        margin: 14px 0;
+        line-height: 1.5; /* 黄金行高 */
+        transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+        transform-origin: left center;
+        letter-spacing: -0.2px; /* 衬线体通常稍微紧一点更好读 */
+    }
+
+    /* 激活行：视觉绝对重心 */
+    .lyric-line.active {
+        font-size: 30px; /* 放大到 30px */
+        font-weight: 600; /* Semibold for Serif */
+        color: #fff;
+        margin: 28px 0; /* 上下留白，强调地位 */
+        line-height: 1.3; /* 大字行高稍微收紧 */
+        text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+
+    /* 单词级高亮 */
+    .word-highlight {
+        color: var(--highlight-gold);
+        font-style: italic; /* 衬线体的斜体非常优美，这里可以用 */
+        position: relative;
+    }
+    
+    /* 底部功能区 */
+    .panel-footer {
+        height: 72px;
+        border-top: 1px solid rgba(255,255,255,0.06);
+        background: rgba(0,0,0,0.2);
+        display: flex;
+        align-items: center;
+        padding: 0 24px;
+    }
+
+    .waveform-wrapper {
+        flex: 1; height: 24px; display: flex; align-items: center; gap: 4px; position: relative;
+    }
+    
+    .wave-bar {
+        width: 3px; border-radius: 2px;
+        background: rgba(255,255,255,0.1);
+        transition: height 0.3s ease;
+    }
+
+    .wave-fill-overlay {
+        position: absolute; top: 0; left: 0; bottom: 0; width: 55%; overflow: hidden;
+        display: flex; align-items: center; gap: 4px;
+        border-right: 1.5px solid rgba(255,255,255,0.9); /* 指示线变细 */
+    }
+    
+    /* 银色波形 */
+    .wave-bar-lit {
+        width: 3px; border-radius: 2px;
+        background: var(--silver-wave);
+    }
+
+    .btn-fullscreen {
+        width: 44px; height: 44px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.05);
+        display: flex; justify-content: center; align-items: center;
+        margin-left: 20px;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+</style>
 </head>
 <body>
-<div id="status-bar"></div>
-<div id="loading-mask">
-    <div class="spinner"></div>
-    <div>Generating Content...</div>
+
+<div class="phone-mockup">
+    <div class="dynamic-island-area"></div>
+    
+    <div class="bg-layer"></div>
+
+    <div class="layout-container">
+        
+        <div class="header-group">
+            <div class="book-cover"></div>
+            <div class="meta-info">
+                <div class="creator-pill">
+                    <div class="creator-avatar"></div>
+                    <span class="creator-name">Morning Reader</span>
+                </div>
+                <div class="main-title">Learning to Live with Complexity</div>
+                <div class="sub-title">Chapter 1: The Systems View</div>
+            </div>
+        </div>
+
+        <div class="glass-panel">
+            <div class="lyrics-scroll-area">
+                <div class="lyric-line">Simple systems are easy to define.</div>
+                
+                <div class="lyric-line active">
+                    But <span class="word-highlight">complex</span> systems are characterized by...
+                </div>
+                
+                <div class="lyric-line">unpredictability and emergence.</div>
+                <div class="lyric-line" style="opacity:0.25">Everything is connected.</div>
+            </div>
+
+            <div class="panel-footer">
+                <div class="waveform-wrapper">
+                    <div id="wave-base" style="display:flex; gap:4px; align-items:center; width:100%;"></div>
+                    <div class="wave-fill-overlay">
+                        <div id="wave-lit" style="display:flex; gap:4px; align-items:center; width:260px;"></div>
+                    </div>
+                </div>
+
+                <div class="btn-fullscreen">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    
+    <div class="safe-area-bottom"></div>
 </div>
-<button id="btn-download" onclick="downloadAllPages()">📸 Save Pages</button>
-<div id="card-container"></div>
-<input type="file" id="upload-trigger" style="display:none" onchange="loadFile(event)">
 
 <script>
-    window.onerror = function(message, source, lineno, colno, error) {
-        document.getElementById('loading-mask').style.display = 'none';
-        document.getElementById('status-bar').style.display = 'block';
-        document.getElementById('status-bar').innerText = "System Error: " + message;
-    };
-
-    const META = { 
-        issue: "17 January 2026", 
-        title: "The Story of a Buttery Breakfast Treat", 
-        subtitle: "黄油酥皮的美味传奇", 
-        themeColor: "#E67E22" 
-    };
+    const baseContainer = document.getElementById('wave-base');
+    const litContainer = document.getElementById('wave-lit');
     
-    const MAIN_CONTENT = [
-        { eng: "Croissants are a classic, <span class='hl hl-adj'>crescent</span><sup>①</sup>-shaped French <span class='hl hl-n'>pastry</span><sup>②</sup>.", chi: "牛角包是一种经典的<span class='hl hl-adj'>新月</span><sup>①</sup>形法式<span class='hl hl-n'>糕点</span><sup>②</sup>。" },
-        { eng: "Find out how they became a <span class='hl hl-n'>staple</span><sup>③</sup> in bakeries, cafes, and homes around the globe.", chi: "一起来看看它们是如何成为全球面包店、咖啡馆和家庭中的<span class='hl hl-n'>主食</span><sup>③</sup>的。" },
-        { eng: "<strong>What’s a croissant?</strong> A croissant is a buttery, <span class='hl hl-adj'>flaky</span><sup>④</sup> pastry made from flour, butter, water, milk, sugar, salt, and <span class='hl hl-n'>yeast</span><sup>⑤</sup>.", chi: "<strong>什么是牛角包？</strong> 牛角包是一种充满黄油香气、<span class='hl hl-adj'>分层掉渣的</span><sup>④</sup>糕点，由面粉、黄油、水、牛奶、糖、盐和<span class='hl hl-n'>酵母</span><sup>⑤</sup>制成。" },
-        { eng: "The ingredients may be simple, but making croissants is complex and <span class='hl hl-adj'>time-consuming</span><sup>⑥</sup>.", chi: "原料虽然简单，但制作牛角包的过程却复杂且<span class='hl hl-adj'>耗时</span><sup>⑥</sup>。" },
-        { eng: "Cold butter is first layered between sheets of <span class='hl hl-n'>dough</span><sup>⑦</sup> in a process called <span class='hl hl-n'>lamination</span><sup>⑧</sup>.", chi: "首先，冷黄油被夹在<span class='hl hl-n'>面团</span><sup>⑦</sup>层之间，这个过程被称为<span class='hl hl-n'>开酥（起层）</span><sup>⑧</sup>。" },
-        { eng: "The dough is then cut into triangles and typically rolled by hand into crescent shapes from the broad end to the pointy tip.", chi: "然后将面团切成三角形，通常用手从宽的一端卷向尖端，卷成新月形状。" },
-        { eng: "During baking, water in the butter turns to steam, separating the layers and giving the croissant its puffy, flaky <span class='hl hl-n'>texture</span><sup>⑨</sup>.", chi: "在烘烤过程中，黄油中的水分变成蒸汽，将面层分离，赋予牛角包蓬松、分层的<span class='hl hl-n'>质地</span><sup>⑨</sup>。" },
-        { eng: "<strong>History of croissants.</strong> The modern croissant was inspired by the kipfel (or kipferl), an Austrian crescent-shaped baked good dating to the <span class='hl hl-adj'>medieval</span><sup>⑩</sup> period.", chi: "<strong>牛角包的历史。</strong> 现代牛角包的灵感来自 kipfel（或 kipferl），这是一种可追溯到<span class='hl hl-adj'>中世纪</span><sup>⑩</sup>时期的奥地利新月形烘焙食品。" },
-        { eng: "It was made with butter or lard and sometimes included almonds.", chi: "它是由黄油或猪油制成的，有时还包含杏仁。" },
-        { eng: "The kipfel was not flaky or layered, however, and depending on the recipe, it <span class='hl hl-v'>resembled</span><sup>⑪</sup> a cookie or a roll.", chi: "然而，kipfel 并不分层或掉渣，根据食谱的不同，它<span class='hl hl-v'>像</span><sup>⑪</sup>饼干或面包卷。" },
-        { eng: "In the 1830s, an Austrian man named August Zang opened a Viennese bakery in Paris, France.", chi: "19世纪30年代，一位名叫奥古斯特·藏的奥地利人在法国巴黎开了一家维也纳面包店。" },
-        { eng: "Parisian bakers were inspired by his kipfel recipe and adapted it to create the lighter, flakier croissants we know today.", chi: "巴黎的面包师受他的 kipfel 食谱启发，对其进行了改良，创造出了我们今天熟知的更轻盈、更酥脆的牛角包。" },
-        { eng: "<strong>Rising in popularity.</strong> The first modern French croissant recipe, featuring the lamination method, is often credited to a 1915 French cookbook by chef Sylvain Claudius Goy.", chi: "<strong>日益流行。</strong> 第一个采用开酥法的现代法式牛角包食谱，通常被认为出自厨师西尔万·克劳迪乌斯·戈伊于1915年出版的一本法国食谱。" },
-        { eng: "During the 20th century, croissants became a staple of French breakfasts and joined the country’s other <span class='hl hl-adj'>culinary</span><sup>⑫</sup> influences that were spreading around the world.", chi: "在20世纪，牛角包成为了法式早餐的主食，并加入了该国向世界各地传播的其他<span class='hl hl-adj'>烹饪</span><sup>⑫</sup>影响之列。" },
-        { eng: "In 1963, cookbook author and TV host Julia Child demonstrated how to make croissants on her popular show, <em>The French Chef</em>, demystifying a complex pastry for home cooks.", chi: "1963年，食谱作者兼电视主持人朱莉娅·蔡尔德在她受欢迎的节目《法式大厨》中演示了如何制作牛角包，为家庭烹饪者揭开了这种复杂糕点的神秘面纱。" },
-        { eng: "The mass production of croissants in the 1970s made them available in more places.", chi: "20世纪70年代牛角包的大规模生产使其在更多地方得以销售。" },
-        { eng: "In 1981, the food brand Sara Lee introduced frozen croissant dough, making it easier for people to bake the pastries at home.", chi: "1981年，食品品牌莎莉集团推出了冷冻牛角包面团，使人们更容易在家烘焙这种糕点。" },
-        { eng: "<strong>Innovative ideas.</strong> In the 2010s, chefs began experimenting with croissants, introducing two-color and rainbow varieties.", chi: "<strong>创意点子。</strong> 在21世纪10年代，厨师们开始对牛角包进行实验，推出了双色和彩虹品种。" },
-        { eng: "There was also a wave of new <span class='hl hl-n'>hybrid</span><sup>⑬</sup> croissant shapes.", chi: "还出现了一波新的<span class='hl hl-n'>混合</span><sup>⑬</sup>牛角包形状。" },
-        { eng: "Cube croissants, made from a square mold, were created in 2018. Today, there are croissants in creative flavors ranging from pumpkin pie to matcha.", chi: "方块牛角包于2018年问世，由方形模具制成。如今，有各种创意口味的牛角包，从南瓜派到抹茶味应有尽有。" },
-        { eng: "Bakeries also sell croissants with fillings including berry glaze, pistachio sauce, chocolate ganache, lychee, and pulled pork.", chi: "面包店还出售带有浆果糖衣、开心果酱、巧克力甘纳许、荔枝和手撕猪肉等馅料的牛角包。" },
-        { eng: "A new US trend imported from South Korea is flat croissants, in which the classic pastry is pressed flat and then pan-fried.", chi: "从韩国传入美国的一个新趋势是扁平牛角包，即把这种经典糕点压扁后进行煎制。" },
-        { type: 'supp', eng: "<h3>Did you know?</h3>The word 'croissant' translates to 'crescent' or 'crescent moon' in French.", chi: "<strong>你知道吗？</strong> “Croissant”一词在法语中意为“新月”或“月牙”。" },
-        { type: 'supp', eng: "<h3>Bigger is Better</h3>One type of croissant sold at bakeries in Paris and London measures about 18 inches long and weighs more than 3 pounds.", chi: "<strong>越大越好</strong> 巴黎和伦敦的面包店出售一种长约18英寸、重达3磅多的牛角包。" },
-        { type: 'supp', eng: "<h3>Croissant Hybrids</h3><strong>Cronut:</strong> This cross between a croissant and a donut was created by a French pastry chef. It’s rolled in sugar and filled with cream, then glazed.", chi: "<strong>牛角甜甜圈：</strong> 这种牛角包和甜甜圈的结合体由一位法国糕点师创造。它裹着糖，内填奶油，表面淋有糖霜。" },
-        { type: 'supp', eng: "<strong>Cruffin:</strong> Originating in Australia, this hybrid pastry is made by baking the ingredients of a croissant in a muffin tin, resulting in a mushroom shape.", chi: "<strong>牛角芬：</strong> 起源于澳大利亚，这种混合糕点是将牛角包的原料放入玛芬烤盘中烘烤而成，呈蘑菇状。" },
-        { type: 'supp', eng: "<strong>Crookie:</strong> A viral sensation from a Parisian bakery, the crookie is made by stuffing and topping a classic croissant with rich chocolate chip cookies.", chi: "<strong>牛角曲奇：</strong> 源自巴黎一家面包店的网红产品，是在经典牛角包中填充并覆盖浓郁的巧克力曲奇制成的。" },
-        { type: 'supp', eng: "<strong>Croffle:</strong> The croffle was first made popular in Seoul, South Korea. Croissant dough is pressed in a waffle iron until the result is golden and crispy.", chi: "<strong>牛角华夫：</strong> 最早在韩国首尔流行。将牛角包面团压在华夫饼机中，直至金黄酥脆。" }
-    ];
-    
-    const VOCAB_LIST = [
-        { w: "crescent", p: "n.", m: "新月; 月牙", ipa: "ˈkresnt", c: "crescent-shaped", e: "The moon was a crescent." },
-        { w: "pastry", p: "n.", m: "糕点; 酥皮点心", ipa: "ˈpeɪstri", c: "French pastry", e: "She loves flaky pastry." },
-        { w: "staple", p: "n.", m: "主食; 主要产品", ipa: "ˈsteɪpl", c: "staple food", e: "Rice is a staple in Asia." },
-        { w: "flaky", p: "adj.", m: "薄片的; 易剥落的", ipa: "ˈfleɪki", c: "flaky texture", e: "The pie crust is flaky." },
-        { w: "yeast", p: "n.", m: "酵母", ipa: "jiːst", c: "baker's yeast", e: "Yeast makes bread rise." },
-        { w: "time-consuming", p: "adj.", m: "耗时的", ipa: "ˈtaɪm kənˌsuːmɪŋ", c: "a time-consuming task", e: "Writing is time-consuming." },
-        { w: "dough", p: "n.", m: "面团", ipa: "dəʊ", c: "bread dough", e: "Knead the dough well." },
-        { w: "lamination", p: "n.", m: "层压; 开酥", ipa: "ˌlæmɪˈneɪʃn", c: "lamination process", e: "Lamination creates layers." },
-        { w: "texture", p: "n.", m: "质地; 口感", ipa: "ˈtekstʃər", c: "smooth texture", e: "I like the texture of silk." },
-        { w: "medieval", p: "adj.", m: "中世纪的", ipa: "ˌmediˈiːvl", c: "medieval history", e: "A medieval castle." },
-        { w: "resemble", p: "v.", m: "像; 类似", ipa: "rɪˈzembl", c: "resemble closely", e: "She resembles her mother." },
-        { w: "culinary", p: "adj.", m: "烹饪的", ipa: "ˈkʌlɪnəri", c: "culinary skills", e: "He is a culinary expert." },
-        { w: "hybrid", p: "n.", m: "混合物; 杂交品种", ipa: "ˈhaɪbrɪd", c: "hybrid car", e: "A mule is a hybrid animal." }
-    ];
-    
-    // [Audit 3: Syntax Localization - REVISED]
-    // Rule: txt displays GRAMMAR LABEL (in Chinese), w is English. No translation.
-    const SA_CHUNKS = [
-        { t: 'chunk', w: 'During baking,', txt: '时间状语' },
-        { t: 'chunk-group bg-trunk l-subj', w: 'water', txt: '主语' },
-        { t: 'chunk bracket l-mod', w: '(in the butter)', txt: '定语' },
-        { t: 'chunk-group bg-trunk l-verb', w: 'turns to', txt: '谓语' },
-        { t: 'chunk-group bg-trunk l-obj', w: 'steam,', txt: '宾语' },
-        { t: 'chunk-group bg-clause-1', w: 'separating', txt: '伴随状语' },
-        { t: 'chunk-group bg-clause-1', w: 'the layers', txt: '宾语' },
-        { t: 'chunk l-conn', w: 'and', txt: '连词' },
-        { t: 'chunk-group bg-clause-2', w: 'giving', txt: '伴随状语' },
-        { t: 'chunk-group bg-clause-2', w: 'the croissant', txt: '间接宾语' },
-        { t: 'chunk-group bg-clause-2', w: 'its puffy, flaky texture.', txt: '直接宾语' }
-    ];
-
-    const SA_TRANS = "在烘烤过程中，黄油中的水分变成蒸汽，从而将面团分层，并赋予牛角包蓬松、酥脆的质地。";
-
-    const SA_STEPS = [
-        { type: 'bd-trunk', label: '主句骨干', text: 'Water turns to steam. (主语 + 谓语 + 宾语)' },
-        { type: 'bd-struct', label: '句型判断', text: '简单句 + 两个并列的现在分词短语作状语' },
-        { type: 'bd-clause-1', label: '伴随状语1', text: 'separating the layers (现在分词 separating 及其宾语)' },
-        { type: 'bd-clause-2', label: '伴随状语2', text: 'giving the croissant its... texture (giving + 间接宾语 + 直接宾语)' }
-    ];
-
-    const QUIZ_ITEMS = [
-        { q: "What does the word 'croissant' mean in French?", a: "<span class='q-opt'>A. Butter bread</span><span class='q-opt'>B. Crescent moon</span><span class='q-opt'>C. Sweet roll</span>" },
-        { q: "Which country inspired the modern croissant?", a: "<span class='q-opt'>A. France</span><span class='q-opt'>B. Austria</span><span class='q-opt'>C. USA</span>" },
-        { q: "What process creates the layers in a croissant?", a: "<span class='q-opt'>A. Fermentation</span><span class='q-opt'>B. Lamination</span><span class='q-opt'>C. Boiling</span>" }
-    ];
-
-    function render() {
-        let cardIdx = 1;
-        let currentCard;
-        let container;
-        const SAFE_BOTTOM = 1340; 
-
-        function createNewPage() {
-            cardIdx++; 
-            currentCard = createNormalPage(cardIdx);
-            document.getElementById('card-container').appendChild(currentCard);
-            container = currentCard.querySelector('.content-body');
-        }
-
-        function checkAndMove(el, limit) {
-            const rect = el.getBoundingClientRect();
-            const cardTop = currentCard.getBoundingClientRect().top;
-            if ((rect.bottom - cardTop) > limit) {
-                container.removeChild(el); 
-                createNewPage(); 
-                container.appendChild(el);
-            }
-        }
-
-        function appendWithCheck(el) {
-            container.appendChild(el);
-            checkAndMove(el, SAFE_BOTTOM);
-        }
-
-        try {
-            document.documentElement.style.setProperty('--theme-color', META.themeColor);
-            const root = document.getElementById('card-container');
-            
-            // Initial Page
-            currentCard = createCoverPage();
-            root.appendChild(currentCard);
-            container = currentCard.querySelector('.content-body');
-
-            // 1. Content
-            MAIN_CONTENT.forEach(item => {
-                const row = createContentRow(item);
-                container.appendChild(row);
-                checkAndMove(row, SAFE_BOTTOM);
-            });
-
-            // Appendix Start
-            createNewPage();
-
-            // 2. Vocab
-            appendWithCheck(createTitle('中考高频词汇 (Vocab)'));
-            let grid = document.createElement('div'); grid.className = 'vocab-grid';
-            container.appendChild(grid);
-            VOCAB_LIST.forEach((v, i) => {
-                const item = createVocabItem(v, i+1); grid.appendChild(item);
-                if ((grid.getBoundingClientRect().bottom - currentCard.getBoundingClientRect().top) > SAFE_BOTTOM) {
-                    grid.removeChild(item); 
-                    createNewPage();
-                    grid = document.createElement('div'); grid.className = 'vocab-grid';
-                    container.appendChild(grid); grid.appendChild(item);
-                }
-            });
-
-            // 3. Sentence Analysis
-            appendWithCheck(createTitle('长难句分析 (Sentence Analysis)'));
-            let saWrapper = document.createElement('div'); saWrapper.className = 'sa-sentence-wrapper';
-            container.appendChild(saWrapper);
-            
-            // Updated Rendering Logic for SA_CHUNKS
-            SA_CHUNKS.forEach(chunk => {
-                let el = createSaChunk(chunk);
-                if (el) { 
-                    saWrapper.appendChild(el);
-                    if ((saWrapper.getBoundingClientRect().bottom - currentCard.getBoundingClientRect().top) > SAFE_BOTTOM) {
-                        saWrapper.removeChild(el); 
-                        createNewPage();
-                        saWrapper = document.createElement('div'); saWrapper.className = 'sa-sentence-wrapper';
-                        container.appendChild(saWrapper); saWrapper.appendChild(el);
-                    }
-                }
-            });
-
-            const transEl = document.createElement('div'); transEl.className = 'sa-trans'; transEl.innerHTML = SA_TRANS;
-            appendWithCheck(transEl);
-
-            SA_STEPS.forEach(step => { appendWithCheck(createSaStep(step)); });
-
-            // 4. Quiz
-            appendWithCheck(createTitle('趣闻挑战 (Little Quiz)'));
-            QUIZ_ITEMS.forEach((q, i) => {
-                const qCard = document.createElement('div'); qCard.className = 'q-card';
-                qCard.innerHTML = `<div class="q-header"><div class="q-num">${i+1}</div><div class="q-text">${q.q}</div></div><div class="q-opts">${q.a}</div>`;
-                appendWithCheck(qCard);
-            });
-
-            updateFooters(cardIdx);
-            document.getElementById('loading-mask').style.display = 'none';
-
-        } catch(e) {
-            console.error(e);
-            alert("Error: " + e.message);
-        }
-    }
-
-    // --- Generators ---
-    function createCoverPage() {
-        const d = document.createElement('div'); d.className = 'card cover-page';
-        d.innerHTML = `<div class="hero-section" onclick="document.getElementById('upload-trigger').click()"><img id="hero-img" class="hero-img"><div class="hero-placeholder" id="hero-txt">Tap to Upload Cover</div></div><div class="cover-header"><div class="meta-tag">${META.issue}</div><div class="poster-title">${META.title}</div><div class="poster-subtitle">${META.subtitle}</div></div><div class="content-body" style="padding:0 60px;"></div><div class="footer"><span class="footer-left">Designed for Educational Purpose</span><span class="footer-right page-num"></span></div>`;
-        return d;
-    }
-    function createNormalPage(idx) {
-        const d = document.createElement('div'); d.className = 'card normal-page';
-        d.innerHTML = `<header class="mini-header"><div class="mini-title">${META.title}</div><div class="continued-tag">Continued...</div></header><div class="content-body"></div><div class="footer"><span class="footer-left">Designed for Educational Purpose</span><span class="footer-right page-num"></span></div>`;
-        return d;
-    }
-    function createContentRow(item) {
-        const d = document.createElement('div'); d.className = 'row';
-        if (item.type === 'supp') d.classList.add('supp-style');
-        d.innerHTML = `<div class="col-eng">${item.eng}</div><div class="col-chi">${item.chi}</div>`;
-        return d;
-    }
-    function createTitle(text) { const d = document.createElement('div'); d.className = 'app-h'; d.innerText = text; return d; }
-    
-    function createVocabItem(v, idx) {
-        let bgClass = '';
-        if (v.p.includes('n.')) bgClass = 'hl-n';
-        else if (v.p.includes('v.')) bgClass = 'hl-v';
-        else if (v.p.includes('adj') || v.p.includes('adv')) bgClass = 'hl-adj';
-        const d = document.createElement('div'); d.className = 'vocab-item';
-        d.innerHTML = `<div class="v-line-1"><span class="v-word ${bgClass}">${v.w}</span><span class="v-idx">${idx}</span><span class="v-ipa">[${v.ipa}]</span><span class="v-pos">${v.p}</span><span class="v-mean">${v.m}</span></div><div class="v-line-2">${v.c}</div><div class="v-line-3">"${v.e}"</div>`;
-        return d;
-    }
-    
-    function createSaChunk(c) {
-        if (!c || !c.w) return null;
-        const d = document.createElement('div'); d.className = `chunk ${c.t}`;
-        // Apply color based on class in c.t
-        if (c.t.includes('l-')) {
-            const match = c.t.match(/l-([a-z]+)/);
-            if (match) {
-               // Logic handled by CSS classes .l-subj etc
-            }
-        }
+    // 生成更细腻的波形 (更多条数，更细)
+    for(let i=0; i<50; i++) { 
+        let randomFactor = Math.random() * 6;
+        let sineFactor = Math.sin(i / 6) * 5 + 8; 
+        let h = Math.max(4, sineFactor + randomFactor);
         
-        // Use c.txt as the label (Chinese Grammar Term)
-        const labelText = c.txt ? c.txt : '';
-        const wordText = c.w;
-        
-        // Determine label color class based on c.t containing l-xxx
-        let labelClass = '';
-        if (c.t.includes('l-subj')) labelClass = 'l-subj';
-        else if (c.t.includes('l-verb')) labelClass = 'l-verb';
-        else if (c.t.includes('l-obj')) labelClass = 'l-obj';
-        else if (c.t.includes('l-conn')) labelClass = 'l-conn';
-        else if (c.t.includes('l-mod')) labelClass = 'l-mod';
-        
-        d.innerHTML = `<span class="chunk-lbl ${labelClass}">${labelText}</span><span class="chunk-text">${wordText}</span>`;
-        return d;
-    }
-    
-    function createSaStep(s) {
-        const d = document.createElement('div'); d.className = `sa-step-box ${s.type}`;
-        d.innerHTML = `<div class="sa-step"><span class="sa-tag">${s.label}</span>${s.text}</div>`;
-        return d;
-    }
-    function updateFooters(total) { document.querySelectorAll('.page-num').forEach((el, i) => el.innerText = `Page ${i+1}/${total}`); }
-    
-    async function downloadAllPages() {
-        const btn = document.getElementById('btn-download');
-        const originalText = btn.innerText;
-        btn.innerText = "Processing...";
-        btn.disabled = true;
-        try {
-            const cards = document.querySelectorAll('.card');
-            for (let i = 0; i < cards.length; i++) {
-                const canvas = await html2canvas(cards[i], { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
-                const link = document.createElement('a');
-                link.download = `TheWeekJunior_Page_${i + 1}.png`;
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-                await new Promise(r => setTimeout(r, 500));
-            }
-        } catch (e) { alert("Error: " + e.message); } 
-        finally { btn.innerText = originalText; btn.disabled = false; }
-    }
+        let b = document.createElement('div');
+        b.className = 'wave-bar';
+        b.style.height = h + 'px';
+        baseContainer.appendChild(b);
 
-    window.loadFile = function(e) { document.getElementById('hero-img').src = URL.createObjectURL(e.target.files[0]); document.getElementById('hero-img').style.display='block'; document.getElementById('hero-txt').style.display='none'; };
-    window.onload = render;
+        let l = document.createElement('div');
+        l.className = 'wave-bar-lit';
+        l.style.height = h + 'px';
+        litContainer.appendChild(l);
+    }
 </script>
+
 </body>
 </html>
