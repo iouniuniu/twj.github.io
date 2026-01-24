@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Pro Immersive Player - Smart Edition</title>
+<title>Pro Immersive Player - Feedback Fix</title>
 <style>
     :root {
         --highlight-gold: #FFD700;
@@ -22,19 +22,15 @@
     }
 
     /* --- 0. 背景层系统 --- */
-    /* 容器：确保裁剪 */
     .bg-container { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
     
-    /* 图片层：添加过渡效果 */
     #bg-layer {
         position: absolute; inset: 0;
         background-size: cover; background-position: center;
         filter: blur(35px); transform: scale(1.1);
         transition: background-image 0.6s ease-in-out;
-        will-change: transform, filter;
     }
     
-    /* 遮罩组 */
     .mask-dimmer { position: absolute; inset: 0; background: rgba(0,0,0,0.35); z-index: 1; mix-blend-mode: multiply; pointer-events: none;}
     .mask-vignette {
         position: absolute; inset: 0; z-index: 2; pointer-events: none;
@@ -86,114 +82,111 @@
         display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
 
-    /* --- 2. 歌词滚动 (绝对居中) --- */
+    /* --- 2. 歌词滚动 --- */
     #lyrics-scroll-container {
         position: absolute; inset: 0; z-index: 15;
         overflow-y: auto; scrollbar-width: none; scroll-behavior: smooth;
-        /* Padding 50vh 保证首尾行都能居中 */
         padding-top: 50vh; padding-bottom: 50vh;
         display: flex; flex-direction: column; align-items: center;
         mask-image: linear-gradient(to bottom, transparent 0%, black 25%, black 75%, transparent 100%);
         -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 25%, black 75%, transparent 100%);
     }
-    #lyrics-scroll-container::-webkit-scrollbar { display: none; }
 
     .lyric-line {
-        width: 100%; max-width: 90%;
-        text-align: left; 
-        padding: 12px 20px;
-        font-family: var(--font-content);
-        font-size: 20px; color: rgba(255,255,255,0.45);
-        line-height: 1.6;
-        transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        transform-origin: left center;
-        /* 默认每行也有轻微阴影 */
-        text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+        width: 100%; max-width: 90%; text-align: left; padding: 12px 20px;
+        font-family: var(--font-content); font-size: 20px; color: rgba(255,255,255,0.45);
+        line-height: 1.6; transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        transform-origin: left center; text-shadow: 0 1px 2px rgba(0,0,0,0.8);
     }
-
-    /* 激活行 */
     .lyric-line.active {
         font-size: 28px; font-weight: 600; color: #fff;
-        text-shadow: 0 4px 15px rgba(0,0,0,0.8); /* 强阴影 */
-        margin: 24px 0; /* 拉开间距 */
-        opacity: 1;
+        text-shadow: 0 4px 15px rgba(0,0,0,0.8); margin: 24px 0; opacity: 1;
     }
+    .word.highlight { color: var(--highlight-gold); font-style: italic; text-shadow: 0 0 20px rgba(255, 215, 0, 0.6); }
 
-    .word { transition: color 0.15s; position: relative; }
-    .word.highlight { 
-        color: var(--highlight-gold); font-style: italic;
-        text-shadow: 0 0 20px rgba(255, 215, 0, 0.6); /* 金色光晕 */
-    }
-
-    /* --- 3. 底部与全屏按钮 --- */
+    /* --- 3. 底部功能区 --- */
     .footer-section {
-        position: absolute; bottom: 0; left: 0; right: 0;
-        height: 100px;
+        position: absolute; bottom: 0; left: 0; right: 0; height: 100px;
         padding-bottom: max(20px, env(safe-area-inset-bottom));
         padding-left: 24px; padding-right: 24px;
         display: flex; align-items: center; justify-content: space-between;
         z-index: 20;
     }
-
-    .waveform-box {
-        flex: 1; height: 32px; display: flex; align-items: center; gap: 4px;
-        opacity: 0.8; mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-    }
-    .wave-bar {
-        flex: 1; background: rgba(255,255,255,0.15); border-radius: 2px;
-        height: 10%; transition: height 0.1s; min-width: 2px;
-    }
+    .waveform-box { flex: 1; height: 32px; display: flex; align-items: center; gap: 4px; opacity: 0.8; }
+    .wave-bar { flex: 1; background: rgba(255,255,255,0.15); border-radius: 2px; height: 10%; transition: height 0.1s; min-width: 2px; }
     .wave-bar.active { background: var(--silver-wave); box-shadow: 0 0 8px rgba(255,255,255,0.4); }
 
-    /* 全屏按钮：关键修复 */
     #btn-immersive {
-        flex-shrink: 0; /* 禁止被压缩 */
-        width: 52px; height: 52px; border-radius: 50%;
-        background: rgba(255,255,255,0.1); /* 加深背景 */
-        backdrop-filter: blur(12px);
+        flex-shrink: 0; width: 52px; height: 52px; border-radius: 50%;
+        background: rgba(255,255,255,0.1); backdrop-filter: blur(12px);
         border: 1px solid rgba(255,255,255,0.25);
         display: flex; justify-content: center; align-items: center;
-        margin-left: 24px; cursor: pointer;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        transition: transform 0.2s, background 0.2s;
+        margin-left: 24px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
-    #btn-immersive:active { transform: scale(0.92); background: rgba(255,255,255,0.2); }
 
-    /* --- 4. 设置面板 --- */
+    /* --- 4. 设置面板 (带预览) --- */
     #setup-trigger {
         position: fixed; top: 12px; left: 12px; z-index: 50;
         padding: 8px 16px; background: rgba(0,0,0,0.6); border-radius: 20px;
         font-size: 13px; font-weight: 600; cursor: pointer;
-        border: 1px solid rgba(255,255,255,0.2);
-        backdrop-filter: blur(5px);
-        transition: opacity 0.3s;
+        border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(5px);
     }
     
     #setup-panel {
-        position: fixed; inset: 0; background: rgba(5,5,5,0.9);
+        position: fixed; inset: 0; background: rgba(10,10,10,0.95);
         backdrop-filter: blur(20px); z-index: 100;
         display: flex; flex-direction: column; padding: 40px 30px;
         transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        overflow-y: auto;
     }
     #setup-panel.show { transform: translateY(0); }
 
-    .setup-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-    .setup-title { font-size: 24px; font-weight: 700; }
-    .btn-close { padding: 8px 20px; background: #333; border-radius: 8px; font-size: 14px; }
+    .setup-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .setup-title { font-size: 22px; font-weight: 700; }
+    .btn-close { padding: 8px 20px; background: #333; border-radius: 8px; font-size: 14px; cursor: pointer;}
     
+    /* 智能上传区 */
     .file-drop-zone {
-        border: 2px dashed #444; border-radius: 12px; padding: 40px;
-        text-align: center; background: #111; margin-bottom: 20px;
-        transition: border-color 0.2s;
+        border: 2px dashed #444; border-radius: 12px; padding: 30px;
+        text-align: center; background: #181818; margin-bottom: 25px;
+        position: relative; transition: all 0.2s;
     }
-    .file-drop-zone.highlight { border-color: var(--highlight-gold); background: #1a1a1a; }
-    .file-hint { color: #888; font-size: 13px; margin-top: 10px; line-height: 1.5; }
+    .file-drop-zone.active { border-color: var(--highlight-gold); background: #222; }
+    .drop-text-main { font-weight: 600; font-size: 16px; margin-bottom: 6px; }
+    .drop-text-sub { color: #888; font-size: 12px; line-height: 1.5; }
+
+    /* 手动微调区 (带预览) */
+    .manual-uploads { border-top: 1px solid #333; padding-top: 20px; }
+    .input-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .input-label { color: #ccc; font-size: 14px; flex: 1; }
     
-    .manual-uploads { border-top: 1px solid #333; padding-top: 20px; margin-top: 10px; }
-    .input-group { margin-bottom: 15px; }
-    .input-label { display: block; color: #888; font-size: 12px; margin-bottom: 6px; }
+    /* 预览缩略图 */
+    .preview-thumb {
+        width: 44px; height: 44px; border-radius: 8px; background: #222;
+        margin-right: 15px; border: 1px solid #555; background-size: cover; background-position: center;
+        display: none; /* 默认隐藏，有图显示 */
+    }
+    .preview-thumb.show { display: block; }
     
-    /* --- 5. 倒计时 & 沉浸状态 --- */
+    /* 自定义文件按钮 */
+    .custom-file-btn {
+        padding: 8px 16px; background: #333; color: white; border-radius: 8px;
+        font-size: 13px; cursor: pointer; border: 1px solid #555;
+        transition: background 0.2s;
+    }
+    .custom-file-btn:active { background: #444; }
+
+    /* 消息提示 Toast */
+    #toast-msg {
+        position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+        background: rgba(255, 215, 0, 0.95); color: black; font-weight: 600;
+        padding: 10px 24px; border-radius: 30px; z-index: 200;
+        opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        font-size: 14px;
+    }
+
+    /* 倒计时 */
     #countdown-overlay {
         position: fixed; inset: 0; background: #000; z-index: 200;
         display: flex; justify-content: center; align-items: center;
@@ -201,7 +194,6 @@
         pointer-events: none; opacity: 0; transition: opacity 0.3s;
     }
 
-    /* 沉浸模式：隐藏多余UI */
     body.immersive #setup-trigger { opacity: 0; pointer-events: none; }
     body.immersive #lyrics-scroll-container::-webkit-scrollbar { display: none; }
 
@@ -218,8 +210,9 @@
 
 <div id="setup-trigger">⚙️ 导入素材</div>
 
+<div id="toast-msg">✅ 更新成功</div>
+
 <div class="app-viewport">
-    
     <div class="header-section">
         <div id="book-cover" style="background-image: url('https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=300&q=80');"></div>
         <div class="meta-info">
@@ -232,188 +225,141 @@
     </div>
 
     <div id="lyrics-scroll-container">
-        <div class="lyric-line" style="text-align:center; opacity:0.5;">等待播放...</div>
+        <div class="lyric-line" style="text-align:center; opacity:0.5;">请导入素材...</div>
     </div>
 
     <div class="footer-section">
         <div class="waveform-box" id="waveform"></div>
         <div id="btn-immersive">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
-            </svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
         </div>
     </div>
-
 </div>
 
 <div id="setup-panel">
     <div class="setup-header">
         <div class="setup-title">导入素材</div>
-        <div class="btn-close" id="btn-close-setup">完成</div>
+        <div class="btn-close" id="btn-close-setup">关闭面板</div>
     </div>
 
     <div class="file-drop-zone" id="drop-zone">
         <div style="font-size: 32px; margin-bottom: 10px;">📂</div>
-        <div style="font-weight: 600; font-size: 16px;">点击选择或拖入所有文件</div>
-        <div class="file-hint">
-            支持智能匹配：同时拖入 mp3 和 json<br>
-            无需手动对应，自动识别<br>
-            (支持格式: .mp3, .json, .jpg, .png)
-        </div>
+        <div class="drop-text-main" id="drop-text-main">批量拖入或点击选择</div>
+        <div class="drop-text-sub">同时选中 mp3, json, jpg<br>系统将自动识别并匹配</div>
         <input type="file" id="file-smart-input" multiple style="position:absolute; inset:0; opacity:0; cursor:pointer;">
     </div>
 
     <div class="manual-uploads">
-        <div class="input-group">
-            <label class="input-label">独立更换背景图 (Background)</label>
-            <input type="file" id="file-bg-manual" accept="image/*">
+        <div style="font-size:12px; color:#666; margin-bottom:15px; font-weight:600;">手动单独替换</div>
+        
+        <div class="input-row">
+            <div style="display:flex; align-items:center;">
+                <div class="preview-thumb" id="prev-bg"></div> <span class="input-label">更换背景图 (Background)</span>
+            </div>
+            <label class="custom-file-btn">
+                选择图片
+                <input type="file" id="file-bg-manual" accept="image/*" style="display:none;">
+            </label>
         </div>
-        <div class="input-group">
-            <label class="input-label">独立更换封面 (Cover)</label>
-            <input type="file" id="file-cover-manual" accept="image/*">
+
+        <div class="input-row">
+            <div style="display:flex; align-items:center;">
+                <div class="preview-thumb" id="prev-cover"></div> <span class="input-label">更换封面 (Cover)</span>
+            </div>
+            <label class="custom-file-btn">
+                选择图片
+                <input type="file" id="file-cover-manual" accept="image/*" style="display:none;">
+            </label>
         </div>
     </div>
 </div>
 
 <div id="countdown-overlay"></div>
-
 <audio id="main-audio" style="display:none;"></audio>
 
 <script>
-    // --- 变量与状态 ---
-    let wordsData = [];     // 扁平化的单词数据
-    let linesData = [];     // 分行后的数据
-    let currentLineId = -1;
-    let isPlaying = false;
-    let countdownTimer = null;
-    
-    // --- DOM 引用 ---
-    const audioEl = document.getElementById('main-audio');
-    const lyricsContainer = document.getElementById('lyrics-scroll-container');
-    const waveformContainer = document.getElementById('waveform');
-    const countdownEl = document.getElementById('countdown-overlay');
+    // --- DOM ---
     const bgLayer = document.getElementById('bg-layer');
     const coverEl = document.getElementById('book-cover');
     const titleEl = document.getElementById('txt-title');
+    const dropTextMain = document.getElementById('drop-text-main');
+    const toastEl = document.getElementById('toast-msg');
+    const prevBg = document.getElementById('prev-bg');
+    const prevCover = document.getElementById('prev-cover');
 
-    // --- 1. 波形动画 ---
-    function initWaveform() {
-        waveformContainer.innerHTML = '';
-        // 根据屏幕宽度生成合适数量的条
-        const count = Math.min(60, window.innerWidth / 8); 
-        for(let i=0; i<count; i++) {
-            let bar = document.createElement('div');
-            bar.className = 'wave-bar';
-            bar.style.height = (Math.random() * 30 + 10) + '%';
-            waveformContainer.appendChild(bar);
-        }
-    }
-    initWaveform();
-
-    function animateWaveform() {
-        if(!isPlaying) return;
-        const bars = document.querySelectorAll('.wave-bar');
-        bars.forEach(bar => {
-            // 模拟波形跳动
-            let h = Math.random() * 80 + 10;
-            bar.style.height = h + '%';
-            if(h > 50) bar.classList.add('active'); else bar.classList.remove('active');
-        });
-        requestAnimationFrame(() => setTimeout(animateWaveform, 80)); // 降频一点更像
+    // 辅助：显示 Toast 提示
+    function showToast(msg) {
+        toastEl.innerText = msg;
+        toastEl.style.opacity = 1;
+        setTimeout(() => toastEl.style.opacity = 0, 2000);
     }
 
-    // --- 2. 新 JSON 解析器 (适配 sentence/words 嵌套结构) ---
+    // --- 1. JSON 解析逻辑 ---
+    let linesData = [];
+    let currentLineId = -1;
+    let isPlaying = false;
+    const lyricsContainer = document.getElementById('lyrics-scroll-container');
+    const audioEl = document.getElementById('main-audio');
+
     function parseAndProcessJSON(json) {
         let rawWords = [];
-
-        // 判断 JSON 格式：是数组还是对象，是直接单词列表还是句子列表
+        // 适配用户提供的嵌套格式
         if (Array.isArray(json)) {
             if (json.length > 0 && json[0].words && Array.isArray(json[0].words)) {
-                // 格式：[{sentence:..., words:[...]}, ...] (用户提供的格式)
-                console.log("Detected Sentence-based JSON");
-                json.forEach(sentence => {
-                    if (sentence.words) {
-                        rawWords = rawWords.concat(sentence.words);
-                    }
-                });
+                json.forEach(sentence => { if (sentence.words) rawWords = rawWords.concat(sentence.words); });
             } else if (json.length > 0 && json[0].word) {
-                // 格式：[{word:..., start:...}, ...] (简单格式)
                 rawWords = json;
             }
         }
-        
-        if (rawWords.length === 0) {
-            alert("JSON 格式无法识别或内容为空");
-            return;
-        }
+        if (rawWords.length === 0) return alert("JSON 格式无法识别");
 
-        // 处理成行 (Lines)
         linesData = [];
         let currentLine = { words: [], start: 0, end: 0, id: 0 };
-        
         rawWords.forEach((w, idx) => {
-            // 修正：确保 start/end 是数字
-            w.start = parseFloat(w.start);
-            w.end = parseFloat(w.end);
-
+            w.start = parseFloat(w.start); w.end = parseFloat(w.end);
             if (currentLine.words.length === 0) currentLine.start = w.start;
             currentLine.words.push(w);
             currentLine.end = w.end;
-
-            // 智能分行逻辑：标点符号 OR 长度限制
+            // 智能分行
             const txt = w.word || "";
             const isEndChar = /[.!?。！？]$/.test(txt.trim());
-            const isTooLong = currentLine.words.length >= 10; // 一行最多10个词
-            
+            const isTooLong = currentLine.words.length >= 10;
             if (isEndChar || isTooLong || idx === rawWords.length - 1) {
                 currentLine.id = linesData.length;
                 linesData.push(currentLine);
                 currentLine = { words: [], start: 0, end: 0, id: 0 };
             }
         });
-
         renderLyrics();
-        console.log(`Parsed ${linesData.length} lines.`);
     }
 
-    // --- 3. 渲染 DOM ---
     function renderLyrics() {
         lyricsContainer.innerHTML = '';
         linesData.forEach(line => {
             const div = document.createElement('div');
             div.className = 'lyric-line';
             div.id = `line-${line.id}`;
-            
             line.words.forEach(w => {
                 const span = document.createElement('span');
                 span.className = 'word';
-                span.innerText = w.word + " "; // 补空格
-                span.dataset.s = w.start;
-                span.dataset.e = w.end;
+                span.innerText = w.word + " ";
+                span.dataset.s = w.start; span.dataset.e = w.end;
                 div.appendChild(span);
             });
             lyricsContainer.appendChild(div);
         });
-        
-        // 增加底部占位，防止最后一行贴底
         const spacer = document.createElement('div');
         spacer.style.height = "50vh";
         lyricsContainer.appendChild(spacer);
     }
 
-    // --- 4. 同步逻辑 (Karaoke Core) ---
     function syncLyrics(time) {
-        // 1. 找行
-        // 稍微放宽一点判定范围 (+0.2s) 避免跳闪
         const activeLine = linesData.find(l => time >= l.start && time < l.end + 0.2);
-        
         if (activeLine && activeLine.id !== currentLineId) {
-            // 移除旧的高亮
             if (currentLineId !== -1) {
                 const old = document.getElementById(`line-${currentLineId}`);
                 if (old) old.classList.remove('active');
             }
-            // 新高亮
             currentLineId = activeLine.id;
             const el = document.getElementById(`line-${activeLine.id}`);
             if (el) {
@@ -421,170 +367,138 @@
                 scrollToCenter(el);
             }
         }
-
-        // 2. 找词 (Word level)
-        // 优化：只在当前激活行或其临近行查找，提升性能
         if (currentLineId !== -1) {
             const lineEl = document.getElementById(`line-${currentLineId}`);
             if (lineEl) {
-                const spans = lineEl.querySelectorAll('.word');
-                spans.forEach(span => {
-                    const s = parseFloat(span.dataset.s);
-                    const e = parseFloat(span.dataset.e);
+                lineEl.querySelectorAll('.word').forEach(span => {
+                    const s = parseFloat(span.dataset.s), e = parseFloat(span.dataset.e);
                     if (time >= s && time < e) span.classList.add('highlight');
-                    // 过了时间是否移除高亮？保留会更有阅读感，这里选择移除以保持精准
-                    else if (time < s || time > e) span.classList.remove('highlight'); 
+                    else if (time < s || time > e) span.classList.remove('highlight');
                 });
             }
         }
     }
-
-    // 绝对居中滚动
+    
     function scrollToCenter(el) {
-        // 计算目标滚动位置：元素中心 - 容器视口中心
-        // 因为容器有 padding-top: 50vh，所以 scrollTop = 0 时，内容顶部在屏幕中心
-        // 元素的 offsetTop 是相对于 padding edge 的
-        
-        const containerH = lyricsContainer.clientHeight;
-        const elTop = el.offsetTop;
-        const elH = el.offsetHeight;
-        
-        // 目标位置：让元素的中心点，对齐视口的中心点
-        // 视口中心点在 scrollTop + containerH/2
-        // 元素的几何中心在 elTop + elH/2
-        
-        // 修正算法：
-        // 这里的 offsetTop 包含了 padding-top (50vh)
-        // 容器中心线 = lyricsContainer.scrollTop + window.innerHeight / 2
-        
-        const targetScroll = elTop + elH / 2 - window.innerHeight / 2;
-        
-        lyricsContainer.scrollTo({
-            top: targetScroll,
-            behavior: 'smooth'
-        });
+        const target = el.offsetTop + el.offsetHeight / 2 - window.innerHeight / 2;
+        lyricsContainer.scrollTo({ top: target, behavior: 'smooth' });
     }
 
-    audioEl.addEventListener('timeupdate', () => {
-        if (isPlaying) syncLyrics(audioEl.currentTime);
-    });
+    audioEl.addEventListener('timeupdate', () => { if(isPlaying) syncLyrics(audioEl.currentTime); });
 
-    // --- 5. 文件处理逻辑 (Smart Match) ---
-    const fileSmartInput = document.getElementById('file-smart-input');
-    const dropZone = document.getElementById('drop-zone');
 
-    // 拖拽高亮
-    ['dragenter', 'dragover'].forEach(e => {
-        dropZone.addEventListener(e, (ev) => { ev.preventDefault(); dropZone.classList.add('highlight'); });
-    });
-    ['dragleave', 'drop'].forEach(e => {
-        dropZone.addEventListener(e, (ev) => { ev.preventDefault(); dropZone.classList.remove('highlight'); });
-    });
+    // --- 2. 文件处理 (修复反馈逻辑) ---
+    // 更新背景 (带预览反馈)
+    function updateBg(file) {
+        const url = URL.createObjectURL(file);
+        // 更新APP背景
+        bgLayer.style.backgroundImage = `url('${url}')`;
+        // 更新面板内预览图
+        prevBg.style.backgroundImage = `url('${url}')`;
+        prevBg.classList.add('show');
+        // 显示提示
+        showToast(`背景已更新`);
+    }
 
-    dropZone.addEventListener('drop', (e) => handleFiles(e.dataTransfer.files));
-    fileSmartInput.addEventListener('change', (e) => handleFiles(e.target.files));
-
-    // 手动独立上传
-    document.getElementById('file-bg-manual').addEventListener('change', e => {
-        if(e.target.files[0]) updateBg(e.target.files[0]);
-    });
-    document.getElementById('file-cover-manual').addEventListener('change', e => {
-        if(e.target.files[0]) updateCover(e.target.files[0]);
-    });
+    // 更新封面 (带预览反馈)
+    function updateCover(file) {
+        const url = URL.createObjectURL(file);
+        // 更新APP封面
+        coverEl.style.backgroundImage = `url('${url}')`;
+        // 更新面板内预览图
+        prevCover.style.backgroundImage = `url('${url}')`;
+        prevCover.classList.add('show');
+        // 显示提示
+        showToast(`封面已更新`);
+    }
 
     function handleFiles(files) {
-        if (!files || files.length === 0) return;
-        
+        if (!files.length) return;
+        let loadedCount = 0;
+
         Array.from(files).forEach(file => {
             const type = file.type;
             const name = file.name.toLowerCase();
-
+            
             if (type.startsWith('audio/') || name.endsWith('.mp3')) {
                 audioEl.src = URL.createObjectURL(file);
-                // 尝试用文件名更新标题 (去除后缀)
                 titleEl.innerText = file.name.replace(/\.[^/.]+$/, "");
-                alert(`已加载音频: ${file.name}`);
+                loadedCount++;
             } 
             else if (type === 'application/json' || name.endsWith('.json')) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    try {
-                        const json = JSON.parse(e.target.result);
-                        parseAndProcessJSON(json);
-                        alert(`已加载脚本: ${file.name}`);
-                    } catch (err) {
-                        alert("JSON 解析失败");
-                    }
+                    try { parseAndProcessJSON(JSON.parse(e.target.result)); loadedCount++; } 
+                    catch(err) { alert("JSON解析失败"); }
                 };
                 reader.readAsText(file);
             } 
             else if (type.startsWith('image/')) {
-                // 如果文件名包含 cover，优先做封面，否则做背景
-                if (name.includes('cover')) {
-                    updateCover(file);
-                } else {
-                    updateBg(file);
-                }
+                if (name.includes('cover') || name.includes('封面')) updateCover(file);
+                else updateBg(file);
+                loadedCount++;
             }
         });
-    }
 
-    function updateBg(file) {
-        bgLayer.style.backgroundImage = `url('${URL.createObjectURL(file)}')`;
-    }
-    function updateCover(file) {
-        coverEl.style.backgroundImage = `url('${URL.createObjectURL(file)}')`;
-    }
-
-    // --- 6. 沉浸模式流程 ---
-    const btnImmersive = document.getElementById('btn-immersive');
-    const setupTrigger = document.getElementById('setup-trigger');
-    const setupPanel = document.getElementById('setup-panel');
-    const btnCloseSetup = document.getElementById('btn-close-setup');
-
-    setupTrigger.onclick = () => setupPanel.classList.add('show');
-    btnCloseSetup.onclick = () => setupPanel.classList.remove('show');
-
-    btnImmersive.onclick = () => {
-        // 进入全屏
-        const elem = document.documentElement;
-        if (elem.requestFullscreen) {
-            elem.requestFullscreen().catch(err => console.log("Fullscreen blocked"));
+        if(loadedCount > 0) {
+            dropTextMain.innerText = `✅ 已加载 ${loadedCount} 个文件`;
+            dropTextMain.style.color = "#4CAF50";
         }
-        
-        // UI 状态
+    }
+
+    // 绑定事件
+    document.getElementById('file-smart-input').addEventListener('change', e => handleFiles(e.target.files));
+    
+    document.getElementById('file-bg-manual').addEventListener('change', e => {
+        if(e.target.files[0]) updateBg(e.target.files[0]);
+    });
+    
+    document.getElementById('file-cover-manual').addEventListener('change', e => {
+        if(e.target.files[0]) updateCover(e.target.files[0]);
+    });
+
+    // --- 3. 沉浸模式 & UI 交互 ---
+    const setupPanel = document.getElementById('setup-panel');
+    document.getElementById('setup-trigger').onclick = () => setupPanel.classList.add('show');
+    document.getElementById('btn-close-setup').onclick = () => setupPanel.classList.remove('show');
+    
+    const waveformContainer = document.getElementById('waveform');
+    for(let i=0; i<40; i++) {
+        let b = document.createElement('div'); b.className='wave-bar';
+        waveformContainer.appendChild(b);
+    }
+    function animateWave() {
+        if(!isPlaying) return;
+        document.querySelectorAll('.wave-bar').forEach(b => {
+            let h = Math.random() * 80 + 10;
+            b.style.height = h + '%';
+            if(h>50) b.classList.add('active'); else b.classList.remove('active');
+        });
+        requestAnimationFrame(() => setTimeout(animateWave, 80));
+    }
+
+    document.getElementById('btn-immersive').onclick = () => {
+        const el = document.documentElement;
+        if(el.requestFullscreen) el.requestFullscreen().catch(()=>{});
         document.body.classList.add('immersive');
-        setupPanel.classList.remove('show'); // 确保面板关闭
+        setupPanel.classList.remove('show');
         
-        // 倒计时
+        const cd = document.getElementById('countdown-overlay');
         let count = 6;
-        countdownEl.style.opacity = 1;
-        countdownEl.innerText = count;
+        cd.style.opacity = 1; cd.innerText = count;
         
-        countdownTimer = setInterval(() => {
+        let timer = setInterval(() => {
             count--;
-            if (count > 0) {
-                countdownEl.innerText = count;
-            } else {
-                clearInterval(countdownTimer);
-                countdownEl.style.opacity = 0;
-                // 开始播放
-                audioEl.currentTime = 0;
-                audioEl.play().catch(e => alert("点击播放失败，请检查浏览器权限"));
-                isPlaying = true;
-                animateWaveform();
+            if(count>0) cd.innerText=count;
+            else {
+                clearInterval(timer);
+                cd.style.opacity=0;
+                audioEl.currentTime=0; 
+                audioEl.play(); 
+                isPlaying=true; animateWave();
             }
         }, 1000);
     };
-
-    // 监听退出全屏，恢复 UI（可选）
-    document.addEventListener('fullscreenchange', () => {
-        if (!document.fullscreenElement) {
-            document.body.classList.remove('immersive');
-            isPlaying = false;
-            audioEl.pause();
-        }
-    });
 
 </script>
 </body>
