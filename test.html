@@ -2,203 +2,249 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Final Design: Super Mask Edition</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Responsive Center Edition</title>
 <style>
     :root {
         --highlight-gold: #FFD700;
         --silver-wave: rgba(255, 255, 255, 0.85);
-        --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, sans-serif;
+        --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Helvetica, sans-serif;
         --font-content: "New York", "Times New Roman", "Songti SC", serif;
+        
+        /* 响应式间距变量 */
+        --spacing-safe-top: env(safe-area-inset-top, 20px);
+        --spacing-safe-bottom: env(safe-area-inset-bottom, 20px);
     }
     
-    body {
-        margin: 0; background-color: #000; -webkit-font-smoothing: antialiased;
-        display: flex; justify-content: center; align-items: center; min-height: 100vh; color: white;
+    html, body {
+        margin: 0; padding: 0; width: 100%; height: 100%;
+        background-color: #000; overflow: hidden; /* 禁止页面滚动 */
+        font-family: var(--font-ui); color: white;
+        -webkit-font-smoothing: antialiased;
     }
 
-    .phone-mockup {
-        width: 393px; height: 852px; background: #000; position: relative; overflow: hidden;
-        border-radius: 55px; box-shadow: 0 0 0 10px #1a1a1a, 0 0 0 12px #333;
+    /* 全屏容器：直接作为视口 */
+    .app-viewport {
+        position: relative;
+        width: 100%; 
+        height: 100dvh; /* 这里的 dvh 适配了移动端动态地址栏 */
+        display: flex;
+        flex-direction: column;
+        z-index: 10;
     }
-    .dynamic-island-area { position: absolute; top: 0; left: 0; right: 0; height: 54px; z-index: 100; pointer-events: none; }
-    .safe-area-bottom { position: absolute; bottom: 0; left: 0; right: 0; height: 34px; z-index: 100; }
 
-    /* --- 0. 原始图像层 --- */
-    /* 模拟一张非常亮、非常杂乱的图片来测试遮罩效果 */
-    .bg-image-layer {
+    /* --- 0. 背景与遮罩系统 (Super Mask) --- */
+    .bg-layer {
         position: absolute; inset: 0;
-        /* 换了一张更亮、更复杂的图进行压力测试 */
         background-image: url('https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=800&q=80');
-        background-size: cover;
-        background-position: center;
-        /* 只做模糊，不做亮度调整，把亮度控制权交给遮罩层 */
-        filter: blur(35px);
-        transform: scale(1.1);
-        z-index: 0;
+        background-size: cover; background-position: center;
+        filter: blur(30px); transform: scale(1.1); z-index: 0;
+    }
+    .mask-dimmer { position: absolute; inset: 0; background: rgba(0,0,0,0.4); z-index: 1; mix-blend-mode: multiply; }
+    .mask-vignette {
+        position: absolute; inset: 0; z-index: 2;
+        background: radial-gradient(circle at 50% 40%, transparent 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0.9) 100%);
+    }
+    .mask-anchor {
+        position: absolute; bottom: 0; left: 0; right: 0; height: 60%; z-index: 3;
+        background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 50%, transparent 100%);
+        pointer-events: none;
     }
 
-    /* ====== THE SUPER MASK SYSTEM (超级遮罩系统) ====== */
-    
-    /* 层 1: 全局压暗 (Global Dimmer) */
-    /* 作用：像墨镜一样，把整体亮度降下来，防止刺眼 */
-    .mask-layer-dimmer {
-        position: absolute; inset: 0;
-        background: rgba(0, 0, 0, 0.45); /* 45% 的纯黑压盖 */
-        z-index: 1; pointer-events: none;
-        mix-blend-mode: multiply; /* 正片叠底让暗部更深邃 */
+    /* --- 1. 头部区域 (Header) --- */
+    /* 高度自适应，占比约 25-30% */
+    .header-section {
+        flex: 0 0 auto; /* 不伸缩 */
+        padding-top: calc(var(--spacing-safe-top) + 2vh);
+        padding-left: 6vw; padding-right: 6vw;
+        display: flex; gap: 4vw; align-items: flex-start;
+        z-index: 10;
+        margin-bottom: 2vh;
     }
 
-    /* 层 2: 电影感暗角 (Cinematic Vignette) */
-    /* 作用：聚焦中心，压暗四角，提升高级感，确保顶部和角落元素清晰 */
-    .mask-layer-vignette {
-        position: absolute; inset: 0;
-        background: radial-gradient(
-            circle at 50% 40%, /* 中心点稍微靠上 */
-            transparent 0%, 
-            rgba(0, 0, 0, 0.3) 50%, 
-            rgba(0, 0, 0, 0.8) 100%
-        );
-        z-index: 2; pointer-events: none;
-    }
-
-    /* 层 3: 底部阅读锚点 (Bottom Reading Anchor) */
-    /* 作用：加强版底部渐变，确保歌词区域绝对清晰 */
-    .mask-layer-anchor {
-        position: absolute; bottom: 0; left: 0; right: 0; height: 75%;
-        background: linear-gradient(to top, 
-            rgba(0,0,0,0.95) 0%, 
-            rgba(0,0,0,0.7) 35%, 
-            rgba(0,0,0,0.3) 70%, 
-            transparent 100%);
-        z-index: 3; pointer-events: none;
-    }
-    /* ================================================= */
-
-
-    .layout-container {
-        position: relative; z-index: 10; height: 100%; display: flex; flex-direction: column;
-        padding: 70px 24px 40px; box-sizing: border-box; font-family: var(--font-ui);
-    }
-
-    /* --- 头部区域 (得益于遮罩，现在非常清晰) --- */
-    .header-group { display: flex; gap: 20px; margin-bottom: 20px; align-items: flex-start; }
     .book-cover {
-        width: 100px; height: 150px; border-radius: 6px; flex-shrink: 0;
+        /* 核心改动：高度跟随视口高度 (vh)，保持 2:3 比例 */
+        height: 18vh; 
+        aspect-ratio: 2/3;
+        border-radius: 8px;
         background-image: url('https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=400&q=80');
-        background-size: cover; border: 1px solid rgba(255,255,255,0.15);
-        box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        background-size: cover;
+        box-shadow: 0 1vh 3vh rgba(0,0,0,0.5);
+        border: 1px solid rgba(255,255,255,0.15);
+        flex-shrink: 0;
     }
-    .meta-info { flex: 1; display: flex; flex-direction: column; padding-top: 4px; }
+
+    .meta-info {
+        flex: 1; display: flex; flex-direction: column; padding-top: 0.5vh;
+    }
+
     .creator-pill {
         align-self: flex-start; display: inline-flex; align-items: center;
-        background: rgba(255, 255, 255, 0.1); /* 稍微调高透明度，因为背景更暗了 */
-        backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-        padding: 4px 12px 4px 4px; border-radius: 100px;
-        border: 1px solid rgba(255,255,255,0.15); margin-bottom: 12px;
+        background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(10px);
+        padding: 0.5vh 1.2vh 0.5vh 0.5vh; border-radius: 100px;
+        border: 1px solid rgba(255,255,255,0.2); margin-bottom: 1.5vh;
     }
     .creator-avatar {
-        width: 24px; height: 24px; border-radius: 50%; margin-right: 8px;
+        width: 3vh; height: 3vh; border-radius: 50%; margin-right: 0.8vh;
         background-image: url('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=60');
         background-size: cover;
     }
-    .creator-name { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
-    .main-title { font-size: 26px; font-weight: 700; line-height: 1.1; margin-bottom: 6px; }
-    .sub-title { font-size: 15px; color: rgba(255,255,255,0.7); }
+    .creator-name { font-size: 1.2vh; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
 
-    /* --- 歌词区 --- */
-    .lyrics-container {
-        flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 0 10px;
-        mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
-        -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
+    /* 标题使用 clamp 响应式字体 */
+    .main-title {
+        font-size: clamp(20px, 3vh, 28px); 
+        font-weight: 700; line-height: 1.1; margin-bottom: 0.8vh;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
+    .sub-title { font-size: clamp(12px, 1.8vh, 16px); color: rgba(255,255,255,0.7); }
+
+    /* --- 2. 歌词视口 (Lyrics Viewport) --- */
+    /* 这里的 flex: 1 确保它占据所有剩余高度 */
+    .lyrics-viewport {
+        flex: 1; 
+        display: flex;
+        flex-direction: column;
+        justify-content: center; /* 垂直居中核心 */
+        align-items: flex-start; /* 左对齐 */
+        padding: 0 6vw; /* 左右边距用 vw */
+        z-index: 10;
+        position: relative;
+        /* 为了让高亮行绝对居中，这里使用了 mask 来淡化上下边缘，不是为了遮挡 */
+        mask-image: linear-gradient(to bottom, transparent 0%, black 25%, black 75%, transparent 100%);
+        -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 25%, black 75%, transparent 100%);
+    }
+
     .lyric-line {
-        font-family: var(--font-content); font-size: 20px; color: rgba(255,255,255,0.6); /* 提高亮度 */
-        margin: 12px 0; line-height: 1.6; transition: all 0.5s ease; transform-origin: left center;
-        /* 遮罩足够强，文字阴影可以稍微减轻一点，更干净 */
-        text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        font-family: var(--font-content);
+        /* 字体大小随视口宽度(vw)微调，保证换行位置一致 */
+        font-size: clamp(18px, 5vw, 22px); 
+        color: rgba(255,255,255,0.5);
+        margin: 1.5vh 0; /* 间距随高度变化 */
+        line-height: 1.5;
+        transform-origin: left center;
+        transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        text-shadow: 0 1px 2px rgba(0,0,0,0.6);
     }
+
+    /* 激活行：绝对的视觉中心 */
     .lyric-line.active {
-        font-size: 26px; font-weight: 600; color: #fff; margin: 24px 0; line-height: 1.3;
-        text-shadow: 0 4px 12px rgba(0,0,0,0.6);
+        /* 更大的字体，但有上限 */
+        font-size: clamp(26px, 7vw, 34px); 
+        font-weight: 600;
+        color: #fff;
+        margin: 3vh 0; /* 上下留出更多呼吸空间 */
+        line-height: 1.3;
+        text-shadow: 0 4px 12px rgba(0,0,0,0.8);
     }
-    .word-highlight { color: var(--highlight-gold); font-style: italic; text-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
-    
-    /* --- 底部功能区 --- */
-    .footer-floating { height: 60px; display: flex; align-items: center; margin-top: 10px; }
-    .waveform-wrapper { flex: 1; height: 24px; display: flex; align-items: center; gap: 4px; position: relative; }
-    .wave-bar { width: 3px; border-radius: 2px; background: rgba(255,255,255,0.15); transition: height 0.3s ease; }
+
+    .word-highlight { 
+        color: var(--highlight-gold); font-style: italic; 
+        text-shadow: 0 0 2vh rgba(255, 215, 0, 0.4); /* 光晕也用 vh */
+    }
+
+    /* --- 3. 底部功能区 (Footer) --- */
+    .footer-section {
+        flex: 0 0 auto;
+        height: 8vh; /* 高度相对固定 */
+        display: flex; align-items: center;
+        padding: 0 6vw;
+        padding-bottom: var(--spacing-safe-bottom);
+        z-index: 10;
+    }
+
+    .waveform-wrapper { flex: 1; height: 3vh; display: flex; align-items: center; gap: 0.5vw; position: relative; }
+    .wave-bar { width: 0.8vw; border-radius: 1vw; background: rgba(255,255,255,0.15); transition: height 0.3s ease; }
     .wave-fill-overlay {
         position: absolute; top: 0; left: 0; bottom: 0; width: 55%; overflow: hidden;
-        display: flex; align-items: center; gap: 4px; border-right: 2px solid #fff;
+        display: flex; align-items: center; gap: 0.5vw; border-right: 2px solid #fff;
     }
-    .wave-bar-lit { width: 3px; border-radius: 2px; background: var(--silver-wave); box-shadow: 0 0 8px rgba(255,255,255,0.3); }
+    .wave-bar-lit { width: 0.8vw; border-radius: 1vw; background: var(--silver-wave); box-shadow: 0 0 8px rgba(255,255,255,0.3); }
+
     .btn-fullscreen {
-        width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.1);
-        backdrop-filter: blur(10px); display: flex; justify-content: center; align-items: center;
-        margin-left: 20px; border: 1px solid rgba(255,255,255,0.2);
+        width: 6vh; height: 6vh; /* 按钮大小随高度变化 */
+        border-radius: 50%;
+        background: rgba(255,255,255,0.15); backdrop-filter: blur(10px);
+        display: flex; justify-content: center; align-items: center;
+        margin-left: 4vw; border: 1px solid rgba(255,255,255,0.2);
     }
+    .btn-fullscreen svg { width: 2.5vh; height: 2.5vh; }
+
 </style>
 </head>
 <body>
 
-<div class="phone-mockup">
-    <div class="dynamic-island-area"></div>
-    
-    <div class="bg-image-layer"></div>
-    
-    <div class="mask-layer-dimmer"></div>
-    <div class="mask-layer-vignette"></div>
-    <div class="mask-layer-anchor"></div>
-    <div class="layout-container">
-        <div class="header-group">
-            <div class="book-cover"></div>
-            <div class="meta-info">
-                <div class="creator-pill">
-                    <div class="creator-avatar"></div>
-                    <span class="creator-name">Morning Reader</span>
-                </div>
-                <div class="main-title">Learning to Live with Complexity</div>
-                <div class="sub-title">Chapter 1: The Systems View</div>
-            </div>
-        </div>
+<div class="bg-layer"></div>
+<div class="mask-dimmer"></div>
+<div class="mask-vignette"></div>
+<div class="mask-anchor"></div>
 
-        <div class="lyrics-container">
-            <div class="lyric-line">Simple systems are easy to define.</div>
-            <div class="lyric-line active">
-                But <span class="word-highlight">complex</span> systems are characterized by...
+<div class="app-viewport">
+    
+    <div class="header-section">
+        <div class="book-cover"></div>
+        <div class="meta-info">
+            <div class="creator-pill">
+                <div class="creator-avatar"></div>
+                <span class="creator-name">Morning Reader</span>
             </div>
-            <div class="lyric-line">unpredictability and emergence.</div>
-            <div class="lyric-line" style="opacity:0.4">Everything is connected.</div>
-        </div>
-
-        <div class="footer-floating">
-            <div class="waveform-wrapper">
-                <div id="wave-base" style="display:flex; gap:4px; align-items:center; width:100%;"></div>
-                <div class="wave-fill-overlay">
-                    <div id="wave-lit" style="display:flex; gap:4px; align-items:center; width:260px;"></div>
-                </div>
-            </div>
-            <div class="btn-fullscreen">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
-                </svg>
-            </div>
+            <div class="main-title">Learning to Live with Complexity</div>
+            <div class="sub-title">Chapter 1: The Systems View</div>
         </div>
     </div>
-    <div class="safe-area-bottom"></div>
+
+    <div class="lyrics-viewport">
+        <div class="lyric-line">Simple systems are easy to define.</div>
+        
+        <div class="lyric-line active">
+            But <span class="word-highlight">complex</span> systems are characterized by...
+        </div>
+        
+        <div class="lyric-line">unpredictability and emergence.</div>
+    </div>
+
+    <div class="footer-section">
+        <div class="waveform-wrapper">
+            <div id="wave-base" style="display:flex; gap:0.5vw; align-items:center; width:100%;"></div>
+            <div class="wave-fill-overlay">
+                <div id="wave-lit" style="display:flex; gap:0.5vw; align-items:center; width:100%;"></div>
+            </div>
+        </div>
+
+        <div class="btn-fullscreen">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+            </svg>
+        </div>
+    </div>
+
 </div>
 
 <script>
     const baseContainer = document.getElementById('wave-base');
     const litContainer = document.getElementById('wave-lit');
-    for(let i=0; i<50; i++) { 
-        let randomFactor = Math.random() * 6;
-        let sineFactor = Math.sin(i / 6) * 5 + 8; 
-        let h = Math.max(4, sineFactor + randomFactor);
-        let b = document.createElement('div'); b.className = 'wave-bar'; b.style.height = h + 'px'; baseContainer.appendChild(b);
-        let l = document.createElement('div'); l.className = 'wave-bar-lit'; l.style.height = h + 'px'; litContainer.appendChild(l);
+    
+    // 动态生成波形，数量根据屏幕宽度适配
+    // 这里简单生成40根，实际开发可以检测 window.innerWidth
+    for(let i=0; i<40; i++) { 
+        let randomFactor = Math.random() * 0.8; // vh factor
+        let sineFactor = Math.sin(i / 5) * 1 + 1.5; 
+        let h = Math.max(0.5, sineFactor + randomFactor);
+        
+        // 使用 vh 单位让波形高度也响应式
+        let heightStr = h + 'vh';
+
+        let b = document.createElement('div');
+        b.className = 'wave-bar';
+        b.style.height = heightStr;
+        baseContainer.appendChild(b);
+
+        let l = document.createElement('div');
+        l.className = 'wave-bar-lit';
+        l.style.height = heightStr;
+        litContainer.appendChild(l);
     }
 </script>
+
 </body>
 </html>
