@@ -3,13 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Pro Immersive Player - Feedback Fix</title>
+<title>Pro Immersive Player - Smoothed</title>
 <style>
     :root {
         --highlight-gold: #FFD700;
-        --silver-wave: rgba(255, 255, 255, 0.9);
+        --silver-wave: rgba(255, 255, 255, 0.85);
         --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Helvetica, sans-serif;
         --font-content: "New York", "Times New Roman", "Songti SC", serif;
+        /* 定义头部高度，用于遮罩计算 */
+        --header-height: 160px;
     }
     
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
@@ -36,6 +38,7 @@
         position: absolute; inset: 0; z-index: 2; pointer-events: none;
         background: radial-gradient(circle at 50% 40%, transparent 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0.95) 100%);
     }
+    /* 底部渐变锚点 */
     .mask-anchor {
         position: absolute; bottom: 0; left: 0; right: 0; height: 60%; z-index: 3; pointer-events: none;
         background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 30%, transparent 100%);
@@ -47,15 +50,16 @@
         display: flex; flex-direction: column;
     }
 
-    /* 头部 */
+    /* 头部区域 */
     .header-section {
         position: absolute; top: 0; left: 0; right: 0;
         padding-top: max(20px, env(safe-area-inset-top));
         padding-left: 24px; padding-right: 24px;
-        height: 160px;
+        height: var(--header-height); /* 固定高度 */
         display: flex; gap: 20px; align-items: flex-start;
         z-index: 20;
-        background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+        /* 头部背景渐变，防止文字看不清 */
+        background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 70%, transparent 100%);
         transition: opacity 0.5s;
     }
 
@@ -82,14 +86,34 @@
         display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
 
-    /* --- 2. 歌词滚动 --- */
+    /* --- 2. 歌词滚动 (修正遮罩逻辑) --- */
     #lyrics-scroll-container {
         position: absolute; inset: 0; z-index: 15;
         overflow-y: auto; scrollbar-width: none; scroll-behavior: smooth;
         padding-top: 50vh; padding-bottom: 50vh;
         display: flex; flex-direction: column; align-items: center;
-        mask-image: linear-gradient(to bottom, transparent 0%, black 25%, black 75%, transparent 100%);
-        -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 25%, black 75%, transparent 100%);
+        
+        /* FIXED: 遮罩逻辑 
+           0% - 18%: 透明 (避开头部区域)
+           25% - 75%: 黑色 (显示内容)
+           100%: 透明 (底部淡出)
+        */
+        mask-image: linear-gradient(
+            to bottom, 
+            transparent 0%, 
+            transparent 18%, /* 头部区域完全消失 */
+            black 28%,       /* 渐变出现 */
+            black 80%, 
+            transparent 100%
+        );
+        -webkit-mask-image: linear-gradient(
+            to bottom, 
+            transparent 0%, 
+            transparent 18%, 
+            black 28%, 
+            black 80%, 
+            transparent 100%
+        );
     }
 
     .lyric-line {
@@ -104,7 +128,7 @@
     }
     .word.highlight { color: var(--highlight-gold); font-style: italic; text-shadow: 0 0 20px rgba(255, 215, 0, 0.6); }
 
-    /* --- 3. 底部功能区 --- */
+    /* --- 3. 底部功能区 (修正波形跳动) --- */
     .footer-section {
         position: absolute; bottom: 0; left: 0; right: 0; height: 100px;
         padding-bottom: max(20px, env(safe-area-inset-bottom));
@@ -113,7 +137,14 @@
         z-index: 20;
     }
     .waveform-box { flex: 1; height: 32px; display: flex; align-items: center; gap: 4px; opacity: 0.8; }
-    .wave-bar { flex: 1; background: rgba(255,255,255,0.15); border-radius: 2px; height: 10%; transition: height 0.1s; min-width: 2px; }
+    
+    /* FIXED: 增加 transition 时间，让变化更平滑，不眼花 */
+    .wave-bar { 
+        flex: 1; background: rgba(255,255,255,0.15); border-radius: 2px; 
+        height: 10%; 
+        transition: height 0.4s ease-in-out; /* 关键：0.4s 缓动 */
+        min-width: 2px; 
+    }
     .wave-bar.active { background: var(--silver-wave); box-shadow: 0 0 8px rgba(255,255,255,0.4); }
 
     #btn-immersive {
@@ -124,7 +155,7 @@
         margin-left: 24px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
 
-    /* --- 4. 设置面板 (带预览) --- */
+    /* --- 4. 设置面板 (保持上一版功能) --- */
     #setup-trigger {
         position: fixed; top: 12px; left: 12px; z-index: 50;
         padding: 8px 16px; background: rgba(0,0,0,0.6); border-radius: 20px;
@@ -145,7 +176,6 @@
     .setup-title { font-size: 22px; font-weight: 700; }
     .btn-close { padding: 8px 20px; background: #333; border-radius: 8px; font-size: 14px; cursor: pointer;}
     
-    /* 智能上传区 */
     .file-drop-zone {
         border: 2px dashed #444; border-radius: 12px; padding: 30px;
         text-align: center; background: #181818; margin-bottom: 25px;
@@ -155,20 +185,17 @@
     .drop-text-main { font-weight: 600; font-size: 16px; margin-bottom: 6px; }
     .drop-text-sub { color: #888; font-size: 12px; line-height: 1.5; }
 
-    /* 手动微调区 (带预览) */
     .manual-uploads { border-top: 1px solid #333; padding-top: 20px; }
     .input-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
     .input-label { color: #ccc; font-size: 14px; flex: 1; }
     
-    /* 预览缩略图 */
     .preview-thumb {
         width: 44px; height: 44px; border-radius: 8px; background: #222;
         margin-right: 15px; border: 1px solid #555; background-size: cover; background-position: center;
-        display: none; /* 默认隐藏，有图显示 */
+        display: none;
     }
     .preview-thumb.show { display: block; }
     
-    /* 自定义文件按钮 */
     .custom-file-btn {
         padding: 8px 16px; background: #333; color: white; border-radius: 8px;
         font-size: 13px; cursor: pointer; border: 1px solid #555;
@@ -176,17 +203,14 @@
     }
     .custom-file-btn:active { background: #444; }
 
-    /* 消息提示 Toast */
     #toast-msg {
         position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
         background: rgba(255, 215, 0, 0.95); color: black; font-weight: 600;
         padding: 10px 24px; border-radius: 30px; z-index: 200;
         opacity: 0; pointer-events: none; transition: opacity 0.3s;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        font-size: 14px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3); font-size: 14px;
     }
 
-    /* 倒计时 */
     #countdown-overlay {
         position: fixed; inset: 0; background: #000; z-index: 200;
         display: flex; justify-content: center; align-items: center;
@@ -209,7 +233,6 @@
 </div>
 
 <div id="setup-trigger">⚙️ 导入素材</div>
-
 <div id="toast-msg">✅ 更新成功</div>
 
 <div class="app-viewport">
@@ -251,20 +274,20 @@
 
     <div class="manual-uploads">
         <div style="font-size:12px; color:#666; margin-bottom:15px; font-weight:600;">手动单独替换</div>
-        
         <div class="input-row">
             <div style="display:flex; align-items:center;">
-                <div class="preview-thumb" id="prev-bg"></div> <span class="input-label">更换背景图 (Background)</span>
+                <div class="preview-thumb" id="prev-bg"></div>
+                <span class="input-label">更换背景图 (Background)</span>
             </div>
             <label class="custom-file-btn">
                 选择图片
                 <input type="file" id="file-bg-manual" accept="image/*" style="display:none;">
             </label>
         </div>
-
         <div class="input-row">
             <div style="display:flex; align-items:center;">
-                <div class="preview-thumb" id="prev-cover"></div> <span class="input-label">更换封面 (Cover)</span>
+                <div class="preview-thumb" id="prev-cover"></div>
+                <span class="input-label">更换封面 (Cover)</span>
             </div>
             <label class="custom-file-btn">
                 选择图片
@@ -287,14 +310,13 @@
     const prevBg = document.getElementById('prev-bg');
     const prevCover = document.getElementById('prev-cover');
 
-    // 辅助：显示 Toast 提示
     function showToast(msg) {
         toastEl.innerText = msg;
         toastEl.style.opacity = 1;
         setTimeout(() => toastEl.style.opacity = 0, 2000);
     }
 
-    // --- 1. JSON 解析逻辑 ---
+    // --- JSON 解析 (带容错) ---
     let linesData = [];
     let currentLineId = -1;
     let isPlaying = false;
@@ -303,7 +325,6 @@
 
     function parseAndProcessJSON(json) {
         let rawWords = [];
-        // 适配用户提供的嵌套格式
         if (Array.isArray(json)) {
             if (json.length > 0 && json[0].words && Array.isArray(json[0].words)) {
                 json.forEach(sentence => { if (sentence.words) rawWords = rawWords.concat(sentence.words); });
@@ -320,7 +341,7 @@
             if (currentLine.words.length === 0) currentLine.start = w.start;
             currentLine.words.push(w);
             currentLine.end = w.end;
-            // 智能分行
+            
             const txt = w.word || "";
             const isEndChar = /[.!?。！？]$/.test(txt.trim());
             const isTooLong = currentLine.words.length >= 10;
@@ -384,100 +405,102 @@
         lyricsContainer.scrollTo({ top: target, behavior: 'smooth' });
     }
 
-    audioEl.addEventListener('timeupdate', () => { if(isPlaying) syncLyrics(audioEl.currentTime); });
+    // FIXED: 音频播放控制优化，防止跳播
+    audioEl.addEventListener('timeupdate', () => { 
+        if(isPlaying && audioEl.duration > 0 && !audioEl.paused) {
+            syncLyrics(audioEl.currentTime); 
+        }
+    });
+    
+    // 防止循环播放或异常结束
+    audioEl.addEventListener('ended', () => {
+        isPlaying = false;
+        // 可选：在这里退出全屏或重置状态
+    });
 
 
-    // --- 2. 文件处理 (修复反馈逻辑) ---
-    // 更新背景 (带预览反馈)
+    // --- 文件处理 ---
     function updateBg(file) {
         const url = URL.createObjectURL(file);
-        // 更新APP背景
         bgLayer.style.backgroundImage = `url('${url}')`;
-        // 更新面板内预览图
         prevBg.style.backgroundImage = `url('${url}')`;
         prevBg.classList.add('show');
-        // 显示提示
         showToast(`背景已更新`);
     }
 
-    // 更新封面 (带预览反馈)
     function updateCover(file) {
         const url = URL.createObjectURL(file);
-        // 更新APP封面
         coverEl.style.backgroundImage = `url('${url}')`;
-        // 更新面板内预览图
         prevCover.style.backgroundImage = `url('${url}')`;
         prevCover.classList.add('show');
-        // 显示提示
         showToast(`封面已更新`);
     }
 
     function handleFiles(files) {
         if (!files.length) return;
         let loadedCount = 0;
-
         Array.from(files).forEach(file => {
             const type = file.type;
             const name = file.name.toLowerCase();
-            
             if (type.startsWith('audio/') || name.endsWith('.mp3')) {
                 audioEl.src = URL.createObjectURL(file);
                 titleEl.innerText = file.name.replace(/\.[^/.]+$/, "");
                 loadedCount++;
-            } 
-            else if (type === 'application/json' || name.endsWith('.json')) {
+            } else if (type === 'application/json' || name.endsWith('.json')) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     try { parseAndProcessJSON(JSON.parse(e.target.result)); loadedCount++; } 
                     catch(err) { alert("JSON解析失败"); }
                 };
                 reader.readAsText(file);
-            } 
-            else if (type.startsWith('image/')) {
+            } else if (type.startsWith('image/')) {
                 if (name.includes('cover') || name.includes('封面')) updateCover(file);
                 else updateBg(file);
                 loadedCount++;
             }
         });
-
         if(loadedCount > 0) {
             dropTextMain.innerText = `✅ 已加载 ${loadedCount} 个文件`;
             dropTextMain.style.color = "#4CAF50";
         }
     }
 
-    // 绑定事件
     document.getElementById('file-smart-input').addEventListener('change', e => handleFiles(e.target.files));
-    
-    document.getElementById('file-bg-manual').addEventListener('change', e => {
-        if(e.target.files[0]) updateBg(e.target.files[0]);
-    });
-    
-    document.getElementById('file-cover-manual').addEventListener('change', e => {
-        if(e.target.files[0]) updateCover(e.target.files[0]);
-    });
+    document.getElementById('file-bg-manual').addEventListener('change', e => { if(e.target.files[0]) updateBg(e.target.files[0]); });
+    document.getElementById('file-cover-manual').addEventListener('change', e => { if(e.target.files[0]) updateCover(e.target.files[0]); });
 
-    // --- 3. 沉浸模式 & UI 交互 ---
+    // --- 沉浸模式 & UI ---
     const setupPanel = document.getElementById('setup-panel');
     document.getElementById('setup-trigger').onclick = () => setupPanel.classList.add('show');
     document.getElementById('btn-close-setup').onclick = () => setupPanel.classList.remove('show');
     
+    // 初始化波形
     const waveformContainer = document.getElementById('waveform');
     for(let i=0; i<40; i++) {
         let b = document.createElement('div'); b.className='wave-bar';
         waveformContainer.appendChild(b);
     }
+    
+    // FIXED: 波形动画减速优化
     function animateWave() {
         if(!isPlaying) return;
         document.querySelectorAll('.wave-bar').forEach(b => {
-            let h = Math.random() * 80 + 10;
+            // 使用更平滑的随机高度，避免 0 到 100 剧烈跳动
+            // 保持一个基础高度 (10%) + 随机增量
+            let h = 10 + Math.random() * 60; 
             b.style.height = h + '%';
-            if(h>50) b.classList.add('active'); else b.classList.remove('active');
+            if(h > 40) b.classList.add('active'); else b.classList.remove('active');
         });
-        requestAnimationFrame(() => setTimeout(animateWave, 80));
+        // 降低刷新率：80ms -> 150ms
+        setTimeout(() => requestAnimationFrame(animateWave), 150);
     }
 
     document.getElementById('btn-immersive').onclick = () => {
+        // 防止未加载音频就播放
+        if(!audioEl.src) {
+            return alert("请先导入音频文件");
+        }
+        
         const el = document.documentElement;
         if(el.requestFullscreen) el.requestFullscreen().catch(()=>{});
         document.body.classList.add('immersive');
@@ -494,8 +517,13 @@
                 clearInterval(timer);
                 cd.style.opacity=0;
                 audioEl.currentTime=0; 
-                audioEl.play(); 
-                isPlaying=true; animateWave();
+                audioEl.play().then(() => {
+                    isPlaying=true; 
+                    animateWave();
+                }).catch(e => {
+                    alert("播放失败，请检查浏览器设置");
+                    document.body.classList.remove('immersive');
+                });
             }
         }, 1000);
     };
