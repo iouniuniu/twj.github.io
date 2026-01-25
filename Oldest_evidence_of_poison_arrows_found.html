@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>60,000-Year-Old Poison Arrows Found</title>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --accent-color: #a855f7;
+            
+            /* 定义颜色变量 */
+            --female-color: #ec4899; /* 粉色 */
+            --male-color: #2dd4bf;   /* 青色 */
+            --unknown-color: #9ca3af;
+
+            --text-normal: rgba(255, 255, 255, 0.4);
+            --text-active: #ffffff;
+            --word-highlight: #ff9f0a;
+            --font-stack: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            font-family: var(--font-stack);
+            background-color: var(--bg-color);
+            color: white;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.5s ease;
+        }
+
+        .ambient-bg {
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 50% 50%, #4c1d95, #0f172a 70%, #000);
+            z-index: -1;
+            filter: blur(80px);
+            opacity: 0.8;
+            animation: breathe 10s infinite alternate;
+        }
+
+        @keyframes breathe {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1); }
+        }
+
+        .player-header {
+            padding: 40px 20px 10px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+            transition: all 0.5s ease;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+            flex-shrink: 0;
+        }
+
+        .artwork-container {
+            width: 140px;
+            height: 185px;
+            border-radius: 8px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            margin-bottom: 15px;
+            overflow: hidden;
+            background-color: #333;
+            position: relative;
+            transition: all 0.5s ease;
+        }
+
+        .artwork-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .track-info { 
+            text-align: center; 
+            transition: all 0.5s ease;
+        }
+        .track-title { font-size: 20px; font-weight: 800; margin: 0; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .track-artist { font-size: 14px; color: rgba(255,255,255,0.9); margin-top: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        .track-subtitle { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 4px; font-weight: 400; letter-spacing: 0.5px; }
+
+        .ui-controls {
+            width: 100%;
+            max-width: 400px;
+            margin-top: 20px;
+            transition: opacity 0.5s, transform 0.5s;
+        }
+
+        .hidden-ui {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-20px);
+            height: 0; 
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .progress-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; margin-bottom: 20px; cursor: pointer; }
+        .progress-fill { height: 100%; background: white; border-radius: 2px; width: 0%; transition: width 0.1s linear; }
+
+        .transcript-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 30px 150px 30px;
+            mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+            scroll-behavior: smooth;
+            transition: all 0.5s ease;
+        }
+        .transcript-container::-webkit-scrollbar { display: none; }
+
+        .transcript-item {
+            margin-bottom: 30px;
+            transition: opacity 0.4s ease, transform 0.4s ease, filter 0.4s ease;
+            opacity: 0.3; 
+            filter: blur(1.5px);
+            transform: scale(0.98);
+            transform-origin: left center;
+            cursor: pointer;
+            scroll-margin-top: 150px; 
+        }
+
+        .transcript-item.active {
+            opacity: 1;
+            filter: blur(0);
+            transform: scale(1.0);
+        }
+
+        .speaker-tag {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            opacity: 0.9;
+            color: #fff;
+        }
+
+        /* 直接根据 JSON 中的 speaker 名字匹配
+           如果 JSON 里是 "Female"，会匹配 .speaker-female
+           如果 JSON 里是 "Male"，会匹配 .speaker-male
+        */
+        .speaker-female { background-color: var(--female-color); }
+        .speaker-male   { background-color: var(--male-color); color: #000 !important; }
+        .speaker-unknown { background-color: var(--unknown-color); }
+
+        .text-content {
+            font-size: 24px;
+            line-height: 1.6;
+            font-weight: 600;
+            margin: 0;
+            color: var(--text-active);
+            word-wrap: break-word;
+        }
+
+        .word-span {
+            transition: color 0.1s ease, text-shadow 0.1s ease;
+            display: inline;
+            border-radius: 4px;
+            margin: 0; 
+            padding: 0;
+        }
+
+        .word-active {
+            color: var(--word-highlight);
+            text-shadow: 0 0 15px rgba(255, 159, 10, 0.7);
+        }
+
+        /* 底部按钮栏 */
+        .btn-container {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 100;
+            transition: all 0.3s;
+            width: 90%;
+            justify-content: center;
+        }
+
+        .overlay-btn {
+            background: white;
+            color: black;
+            padding: 14px 20px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s;
+            white-space: nowrap;
+        }
+        .overlay-btn:active { transform: scale(0.95); }
+        
+        /* 录制进度条 (PC) */
+        .recording-controls {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px; 
+            z-index: 2000;
+            display: none; 
+        }
+
+        .rec-progress-bar {
+            height: 100%;
+            background-color: #ff4444;
+            width: 0%;
+            transition: width 0.1s linear;
+            box-shadow: 0 0 10px rgba(255, 68, 68, 0.8);
+        }
+
+        /* 电脑端停止按钮 (悬停) */
+        .stop-rec-hitbox {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 150px; 
+            height: 100px;
+            z-index: 2001;
+            display: none; 
+        }
+
+        .stop-rec-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 68, 68, 0.9);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: none;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            pointer-events: none; 
+        }
+
+        .stop-rec-hitbox:hover .stop-rec-btn {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        #debugTime {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #0f0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            z-index: 2000;
+            pointer-events: none;
+        }
+
+        /* =========================================
+           沉浸/录制模式通用样式
+           ========================================= */
+        body.recording-mode {
+            position: fixed; 
+            width: 100%;
+            height: 100%;
+            background: #000;
+        }
+
+        body.recording-mode .player-header { 
+            padding-top: 40px; 
+            padding-bottom: 0px; 
+        }
+        
+        body.recording-mode .artwork-container { 
+            width: 120px; 
+            height: 160px; 
+            margin-top: 0; 
+            margin-bottom: 5px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        
+        body.recording-mode .track-info { 
+            transform: scale(0.9); 
+            margin-bottom: 0;
+        }
+        
+        body.recording-mode .transcript-container { 
+            padding-top: 0px; 
+            mask-image: linear-gradient(to bottom, transparent 0%, black 5%, black 90%, transparent 100%);
+        }
+        
+        body.recording-mode .transcript-item.active .text-content { 
+            color: rgba(255,255,255,0.95);
+        }
+        
+        /* 隐藏 UI */
+        body.recording-mode #debugTime { display: none; }
+        body.recording-mode .btn-container { opacity: 0; pointer-events: none; }
+        body.recording-mode .ui-controls { opacity: 0; pointer-events: none; height: 0; margin: 0;}
+
+        /* PC特有：仅PC模式显示录制控制条 */
+        body.recording-mode.pc-mode .recording-controls { display: block; }
+        body.recording-mode.pc-mode .stop-rec-hitbox { display: block; }
+
+    </style>
+</head>
+<body>
+
+<div class="ambient-bg"></div>
+<div id="debugTime">0.000</div>
+
+<div class="recording-controls">
+    <div class="rec-progress-bar" id="recProgressBar"></div>
+</div>
+<div class="stop-rec-hitbox" id="stopRecHitbox">
+    <button class="stop-rec-btn" id="stopRecBtn">⏹ 停止录制</button>
+</div>
+
+<div class="player-header">
+    <div class="artwork-container">
+        <img src="528.jpg" alt="Magazine Cover" class="artwork-img" onerror="this.style.display='none'; document.getElementById('placeholder').style.display='flex';">
+        <div id="placeholder" class="artwork-placeholder" style="display:none;">📖</div>
+    </div>
+    <div class="track-info">
+        <h1 class="track-title">Oldest evidence of poison arrows found</h1>
+        <div class="track-artist">The Week Junior Podcast</div>
+        <div class="track-subtitle">528 期 20260124</div>
+    </div>
+
+    <div class="ui-controls" id="uiControls">
+        <div class="progress-bar" id="progressBarContainer">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div style="text-align: center; color: rgba(255,255,255,0.5); font-size: 12px; margin-top: 5px;" id="tips">
+            </div>
+    </div>
+</div>
+
+<div class="transcript-container" id="transcriptContainer"></div>
+
+<div class="btn-container" id="btnContainer">
+    <button class="overlay-btn" id="playModeBtn">
+        🎵 仅播放
+    </button>
+    <button class="overlay-btn" id="recordVideoBtn" style="display:none;">
+        🎥 电脑内录 1080P
+    </button>
+    <button class="overlay-btn" id="mobileRecordBtn" style="display:none;">
+        📱 手机全屏 (无UI)
+    </button>
+</div>
+
+<audio id="audioPlayer">
+    <source src="60,000-Year-Old_Poison_Arrows_Found.m4a" type="audio/mp4">
+</audio>
+
+<script>
+    const rawTranscriptData = [{"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Wait, teacher.", "start": 0.031, "end": 0.853, "words": [{"word": "Wait,", "start": 0.031, "end": 0.352}, {"word": "teacher.", "start": 0.432, "end": 0.853}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Do people really use poison on their arrows 60,000 years ago?", "start": 1.354, "end": 5.121, "words": [{"word": "Do", "start": 1.354, "end": 1.474}, {"word": "people", "start": 1.494, "end": 1.754}, {"word": "really", "start": 1.795, "end": 2.095}, {"word": "use", "start": 2.195, "end": 2.316}, {"word": "poison", "start": 2.396, "end": 2.797}, {"word": "on", "start": 2.877, "end": 2.917}, {"word": "their", "start": 2.957, "end": 3.117}, {"word": "arrows", "start": 3.197, "end": 3.518}, {"word": "60,000", "start": 3.538, "end": 4.119}, {"word": "years", "start": 4.62, "end": 4.821}, {"word": "ago?", "start": 4.881, "end": 5.121}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "That sounds like something from a movie.", "start": 5.181, "end": 6.784, "words": [{"word": "That", "start": 5.181, "end": 5.322}, {"word": "sounds", "start": 5.382, "end": 5.582}, {"word": "like", "start": 5.602, "end": 5.722}, {"word": "something", "start": 5.762, "end": 6.023}, {"word": "from", "start": 6.063, "end": 6.183}, {"word": "a", "start": 6.283, "end": 6.303}, {"word": "movie.", "start": 6.344, "end": 6.784}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It really does, doesn't it?", "start": 7.085, "end": 8.047, "words": [{"word": "It", "start": 7.085, "end": 7.125}, {"word": "really", "start": 7.205, "end": 7.406}, {"word": "does,", "start": 7.446, "end": 7.626}, {"word": "doesn't", "start": 7.686, "end": 7.947}, {"word": "it?", "start": 7.987, "end": 8.047}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "But get this.", "start": 8.468, "end": 8.969, "words": [{"word": "But", "start": 8.468, "end": 8.568}, {"word": "get", "start": 8.608, "end": 8.728}, {"word": "this.", "start": 8.788, "end": 8.969}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It is not from a movie.", "start": 9.45, "end": 10.492, "words": [{"word": "It", "start": 9.45, "end": 9.51}, {"word": "is", "start": 9.57, "end": 9.63}, {"word": "not", "start": 9.71, "end": 9.911}, {"word": "from", "start": 9.951, "end": 10.071}, {"word": "a", "start": 10.151, "end": 10.171}, {"word": "movie.", "start": 10.211, "end": 10.492}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It's a real scientific discovery.", "start": 11.233, "end": 13.358, "words": [{"word": "It's", "start": 11.233, "end": 11.334}, {"word": "a", "start": 11.394, "end": 11.414}, {"word": "real", "start": 11.574, "end": 11.915}, {"word": "scientific", "start": 12.336, "end": 12.857}, {"word": "discovery.", "start": 12.877, "end": 13.358}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Wow.", "start": 13.458, "end": 13.818, "words": [{"word": "Wow.", "start": 13.458, "end": 13.818}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "For real.", "start": 14.079, "end": 14.76, "words": [{"word": "For", "start": 14.079, "end": 14.239}, {"word": "real.", "start": 14.36, "end": 14.76}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "For real.", "start": 15.041, "end": 15.542, "words": [{"word": "For", "start": 15.041, "end": 15.221}, {"word": "real.", "start": 15.281, "end": 15.542}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "And that's exactly what we're looking at today from an article called Oldest Evidence of Poison Arrows Found.", "start": 15.923, "end": 21.634, "words": [{"word": "And", "start": 15.923, "end": 16.003}, {"word": "that's", "start": 16.023, "end": 16.203}, {"word": "exactly", "start": 16.263, "end": 16.724}, {"word": "what", "start": 16.784, "end": 16.885}, {"word": "we're", "start": 16.925, "end": 17.025}, {"word": "looking", "start": 17.045, "end": 17.285}, {"word": "at", "start": 17.325, "end": 17.406}, {"word": "today", "start": 17.446, "end": 17.686}, {"word": "from", "start": 17.766, "end": 17.867}, {"word": "an", "start": 17.927, "end": 17.967}, {"word": "article", "start": 18.067, "end": 18.368}, {"word": "called", "start": 18.408, "end": 18.688}, {"word": "Oldest", "start": 18.708, "end": 19.65}, {"word": "Evidence", "start": 19.85, "end": 20.191}, {"word": "of", "start": 20.251, "end": 20.291}, {"word": "Poison", "start": 20.392, "end": 20.772}, {"word": "Arrows", "start": 20.852, "end": 21.133}, {"word": "Found.", "start": 21.233, "end": 21.634}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "OK, so where did this happen and what what did the scientists find exactly?", "start": 22.019, "end": 28.432, "words": [{"word": "OK,", "start": 22.019, "end": 22.34}, {"word": "so", "start": 22.36, "end": 22.56}, {"word": "where", "start": 22.821, "end": 23.021}, {"word": "did", "start": 23.061, "end": 23.181}, {"word": "this", "start": 23.241, "end": 23.382}, {"word": "happen", "start": 23.482, "end": 23.883}, {"word": "and", "start": 23.903, "end": 23.963}, {"word": "what", "start": 24.724, "end": 24.925}, {"word": "what", "start": 25.666, "end": 25.807}, {"word": "did", "start": 25.847, "end": 25.967}, {"word": "the", "start": 25.987, "end": 26.047}, {"word": "scientists", "start": 26.107, "end": 27.45}, {"word": "find", "start": 27.47, "end": 27.871}, {"word": "exactly?", "start": 27.951, "end": 28.432}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It all happened at a place called the Lattuzana rock shelter that's in South Africa.", "start": 28.712, "end": 34.364, "words": [{"word": "It", "start": 28.712, "end": 28.773}, {"word": "all", "start": 28.853, "end": 28.993}, {"word": "happened", "start": 29.053, "end": 29.414}, {"word": "at", "start": 29.454, "end": 29.494}, {"word": "a", "start": 29.554, "end": 29.594}, {"word": "place", "start": 29.734, "end": 29.975}, {"word": "called", "start": 30.015, "end": 30.235}, {"word": "the", "start": 30.276, "end": 30.396}, {"word": "Lattuzana", "start": 30.857, "end": 31.638}, {"word": "rock", "start": 31.979, "end": 32.28}, {"word": "shelter", "start": 32.34, "end": 32.72}, {"word": "that's", "start": 32.961, "end": 33.121}, {"word": "in", "start": 33.161, "end": 33.201}, {"word": "South", "start": 33.242, "end": 33.462}, {"word": "Africa.", "start": 33.522, "end": 34.364}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Lattuzana, OK.", "start": 34.384, "end": 35.566, "words": [{"word": "Lattuzana,", "start": 34.384, "end": 35.486}, {"word": "OK.", "start": 35.506, "end": 35.566}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "And scientists there found these ancient arrowheads, the tips of the arrows.", "start": 35.586, "end": 40.656, "words": [{"word": "And", "start": 35.586, "end": 35.666}, {"word": "scientists", "start": 35.747, "end": 36.147}, {"word": "there", "start": 36.167, "end": 36.428}, {"word": "found", "start": 36.869, "end": 37.089}, {"word": "these", "start": 37.129, "end": 37.33}, {"word": "ancient", "start": 37.35, "end": 37.931}, {"word": "arrowheads,", "start": 38.853, "end": 39.374}, {"word": "the", "start": 39.835, "end": 39.915}, {"word": "tips", "start": 39.935, "end": 40.115}, {"word": "of", "start": 40.155, "end": 40.195}, {"word": "the", "start": 40.236, "end": 40.296}, {"word": "arrows.", "start": 40.376, "end": 40.656}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Oh, cool.", "start": 40.817, "end": 41.258, "words": [{"word": "Oh,", "start": 40.817, "end": 40.917}, {"word": "cool.", "start": 40.957, "end": 41.258}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "What were they made of, like normal rock?", "start": 41.338, "end": 42.981, "words": [{"word": "What", "start": 41.338, "end": 41.458}, {"word": "were", "start": 41.478, "end": 41.598}, {"word": "they", "start": 41.618, "end": 41.739}, {"word": "made", "start": 41.779, "end": 41.939}, {"word": "of,", "start": 41.999, "end": 42.099}, {"word": "like", "start": 42.139, "end": 42.24}, {"word": "normal", "start": 42.28, "end": 42.6}, {"word": "rock?", "start": 42.66, "end": 42.981}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Well, they were made from something called quartz.", "start": 43.163, "end": 45.107, "words": [{"word": "Well,", "start": 43.163, "end": 43.423}, {"word": "they", "start": 43.444, "end": 43.544}, {"word": "were", "start": 43.584, "end": 43.684}, {"word": "made", "start": 43.704, "end": 43.844}, {"word": "from", "start": 43.904, "end": 44.045}, {"word": "something", "start": 44.125, "end": 44.385}, {"word": "called", "start": 44.445, "end": 44.646}, {"word": "quartz.", "start": 44.786, "end": 45.107}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Quartz.", "start": 45.427, "end": 46.008, "words": [{"word": "Quartz.", "start": 45.427, "end": 46.008}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "What's that?", "start": 46.028, "end": 46.469, "words": [{"word": "What's", "start": 46.028, "end": 46.188}, {"word": "that?", "start": 46.229, "end": 46.469}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "That's a great question.", "start": 46.569, "end": 47.29, "words": [{"word": "That's", "start": 46.569, "end": 46.709}, {"word": "a", "start": 46.749, "end": 46.769}, {"word": "great", "start": 46.79, "end": 46.93}, {"word": "question.", "start": 46.97, "end": 47.29}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Quartz is a type of very, very hard stone.", "start": 47.491, "end": 50.055, "words": [{"word": "Quartz", "start": 47.491, "end": 47.791}, {"word": "is", "start": 47.992, "end": 48.092}, {"word": "a", "start": 48.112, "end": 48.132}, {"word": "type", "start": 48.312, "end": 48.493}, {"word": "of", "start": 48.553, "end": 48.593}, {"word": "very,", "start": 48.613, "end": 49.014}, {"word": "very", "start": 49.054, "end": 49.254}, {"word": "hard", "start": 49.354, "end": 49.655}, {"word": "stone.", "start": 49.735, "end": 50.055}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It's almost like a crystal.", "start": 50.116, "end": 51.017, "words": [{"word": "It's", "start": 50.116, "end": 50.196}, {"word": "almost", "start": 50.216, "end": 50.396}, {"word": "like", "start": 50.416, "end": 50.516}, {"word": "a", "start": 50.536, "end": 50.576}, {"word": "crystal.", "start": 50.657, "end": 51.017}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "OK, a hard, crystal-like rock.", "start": 51.238, "end": 53.141, "words": [{"word": "OK,", "start": 51.238, "end": 51.338}, {"word": "a", "start": 51.358, "end": 51.378}, {"word": "hard,", "start": 51.558, "end": 51.939}, {"word": "crystal-like", "start": 52.219, "end": 52.82}, {"word": "rock.", "start": 52.921, "end": 53.141}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "And you said they're old.", "start": 53.241, "end": 53.922, "words": [{"word": "And", "start": 53.241, "end": 53.321}, {"word": "you", "start": 53.361, "end": 53.421}, {"word": "said", "start": 53.442, "end": 53.542}, {"word": "they're", "start": 53.562, "end": 53.742}, {"word": "old.", "start": 53.782, "end": 53.922}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Incredibly old.", "start": 54.143, "end": 54.864, "words": [{"word": "Incredibly", "start": 54.143, "end": 54.644}, {"word": "old.", "start": 54.724, "end": 54.864}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "These arrowheads are 60,000 years old.", "start": 55.084, "end": 56.868, "words": [{"word": "These", "start": 55.084, "end": 55.225}, {"word": "arrowheads", "start": 55.305, "end": 55.645}, {"word": "are", "start": 55.706, "end": 55.786}, {"word": "60,000", "start": 55.806, "end": 56.487}, {"word": "years", "start": 56.527, "end": 56.667}, {"word": "old.", "start": 56.768, "end": 56.868}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "60,000?", "start": 56.888, "end": 57.869, "words": [{"word": "60,000?", "start": 56.888, "end": 57.869}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "That is.", "start": 57.91, "end": 58.25, "words": [{"word": "That", "start": 57.91, "end": 58.05}, {"word": "is.", "start": 58.13, "end": 58.25}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "That's so long ago.", "start": 58.31, "end": 59.292, "words": [{"word": "That's", "start": 58.31, "end": 58.591}, {"word": "so", "start": 58.631, "end": 58.771}, {"word": "long", "start": 58.811, "end": 59.012}, {"word": "ago.", "start": 59.092, "end": 59.292}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "But wait, how did they know it was poison?", "start": 59.492, "end": 61.135, "words": [{"word": "But", "start": 59.492, "end": 59.573}, {"word": "wait,", "start": 59.613, "end": 59.773}, {"word": "how", "start": 59.833, "end": 59.933}, {"word": "did", "start": 59.973, "end": 60.073}, {"word": "they", "start": 60.094, "end": 60.194}, {"word": "know", "start": 60.254, "end": 60.394}, {"word": "it", "start": 60.434, "end": 60.494}, {"word": "was", "start": 60.534, "end": 60.655}, {"word": "poison?", "start": 60.695, "end": 61.135}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "I mean, couldn't it just be old dirt on the rock?", "start": 61.416, "end": 63.72, "words": [{"word": "I", "start": 61.416, "end": 61.456}, {"word": "mean,", "start": 61.496, "end": 61.636}, {"word": "couldn't", "start": 61.676, "end": 61.877}, {"word": "it", "start": 61.937, "end": 61.977}, {"word": "just", "start": 61.997, "end": 62.137}, {"word": "be", "start": 62.197, "end": 62.318}, {"word": "old", "start": 62.338, "end": 62.718}, {"word": "dirt", "start": 62.798, "end": 63.059}, {"word": "on", "start": 63.159, "end": 63.219}, {"word": "the", "start": 63.259, "end": 63.319}, {"word": "rock?", "start": 63.379, "end": 63.72}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "That is the amazing part.", "start": 63.785, "end": 64.828, "words": [{"word": "That", "start": 63.785, "end": 63.965}, {"word": "is", "start": 64.006, "end": 64.066}, {"word": "the", "start": 64.106, "end": 64.186}, {"word": "amazing", "start": 64.226, "end": 64.567}, {"word": "part.", "start": 64.627, "end": 64.828}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Researchers, they analyzed the arrowheads very carefully and found traces of toxic stuff.", "start": 65.329, "end": 71.144, "words": [{"word": "Researchers,", "start": 65.329, "end": 65.89}, {"word": "they", "start": 66.652, "end": 66.853}, {"word": "analyzed", "start": 66.993, "end": 67.394}, {"word": "the", "start": 67.414, "end": 67.494}, {"word": "arrowheads", "start": 67.554, "end": 67.895}, {"word": "very", "start": 68.056, "end": 68.276}, {"word": "carefully", "start": 68.336, "end": 68.758}, {"word": "and", "start": 69.159, "end": 69.239}, {"word": "found", "start": 69.319, "end": 69.539}, {"word": "traces", "start": 69.64, "end": 70.101}, {"word": "of", "start": 70.121, "end": 70.241}, {"word": "toxic", "start": 70.341, "end": 70.823}, {"word": "stuff.", "start": 70.863, "end": 71.144}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Toxic stuff.", "start": 71.204, "end": 71.966, "words": [{"word": "Toxic", "start": 71.204, "end": 71.665}, {"word": "stuff.", "start": 71.705, "end": 71.966}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "From what?", "start": 72.547, "end": 73.008, "words": [{"word": "From", "start": 72.547, "end": 72.707}, {"word": "what?", "start": 72.788, "end": 73.008}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It came from a plant, a plant called gifbold.", "start": 73.189, "end": 75.735, "words": [{"word": "It", "start": 73.189, "end": 73.229}, {"word": "came", "start": 73.269, "end": 73.389}, {"word": "from", "start": 73.429, "end": 73.53}, {"word": "a", "start": 73.59, "end": 73.61}, {"word": "plant,", "start": 73.67, "end": 74.452}, {"word": "a", "start": 74.472, "end": 74.512}, {"word": "plant", "start": 74.552, "end": 74.773}, {"word": "called", "start": 74.793, "end": 75.013}, {"word": "gifbold.", "start": 75.174, "end": 75.735}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "gift ball.", "start": 75.817, "end": 76.618, "words": [{"word": "gift", "start": 75.817, "end": 76.138}, {"word": "ball.", "start": 76.198, "end": 76.618}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "That's a funny name.", "start": 76.879, "end": 77.6, "words": [{"word": "That's", "start": 76.879, "end": 77.019}, {"word": "a", "start": 77.099, "end": 77.119}, {"word": "funny", "start": 77.159, "end": 77.36}, {"word": "name.", "start": 77.4, "end": 77.6}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It is.", "start": 77.841, "end": 78.081, "words": [{"word": "It", "start": 77.841, "end": 77.901}, {"word": "is.", "start": 78.001, "end": 78.081}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It actually means poisonous bulb.", "start": 78.702, "end": 80.565, "words": [{"word": "It", "start": 78.702, "end": 78.742}, {"word": "actually", "start": 78.782, "end": 79.003}, {"word": "means", "start": 79.023, "end": 79.203}, {"word": "poisonous", "start": 79.223, "end": 79.624}, {"word": "bulb.", "start": 79.664, "end": 80.565}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "A bulb is the round underground part of some plants, sort of like an onion.", "start": 80.586, "end": 84.593, "words": [{"word": "A", "start": 80.586, "end": 80.626}, {"word": "bulb", "start": 80.666, "end": 80.946}, {"word": "is", "start": 80.966, "end": 81.147}, {"word": "the", "start": 81.167, "end": 81.267}, {"word": "round", "start": 81.387, "end": 81.708}, {"word": "underground", "start": 81.748, "end": 82.389}, {"word": "part", "start": 82.469, "end": 82.729}, {"word": "of", "start": 83.07, "end": 83.13}, {"word": "some", "start": 83.19, "end": 83.33}, {"word": "plants,", "start": 83.371, "end": 83.691}, {"word": "sort", "start": 83.831, "end": 83.972}, {"word": "of", "start": 84.012, "end": 84.052}, {"word": "like", "start": 84.092, "end": 84.232}, {"word": "an", "start": 84.272, "end": 84.312}, {"word": "onion.", "start": 84.392, "end": 84.593}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "So a poison onion.", "start": 84.633, "end": 85.514, "words": [{"word": "So", "start": 84.633, "end": 84.773}, {"word": "a", "start": 84.833, "end": 84.853}, {"word": "poison", "start": 84.913, "end": 85.234}, {"word": "onion.", "start": 85.294, "end": 85.514}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Exactly.", "start": 85.795, "end": 86.356, "words": [{"word": "Exactly.", "start": 85.795, "end": 86.356}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Now usually, poison like this would disappear.", "start": 86.416, "end": 89.141, "words": [{"word": "Now", "start": 86.416, "end": 86.777}, {"word": "usually,", "start": 86.977, "end": 87.338}, {"word": "poison", "start": 87.378, "end": 88.079}, {"word": "like", "start": 88.119, "end": 88.219}, {"word": "this", "start": 88.259, "end": 88.399}, {"word": "would", "start": 88.44, "end": 88.6}, {"word": "disappear.", "start": 88.62, "end": 89.141}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "You know, it breaks down over many, many years.", "start": 89.301, "end": 90.824, "words": [{"word": "You", "start": 89.301, "end": 89.361}, {"word": "know,", "start": 89.381, "end": 89.481}, {"word": "it", "start": 89.501, "end": 89.542}, {"word": "breaks", "start": 89.602, "end": 89.822}, {"word": "down", "start": 89.862, "end": 89.982}, {"word": "over", "start": 90.042, "end": 90.163}, {"word": "many,", "start": 90.203, "end": 90.363}, {"word": "many", "start": 90.383, "end": 90.543}, {"word": "years.", "start": 90.583, "end": 90.824}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Right.", "start": 91.064, "end": 91.345, "words": [{"word": "Right.", "start": 91.064, "end": 91.345}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "But these arrowheads were found in very dry soil that hadn't been moved or disturbed.", "start": 91.505, "end": 97.656, "words": [{"word": "But", "start": 91.505, "end": 91.625}, {"word": "these", "start": 91.685, "end": 91.906}, {"word": "arrowheads", "start": 91.946, "end": 92.447}, {"word": "were", "start": 92.487, "end": 92.627}, {"word": "found", "start": 92.687, "end": 92.928}, {"word": "in", "start": 93.028, "end": 93.088}, {"word": "very", "start": 93.248, "end": 93.549}, {"word": "dry", "start": 93.629, "end": 93.989}, {"word": "soil", "start": 94.17, "end": 94.55}, {"word": "that", "start": 94.591, "end": 95.292}, {"word": "hadn't", "start": 95.332, "end": 95.572}, {"word": "been", "start": 95.592, "end": 95.733}, {"word": "moved", "start": 95.833, "end": 96.213}, {"word": "or", "start": 96.314, "end": 96.374}, {"word": "disturbed.", "start": 96.434, "end": 97.656}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "This dry soil helped to, well, to preserve the poison.", "start": 97.872, "end": 102.823, "words": [{"word": "This", "start": 97.872, "end": 98.072}, {"word": "dry", "start": 98.133, "end": 98.453}, {"word": "soil", "start": 98.574, "end": 98.934}, {"word": "helped", "start": 98.994, "end": 99.496}, {"word": "to,", "start": 99.556, "end": 99.796}, {"word": "well,", "start": 99.856, "end": 101.139}, {"word": "to", "start": 101.44, "end": 101.56}, {"word": "preserve", "start": 101.66, "end": 102.242}, {"word": "the", "start": 102.282, "end": 102.382}, {"word": "poison.", "start": 102.442, "end": 102.823}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Preserve.", "start": 102.943, "end": 103.605, "words": [{"word": "Preserve.", "start": 102.943, "end": 103.605}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "What does that mean?", "start": 103.865, "end": 104.507, "words": [{"word": "What", "start": 103.865, "end": 103.945}, {"word": "does", "start": 103.966, "end": 104.066}, {"word": "that", "start": 104.106, "end": 104.226}, {"word": "mean?", "start": 104.246, "end": 104.507}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "To preserve something means to keep it safe or in good condition for a long, long time.", "start": 104.667, "end": 109.257, "words": [{"word": "To", "start": 104.667, "end": 104.727}, {"word": "preserve", "start": 104.767, "end": 105.088}, {"word": "something", "start": 105.128, "end": 105.409}, {"word": "means", "start": 105.429, "end": 105.609}, {"word": "to", "start": 105.649, "end": 105.689}, {"word": "keep", "start": 105.749, "end": 105.89}, {"word": "it", "start": 105.95, "end": 105.99}, {"word": "safe", "start": 106.07, "end": 106.351}, {"word": "or", "start": 106.651, "end": 106.712}, {"word": "in", "start": 106.772, "end": 106.812}, {"word": "good", "start": 106.872, "end": 107.012}, {"word": "condition", "start": 107.052, "end": 107.413}, {"word": "for", "start": 107.453, "end": 107.914}, {"word": "a", "start": 107.954, "end": 107.994}, {"word": "long,", "start": 108.135, "end": 108.536}, {"word": "long", "start": 108.596, "end": 108.876}, {"word": "time.", "start": 108.937, "end": 109.257}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "The dry soil was like a time capsule.", "start": 109.658, "end": 111.462, "words": [{"word": "The", "start": 109.658, "end": 109.738}, {"word": "dry", "start": 109.798, "end": 110.039}, {"word": "soil", "start": 110.079, "end": 110.32}, {"word": "was", "start": 110.36, "end": 110.44}, {"word": "like", "start": 110.48, "end": 110.56}, {"word": "a", "start": 110.6, "end": 110.62}, {"word": "time", "start": 110.68, "end": 110.901}, {"word": "capsule.", "start": 110.941, "end": 111.462}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Oh, I get it.", "start": 111.482, "end": 112.023, "words": [{"word": "Oh,", "start": 111.482, "end": 111.562}, {"word": "I", "start": 111.623, "end": 111.663}, {"word": "get", "start": 111.743, "end": 111.903}, {"word": "it.", "start": 111.963, "end": 112.023}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "That's so cool.", "start": 112.043, "end": 112.645, "words": [{"word": "That's", "start": 112.043, "end": 112.204}, {"word": "so", "start": 112.244, "end": 112.384}, {"word": "cool.", "start": 112.424, "end": 112.645}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "But why did they even need poison?", "start": 112.705, "end": 114.529, "words": [{"word": "But", "start": 112.705, "end": 112.825}, {"word": "why", "start": 113.106, "end": 113.306}, {"word": "did", "start": 113.346, "end": 113.447}, {"word": "they", "start": 113.487, "end": 113.587}, {"word": "even", "start": 113.647, "end": 113.807}, {"word": "need", "start": 113.868, "end": 114.048}, {"word": "poison?", "start": 114.108, "end": 114.529}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Why not just use a really sharp arrow?", "start": 114.569, "end": 116.353, "words": [{"word": "Why", "start": 114.569, "end": 114.649}, {"word": "not", "start": 114.709, "end": 114.81}, {"word": "just", "start": 114.85, "end": 114.95}, {"word": "use", "start": 115.03, "end": 115.13}, {"word": "a", "start": 115.19, "end": 115.211}, {"word": "really", "start": 115.311, "end": 115.571}, {"word": "sharp", "start": 115.611, "end": 115.892}, {"word": "arrow?", "start": 115.972, "end": 116.353}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Another great question.", "start": 116.333, "end": 117.334, "words": [{"word": "Another", "start": 116.333, "end": 116.693}, {"word": "great", "start": 116.754, "end": 116.934}, {"word": "question.", "start": 116.994, "end": 117.334}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Scientists believe it's because the arrowheads were actually very small.", "start": 117.695, "end": 120.479, "words": [{"word": "Scientists", "start": 117.695, "end": 118.135}, {"word": "believe", "start": 118.155, "end": 118.416}, {"word": "it's", "start": 118.456, "end": 118.556}, {"word": "because", "start": 118.596, "end": 118.776}, {"word": "the", "start": 118.816, "end": 118.876}, {"word": "arrowheads", "start": 118.957, "end": 119.297}, {"word": "were", "start": 119.317, "end": 119.437}, {"word": "actually", "start": 119.497, "end": 119.738}, {"word": "very", "start": 119.818, "end": 120.038}, {"word": "small.", "start": 120.118, "end": 120.479}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Small.", "start": 120.659, "end": 121.34, "words": [{"word": "Small.", "start": 120.659, "end": 121.34}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Yes, probably too small to really hurt a large animal just by hitting it.", "start": 121.36, "end": 124.464, "words": [{"word": "Yes,", "start": 121.36, "end": 121.62}, {"word": "probably", "start": 121.72, "end": 121.921}, {"word": "too", "start": 121.941, "end": 122.081}, {"word": "small", "start": 122.141, "end": 122.401}, {"word": "to", "start": 122.421, "end": 122.521}, {"word": "really", "start": 122.561, "end": 122.842}, {"word": "hurt", "start": 122.902, "end": 123.022}, {"word": "a", "start": 123.082, "end": 123.102}, {"word": "large", "start": 123.142, "end": 123.382}, {"word": "animal", "start": 123.503, "end": 123.743}, {"word": "just", "start": 123.803, "end": 123.943}, {"word": "by", "start": 123.983, "end": 124.083}, {"word": "hitting", "start": 124.143, "end": 124.364}, {"word": "it.", "start": 124.404, "end": 124.464}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "They needed the poison to make the weapon strong enough.", "start": 124.824, "end": 126.947, "words": [{"word": "They", "start": 124.824, "end": 124.945}, {"word": "needed", "start": 125.005, "end": 125.205}, {"word": "the", "start": 125.225, "end": 125.305}, {"word": "poison", "start": 125.365, "end": 125.786}, {"word": "to", "start": 125.846, "end": 125.906}, {"word": "make", "start": 125.946, "end": 126.046}, {"word": "the", "start": 126.066, "end": 126.146}, {"word": "weapon", "start": 126.186, "end": 126.407}, {"word": "strong", "start": 126.427, "end": 126.707}, {"word": "enough.", "start": 126.747, "end": 126.947}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "The poison did the real work.", "start": 127.368, "end": 129.391, "words": [{"word": "The", "start": 127.368, "end": 127.448}, {"word": "poison", "start": 127.528, "end": 128.009}, {"word": "did", "start": 128.189, "end": 128.329}, {"word": "the", "start": 128.369, "end": 128.429}, {"word": "real", "start": 128.449, "end": 128.73}, {"word": "work.", "start": 128.79, "end": 129.391}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Wow.", "start": 129.411, "end": 130.292, "words": [{"word": "Wow.", "start": 129.411, "end": 130.292}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "You know, it sounds really dangerous to even handle that poison.", "start": 130.712, "end": 133.716, "words": [{"word": "You", "start": 130.712, "end": 130.772}, {"word": "know,", "start": 130.812, "end": 130.953}, {"word": "it", "start": 131.013, "end": 131.073}, {"word": "sounds", "start": 131.133, "end": 131.373}, {"word": "really", "start": 131.453, "end": 131.714}, {"word": "dangerous", "start": 131.754, "end": 132.214}, {"word": "to", "start": 132.234, "end": 132.294}, {"word": "even", "start": 132.355, "end": 132.495}, {"word": "handle", "start": 132.615, "end": 132.975}, {"word": "that", "start": 133.035, "end": 133.176}, {"word": "poison.", "start": 133.256, "end": 133.716}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "You'd have to be, um, really smart.", "start": 134.237, "end": 136.981, "words": [{"word": "You'd", "start": 134.237, "end": 134.417}, {"word": "have", "start": 134.477, "end": 134.638}, {"word": "to", "start": 134.678, "end": 134.718}, {"word": "be,", "start": 134.758, "end": 134.898}, {"word": "um,", "start": 134.938, "end": 135.579}, {"word": "really", "start": 136.28, "end": 136.52}, {"word": "smart.", "start": 136.62, "end": 136.981}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "You would.", "start": 137.161, "end": 137.541, "words": [{"word": "You", "start": 137.161, "end": 137.261}, {"word": "would.", "start": 137.301, "end": 137.541}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "And an expert mentioned in the article, Anders Huggberg, he agrees.", "start": 138.042, "end": 141.407, "words": [{"word": "And", "start": 138.042, "end": 138.162}, {"word": "an", "start": 138.202, "end": 138.242}, {"word": "expert", "start": 138.343, "end": 138.703}, {"word": "mentioned", "start": 138.763, "end": 139.044}, {"word": "in", "start": 139.064, "end": 139.104}, {"word": "the", "start": 139.124, "end": 139.204}, {"word": "article,", "start": 139.224, "end": 139.504}, {"word": "Anders", "start": 139.544, "end": 139.905}, {"word": "Huggberg,", "start": 139.945, "end": 140.866}, {"word": "he", "start": 140.886, "end": 141.006}, {"word": "agrees.", "start": 141.066, "end": 141.407}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "What did he say?", "start": 141.567, "end": 142.408, "words": [{"word": "What", "start": 141.567, "end": 141.667}, {"word": "did", "start": 141.707, "end": 141.767}, {"word": "he", "start": 141.807, "end": 141.867}, {"word": "say?", "start": 141.907, "end": 142.408}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "He said, this discovery shows advanced thinking in early humans.", "start": 142.557, "end": 146.804, "words": [{"word": "He", "start": 142.557, "end": 142.677}, {"word": "said,", "start": 142.717, "end": 142.878}, {"word": "this", "start": 142.978, "end": 143.158}, {"word": "discovery", "start": 143.218, "end": 143.779}, {"word": "shows", "start": 143.839, "end": 144.16}, {"word": "advanced", "start": 144.2, "end": 144.861}, {"word": "thinking", "start": 144.941, "end": 145.321}, {"word": "in", "start": 146.063, "end": 146.143}, {"word": "early", "start": 146.243, "end": 146.463}, {"word": "humans.", "start": 146.503, "end": 146.804}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Advanced thinking.", "start": 147.225, "end": 148.166, "words": [{"word": "Advanced", "start": 147.225, "end": 147.525}, {"word": "thinking.", "start": 147.665, "end": 148.166}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Yes.", "start": 148.366, "end": 148.707, "words": [{"word": "Yes.", "start": 148.366, "end": 148.707}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Using poison isn't simple.", "start": 149.668, "end": 150.91, "words": [{"word": "Using", "start": 149.668, "end": 149.869}, {"word": "poison", "start": 149.949, "end": 150.289}, {"word": "isn't", "start": 150.37, "end": 150.57}, {"word": "simple.", "start": 150.61, "end": 150.91}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It takes a lot of planning and a lot of patience.", "start": 151.411, "end": 153.735, "words": [{"word": "It", "start": 151.411, "end": 151.451}, {"word": "takes", "start": 151.491, "end": 151.672}, {"word": "a", "start": 151.712, "end": 151.772}, {"word": "lot", "start": 151.852, "end": 152.032}, {"word": "of", "start": 152.072, "end": 152.112}, {"word": "planning", "start": 152.172, "end": 152.533}, {"word": "and", "start": 152.653, "end": 152.713}, {"word": "a", "start": 152.733, "end": 152.773}, {"word": "lot", "start": 152.834, "end": 152.994}, {"word": "of", "start": 153.034, "end": 153.074}, {"word": "patience.", "start": 153.114, "end": 153.735}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Planning.", "start": 153.755, "end": 154.596, "words": [{"word": "Planning.", "start": 153.755, "end": 154.596}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "First, you have to find the right plant.", "start": 155.197, "end": 157.0, "words": [{"word": "First,", "start": 155.197, "end": 155.518}, {"word": "you", "start": 155.919, "end": 156.039}, {"word": "have", "start": 156.079, "end": 156.159}, {"word": "to", "start": 156.179, "end": 156.219}, {"word": "find", "start": 156.279, "end": 156.399}, {"word": "the", "start": 156.419, "end": 156.499}, {"word": "right", "start": 156.52, "end": 156.66}, {"word": "plant.", "start": 156.7, "end": 157.0}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Then you have to figure out how to get the poison out.", "start": 157.641, "end": 159.685, "words": [{"word": "Then", "start": 157.641, "end": 157.822}, {"word": "you", "start": 157.842, "end": 158.002}, {"word": "have", "start": 158.022, "end": 158.122}, {"word": "to", "start": 158.142, "end": 158.202}, {"word": "figure", "start": 158.242, "end": 158.463}, {"word": "out", "start": 158.523, "end": 158.623}, {"word": "how", "start": 158.663, "end": 158.823}, {"word": "to", "start": 158.863, "end": 158.923}, {"word": "get", "start": 158.943, "end": 159.044}, {"word": "the", "start": 159.064, "end": 159.144}, {"word": "poison", "start": 159.184, "end": 159.484}, {"word": "out.", "start": 159.564, "end": 159.685}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "And you have to do it all without hurting yourself.", "start": 159.745, "end": 161.548, "words": [{"word": "And", "start": 159.745, "end": 159.805}, {"word": "you", "start": 159.825, "end": 159.925}, {"word": "have", "start": 159.965, "end": 160.045}, {"word": "to", "start": 160.065, "end": 160.125}, {"word": "do", "start": 160.185, "end": 160.246}, {"word": "it", "start": 160.286, "end": 160.326}, {"word": "all", "start": 160.426, "end": 160.526}, {"word": "without", "start": 160.586, "end": 160.826}, {"word": "hurting", "start": 160.887, "end": 161.107}, {"word": "yourself.", "start": 161.127, "end": 161.548}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Exactly.", "start": 161.568, "end": 162.068, "words": [{"word": "Exactly.", "start": 161.568, "end": 162.068}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "You have to be very careful and focused.", "start": 162.088, "end": 163.791, "words": [{"word": "You", "start": 162.088, "end": 162.169}, {"word": "have", "start": 162.189, "end": 162.269}, {"word": "to", "start": 162.309, "end": 162.349}, {"word": "be", "start": 162.389, "end": 162.469}, {"word": "very", "start": 162.549, "end": 162.75}, {"word": "careful", "start": 162.81, "end": 163.13}, {"word": "and", "start": 163.17, "end": 163.23}, {"word": "focused.", "start": 163.351, "end": 163.791}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It shows they could think in many steps to reach a goal.", "start": 164.332, "end": 166.776, "words": [{"word": "It", "start": 164.332, "end": 164.392}, {"word": "shows", "start": 164.452, "end": 164.653}, {"word": "they", "start": 164.673, "end": 164.813}, {"word": "could", "start": 164.853, "end": 164.973}, {"word": "think", "start": 165.033, "end": 165.193}, {"word": "in", "start": 165.254, "end": 165.314}, {"word": "many", "start": 165.394, "end": 165.594}, {"word": "steps", "start": 165.654, "end": 165.935}, {"word": "to", "start": 165.995, "end": 166.095}, {"word": "reach", "start": 166.155, "end": 166.335}, {"word": "a", "start": 166.395, "end": 166.415}, {"word": "goal.", "start": 166.456, "end": 166.776}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "You know, that makes me think that early humans were much smarter than I thought.", "start": 166.84, "end": 170.086, "words": [{"word": "You", "start": 166.84, "end": 166.98}, {"word": "know,", "start": 167.02, "end": 167.121}, {"word": "that", "start": 167.161, "end": 167.281}, {"word": "makes", "start": 167.341, "end": 167.501}, {"word": "me", "start": 167.541, "end": 167.622}, {"word": "think", "start": 167.662, "end": 167.802}, {"word": "that", "start": 167.842, "end": 167.962}, {"word": "early", "start": 168.002, "end": 168.323}, {"word": "humans", "start": 168.383, "end": 168.744}, {"word": "were", "start": 168.824, "end": 168.984}, {"word": "much", "start": 169.044, "end": 169.205}, {"word": "smarter", "start": 169.285, "end": 169.565}, {"word": "than", "start": 169.585, "end": 169.706}, {"word": "I", "start": 169.746, "end": 169.786}, {"word": "thought.", "start": 169.846, "end": 170.086}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It wasn't just like throwing rocks.", "start": 170.427, "end": 172.712, "words": [{"word": "It", "start": 170.427, "end": 170.487}, {"word": "wasn't", "start": 170.527, "end": 170.768}, {"word": "just", "start": 170.828, "end": 171.088}, {"word": "like", "start": 171.269, "end": 171.449}, {"word": "throwing", "start": 171.91, "end": 172.271}, {"word": "rocks.", "start": 172.351, "end": 172.712}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Not at all.", "start": 172.772, "end": 173.213, "words": [{"word": "Not", "start": 172.772, "end": 172.912}, {"word": "at", "start": 172.952, "end": 172.992}, {"word": "all.", "start": 173.092, "end": 173.213}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It was chemistry.", "start": 173.233, "end": 173.974, "words": [{"word": "It", "start": 173.233, "end": 173.273}, {"word": "was", "start": 173.313, "end": 173.393}, {"word": "chemistry.", "start": 173.473, "end": 173.974}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "They were doing chemistry 60,000 years ago.", "start": 173.994, "end": 176.018, "words": [{"word": "They", "start": 173.994, "end": 174.094}, {"word": "were", "start": 174.114, "end": 174.195}, {"word": "doing", "start": 174.235, "end": 174.375}, {"word": "chemistry", "start": 174.395, "end": 174.816}, {"word": "60,000", "start": 174.836, "end": 175.577}, {"word": "years", "start": 175.597, "end": 175.798}, {"word": "ago.", "start": 175.858, "end": 176.018}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "They absolutely were.", "start": 176.038, "end": 177.04, "words": [{"word": "They", "start": 176.038, "end": 176.118}, {"word": "absolutely", "start": 176.299, "end": 176.74}, {"word": "were.", "start": 176.78, "end": 177.04}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It really changes how you see the past, doesn't it?", "start": 177.501, "end": 179.946, "words": [{"word": "It", "start": 177.501, "end": 177.541}, {"word": "really", "start": 177.581, "end": 177.782}, {"word": "changes", "start": 177.862, "end": 178.243}, {"word": "how", "start": 178.303, "end": 178.463}, {"word": "you", "start": 178.503, "end": 178.623}, {"word": "see", "start": 178.663, "end": 178.804}, {"word": "the", "start": 178.824, "end": 178.904}, {"word": "past,", "start": 178.944, "end": 179.285}, {"word": "doesn't", "start": 179.325, "end": 179.585}, {"word": "it?", "start": 179.605, "end": 179.946}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It totally does.", "start": 179.966, "end": 180.968, "words": [{"word": "It", "start": 179.966, "end": 180.066}, {"word": "totally", "start": 180.166, "end": 180.667}, {"word": "does.", "start": 180.707, "end": 180.968}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "This has been so fascinating.", "start": 181.008, "end": 182.19, "words": [{"word": "This", "start": 181.008, "end": 181.128}, {"word": "has", "start": 181.148, "end": 181.229}, {"word": "been", "start": 181.269, "end": 181.409}, {"word": "so", "start": 181.489, "end": 181.649}, {"word": "fascinating.", "start": 181.709, "end": 182.19}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "And for everyone listening, try reading the article again.", "start": 182.291, "end": 185.196, "words": [{"word": "And", "start": 182.291, "end": 182.391}, {"word": "for", "start": 182.431, "end": 182.752}, {"word": "everyone", "start": 182.872, "end": 183.192}, {"word": "listening,", "start": 183.253, "end": 183.613}, {"word": "try", "start": 184.014, "end": 184.234}, {"word": "reading", "start": 184.275, "end": 184.515}, {"word": "the", "start": 184.535, "end": 184.615}, {"word": "article", "start": 184.675, "end": 184.956}, {"word": "again.", "start": 184.976, "end": 185.196}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It's a great way to find new words like courts or preserve.", "start": 185.537, "end": 188.884, "words": [{"word": "It's", "start": 185.537, "end": 185.657}, {"word": "a", "start": 185.697, "end": 185.717}, {"word": "great", "start": 185.818, "end": 186.018}, {"word": "way", "start": 186.058, "end": 186.178}, {"word": "to", "start": 186.218, "end": 186.279}, {"word": "find", "start": 186.339, "end": 186.539}, {"word": "new", "start": 186.579, "end": 186.8}, {"word": "words", "start": 186.86, "end": 187.2}, {"word": "like", "start": 187.26, "end": 187.421}, {"word": "courts", "start": 187.561, "end": 187.902}, {"word": "or", "start": 188.222, "end": 188.303}, {"word": "preserve.", "start": 188.323, "end": 188.884}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Yeah, that's a good idea.", "start": 189.124, "end": 190.126, "words": [{"word": "Yeah,", "start": 189.124, "end": 189.365}, {"word": "that's", "start": 189.385, "end": 189.545}, {"word": "a", "start": 189.585, "end": 189.605}, {"word": "good", "start": 189.625, "end": 189.765}, {"word": "idea.", "start": 189.805, "end": 190.126}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Keep reading and keep exploring the world.", "start": 190.186, "end": 193.132, "words": [{"word": "Keep", "start": 190.186, "end": 190.807}, {"word": "reading", "start": 190.908, "end": 191.268}, {"word": "and", "start": 191.308, "end": 191.749}, {"word": "keep", "start": 191.87, "end": 192.05}, {"word": "exploring", "start": 192.13, "end": 192.631}, {"word": "the", "start": 192.651, "end": 192.751}, {"word": "world.", "start": 192.791, "end": 193.132}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Keep reading and keep exploring the world.", "start": 193.393, "end": 196.138, "words": [{"word": "Keep", "start": 193.393, "end": 193.693}, {"word": "reading", "start": 193.713, "end": 194.314}, {"word": "and", "start": 194.355, "end": 194.555}, {"word": "keep", "start": 194.635, "end": 194.815}, {"word": "exploring", "start": 194.896, "end": 195.417}, {"word": "the", "start": 195.437, "end": 195.537}, {"word": "world.", "start": 195.597, "end": 196.138}]}];
+
+    const audio = document.getElementById('audioPlayer');
+    const container = document.getElementById('transcriptContainer');
+    const playModeBtn = document.getElementById('playModeBtn');
+    const recordVideoBtn = document.getElementById('recordVideoBtn');
+    const mobileRecordBtn = document.getElementById('mobileRecordBtn');
+    const stopRecBtn = document.getElementById('stopRecBtn');
+    const btnContainer = document.getElementById('btnContainer');
+    const uiControls = document.getElementById('uiControls');
+    const progressFill = document.getElementById('progressFill');
+    const progressBarContainer = document.getElementById('progressBarContainer');
+    const debugTime = document.getElementById('debugTime');
+    const recProgressBar = document.getElementById('recProgressBar');
+    const tips = document.getElementById('tips');
+
+    let isRecordingMode = false;
+    let processedData = []; 
+    let currentActiveBlockIndex = -1;
+    let currentActiveWordElement = null;
+    let animationFrameId;
+    let mediaRecorder;
+    let recordedChunks = [];
+    let recStream = null;
+
+    // --- 设备检测 ---
+    function checkDevice() {
+        if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+            // PC
+            recordVideoBtn.style.display = 'flex';
+            tips.textContent = '提示: 电脑录制请勾选 "分享音频"';
+        } else {
+            // Mobile
+            mobileRecordBtn.style.display = 'flex';
+            tips.textContent = '提示: 点击下方按钮进入全屏沉浸模式';
+        }
+    }
+    checkDevice();
+
+    function mergeTranscriptSegments(rawData) {
+        if (!rawData || rawData.length === 0) return [];
+        const merged = [];
+        let currentBlock = {
+            speaker: rawData[0].speaker, // 直接用 speaker 名称
+            start: rawData[0].start,
+            end: rawData[0].end,
+            words: [...(rawData[0].words || [])]
+        };
+        for (let i = 1; i < rawData.length; i++) {
+            const nextSegment = rawData[i];
+            const projectedDuration = nextSegment.end - currentBlock.start;
+            
+            // 依据 Speaker 名称合并
+            if (nextSegment.speaker === currentBlock.speaker && projectedDuration <= 10.0) {
+                currentBlock.end = nextSegment.end;
+                if (nextSegment.words) {
+                    currentBlock.words = currentBlock.words.concat(nextSegment.words);
+                }
+            } else {
+                merged.push(currentBlock);
+                currentBlock = {
+                    speaker: nextSegment.speaker, // 直接用 speaker 名称
+                    start: nextSegment.start,
+                    end: nextSegment.end,
+                    words: [...(nextSegment.words || [])]
+                };
+            }
+        }
+        merged.push(currentBlock);
+        return merged;
+    }
+
+    function initTranscript() {
+        if (!rawTranscriptData || rawTranscriptData.length === 0) {
+            container.innerHTML = '<div style="padding:20px; text-align:center; color:#666;">暂无数据</div>';
+            return;
+        }
+
+        processedData = mergeTranscriptSegments(rawTranscriptData);
+        container.innerHTML = '';
+        
+        processedData.forEach((block, index) => {
+            const div = document.createElement('div');
+            div.className = 'transcript-item';
+            div.dataset.start = block.start;
+            div.dataset.end = block.end;
+            div.dataset.index = index;
+
+            // --- Speaker 逻辑 (直接读取名称) ---
+            const speakerSpan = document.createElement('span');
+            // 获取 JSON 中的名字，例如 "Female", "Male", "John"
+            const speakerName = block.speaker || 'Unknown';
+            
+            // 转换为 CSS 安全类名 (小写，去除空格)
+            // Example: "Female" -> "speaker-female", "Mr. John" -> "speaker-mr-john"
+            const cssClassSuffix = speakerName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+            
+            speakerSpan.className = `speaker-tag speaker-${cssClassSuffix}`;
+            speakerSpan.textContent = speakerName;
+            
+            div.appendChild(speakerSpan);
+            // ----------------------------------
+
+            const p = document.createElement('p');
+            p.className = 'text-content';
+
+            if (block.words) {
+                block.words.forEach((wordObj, wIndex) => {
+                    const wordSpan = document.createElement('span');
+                    wordSpan.className = 'word-span';
+                    wordSpan.textContent = wordObj.word; 
+                    wordSpan.dataset.start = wordObj.start;
+                    wordSpan.dataset.end = wordObj.end;
+                    p.appendChild(wordSpan);
+                    if (wIndex < block.words.length - 1) {
+                        p.appendChild(document.createTextNode(" "));
+                    }
+                });
+            } else {
+                p.textContent = block.sentence;
+            }
+
+            div.appendChild(p);
+            container.appendChild(div);
+
+            div.addEventListener('click', (e) => {
+                if (e.target.classList.contains('word-span')) {
+                    audio.currentTime = parseFloat(e.target.dataset.start);
+                } else {
+                    audio.currentTime = block.start;
+                }
+                if (audio.paused) audio.play();
+            });
+        });
+    }
+
+    function renderLoop() {
+        if (!audio.paused) {
+            updateTranscript();
+            if (isRecordingMode && audio.duration) {
+                const pct = (audio.currentTime / audio.duration) * 100;
+                recProgressBar.style.width = pct + '%';
+            }
+        }
+        animationFrameId = requestAnimationFrame(renderLoop);
+    }
+
+    function updateTranscript() {
+        const t = audio.currentTime;
+        let activeBlockIndex = -1;
+        for (let i = 0; i < processedData.length; i++) {
+            if (t >= processedData[i].start && t < processedData[i].end) {
+                activeBlockIndex = i;
+                break;
+            }
+        }
+
+        if (activeBlockIndex !== -1 && activeBlockIndex !== currentActiveBlockIndex) {
+            const prev = document.querySelector('.transcript-item.active');
+            if (prev) prev.classList.remove('active');
+
+            const current = container.children[activeBlockIndex];
+            if (current) {
+                current.classList.add('active');
+                current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            currentActiveBlockIndex = activeBlockIndex;
+        }
+
+        if (currentActiveBlockIndex !== -1) {
+            const activeBlockElement = container.children[currentActiveBlockIndex];
+            const wordSpans = activeBlockElement.querySelectorAll('.word-span');
+            let foundWord = false;
+
+            for (let span of wordSpans) {
+                const start = parseFloat(span.dataset.start);
+                const end = parseFloat(span.dataset.end);
+                if (t >= start && t < end + 0.05) { 
+                    if (currentActiveWordElement !== span) {
+                        if (currentActiveWordElement) currentActiveWordElement.classList.remove('word-active');
+                        span.classList.add('word-active');
+                        currentActiveWordElement = span;
+                    }
+                    foundWord = true;
+                    break; 
+                }
+            }
+            if (!foundWord && currentActiveWordElement) {
+                currentActiveWordElement.classList.remove('word-active');
+                currentActiveWordElement = null;
+            }
+        }
+    }
+
+    // --- PC 内录 ---
+    async function startVideoRecording() {
+        try {
+            const stream = await navigator.mediaDevices.getDisplayMedia({
+                video: {
+                    width: { ideal: 1080 },  
+                    height: { ideal: 1920 }, 
+                    frameRate: { ideal: 60 } 
+                },
+                audio: {
+                    echoCancellation: false, 
+                    noiseSuppression: false, 
+                    autoGainControl: false,  
+                    sampleRate: 48000        
+                },
+                preferCurrentTab: true, 
+                selfBrowserSurface: "include", 
+                systemAudio: "include" 
+            });
+
+            recStream = stream;
+
+            const audioTrack = stream.getAudioTracks()[0];
+            if (!audioTrack) {
+                alert("❌ 错误：您未勾选【分享音频】。");
+                stopEverything();
+                return;
+            }
+
+            enterRecordingMode('pc');
+
+            const mimeType = MediaRecorder.isTypeSupported("video/webm; codecs=vp9,opus") 
+                           ? "video/webm; codecs=vp9,opus" 
+                           : "video/webm";
+            
+            mediaRecorder = new MediaRecorder(stream, { 
+                mimeType, 
+                videoBitsPerSecond: 15000000 
+            }); 
+            
+            recordedChunks = [];
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) recordedChunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = saveRecording;
+
+            mediaRecorder.start();
+            console.log("🎥 PC内录开始");
+            
+            setTimeout(() => {
+                audio.currentTime = 0;
+                audio.play();
+            }, 1000);
+
+            audio.onended = () => stopEverything();
+            stream.getVideoTracks()[0].onended = () => stopEverything();
+
+        } catch (err) {
+            console.error("Error:", err);
+            if (err.name !== 'NotAllowedError') alert("启动失败：" + err.message);
+        }
+    }
+
+    // --- 手机全屏沉浸 (无弹窗) ---
+    function startMobileRecordingPrep() {
+        // 尝试全屏
+        const docEl = document.documentElement;
+        if (docEl.requestFullscreen) {
+            docEl.requestFullscreen().catch(e => {});
+        } else if (docEl.webkitRequestFullscreen) {
+            docEl.webkitRequestFullscreen();
+        }
+
+        enterRecordingMode('mobile');
+        
+        console.log("📱 手机沉浸模式，静默倒计时5秒");
+        setTimeout(() => {
+            audio.currentTime = 0;
+            audio.play();
+        }, 5000);
+    }
+
+    function stopEverything() {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
+        }
+        audio.pause();
+        if (recStream) {
+            recStream.getTracks().forEach(track => track.stop());
+        }
+        exitRecordingMode();
+    }
+
+    function saveRecording() {
+        const blob = new Blob(recordedChunks, { type: "video/webm" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        document.body.appendChild(a);
+        a.style.display = "none";
+        a.href = url;
+        const filename = document.title.replace(/\s+/g, '_') + "_1080P.webm";
+        a.download = filename;
+        a.click();
+        window.URL.revokeObjectURL(url);
+    }
+
+    function enterRecordingMode(type) {
+        isRecordingMode = true;
+        document.body.classList.add('recording-mode');
+        
+        if (type === 'pc') {
+            document.body.classList.add('pc-mode');
+        } else if (type === 'mobile') {
+            document.body.classList.add('mobile-mode');
+        }
+
+        uiControls.classList.add('hidden-ui');
+        btnContainer.style.opacity = '0'; 
+        btnContainer.style.pointerEvents = 'none';
+        recProgressBar.style.width = '0%';
+    }
+
+    function exitRecordingMode() {
+        isRecordingMode = false;
+        document.body.classList.remove('recording-mode', 'pc-mode', 'mobile-mode');
+        uiControls.classList.remove('hidden-ui');
+        btnContainer.style.opacity = '1';
+        btnContainer.style.pointerEvents = 'auto';
+        
+        if (document.exitFullscreen) {
+            document.exitFullscreen().catch(e => {});
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        }
+    }
+
+    // Listeners
+    audio.addEventListener('play', () => {
+        cancelAnimationFrame(animationFrameId);
+        renderLoop();
+    });
+    audio.addEventListener('pause', () => cancelAnimationFrame(animationFrameId));
+    audio.addEventListener('timeupdate', () => {
+        if (!audio.duration) return;
+        const percent = (audio.currentTime / audio.duration) * 100;
+        progressFill.style.width = percent + '%';
+        if(!isRecordingMode) debugTime.textContent = audio.currentTime.toFixed(3);
+    });
+
+    playModeBtn.addEventListener('click', () => {
+        if (!isRecordingMode) {
+            // 复用手机模式，不显示 PC 控件
+            enterRecordingMode('mobile');
+            console.log("5秒后播放...");
+            setTimeout(() => { audio.play(); }, 5000);
+        }
+    });
+
+    recordVideoBtn.addEventListener('click', startVideoRecording);
+    mobileRecordBtn.addEventListener('click', startMobileRecordingPrep);
+    
+    stopRecBtn.addEventListener('click', stopEverything);
+
+    progressBarContainer.addEventListener('click', (e) => {
+        const rect = progressBarContainer.getBoundingClientRect();
+        const pos = (e.clientX - rect.left) / rect.width;
+        audio.currentTime = pos * audio.duration;
+        updateTranscript();
+    });
+
+    initTranscript();
+
+</script>
+
+</body>
+</html>

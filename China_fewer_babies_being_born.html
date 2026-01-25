@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>High Costs Shrink China s Population</title>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --accent-color: #a855f7;
+            
+            /* 定义颜色变量 */
+            --female-color: #ec4899; /* 粉色 */
+            --male-color: #2dd4bf;   /* 青色 */
+            --unknown-color: #9ca3af;
+
+            --text-normal: rgba(255, 255, 255, 0.4);
+            --text-active: #ffffff;
+            --word-highlight: #ff9f0a;
+            --font-stack: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            font-family: var(--font-stack);
+            background-color: var(--bg-color);
+            color: white;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.5s ease;
+        }
+
+        .ambient-bg {
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 50% 50%, #4c1d95, #0f172a 70%, #000);
+            z-index: -1;
+            filter: blur(80px);
+            opacity: 0.8;
+            animation: breathe 10s infinite alternate;
+        }
+
+        @keyframes breathe {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1); }
+        }
+
+        .player-header {
+            padding: 40px 20px 10px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+            transition: all 0.5s ease;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+            flex-shrink: 0;
+        }
+
+        .artwork-container {
+            width: 140px;
+            height: 185px;
+            border-radius: 8px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            margin-bottom: 15px;
+            overflow: hidden;
+            background-color: #333;
+            position: relative;
+            transition: all 0.5s ease;
+        }
+
+        .artwork-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .track-info { 
+            text-align: center; 
+            transition: all 0.5s ease;
+        }
+        .track-title { font-size: 20px; font-weight: 800; margin: 0; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .track-artist { font-size: 14px; color: rgba(255,255,255,0.9); margin-top: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        .track-subtitle { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 4px; font-weight: 400; letter-spacing: 0.5px; }
+
+        .ui-controls {
+            width: 100%;
+            max-width: 400px;
+            margin-top: 20px;
+            transition: opacity 0.5s, transform 0.5s;
+        }
+
+        .hidden-ui {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-20px);
+            height: 0; 
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .progress-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; margin-bottom: 20px; cursor: pointer; }
+        .progress-fill { height: 100%; background: white; border-radius: 2px; width: 0%; transition: width 0.1s linear; }
+
+        .transcript-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 30px 150px 30px;
+            mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+            scroll-behavior: smooth;
+            transition: all 0.5s ease;
+        }
+        .transcript-container::-webkit-scrollbar { display: none; }
+
+        .transcript-item {
+            margin-bottom: 30px;
+            transition: opacity 0.4s ease, transform 0.4s ease, filter 0.4s ease;
+            opacity: 0.3; 
+            filter: blur(1.5px);
+            transform: scale(0.98);
+            transform-origin: left center;
+            cursor: pointer;
+            scroll-margin-top: 150px; 
+        }
+
+        .transcript-item.active {
+            opacity: 1;
+            filter: blur(0);
+            transform: scale(1.0);
+        }
+
+        .speaker-tag {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            opacity: 0.9;
+            color: #fff;
+        }
+
+        /* 直接根据 JSON 中的 speaker 名字匹配
+           如果 JSON 里是 "Female"，会匹配 .speaker-female
+           如果 JSON 里是 "Male"，会匹配 .speaker-male
+        */
+        .speaker-female { background-color: var(--female-color); }
+        .speaker-male   { background-color: var(--male-color); color: #000 !important; }
+        .speaker-unknown { background-color: var(--unknown-color); }
+
+        .text-content {
+            font-size: 24px;
+            line-height: 1.6;
+            font-weight: 600;
+            margin: 0;
+            color: var(--text-active);
+            word-wrap: break-word;
+        }
+
+        .word-span {
+            transition: color 0.1s ease, text-shadow 0.1s ease;
+            display: inline;
+            border-radius: 4px;
+            margin: 0; 
+            padding: 0;
+        }
+
+        .word-active {
+            color: var(--word-highlight);
+            text-shadow: 0 0 15px rgba(255, 159, 10, 0.7);
+        }
+
+        /* 底部按钮栏 */
+        .btn-container {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 100;
+            transition: all 0.3s;
+            width: 90%;
+            justify-content: center;
+        }
+
+        .overlay-btn {
+            background: white;
+            color: black;
+            padding: 14px 20px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s;
+            white-space: nowrap;
+        }
+        .overlay-btn:active { transform: scale(0.95); }
+        
+        /* 录制进度条 (PC) */
+        .recording-controls {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px; 
+            z-index: 2000;
+            display: none; 
+        }
+
+        .rec-progress-bar {
+            height: 100%;
+            background-color: #ff4444;
+            width: 0%;
+            transition: width 0.1s linear;
+            box-shadow: 0 0 10px rgba(255, 68, 68, 0.8);
+        }
+
+        /* 电脑端停止按钮 (悬停) */
+        .stop-rec-hitbox {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 150px; 
+            height: 100px;
+            z-index: 2001;
+            display: none; 
+        }
+
+        .stop-rec-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 68, 68, 0.9);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: none;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            pointer-events: none; 
+        }
+
+        .stop-rec-hitbox:hover .stop-rec-btn {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        #debugTime {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #0f0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            z-index: 2000;
+            pointer-events: none;
+        }
+
+        /* =========================================
+           沉浸/录制模式通用样式
+           ========================================= */
+        body.recording-mode {
+            position: fixed; 
+            width: 100%;
+            height: 100%;
+            background: #000;
+        }
+
+        body.recording-mode .player-header { 
+            padding-top: 40px; 
+            padding-bottom: 0px; 
+        }
+        
+        body.recording-mode .artwork-container { 
+            width: 120px; 
+            height: 160px; 
+            margin-top: 0; 
+            margin-bottom: 5px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        
+        body.recording-mode .track-info { 
+            transform: scale(0.9); 
+            margin-bottom: 0;
+        }
+        
+        body.recording-mode .transcript-container { 
+            padding-top: 0px; 
+            mask-image: linear-gradient(to bottom, transparent 0%, black 5%, black 90%, transparent 100%);
+        }
+        
+        body.recording-mode .transcript-item.active .text-content { 
+            color: rgba(255,255,255,0.95);
+        }
+        
+        /* 隐藏 UI */
+        body.recording-mode #debugTime { display: none; }
+        body.recording-mode .btn-container { opacity: 0; pointer-events: none; }
+        body.recording-mode .ui-controls { opacity: 0; pointer-events: none; height: 0; margin: 0;}
+
+        /* PC特有：仅PC模式显示录制控制条 */
+        body.recording-mode.pc-mode .recording-controls { display: block; }
+        body.recording-mode.pc-mode .stop-rec-hitbox { display: block; }
+
+    </style>
+</head>
+<body>
+
+<div class="ambient-bg"></div>
+<div id="debugTime">0.000</div>
+
+<div class="recording-controls">
+    <div class="rec-progress-bar" id="recProgressBar"></div>
+</div>
+<div class="stop-rec-hitbox" id="stopRecHitbox">
+    <button class="stop-rec-btn" id="stopRecBtn">⏹ 停止录制</button>
+</div>
+
+<div class="player-header">
+    <div class="artwork-container">
+        <img src="301.jpg" alt="Magazine Cover" class="artwork-img" onerror="this.style.display='none'; document.getElementById('placeholder').style.display='flex';">
+        <div id="placeholder" class="artwork-placeholder" style="display:none;">📖</div>
+    </div>
+    <div class="track-info">
+        <h1 class="track-title">China fewer babies being born</h1>
+        <div class="track-artist">The Week Junior Podcast</div>
+        <div class="track-subtitle">528 期 20260124</div>
+    </div>
+
+    <div class="ui-controls" id="uiControls">
+        <div class="progress-bar" id="progressBarContainer">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div style="text-align: center; color: rgba(255,255,255,0.5); font-size: 12px; margin-top: 5px;" id="tips">
+            </div>
+    </div>
+</div>
+
+<div class="transcript-container" id="transcriptContainer"></div>
+
+<div class="btn-container" id="btnContainer">
+    <button class="overlay-btn" id="playModeBtn">
+        🎵 仅播放
+    </button>
+    <button class="overlay-btn" id="recordVideoBtn" style="display:none;">
+        🎥 电脑内录 1080P
+    </button>
+    <button class="overlay-btn" id="mobileRecordBtn" style="display:none;">
+        📱 手机全屏 (无UI)
+    </button>
+</div>
+
+<audio id="audioPlayer">
+    <source src="High_Costs_Shrink_China_s_Population.m4a" type="audio/mp4">
+</audio>
+
+<script>
+    const rawTranscriptData = [{"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Whoa, wait a second.", "start": 0.031, "end": 0.932, "words": [{"word": "Whoa,", "start": 0.031, "end": 0.331}, {"word": "wait", "start": 0.391, "end": 0.552}, {"word": "a", "start": 0.592, "end": 0.612}, {"word": "second.", "start": 0.652, "end": 0.932}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "I'm looking at this article and is this number real?", "start": 1.032, "end": 3.956, "words": [{"word": "I'm", "start": 1.032, "end": 1.133}, {"word": "looking", "start": 1.173, "end": 1.373}, {"word": "at", "start": 1.393, "end": 1.433}, {"word": "this", "start": 1.453, "end": 1.533}, {"word": "article", "start": 1.593, "end": 1.894}, {"word": "and", "start": 1.914, "end": 1.994}, {"word": "is", "start": 2.955, "end": 3.035}, {"word": "this", "start": 3.055, "end": 3.215}, {"word": "number", "start": 3.275, "end": 3.516}, {"word": "real?", "start": 3.556, "end": 3.956}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It says a number of people equal to a whole city just disappeared from China.", "start": 4.377, "end": 9.584, "words": [{"word": "It", "start": 4.377, "end": 4.457}, {"word": "says", "start": 4.477, "end": 4.597}, {"word": "a", "start": 4.637, "end": 4.657}, {"word": "number", "start": 4.737, "end": 4.958}, {"word": "of", "start": 4.998, "end": 5.038}, {"word": "people", "start": 5.098, "end": 5.398}, {"word": "equal", "start": 5.539, "end": 5.779}, {"word": "to", "start": 5.839, "end": 6.019}, {"word": "a", "start": 6.039, "end": 6.059}, {"word": "whole", "start": 6.38, "end": 6.58}, {"word": "city", "start": 6.68, "end": 6.941}, {"word": "just", "start": 7.581, "end": 7.762}, {"word": "disappeared", "start": 8.523, "end": 9.043}, {"word": "from", "start": 9.083, "end": 9.184}, {"word": "China.", "start": 9.244, "end": 9.584}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Like 3.39 million people.", "start": 9.925, "end": 12.628, "words": [{"word": "Like", "start": 9.925, "end": 10.085}, {"word": "3.39", "start": 10.105, "end": 10.706}, {"word": "million", "start": 11.867, "end": 12.268}, {"word": "people.", "start": 12.328, "end": 12.628}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Ah, I see you found that number.", "start": 12.869, "end": 14.371, "words": [{"word": "Ah,", "start": 12.869, "end": 12.949}, {"word": "I", "start": 13.349, "end": 13.409}, {"word": "see", "start": 13.49, "end": 13.63}, {"word": "you", "start": 13.65, "end": 13.79}, {"word": "found", "start": 13.83, "end": 13.97}, {"word": "that", "start": 13.99, "end": 14.11}, {"word": "number.", "start": 14.171, "end": 14.371}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It is pretty shocking when you first see it.", "start": 14.491, "end": 16.414, "words": [{"word": "It", "start": 14.491, "end": 14.551}, {"word": "is", "start": 14.631, "end": 14.731}, {"word": "pretty", "start": 15.132, "end": 15.352}, {"word": "shocking", "start": 15.392, "end": 15.713}, {"word": "when", "start": 15.733, "end": 15.813}, {"word": "you", "start": 15.833, "end": 15.933}, {"word": "first", "start": 15.953, "end": 16.113}, {"word": "see", "start": 16.153, "end": 16.293}, {"word": "it.", "start": 16.354, "end": 16.414}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It's huge.", "start": 16.554, "end": 16.894, "words": [{"word": "It's", "start": 16.554, "end": 16.654}, {"word": "huge.", "start": 16.674, "end": 16.894}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It is.", "start": 17.175, "end": 17.415, "words": [{"word": "It", "start": 17.175, "end": 17.235}, {"word": "is.", "start": 17.295, "end": 17.415}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "But they didn't, you know, magically disappear.", "start": 17.495, "end": 19.318, "words": [{"word": "But", "start": 17.495, "end": 17.575}, {"word": "they", "start": 17.595, "end": 17.695}, {"word": "didn't,", "start": 17.735, "end": 17.956}, {"word": "you", "start": 18.036, "end": 18.116}, {"word": "know,", "start": 18.136, "end": 18.296}, {"word": "magically", "start": 18.436, "end": 18.897}, {"word": "disappear.", "start": 18.957, "end": 19.318}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It's about population change.", "start": 19.338, "end": 20.72, "words": [{"word": "It's", "start": 19.338, "end": 19.438}, {"word": "about", "start": 19.458, "end": 19.618}, {"word": "population", "start": 19.698, "end": 20.239}, {"word": "change.", "start": 20.279, "end": 20.72}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "OK.", "start": 20.74, "end": 21.06, "words": [{"word": "OK.", "start": 20.74, "end": 21.06}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "And that's exactly what we're going to dive into today.", "start": 21.04, "end": 23.104, "words": [{"word": "And", "start": 21.04, "end": 21.22}, {"word": "that's", "start": 21.26, "end": 21.441}, {"word": "exactly", "start": 21.481, "end": 21.782}, {"word": "what", "start": 21.822, "end": 21.902}, {"word": "we're", "start": 21.922, "end": 22.022}, {"word": "going", "start": 22.042, "end": 22.142}, {"word": "to", "start": 22.162, "end": 22.202}, {"word": "dive", "start": 22.242, "end": 22.443}, {"word": "into", "start": 22.483, "end": 22.723}, {"word": "today.", "start": 22.763, "end": 23.104}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "The article is from The Week, Jr., and it's called China, Fewer Babies Being Born.", "start": 23.164, "end": 28.315, "words": [{"word": "The", "start": 23.164, "end": 23.645}, {"word": "article", "start": 23.725, "end": 23.946}, {"word": "is", "start": 23.966, "end": 24.006}, {"word": "from", "start": 24.046, "end": 24.186}, {"word": "The", "start": 24.206, "end": 24.307}, {"word": "Week,", "start": 24.367, "end": 24.587}, {"word": "Jr.,", "start": 24.647, "end": 24.988}, {"word": "and", "start": 25.188, "end": 25.269}, {"word": "it's", "start": 25.309, "end": 25.429}, {"word": "called", "start": 25.469, "end": 25.75}, {"word": "China,", "start": 26.11, "end": 26.491}, {"word": "Fewer", "start": 26.972, "end": 27.273}, {"word": "Babies", "start": 27.353, "end": 27.693}, {"word": "Being", "start": 27.754, "end": 27.974}, {"word": "Born.", "start": 28.034, "end": 28.315}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "We're going to look at why the number of people in China is going down, even when the government wants it to go up.", "start": 28.896, "end": 33.886, "words": [{"word": "We're", "start": 28.896, "end": 29.036}, {"word": "going", "start": 29.056, "end": 29.156}, {"word": "to", "start": 29.176, "end": 29.217}, {"word": "look", "start": 29.277, "end": 29.437}, {"word": "at", "start": 29.497, "end": 29.557}, {"word": "why", "start": 29.678, "end": 29.938}, {"word": "the", "start": 29.978, "end": 30.098}, {"word": "number", "start": 30.158, "end": 30.379}, {"word": "of", "start": 30.419, "end": 30.459}, {"word": "people", "start": 30.499, "end": 30.76}, {"word": "in", "start": 30.82, "end": 30.86}, {"word": "China", "start": 30.9, "end": 31.201}, {"word": "is", "start": 31.261, "end": 31.341}, {"word": "going", "start": 31.381, "end": 31.662}, {"word": "down,", "start": 31.722, "end": 32.002}, {"word": "even", "start": 32.383, "end": 32.523}, {"word": "when", "start": 32.543, "end": 32.644}, {"word": "the", "start": 32.664, "end": 32.744}, {"word": "government", "start": 32.784, "end": 33.104}, {"word": "wants", "start": 33.165, "end": 33.365}, {"word": "it", "start": 33.425, "end": 33.465}, {"word": "to", "start": 33.485, "end": 33.545}, {"word": "go", "start": 33.585, "end": 33.726}, {"word": "up.", "start": 33.806, "end": 33.886}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "So what are the specific numbers?", "start": 34.187, "end": 35.489, "words": [{"word": "So", "start": 34.187, "end": 34.327}, {"word": "what", "start": 34.367, "end": 34.487}, {"word": "are", "start": 34.527, "end": 34.587}, {"word": "the", "start": 34.628, "end": 34.688}, {"word": "specific", "start": 34.708, "end": 35.109}, {"word": "numbers?", "start": 35.189, "end": 35.489}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Because, you know, billions and millions.", "start": 35.65, "end": 37.834, "words": [{"word": "Because,", "start": 35.65, "end": 35.87}, {"word": "you", "start": 35.89, "end": 35.99}, {"word": "know,", "start": 36.01, "end": 36.131}, {"word": "billions", "start": 36.291, "end": 36.732}, {"word": "and", "start": 36.792, "end": 36.852}, {"word": "millions.", "start": 36.932, "end": 37.834}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "They're just such big words.", "start": 38.033, "end": 39.496, "words": [{"word": "They're", "start": 38.033, "end": 38.594}, {"word": "just", "start": 38.634, "end": 38.755}, {"word": "such", "start": 38.775, "end": 38.915}, {"word": "big", "start": 38.995, "end": 39.156}, {"word": "words.", "start": 39.216, "end": 39.496}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "They are so let's break it down first China's population has dropped for the fourth year in a row four years Okay, so it's a pattern exactly and the total population is now one point four", "start": 39.556, "end": 49.82, "words": [{"word": "They", "start": 39.556, "end": 39.677}, {"word": "are", "start": 39.777, "end": 39.857}, {"word": "so", "start": 39.897, "end": 40.258}, {"word": "let's", "start": 40.278, "end": 40.398}, {"word": "break", "start": 40.418, "end": 40.559}, {"word": "it", "start": 40.599, "end": 40.639}, {"word": "down", "start": 40.659, "end": 40.859}, {"word": "first", "start": 41.02, "end": 41.3}, {"word": "China's", "start": 41.481, "end": 41.761}, {"word": "population", "start": 41.822, "end": 42.403}, {"word": "has", "start": 42.463, "end": 42.583}, {"word": "dropped", "start": 42.684, "end": 42.984}, {"word": "for", "start": 43.084, "end": 43.185}, {"word": "the", "start": 43.205, "end": 43.265}, {"word": "fourth", "start": 43.365, "end": 43.626}, {"word": "year", "start": 43.706, "end": 43.946}, {"word": "in", "start": 44.027, "end": 44.087}, {"word": "a", "start": 44.127, "end": 44.147}, {"word": "row", "start": 44.207, "end": 44.428}, {"word": "four", "start": 44.628, "end": 44.828}, {"word": "years", "start": 44.889, "end": 45.169}, {"word": "Okay,", "start": 45.33, "end": 45.61}, {"word": "so", "start": 45.65, "end": 45.751}, {"word": "it's", "start": 45.771, "end": 45.871}, {"word": "a", "start": 45.891, "end": 45.931}, {"word": "pattern", "start": 45.951, "end": 46.212}, {"word": "exactly", "start": 46.332, "end": 46.753}, {"word": "and", "start": 47.074, "end": 47.134}, {"word": "the", "start": 47.174, "end": 47.234}, {"word": "total", "start": 47.274, "end": 47.474}, {"word": "population", "start": 47.515, "end": 48.076}, {"word": "is", "start": 48.136, "end": 48.216}, {"word": "now", "start": 48.276, "end": 48.457}, {"word": "one", "start": 48.497, "end": 48.858}, {"word": "point", "start": 48.978, "end": 49.218}, {"word": "four", "start": 49.439, "end": 49.82}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "zero five billion one point four zero five billion It's still so hard to imagine that many people It is.", "start": 50.06, "end": 56.956, "words": [{"word": "zero", "start": 50.06, "end": 50.421}, {"word": "five", "start": 50.501, "end": 50.742}, {"word": "billion", "start": 50.862, "end": 51.303}, {"word": "one", "start": 51.584, "end": 51.704}, {"word": "point", "start": 51.764, "end": 51.985}, {"word": "four", "start": 52.045, "end": 52.185}, {"word": "zero", "start": 52.606, "end": 52.987}, {"word": "five", "start": 53.147, "end": 53.528}, {"word": "billion", "start": 53.649, "end": 54.049}, {"word": "It's", "start": 54.15, "end": 54.25}, {"word": "still", "start": 54.27, "end": 54.51}, {"word": "so", "start": 54.751, "end": 54.972}, {"word": "hard", "start": 55.072, "end": 55.252}, {"word": "to", "start": 55.292, "end": 55.372}, {"word": "imagine", "start": 55.473, "end": 55.773}, {"word": "that", "start": 55.793, "end": 55.894}, {"word": "many", "start": 55.934, "end": 56.074}, {"word": "people", "start": 56.114, "end": 56.515}, {"word": "It", "start": 56.495, "end": 56.695}, {"word": "is.", "start": 56.835, "end": 56.956}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "But here's the important part.", "start": 57.176, "end": 58.237, "words": [{"word": "But", "start": 57.176, "end": 57.276}, {"word": "here's", "start": 57.336, "end": 57.536}, {"word": "the", "start": 57.556, "end": 57.636}, {"word": "important", "start": 57.676, "end": 57.977}, {"word": "part.", "start": 58.017, "end": 58.237}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "That number went down by 3.39 million.", "start": 58.537, "end": 61.0, "words": [{"word": "That", "start": 58.537, "end": 58.677}, {"word": "number", "start": 58.717, "end": 58.918}, {"word": "went", "start": 58.978, "end": 59.138}, {"word": "down", "start": 59.178, "end": 59.418}, {"word": "by", "start": 59.478, "end": 59.578}, {"word": "3.39", "start": 59.598, "end": 59.919}, {"word": "million.", "start": 60.68, "end": 61.0}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "And before we go on, let's just be clear.", "start": 61.36, "end": 62.962, "words": [{"word": "And", "start": 61.36, "end": 61.46}, {"word": "before", "start": 61.5, "end": 61.761}, {"word": "we", "start": 61.801, "end": 61.881}, {"word": "go", "start": 61.921, "end": 62.041}, {"word": "on,", "start": 62.141, "end": 62.201}, {"word": "let's", "start": 62.241, "end": 62.381}, {"word": "just", "start": 62.421, "end": 62.522}, {"word": "be", "start": 62.562, "end": 62.682}, {"word": "clear.", "start": 62.742, "end": 62.962}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "The word population just means the total number of people living in a place.", "start": 63.242, "end": 67.047, "words": [{"word": "The", "start": 63.242, "end": 63.322}, {"word": "word", "start": 63.363, "end": 63.543}, {"word": "population", "start": 63.603, "end": 64.384}, {"word": "just", "start": 64.524, "end": 64.664}, {"word": "means", "start": 64.704, "end": 64.884}, {"word": "the", "start": 64.924, "end": 65.064}, {"word": "total", "start": 65.124, "end": 65.425}, {"word": "number", "start": 65.485, "end": 65.725}, {"word": "of", "start": 65.765, "end": 65.805}, {"word": "people", "start": 65.885, "end": 66.186}, {"word": "living", "start": 66.266, "end": 66.526}, {"word": "in", "start": 66.566, "end": 66.606}, {"word": "a", "start": 66.666, "end": 66.686}, {"word": "place.", "start": 66.746, "end": 67.047}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Right.", "start": 67.247, "end": 67.367, "words": [{"word": "Right.", "start": 67.247, "end": 67.367}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "The total number.", "start": 67.387, "end": 68.088, "words": [{"word": "The", "start": 67.387, "end": 67.487}, {"word": "total", "start": 67.527, "end": 67.767}, {"word": "number.", "start": 67.827, "end": 68.088}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "So what about the babies?", "start": 68.168, "end": 70.33, "words": [{"word": "So", "start": 68.168, "end": 68.368}, {"word": "what", "start": 68.408, "end": 69.629}, {"word": "about", "start": 69.669, "end": 69.81}, {"word": "the", "start": 69.83, "end": 69.91}, {"word": "babies?", "start": 69.95, "end": 70.33}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "That's the key question.", "start": 70.951, "end": 71.832, "words": [{"word": "That's", "start": 70.951, "end": 71.151}, {"word": "the", "start": 71.191, "end": 71.251}, {"word": "key", "start": 71.291, "end": 71.411}, {"word": "question.", "start": 71.451, "end": 71.832}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "The article compares two years.", "start": 71.892, "end": 74.094, "words": [{"word": "The", "start": 71.892, "end": 72.853}, {"word": "article", "start": 72.893, "end": 73.153}, {"word": "compares", "start": 73.193, "end": 73.534}, {"word": "two", "start": 73.574, "end": 73.774}, {"word": "years.", "start": 73.834, "end": 74.094}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "In 2024, there were 9.54 million registered births.", "start": 74.755, "end": 78.659, "words": [{"word": "In", "start": 74.755, "end": 74.815}, {"word": "2024,", "start": 74.835, "end": 75.135}, {"word": "there", "start": 75.195, "end": 75.396}, {"word": "were", "start": 75.596, "end": 75.676}, {"word": "9.54", "start": 75.696, "end": 76.257}, {"word": "million", "start": 77.358, "end": 77.818}, {"word": "registered", "start": 77.898, "end": 78.339}, {"word": "births.", "start": 78.379, "end": 78.659}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "OK, nine and a half million.", "start": 79.24, "end": 80.241, "words": [{"word": "OK,", "start": 79.24, "end": 79.48}, {"word": "nine", "start": 79.52, "end": 79.68}, {"word": "and", "start": 79.74, "end": 79.801}, {"word": "a", "start": 79.821, "end": 79.841}, {"word": "half", "start": 79.861, "end": 80.001}, {"word": "million.", "start": 80.021, "end": 80.241}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "But then in 2025, that number went down to 7.92 million.", "start": 80.491, "end": 85.438, "words": [{"word": "But", "start": 80.491, "end": 80.631}, {"word": "then", "start": 80.671, "end": 80.952}, {"word": "in", "start": 80.972, "end": 81.012}, {"word": "2025,", "start": 81.032, "end": 81.893}, {"word": "that", "start": 82.414, "end": 82.995}, {"word": "number", "start": 83.075, "end": 83.275}, {"word": "went", "start": 83.335, "end": 83.455}, {"word": "down", "start": 83.515, "end": 83.716}, {"word": "to", "start": 83.776, "end": 83.856}, {"word": "7.92", "start": 83.876, "end": 84.276}, {"word": "million.", "start": 84.677, "end": 85.438}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Wait, that's a drop of more than a million and a half babies in just one year?", "start": 85.498, "end": 89.684, "words": [{"word": "Wait,", "start": 85.498, "end": 85.638}, {"word": "that's", "start": 85.679, "end": 85.879}, {"word": "a", "start": 85.959, "end": 85.979}, {"word": "drop", "start": 86.039, "end": 86.339}, {"word": "of", "start": 86.4, "end": 86.44}, {"word": "more", "start": 86.48, "end": 86.64}, {"word": "than", "start": 86.68, "end": 86.78}, {"word": "a", "start": 86.82, "end": 86.84}, {"word": "million", "start": 86.9, "end": 87.201}, {"word": "and", "start": 87.241, "end": 87.321}, {"word": "a", "start": 87.341, "end": 87.361}, {"word": "half", "start": 87.441, "end": 87.601}, {"word": "babies", "start": 87.661, "end": 88.042}, {"word": "in", "start": 88.903, "end": 89.003}, {"word": "just", "start": 89.023, "end": 89.184}, {"word": "one", "start": 89.344, "end": 89.444}, {"word": "year?", "start": 89.484, "end": 89.684}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It is a very big drop.", "start": 90.025, "end": 91.487, "words": [{"word": "It", "start": 90.025, "end": 90.085}, {"word": "is", "start": 90.185, "end": 90.265}, {"word": "a", "start": 90.285, "end": 90.305}, {"word": "very", "start": 90.706, "end": 90.966}, {"word": "big", "start": 91.006, "end": 91.166}, {"word": "drop.", "start": 91.207, "end": 91.487}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Wow.", "start": 91.747, "end": 92.108, "words": [{"word": "Wow.", "start": 91.747, "end": 92.108}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "So does the government want fewer people?", "start": 92.849, "end": 96.154, "words": [{"word": "So", "start": 92.849, "end": 93.049}, {"word": "does", "start": 93.109, "end": 94.171}, {"word": "the", "start": 94.191, "end": 94.311}, {"word": "government", "start": 94.391, "end": 94.812}, {"word": "want", "start": 94.892, "end": 95.152}, {"word": "fewer", "start": 95.453, "end": 95.733}, {"word": "people?", "start": 95.813, "end": 96.154}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Is that the plan?", "start": 96.454, "end": 97.275, "words": [{"word": "Is", "start": 96.454, "end": 96.534}, {"word": "that", "start": 96.614, "end": 96.795}, {"word": "the", "start": 96.835, "end": 96.935}, {"word": "plan?", "start": 96.995, "end": 97.275}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "No, actually, it's the opposite.", "start": 97.456, "end": 98.858, "words": [{"word": "No,", "start": 97.456, "end": 97.636}, {"word": "actually,", "start": 97.776, "end": 98.056}, {"word": "it's", "start": 98.076, "end": 98.177}, {"word": "the", "start": 98.217, "end": 98.297}, {"word": "opposite.", "start": 98.417, "end": 98.858}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "The article says the government tried to encourage people to have more babies.", "start": 98.918, "end": 102.403, "words": [{"word": "The", "start": 98.918, "end": 98.998}, {"word": "article", "start": 99.058, "end": 99.318}, {"word": "says", "start": 99.378, "end": 99.519}, {"word": "the", "start": 99.559, "end": 99.659}, {"word": "government", "start": 99.719, "end": 100.059}, {"word": "tried", "start": 100.159, "end": 100.4}, {"word": "to", "start": 100.46, "end": 100.54}, {"word": "encourage", "start": 100.62, "end": 101.061}, {"word": "people", "start": 101.121, "end": 101.361}, {"word": "to", "start": 101.401, "end": 101.481}, {"word": "have", "start": 101.541, "end": 101.702}, {"word": "more", "start": 101.742, "end": 101.922}, {"word": "babies.", "start": 101.982, "end": 102.403}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Encourage.", "start": 102.683, "end": 103.284, "words": [{"word": "Encourage.", "start": 102.683, "end": 103.284}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "What does that mean?", "start": 103.364, "end": 104.025, "words": [{"word": "What", "start": 103.364, "end": 103.464}, {"word": "does", "start": 103.484, "end": 103.564}, {"word": "that", "start": 103.584, "end": 103.705}, {"word": "mean?", "start": 103.765, "end": 104.025}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Encourage means to give support or hope to someone to do something.", "start": 104.205, "end": 107.71, "words": [{"word": "Encourage", "start": 104.205, "end": 104.786}, {"word": "means", "start": 104.846, "end": 105.107}, {"word": "to", "start": 105.127, "end": 105.327}, {"word": "give", "start": 105.407, "end": 105.547}, {"word": "support", "start": 105.587, "end": 106.088}, {"word": "or", "start": 106.168, "end": 106.228}, {"word": "hope", "start": 106.268, "end": 106.569}, {"word": "to", "start": 106.609, "end": 106.689}, {"word": "someone", "start": 106.749, "end": 107.029}, {"word": "to", "start": 107.07, "end": 107.13}, {"word": "do", "start": 107.17, "end": 107.29}, {"word": "something.", "start": 107.35, "end": 107.71}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "So the government is saying, please have more children.", "start": 108.131, "end": 110.194, "words": [{"word": "So", "start": 108.131, "end": 108.231}, {"word": "the", "start": 108.251, "end": 108.331}, {"word": "government", "start": 108.351, "end": 108.612}, {"word": "is", "start": 108.672, "end": 108.712}, {"word": "saying,", "start": 108.752, "end": 108.972}, {"word": "please", "start": 109.032, "end": 109.353}, {"word": "have", "start": 109.393, "end": 109.553}, {"word": "more", "start": 109.613, "end": 109.713}, {"word": "children.", "start": 109.753, "end": 110.194}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "People aren't doing it.", "start": 111.305, "end": 112.147, "words": [{"word": "People", "start": 111.305, "end": 111.566}, {"word": "aren't", "start": 111.626, "end": 111.766}, {"word": "doing", "start": 111.786, "end": 112.006}, {"word": "it.", "start": 112.047, "end": 112.147}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Why not?", "start": 112.247, "end": 112.588, "words": [{"word": "Why", "start": 112.247, "end": 112.387}, {"word": "not?", "start": 112.427, "end": 112.588}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Well, the article gives one main reason.", "start": 112.808, "end": 114.612, "words": [{"word": "Well,", "start": 112.808, "end": 113.069}, {"word": "the", "start": 113.229, "end": 113.309}, {"word": "article", "start": 113.369, "end": 113.59}, {"word": "gives", "start": 113.65, "end": 113.79}, {"word": "one", "start": 113.81, "end": 114.011}, {"word": "main", "start": 114.051, "end": 114.251}, {"word": "reason.", "start": 114.291, "end": 114.612}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It's the expense.", "start": 114.852, "end": 115.834, "words": [{"word": "It's", "start": 114.852, "end": 114.993}, {"word": "the", "start": 115.053, "end": 115.173}, {"word": "expense.", "start": 115.273, "end": 115.834}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "The cost.", "start": 116.155, "end": 116.616, "words": [{"word": "The", "start": 116.155, "end": 116.255}, {"word": "cost.", "start": 116.275, "end": 116.616}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Yes.", "start": 116.877, "end": 117.097, "words": [{"word": "Yes.", "start": 116.877, "end": 117.097}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It says many young people say they think having children is too expensive.", "start": 117.658, "end": 120.945, "words": [{"word": "It", "start": 117.658, "end": 117.778}, {"word": "says", "start": 117.859, "end": 117.979}, {"word": "many", "start": 118.199, "end": 118.38}, {"word": "young", "start": 118.44, "end": 118.6}, {"word": "people", "start": 118.64, "end": 118.881}, {"word": "say", "start": 118.941, "end": 119.101}, {"word": "they", "start": 119.141, "end": 119.261}, {"word": "think", "start": 119.282, "end": 119.442}, {"word": "having", "start": 119.502, "end": 119.763}, {"word": "children", "start": 119.823, "end": 120.123}, {"word": "is", "start": 120.183, "end": 120.244}, {"word": "too", "start": 120.284, "end": 120.424}, {"word": "expensive.", "start": 120.464, "end": 120.945}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Huh.", "start": 121.386, "end": 122.168, "words": [{"word": "Huh.", "start": 121.386, "end": 122.168}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "I guess that makes sense.", "start": 122.188, "end": 123.13, "words": [{"word": "I", "start": 122.188, "end": 122.248}, {"word": "guess", "start": 122.268, "end": 122.388}, {"word": "that", "start": 122.428, "end": 122.528}, {"word": "makes", "start": 122.568, "end": 122.689}, {"word": "sense.", "start": 122.709, "end": 123.13}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It's sort of like...", "start": 123.15, "end": 124.352, "words": [{"word": "It's", "start": 123.15, "end": 123.29}, {"word": "sort", "start": 123.39, "end": 123.59}, {"word": "of", "start": 123.631, "end": 123.691}, {"word": "like...", "start": 123.771, "end": 124.352}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Imagine you really, really want a new video game console.", "start": 125.294, "end": 128.7, "words": [{"word": "Imagine", "start": 125.294, "end": 125.755}, {"word": "you", "start": 125.795, "end": 125.935}, {"word": "really,", "start": 126.055, "end": 126.376}, {"word": "really", "start": 126.496, "end": 126.777}, {"word": "want", "start": 126.817, "end": 127.077}, {"word": "a", "start": 127.137, "end": 127.157}, {"word": "new", "start": 127.218, "end": 127.338}, {"word": "video", "start": 127.378, "end": 127.678}, {"word": "game", "start": 127.718, "end": 127.899}, {"word": "console.", "start": 127.939, "end": 128.7}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "But then you see the price tag and you realize you just don't have enough money.", "start": 128.72, "end": 132.207, "words": [{"word": "But", "start": 128.72, "end": 128.8}, {"word": "then", "start": 128.841, "end": 128.941}, {"word": "you", "start": 128.981, "end": 129.081}, {"word": "see", "start": 129.121, "end": 129.261}, {"word": "the", "start": 129.281, "end": 129.341}, {"word": "price", "start": 129.402, "end": 129.682}, {"word": "tag", "start": 129.722, "end": 129.983}, {"word": "and", "start": 130.043, "end": 130.103}, {"word": "you", "start": 130.143, "end": 130.243}, {"word": "realize", "start": 130.283, "end": 130.664}, {"word": "you", "start": 130.704, "end": 131.165}, {"word": "just", "start": 131.205, "end": 131.345}, {"word": "don't", "start": 131.405, "end": 131.546}, {"word": "have", "start": 131.586, "end": 131.686}, {"word": "enough", "start": 131.726, "end": 131.906}, {"word": "money.", "start": 131.946, "end": 132.207}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It's just too high.", "start": 132.247, "end": 133.629, "words": [{"word": "It's", "start": 132.247, "end": 132.607}, {"word": "just", "start": 132.668, "end": 132.868}, {"word": "too", "start": 133.028, "end": 133.249}, {"word": "high.", "start": 133.309, "end": 133.629}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "For many young people, that's how having a baby feels.", "start": 133.669, "end": 137.597, "words": [{"word": "For", "start": 133.669, "end": 134.791}, {"word": "many", "start": 134.832, "end": 135.012}, {"word": "young", "start": 135.052, "end": 135.232}, {"word": "people,", "start": 135.272, "end": 135.533}, {"word": "that's", "start": 135.613, "end": 135.873}, {"word": "how", "start": 136.054, "end": 136.274}, {"word": "having", "start": 136.334, "end": 136.615}, {"word": "a", "start": 136.675, "end": 136.695}, {"word": "baby", "start": 136.815, "end": 137.176}, {"word": "feels.", "start": 137.256, "end": 137.597}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Yeah, I can see that.", "start": 137.957, "end": 139.099, "words": [{"word": "Yeah,", "start": 137.957, "end": 138.238}, {"word": "I", "start": 138.458, "end": 138.498}, {"word": "can", "start": 138.538, "end": 138.659}, {"word": "see", "start": 138.719, "end": 138.879}, {"word": "that.", "start": 138.919, "end": 139.099}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "I mean, just thinking about things like food and clothes and school, it all costs a lot of money.", "start": 139.54, "end": 145.952, "words": [{"word": "I", "start": 139.54, "end": 139.58}, {"word": "mean,", "start": 139.6, "end": 139.721}, {"word": "just", "start": 139.741, "end": 139.881}, {"word": "thinking", "start": 139.921, "end": 140.221}, {"word": "about", "start": 140.282, "end": 140.442}, {"word": "things", "start": 140.482, "end": 140.662}, {"word": "like", "start": 140.722, "end": 140.843}, {"word": "food", "start": 140.883, "end": 141.384}, {"word": "and", "start": 141.925, "end": 142.025}, {"word": "clothes", "start": 142.165, "end": 142.746}, {"word": "and", "start": 142.926, "end": 143.007}, {"word": "school,", "start": 143.187, "end": 143.688}, {"word": "it", "start": 144.87, "end": 144.93}, {"word": "all", "start": 144.99, "end": 145.09}, {"word": "costs", "start": 145.151, "end": 145.391}, {"word": "a", "start": 145.431, "end": 145.451}, {"word": "lot", "start": 145.511, "end": 145.611}, {"word": "of", "start": 145.651, "end": 145.692}, {"word": "money.", "start": 145.732, "end": 145.952}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It does.", "start": 145.932, "end": 146.493, "words": [{"word": "It", "start": 145.932, "end": 146.152}, {"word": "does.", "start": 146.232, "end": 146.493}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "So even though the government is asking for one thing, the young people feel they can't do it because of the cost.", "start": 146.593, "end": 152.08, "words": [{"word": "So", "start": 146.593, "end": 146.713}, {"word": "even", "start": 146.813, "end": 146.953}, {"word": "though", "start": 147.013, "end": 147.154}, {"word": "the", "start": 147.174, "end": 147.234}, {"word": "government", "start": 147.314, "end": 147.674}, {"word": "is", "start": 147.734, "end": 147.794}, {"word": "asking", "start": 147.874, "end": 148.115}, {"word": "for", "start": 148.175, "end": 148.295}, {"word": "one", "start": 148.415, "end": 148.515}, {"word": "thing,", "start": 148.575, "end": 148.816}, {"word": "the", "start": 148.856, "end": 149.697}, {"word": "young", "start": 149.737, "end": 149.897}, {"word": "people", "start": 149.937, "end": 150.197}, {"word": "feel", "start": 150.237, "end": 150.418}, {"word": "they", "start": 150.458, "end": 150.558}, {"word": "can't", "start": 150.618, "end": 150.878}, {"word": "do", "start": 150.938, "end": 151.058}, {"word": "it", "start": 151.119, "end": 151.159}, {"word": "because", "start": 151.199, "end": 151.419}, {"word": "of", "start": 151.459, "end": 151.499}, {"word": "the", "start": 151.539, "end": 151.619}, {"word": "cost.", "start": 151.659, "end": 152.08}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It's a real conflict.", "start": 152.22, "end": 153.321, "words": [{"word": "It's", "start": 152.22, "end": 152.32}, {"word": "a", "start": 152.38, "end": 152.4}, {"word": "real", "start": 152.5, "end": 152.721}, {"word": "conflict.", "start": 152.801, "end": 153.321}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It is.", "start": 153.421, "end": 153.742, "words": [{"word": "It", "start": 153.421, "end": 153.482}, {"word": "is.", "start": 153.622, "end": 153.742}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Oh, and we should quickly define registered births.", "start": 153.762, "end": 156.886, "words": [{"word": "Oh,", "start": 153.762, "end": 154.543}, {"word": "and", "start": 154.683, "end": 154.763}, {"word": "we", "start": 154.783, "end": 154.863}, {"word": "should", "start": 154.883, "end": 155.043}, {"word": "quickly", "start": 155.064, "end": 155.344}, {"word": "define", "start": 155.404, "end": 155.784}, {"word": "registered", "start": 155.824, "end": 156.525}, {"word": "births.", "start": 156.565, "end": 156.886}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "That just means the number of babies that are officially recorded by the government.", "start": 157.386, "end": 160.911, "words": [{"word": "That", "start": 157.386, "end": 157.507}, {"word": "just", "start": 157.547, "end": 157.687}, {"word": "means", "start": 157.727, "end": 157.967}, {"word": "the", "start": 158.007, "end": 158.067}, {"word": "number", "start": 158.268, "end": 158.508}, {"word": "of", "start": 158.548, "end": 158.588}, {"word": "babies", "start": 158.628, "end": 159.049}, {"word": "that", "start": 159.089, "end": 159.189}, {"word": "are", "start": 159.229, "end": 159.309}, {"word": "officially", "start": 159.369, "end": 159.749}, {"word": "recorded", "start": 159.789, "end": 160.21}, {"word": "by", "start": 160.27, "end": 160.35}, {"word": "the", "start": 160.39, "end": 160.47}, {"word": "government.", "start": 160.53, "end": 160.911}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "OK, the official count.", "start": 161.211, "end": 162.233, "words": [{"word": "OK,", "start": 161.211, "end": 161.452}, {"word": "the", "start": 161.512, "end": 161.572}, {"word": "official", "start": 161.612, "end": 161.892}, {"word": "count.", "start": 161.952, "end": 162.233}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "So the government wants more official babies, but young people are saying no because of money.", "start": 162.473, "end": 168.16, "words": [{"word": "So", "start": 162.473, "end": 162.653}, {"word": "the", "start": 163.214, "end": 163.294}, {"word": "government", "start": 163.334, "end": 163.634}, {"word": "wants", "start": 163.674, "end": 163.855}, {"word": "more", "start": 163.915, "end": 164.075}, {"word": "official", "start": 164.115, "end": 164.415}, {"word": "babies,", "start": 164.475, "end": 164.796}, {"word": "but", "start": 165.316, "end": 165.437}, {"word": "young", "start": 165.517, "end": 165.717}, {"word": "people", "start": 165.777, "end": 166.057}, {"word": "are", "start": 166.097, "end": 166.278}, {"word": "saying", "start": 166.318, "end": 166.678}, {"word": "no", "start": 166.818, "end": 167.079}, {"word": "because", "start": 167.119, "end": 167.699}, {"word": "of", "start": 167.739, "end": 167.78}, {"word": "money.", "start": 167.82, "end": 168.16}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "That's the main conflict in the article.", "start": 168.207, "end": 169.789, "words": [{"word": "That's", "start": 168.207, "end": 168.427}, {"word": "the", "start": 168.487, "end": 168.568}, {"word": "main", "start": 168.588, "end": 168.768}, {"word": "conflict", "start": 168.828, "end": 169.249}, {"word": "in", "start": 169.289, "end": 169.329}, {"word": "the", "start": 169.369, "end": 169.449}, {"word": "article.", "start": 169.489, "end": 169.789}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "You've got it exactly right.", "start": 169.829, "end": 171.111, "words": [{"word": "You've", "start": 169.829, "end": 170.01}, {"word": "got", "start": 170.07, "end": 170.21}, {"word": "it", "start": 170.29, "end": 170.33}, {"word": "exactly", "start": 170.47, "end": 170.891}, {"word": "right.", "start": 170.931, "end": 171.111}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "This has been really interesting.", "start": 171.292, "end": 172.393, "words": [{"word": "This", "start": 171.292, "end": 171.412}, {"word": "has", "start": 171.452, "end": 171.532}, {"word": "been", "start": 171.572, "end": 171.712}, {"word": "really", "start": 171.732, "end": 171.953}, {"word": "interesting.", "start": 172.013, "end": 172.393}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "So let's just review the three main things we learned.", "start": 172.453, "end": 175.258, "words": [{"word": "So", "start": 172.453, "end": 172.574}, {"word": "let's", "start": 172.594, "end": 172.774}, {"word": "just", "start": 172.814, "end": 172.994}, {"word": "review", "start": 173.695, "end": 173.976}, {"word": "the", "start": 174.016, "end": 174.136}, {"word": "three", "start": 174.176, "end": 174.356}, {"word": "main", "start": 174.396, "end": 174.597}, {"word": "things", "start": 174.637, "end": 174.837}, {"word": "we", "start": 174.877, "end": 174.997}, {"word": "learned.", "start": 175.037, "end": 175.258}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Good idea.", "start": 175.378, "end": 175.818, "words": [{"word": "Good", "start": 175.378, "end": 175.638}, {"word": "idea.", "start": 175.658, "end": 175.818}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "First, China's population dropped for the fourth year in a row.", "start": 176.119, "end": 179.504, "words": [{"word": "First,", "start": 176.119, "end": 176.479}, {"word": "China's", "start": 176.94, "end": 177.261}, {"word": "population", "start": 177.301, "end": 177.861}, {"word": "dropped", "start": 177.922, "end": 178.202}, {"word": "for", "start": 178.242, "end": 178.342}, {"word": "the", "start": 178.362, "end": 178.442}, {"word": "fourth", "start": 178.522, "end": 178.803}, {"word": "year", "start": 178.843, "end": 179.003}, {"word": "in", "start": 179.063, "end": 179.103}, {"word": "a", "start": 179.163, "end": 179.183}, {"word": "row.", "start": 179.244, "end": 179.504}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It went down by 3.39 million people.", "start": 180.085, "end": 182.769, "words": [{"word": "It", "start": 180.085, "end": 180.145}, {"word": "went", "start": 180.185, "end": 180.325}, {"word": "down", "start": 180.365, "end": 180.525}, {"word": "by", "start": 180.566, "end": 180.666}, {"word": "3.39", "start": 180.686, "end": 181.006}, {"word": "million", "start": 181.968, "end": 182.368}, {"word": "people.", "start": 182.448, "end": 182.769}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Correct.", "start": 182.889, "end": 183.23, "words": [{"word": "Correct.", "start": 182.889, "end": 183.23}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "The big drop.", "start": 183.45, "end": 184.131, "words": [{"word": "The", "start": 183.45, "end": 183.53}, {"word": "big", "start": 183.61, "end": 183.81}, {"word": "drop.", "start": 183.85, "end": 184.131}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Second, the number of births is also going down.", "start": 184.451, "end": 186.635, "words": [{"word": "Second,", "start": 184.451, "end": 184.752}, {"word": "the", "start": 184.832, "end": 184.932}, {"word": "number", "start": 184.972, "end": 185.172}, {"word": "of", "start": 185.213, "end": 185.253}, {"word": "births", "start": 185.353, "end": 185.633}, {"word": "is", "start": 185.713, "end": 185.793}, {"word": "also", "start": 185.833, "end": 186.074}, {"word": "going", "start": 186.134, "end": 186.354}, {"word": "down.", "start": 186.394, "end": 186.635}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It fell all the way to 7.92 million last year.", "start": 187.396, "end": 190.42, "words": [{"word": "It", "start": 187.396, "end": 187.476}, {"word": "fell", "start": 187.516, "end": 187.716}, {"word": "all", "start": 187.836, "end": 187.937}, {"word": "the", "start": 187.957, "end": 188.017}, {"word": "way", "start": 188.037, "end": 188.117}, {"word": "to", "start": 188.157, "end": 188.237}, {"word": "7.92", "start": 188.257, "end": 189.219}, {"word": "million", "start": 189.539, "end": 189.88}, {"word": "last", "start": 189.92, "end": 190.18}, {"word": "year.", "start": 190.22, "end": 190.42}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Right.", "start": 190.621, "end": 190.981, "words": [{"word": "Right.", "start": 190.621, "end": 190.981}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "A really sharp fall.", "start": 191.222, "end": 192.223, "words": [{"word": "A", "start": 191.222, "end": 191.282}, {"word": "really", "start": 191.342, "end": 191.562}, {"word": "sharp", "start": 191.622, "end": 191.862}, {"word": "fall.", "start": 191.883, "end": 192.223}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "And third, the main reason why is that young people feel having children is just too expensive.", "start": 192.355, "end": 198.607, "words": [{"word": "And", "start": 192.355, "end": 192.535}, {"word": "third,", "start": 192.575, "end": 193.016}, {"word": "the", "start": 193.076, "end": 193.858}, {"word": "main", "start": 193.918, "end": 194.158}, {"word": "reason", "start": 194.198, "end": 194.459}, {"word": "why", "start": 194.519, "end": 194.739}, {"word": "is", "start": 194.78, "end": 194.98}, {"word": "that", "start": 195.02, "end": 195.14}, {"word": "young", "start": 195.18, "end": 195.481}, {"word": "people", "start": 195.541, "end": 195.902}, {"word": "feel", "start": 195.922, "end": 196.703}, {"word": "having", "start": 196.743, "end": 197.044}, {"word": "children", "start": 197.124, "end": 197.505}, {"word": "is", "start": 197.545, "end": 197.705}, {"word": "just", "start": 197.765, "end": 197.925}, {"word": "too", "start": 197.986, "end": 198.106}, {"word": "expensive.", "start": 198.146, "end": 198.607}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Perfect summary.", "start": 199.108, "end": 199.889, "words": [{"word": "Perfect", "start": 199.108, "end": 199.448}, {"word": "summary.", "start": 199.508, "end": 199.889}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "The policy is pushing one way, but the price of living is pushing the other way.", "start": 200.871, "end": 205.119, "words": [{"word": "The", "start": 200.871, "end": 200.971}, {"word": "policy", "start": 201.011, "end": 201.452}, {"word": "is", "start": 201.532, "end": 201.592}, {"word": "pushing", "start": 201.653, "end": 201.913}, {"word": "one", "start": 201.953, "end": 202.174}, {"word": "way,", "start": 202.234, "end": 202.414}, {"word": "but", "start": 202.815, "end": 202.915}, {"word": "the", "start": 202.955, "end": 203.035}, {"word": "price", "start": 203.095, "end": 203.396}, {"word": "of", "start": 203.456, "end": 203.496}, {"word": "living", "start": 203.536, "end": 203.897}, {"word": "is", "start": 203.937, "end": 204.177}, {"word": "pushing", "start": 204.257, "end": 204.518}, {"word": "the", "start": 204.558, "end": 204.678}, {"word": "other", "start": 204.738, "end": 204.899}, {"word": "way.", "start": 204.959, "end": 205.119}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It makes a lot more sense now.", "start": 205.46, "end": 206.702, "words": [{"word": "It", "start": 205.46, "end": 205.5}, {"word": "makes", "start": 205.56, "end": 205.68}, {"word": "a", "start": 205.74, "end": 205.76}, {"word": "lot", "start": 205.82, "end": 205.941}, {"word": "more", "start": 205.981, "end": 206.101}, {"word": "sense", "start": 206.141, "end": 206.361}, {"word": "now.", "start": 206.422, "end": 206.702}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It does, doesn't it?", "start": 206.783, "end": 207.545, "words": [{"word": "It", "start": 206.783, "end": 206.943}, {"word": "does,", "start": 206.983, "end": 207.144}, {"word": "doesn't", "start": 207.164, "end": 207.425}, {"word": "it?", "start": 207.485, "end": 207.545}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "I really encourage everyone listening to go back and read the short text again.", "start": 208.066, "end": 211.835, "words": [{"word": "I", "start": 208.066, "end": 208.146}, {"word": "really", "start": 208.206, "end": 208.447}, {"word": "encourage", "start": 208.487, "end": 208.828}, {"word": "everyone", "start": 208.888, "end": 209.329}, {"word": "listening", "start": 209.369, "end": 209.69}, {"word": "to", "start": 209.73, "end": 209.81}, {"word": "go", "start": 209.85, "end": 209.951}, {"word": "back", "start": 210.031, "end": 210.272}, {"word": "and", "start": 210.432, "end": 210.512}, {"word": "read", "start": 210.612, "end": 210.793}, {"word": "the", "start": 210.813, "end": 210.913}, {"word": "short", "start": 210.953, "end": 211.154}, {"word": "text", "start": 211.214, "end": 211.494}, {"word": "again.", "start": 211.555, "end": 211.835}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It's great practice to say those big numbers like million and billion out loud in English.", "start": 211.875, "end": 216.447, "words": [{"word": "It's", "start": 211.875, "end": 212.377}, {"word": "great", "start": 212.497, "end": 212.778}, {"word": "practice", "start": 212.818, "end": 213.139}, {"word": "to", "start": 213.179, "end": 213.219}, {"word": "say", "start": 213.279, "end": 213.379}, {"word": "those", "start": 213.419, "end": 213.56}, {"word": "big", "start": 213.6, "end": 213.86}, {"word": "numbers", "start": 213.961, "end": 214.281}, {"word": "like", "start": 214.321, "end": 214.442}, {"word": "million", "start": 214.482, "end": 214.943}, {"word": "and", "start": 215.003, "end": 215.063}, {"word": "billion", "start": 215.103, "end": 215.524}, {"word": "out", "start": 215.665, "end": 215.745}, {"word": "loud", "start": 215.785, "end": 216.005}, {"word": "in", "start": 216.046, "end": 216.106}, {"word": "English.", "start": 216.166, "end": 216.447}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "That's a great idea.", "start": 216.647, "end": 217.449, "words": [{"word": "That's", "start": 216.647, "end": 216.807}, {"word": "a", "start": 216.848, "end": 216.868}, {"word": "great", "start": 216.908, "end": 217.088}, {"word": "idea.", "start": 217.168, "end": 217.449}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Well, that's all for our deep dive.", "start": 218.171, "end": 219.614, "words": [{"word": "Well,", "start": 218.171, "end": 218.351}, {"word": "that's", "start": 218.371, "end": 218.552}, {"word": "all", "start": 218.612, "end": 218.732}, {"word": "for", "start": 218.792, "end": 218.913}, {"word": "our", "start": 218.973, "end": 219.033}, {"word": "deep", "start": 219.073, "end": 219.273}, {"word": "dive.", "start": 219.314, "end": 219.614}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Keep reading and keep exploring the world.", "start": 219.815, "end": 222.481, "words": [{"word": "Keep", "start": 219.815, "end": 220.015}, {"word": "reading", "start": 220.035, "end": 220.476}, {"word": "and", "start": 220.517, "end": 220.837}, {"word": "keep", "start": 220.917, "end": 221.118}, {"word": "exploring", "start": 221.138, "end": 221.82}, {"word": "the", "start": 221.86, "end": 221.98}, {"word": "world.", "start": 222.02, "end": 222.481}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Keep reading and keep exploring the world.", "start": 222.521, "end": 225.248, "words": [{"word": "Keep", "start": 222.521, "end": 222.862}, {"word": "reading", "start": 222.962, "end": 223.303}, {"word": "and", "start": 223.343, "end": 223.564}, {"word": "keep", "start": 223.644, "end": 223.845}, {"word": "exploring", "start": 223.865, "end": 224.406}, {"word": "the", "start": 224.446, "end": 224.526}, {"word": "world.", "start": 224.586, "end": 225.248}]}];
+
+    const audio = document.getElementById('audioPlayer');
+    const container = document.getElementById('transcriptContainer');
+    const playModeBtn = document.getElementById('playModeBtn');
+    const recordVideoBtn = document.getElementById('recordVideoBtn');
+    const mobileRecordBtn = document.getElementById('mobileRecordBtn');
+    const stopRecBtn = document.getElementById('stopRecBtn');
+    const btnContainer = document.getElementById('btnContainer');
+    const uiControls = document.getElementById('uiControls');
+    const progressFill = document.getElementById('progressFill');
+    const progressBarContainer = document.getElementById('progressBarContainer');
+    const debugTime = document.getElementById('debugTime');
+    const recProgressBar = document.getElementById('recProgressBar');
+    const tips = document.getElementById('tips');
+
+    let isRecordingMode = false;
+    let processedData = []; 
+    let currentActiveBlockIndex = -1;
+    let currentActiveWordElement = null;
+    let animationFrameId;
+    let mediaRecorder;
+    let recordedChunks = [];
+    let recStream = null;
+
+    // --- 设备检测 ---
+    function checkDevice() {
+        if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+            // PC
+            recordVideoBtn.style.display = 'flex';
+            tips.textContent = '提示: 电脑录制请勾选 "分享音频"';
+        } else {
+            // Mobile
+            mobileRecordBtn.style.display = 'flex';
+            tips.textContent = '提示: 点击下方按钮进入全屏沉浸模式';
+        }
+    }
+    checkDevice();
+
+    function mergeTranscriptSegments(rawData) {
+        if (!rawData || rawData.length === 0) return [];
+        const merged = [];
+        let currentBlock = {
+            speaker: rawData[0].speaker, // 直接用 speaker 名称
+            start: rawData[0].start,
+            end: rawData[0].end,
+            words: [...(rawData[0].words || [])]
+        };
+        for (let i = 1; i < rawData.length; i++) {
+            const nextSegment = rawData[i];
+            const projectedDuration = nextSegment.end - currentBlock.start;
+            
+            // 依据 Speaker 名称合并
+            if (nextSegment.speaker === currentBlock.speaker && projectedDuration <= 10.0) {
+                currentBlock.end = nextSegment.end;
+                if (nextSegment.words) {
+                    currentBlock.words = currentBlock.words.concat(nextSegment.words);
+                }
+            } else {
+                merged.push(currentBlock);
+                currentBlock = {
+                    speaker: nextSegment.speaker, // 直接用 speaker 名称
+                    start: nextSegment.start,
+                    end: nextSegment.end,
+                    words: [...(nextSegment.words || [])]
+                };
+            }
+        }
+        merged.push(currentBlock);
+        return merged;
+    }
+
+    function initTranscript() {
+        if (!rawTranscriptData || rawTranscriptData.length === 0) {
+            container.innerHTML = '<div style="padding:20px; text-align:center; color:#666;">暂无数据</div>';
+            return;
+        }
+
+        processedData = mergeTranscriptSegments(rawTranscriptData);
+        container.innerHTML = '';
+        
+        processedData.forEach((block, index) => {
+            const div = document.createElement('div');
+            div.className = 'transcript-item';
+            div.dataset.start = block.start;
+            div.dataset.end = block.end;
+            div.dataset.index = index;
+
+            // --- Speaker 逻辑 (直接读取名称) ---
+            const speakerSpan = document.createElement('span');
+            // 获取 JSON 中的名字，例如 "Female", "Male", "John"
+            const speakerName = block.speaker || 'Unknown';
+            
+            // 转换为 CSS 安全类名 (小写，去除空格)
+            // Example: "Female" -> "speaker-female", "Mr. John" -> "speaker-mr-john"
+            const cssClassSuffix = speakerName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+            
+            speakerSpan.className = `speaker-tag speaker-${cssClassSuffix}`;
+            speakerSpan.textContent = speakerName;
+            
+            div.appendChild(speakerSpan);
+            // ----------------------------------
+
+            const p = document.createElement('p');
+            p.className = 'text-content';
+
+            if (block.words) {
+                block.words.forEach((wordObj, wIndex) => {
+                    const wordSpan = document.createElement('span');
+                    wordSpan.className = 'word-span';
+                    wordSpan.textContent = wordObj.word; 
+                    wordSpan.dataset.start = wordObj.start;
+                    wordSpan.dataset.end = wordObj.end;
+                    p.appendChild(wordSpan);
+                    if (wIndex < block.words.length - 1) {
+                        p.appendChild(document.createTextNode(" "));
+                    }
+                });
+            } else {
+                p.textContent = block.sentence;
+            }
+
+            div.appendChild(p);
+            container.appendChild(div);
+
+            div.addEventListener('click', (e) => {
+                if (e.target.classList.contains('word-span')) {
+                    audio.currentTime = parseFloat(e.target.dataset.start);
+                } else {
+                    audio.currentTime = block.start;
+                }
+                if (audio.paused) audio.play();
+            });
+        });
+    }
+
+    function renderLoop() {
+        if (!audio.paused) {
+            updateTranscript();
+            if (isRecordingMode && audio.duration) {
+                const pct = (audio.currentTime / audio.duration) * 100;
+                recProgressBar.style.width = pct + '%';
+            }
+        }
+        animationFrameId = requestAnimationFrame(renderLoop);
+    }
+
+    function updateTranscript() {
+        const t = audio.currentTime;
+        let activeBlockIndex = -1;
+        for (let i = 0; i < processedData.length; i++) {
+            if (t >= processedData[i].start && t < processedData[i].end) {
+                activeBlockIndex = i;
+                break;
+            }
+        }
+
+        if (activeBlockIndex !== -1 && activeBlockIndex !== currentActiveBlockIndex) {
+            const prev = document.querySelector('.transcript-item.active');
+            if (prev) prev.classList.remove('active');
+
+            const current = container.children[activeBlockIndex];
+            if (current) {
+                current.classList.add('active');
+                current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            currentActiveBlockIndex = activeBlockIndex;
+        }
+
+        if (currentActiveBlockIndex !== -1) {
+            const activeBlockElement = container.children[currentActiveBlockIndex];
+            const wordSpans = activeBlockElement.querySelectorAll('.word-span');
+            let foundWord = false;
+
+            for (let span of wordSpans) {
+                const start = parseFloat(span.dataset.start);
+                const end = parseFloat(span.dataset.end);
+                if (t >= start && t < end + 0.05) { 
+                    if (currentActiveWordElement !== span) {
+                        if (currentActiveWordElement) currentActiveWordElement.classList.remove('word-active');
+                        span.classList.add('word-active');
+                        currentActiveWordElement = span;
+                    }
+                    foundWord = true;
+                    break; 
+                }
+            }
+            if (!foundWord && currentActiveWordElement) {
+                currentActiveWordElement.classList.remove('word-active');
+                currentActiveWordElement = null;
+            }
+        }
+    }
+
+    // --- PC 内录 ---
+    async function startVideoRecording() {
+        try {
+            const stream = await navigator.mediaDevices.getDisplayMedia({
+                video: {
+                    width: { ideal: 1080 },  
+                    height: { ideal: 1920 }, 
+                    frameRate: { ideal: 60 } 
+                },
+                audio: {
+                    echoCancellation: false, 
+                    noiseSuppression: false, 
+                    autoGainControl: false,  
+                    sampleRate: 48000        
+                },
+                preferCurrentTab: true, 
+                selfBrowserSurface: "include", 
+                systemAudio: "include" 
+            });
+
+            recStream = stream;
+
+            const audioTrack = stream.getAudioTracks()[0];
+            if (!audioTrack) {
+                alert("❌ 错误：您未勾选【分享音频】。");
+                stopEverything();
+                return;
+            }
+
+            enterRecordingMode('pc');
+
+            const mimeType = MediaRecorder.isTypeSupported("video/webm; codecs=vp9,opus") 
+                           ? "video/webm; codecs=vp9,opus" 
+                           : "video/webm";
+            
+            mediaRecorder = new MediaRecorder(stream, { 
+                mimeType, 
+                videoBitsPerSecond: 15000000 
+            }); 
+            
+            recordedChunks = [];
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) recordedChunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = saveRecording;
+
+            mediaRecorder.start();
+            console.log("🎥 PC内录开始");
+            
+            setTimeout(() => {
+                audio.currentTime = 0;
+                audio.play();
+            }, 1000);
+
+            audio.onended = () => stopEverything();
+            stream.getVideoTracks()[0].onended = () => stopEverything();
+
+        } catch (err) {
+            console.error("Error:", err);
+            if (err.name !== 'NotAllowedError') alert("启动失败：" + err.message);
+        }
+    }
+
+    // --- 手机全屏沉浸 (无弹窗) ---
+    function startMobileRecordingPrep() {
+        // 尝试全屏
+        const docEl = document.documentElement;
+        if (docEl.requestFullscreen) {
+            docEl.requestFullscreen().catch(e => {});
+        } else if (docEl.webkitRequestFullscreen) {
+            docEl.webkitRequestFullscreen();
+        }
+
+        enterRecordingMode('mobile');
+        
+        console.log("📱 手机沉浸模式，静默倒计时5秒");
+        setTimeout(() => {
+            audio.currentTime = 0;
+            audio.play();
+        }, 5000);
+    }
+
+    function stopEverything() {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
+        }
+        audio.pause();
+        if (recStream) {
+            recStream.getTracks().forEach(track => track.stop());
+        }
+        exitRecordingMode();
+    }
+
+    function saveRecording() {
+        const blob = new Blob(recordedChunks, { type: "video/webm" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        document.body.appendChild(a);
+        a.style.display = "none";
+        a.href = url;
+        const filename = document.title.replace(/\s+/g, '_') + "_1080P.webm";
+        a.download = filename;
+        a.click();
+        window.URL.revokeObjectURL(url);
+    }
+
+    function enterRecordingMode(type) {
+        isRecordingMode = true;
+        document.body.classList.add('recording-mode');
+        
+        if (type === 'pc') {
+            document.body.classList.add('pc-mode');
+        } else if (type === 'mobile') {
+            document.body.classList.add('mobile-mode');
+        }
+
+        uiControls.classList.add('hidden-ui');
+        btnContainer.style.opacity = '0'; 
+        btnContainer.style.pointerEvents = 'none';
+        recProgressBar.style.width = '0%';
+    }
+
+    function exitRecordingMode() {
+        isRecordingMode = false;
+        document.body.classList.remove('recording-mode', 'pc-mode', 'mobile-mode');
+        uiControls.classList.remove('hidden-ui');
+        btnContainer.style.opacity = '1';
+        btnContainer.style.pointerEvents = 'auto';
+        
+        if (document.exitFullscreen) {
+            document.exitFullscreen().catch(e => {});
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        }
+    }
+
+    // Listeners
+    audio.addEventListener('play', () => {
+        cancelAnimationFrame(animationFrameId);
+        renderLoop();
+    });
+    audio.addEventListener('pause', () => cancelAnimationFrame(animationFrameId));
+    audio.addEventListener('timeupdate', () => {
+        if (!audio.duration) return;
+        const percent = (audio.currentTime / audio.duration) * 100;
+        progressFill.style.width = percent + '%';
+        if(!isRecordingMode) debugTime.textContent = audio.currentTime.toFixed(3);
+    });
+
+    playModeBtn.addEventListener('click', () => {
+        if (!isRecordingMode) {
+            // 复用手机模式，不显示 PC 控件
+            enterRecordingMode('mobile');
+            console.log("5秒后播放...");
+            setTimeout(() => { audio.play(); }, 5000);
+        }
+    });
+
+    recordVideoBtn.addEventListener('click', startVideoRecording);
+    mobileRecordBtn.addEventListener('click', startMobileRecordingPrep);
+    
+    stopRecBtn.addEventListener('click', stopEverything);
+
+    progressBarContainer.addEventListener('click', (e) => {
+        const rect = progressBarContainer.getBoundingClientRect();
+        const pos = (e.clientX - rect.left) / rect.width;
+        audio.currentTime = pos * audio.duration;
+        updateTranscript();
+    });
+
+    initTranscript();
+
+</script>
+
+</body>
+</html>
