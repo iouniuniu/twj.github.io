@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<style>
+    body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: #f4f4f9; color: #333; line-height: 1.6; padding: 20px; }
+    .container { max-width: 800px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+    h1 { color: #2c3e50; border-bottom: 2px solid #e74c3c; padding-bottom: 10px; margin-bottom: 30px; }
+    .scene-card { border: 1px solid #eee; border-radius: 8px; margin-bottom: 25px; padding: 20px; background-color: #fff; transition: transform 0.2s; }
+    .scene-card:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .scene-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .scene-title { font-weight: 700; font-size: 1.1em; color: #34495e; }
+    .time-badge { background: #e74c3c; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.85em; font-weight: bold; }
+    .prompt-box { background-color: #f8f9fa; border-left: 4px solid #3498db; padding: 15px; font-family: 'Courier New', monospace; font-size: 0.9em; margin: 10px 0; color: #444; }
+    .tag { display: inline-block; background: #e1ecf4; color: #2980b9; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; margin-right: 5px; }
+    .audio-note { color: #27ae60; font-weight: 600; margin-top: 10px; font-size: 0.9em; }
+    .director-note { font-style: italic; color: #7f8c8d; font-size: 0.9em; margin-top: 10px; border-top: 1px dashed #eee; padding-top: 10px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎬 脚本：《夏洛特的网》第一章导读</h1>
+    <p><strong>风格基调：</strong> 1950s 柯达胶片质感 | 温暖晨光 | 情感叙事</p>
+
+    <div class="scene-card">
+        <div class="scene-header">
+            <span class="scene-title">场景 1：清晨的对峙 (The Standoff)</span>
+            <span class="time-badge">00:00 - 00:08</span>
+        </div>
+        <div>
+            <span class="tag">中景 (Medium Shot)</span>
+            <span class="tag">低角度 (Low Angle)</span>
+            <span class="tag">高张力</span>
+        </div>
+        <p><strong>画面描述：</strong> 湿润的草地，阿拉布尔先生穿着背带裤，手里拿着斧头。费恩（8岁，红发）紧紧抓住斧柄，仰视父亲，眼神坚定含泪。</p>
+        <div class="prompt-box">
+            <strong>Veo Prompt:</strong> <br>
+            Cinematic medium shot, low angle looking up at Mr. Arable holding a wooden axe. 8-year-old Fern, red braids, wearing a vintage dress, grabs the axe handle desperately. Morning mist in background, golden backlight rimming the characters. High emotional tension. 35mm film grain style.
+        </div>
+        <div class="audio-note">🔊 Audio: 急促的呼吸声，金属斧头轻微的碰撞声，背景有早晨的公鸡打鸣声 (distant rooster)。音乐：低沉、紧张的大提琴独奏。</div>
+        <div class="director-note">💡 这里的关键是“眼神光”。确保 Veo 生成的费恩眼睛里有反光，体现她的正义感。</div>
+    </div>
+
+    <div class="scene-card">
+        <div class="scene-header">
+            <span class="scene-title">场景 2：第一次接触 (The Connection)</span>
+            <span class="time-badge">00:08 - 00:22</span>
+        </div>
+        <div>
+            <span class="tag">特写 (Close-up)</span>
+            <span class="tag">微距 (Macro)</span>
+            <span class="tag">治愈系</span>
+        </div>
+        <p><strong>画面描述：</strong> 镜头切到这一章的核心——刚刚获救的小猪。费恩的手指轻轻触碰威尔伯粉红色的、皱巴巴的鼻子。威尔伯非常小，像个玩偶。</p>
+        <div class="prompt-box">
+            <strong>Veo Prompt:</strong> <br>
+            Extreme close-up macro shot. A tiny, newborn pink piglet (Wilbur) nestled in straw. A young girl's finger gently strokes the piglet's soft snout. Dust motes dancing in a shaft of warm sunlight. Soft focus background. Highly detailed skin texture and straw details.
+        </div>
+        <div class="audio-note">🔊 Audio: 小猪细微的哼哼声 (soft squeals)，稻草的沙沙声。音乐：转为温暖、清澈的钢琴旋律，象征生命的希望。</div>
+        <div class="director-note">💡 使用 "Macro lens" 提示词，让 Veo 捕捉皮肤纹理和空气中的灰尘，增加真实感。</div>
+    </div>
+
+    <div class="scene-card">
+        <div class="scene-header">
+            <span class="scene-title">场景 3：校车上的回望 (The Reflection)</span>
+            <span class="time-badge">00:22 - 00:30</span>
+        </div>
+        <div>
+            <span class="tag">过肩镜头 (OTS)</span>
+            <span class="tag">运动镜头</span>
+            <span class="tag">转场</span>
+        </div>
+        <p><strong>画面描述：</strong> 费恩坐在黄色校车里，额头抵着玻璃窗，看着窗外倒退的农场风景。她在微笑，手里仿佛还残留着抱小猪的感觉。</p>
+        <div class="prompt-box">
+            <strong>Veo Prompt:</strong> <br>
+            View from inside a moving vintage yellow school bus. Fern leaning head against the vibrating glass window, looking out dreamily. Reflection of passing green fields and trees on the glass. Sunlight flickering across her face. Peaceful expression.
+        </div>
+        <div class="audio-note">🔊 Audio: 校车引擎的轰鸣声 (engine hum)，孩子们模糊的嬉笑声，转入淡出。音乐：轻快的长笛加入，推向高潮后淡出。</div>
+        <div class="director-note">💡 这是一个完美的收尾。利用 "Motion blur" 提示词来表现窗外飞逝的景色，暗示故事正式开始。</div>
+    </div>
+
+</div>
+
+</body>
+</html>
