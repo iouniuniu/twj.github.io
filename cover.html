@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>夏洛的网 - 小红书海报生成器</title>
+    <title>夏洛的网 - 小红书海报生成器 (修正版)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
@@ -54,6 +54,8 @@
         .preview-wrapper {
             position: relative;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border: 8px solid white; /* 加个白边框更好看 */
+            border-radius: 4px;
         }
 
         /* 通用海报容器 */
@@ -64,56 +66,67 @@
             overflow: hidden;
             background-color: white;
             transition: all 0.3s ease;
-            display: none; /* 默认隐藏，通过JS控制显示 */
+            display: none; /* 默认隐藏 */
         }
 
         .poster.active { display: block; }
 
-        /* ================= 方案一：复古绘本风 (Retro) ================= */
+        /* ================= 方案一：复古绘本风 (修复重叠问题) ================= */
         .style-retro {
             background-color: #FDF5E6; /* 米黄色 */
-            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjRkRGNUU2Ii8+CjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IixEODDk4IiBvcGFjaXR5PSIwLjEiLz4KPC9zdmc+'); /* 噪点纹理 */
+            /* 噪点纹理 */
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjRkRGNUU2Ii8+CjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNDQ0MiIG9wYWNpdHk9IjAuMiIvPjwvc3ZnPg==');
             color: #333;
         }
 
+        /* 1. 标签上移 */
         .retro-tag {
-            position: absolute; top: 30px; left: 0;
+            position: absolute; top: 20px; left: 0; /* 原来是30px */
             background: #B22222; color: white;
-            padding: 8px 15px; font-weight: bold; font-size: 14px;
+            padding: 6px 15px; font-weight: bold; font-size: 14px;
             border-top-right-radius: 4px; border-bottom-right-radius: 4px;
             box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
             z-index: 10;
         }
 
+        /* 2. 标题上移 */
         .retro-title {
-            position: absolute; top: 80px; left: 30px; right: 30px;
+            position: absolute; top: 60px; left: 30px; right: 30px; /* 原来是80px */
             font-family: 'Times New Roman', serif;
         }
         .retro-h1 { font-size: 32px; font-weight: bold; color: #2c3e50; margin-bottom: 5px; line-height: 1.1; }
         .retro-sub { font-size: 14px; color: #556B2F; font-weight: 500; letter-spacing: 1px; }
 
+        /* 3. 书本容器：调整位置和大小，避免撞到底部 */
         .retro-book-container {
-            position: absolute; top: 180px; left: 50%; transform: translateX(-50%);
-            width: 200px; height: 260px;
+            position: absolute; 
+            top: 145px; /* 原来是180px，大幅上移 */
+            left: 50%; 
+            transform: translateX(-50%);
+            width: 180px; /* 原来是200px，稍微改窄一点点 */
+            height: 240px; /* 原来是260px */
         }
         .retro-book-img {
             width: 100%; height: 100%; object-fit: cover;
-            box-shadow: 10px 10px 20px rgba(0,0,0,0.25); /* 阴影 */
+            box-shadow: 8px 8px 15px rgba(0,0,0,0.3); /* 阴影 */
             border-radius: 2px;
+            border-left: 2px solid rgba(255,255,255,0.3); /* 书脊高光 */
         }
         .retro-ep-sticker {
-            position: absolute; bottom: -20px; right: -20px;
-            width: 70px; height: 70px; background: #CD5C5C;
+            position: absolute; bottom: -15px; right: -15px;
+            width: 60px; height: 60px; background: #CD5C5C;
             border-radius: 50%; border: 3px solid #fff;
             display: flex; justify-content: center; align-items: center;
-            color: white; font-weight: bold; font-size: 18px;
+            color: white; font-weight: bold; font-size: 16px;
             transform: rotate(-15deg);
             box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
         }
 
+        /* 4. 底部信息：保持位置，因为书本上移了，现在不会重叠了 */
         .retro-footer {
-            position: absolute; bottom: 30px; left: 30px;
+            position: absolute; bottom: 25px; left: 30px;
             display: flex; align-items: center; gap: 12px;
+            z-index: 5;
         }
         .avatar-img {
             width: 45px; height: 45px; border-radius: 50%; object-fit: cover;
@@ -125,6 +138,7 @@
         /* ================= 方案二：播放器风 (Player) ================= */
         .style-modern {
             background: #333; color: white;
+            display: flex; flex-direction: column; /* 弹性布局防止重叠 */
         }
         .modern-bg {
             position: absolute; inset: 0;
@@ -133,24 +147,29 @@
             z-index: 0;
         }
         
-        .modern-content { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; padding: 30px; box-sizing: border-box; }
+        .modern-content { 
+            position: relative; z-index: 2; 
+            height: 100%; display: flex; flex-direction: column; 
+            padding: 30px; box-sizing: border-box; 
+        }
         
         .modern-tag {
             align-self: flex-start; background: #FFD700; color: #000;
             padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold;
-            margin-bottom: 40px;
+            margin-bottom: 20px;
         }
 
         .modern-cover {
-            width: 240px; height: 240px; margin: 0 auto;
+            width: 220px; height: 220px; margin: 0 auto; /* 稍微调小适配小屏 */
             border-radius: 12px; overflow: hidden;
             box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            flex-shrink: 0;
         }
         .modern-cover img { width: 100%; height: 100%; object-fit: cover; }
 
-        .modern-info { margin-top: 40px; }
-        .modern-title { font-size: 24px; font-weight: bold; margin-bottom: 8px; }
-        .modern-sub { font-size: 14px; opacity: 0.8; }
+        .modern-info { margin-top: 30px; text-align: left;}
+        .modern-title { font-size: 22px; font-weight: bold; margin-bottom: 8px; line-height: 1.2; }
+        .modern-sub { font-size: 13px; opacity: 0.8; }
 
         .progress-bar {
             margin-top: 20px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; position: relative;
@@ -282,7 +301,7 @@
 
     <script>
         // 默认图片占位符 (防止空白)
-        const defaultCover = "https://via.placeholder.com/300x400?text=Book+Cover"; 
+        const defaultCover = "https://via.placeholder.com/300x400?text=Cover"; 
         const defaultAvatar = "https://via.placeholder.com/100?text=Avatar";
 
         // 初始化图片
