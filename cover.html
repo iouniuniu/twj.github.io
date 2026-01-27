@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>夏洛的网 - 小红书海报生成器 (修正版)</title>
+    <title>夏洛的网 - 小红书海报生成器 (最终修正版)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
@@ -71,17 +71,16 @@
 
         .poster.active { display: block; }
 
-        /* ================= 方案一：复古绘本风 (修复重叠问题) ================= */
+        /* ================= 方案一：复古绘本风 (最终修复版) ================= */
         .style-retro {
             background-color: #FDF5E6; /* 米黄色 */
-            /* 噪点纹理 */
             background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjRkRGNUU2Ii8+CjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNDQ0MiIG9wYWNpdHk9IjAuMiIvPjwvc3ZnPg==');
             color: #333;
         }
 
         /* 1. 标签上移 */
         .retro-tag {
-            position: absolute; top: 20px; left: 0; /* 原来是30px */
+            position: absolute; top: 20px; left: 0;
             background: #B22222; color: white;
             padding: 6px 15px; font-weight: bold; font-size: 14px;
             border-top-right-radius: 4px; border-bottom-right-radius: 4px;
@@ -91,26 +90,28 @@
 
         /* 2. 标题上移 */
         .retro-title {
-            position: absolute; top: 60px; left: 30px; right: 30px; /* 原来是80px */
+            position: absolute; top: 60px; left: 30px; right: 30px;
             font-family: 'Times New Roman', serif;
         }
         .retro-h1 { font-size: 32px; font-weight: bold; color: #2c3e50; margin-bottom: 5px; line-height: 1.1; }
         .retro-sub { font-size: 14px; color: #556B2F; font-weight: 500; letter-spacing: 1px; }
 
-        /* 3. 书本容器：调整位置和大小，避免撞到底部 */
+        /* 3. 书本容器：调整位置和大小，并增加底部间距 */
         .retro-book-container {
-            position: absolute; 
-            top: 145px; /* 原来是180px，大幅上移 */
-            left: 50%; 
+            position: absolute;
+            top: 140px; /* 再稍微上移 */
+            left: 50%;
             transform: translateX(-50%);
-            width: 180px; /* 原来是200px，稍微改窄一点点 */
-            height: 240px; /* 原来是260px */
+            width: 180px;
+            height: 230px; /* 稍微减小高度 */
+            /* 关键：增加底部外边距，强制与底部元素分离 */
+            margin-bottom: 20px;
         }
         .retro-book-img {
             width: 100%; height: 100%; object-fit: cover;
-            box-shadow: 8px 8px 15px rgba(0,0,0,0.3); /* 阴影 */
+            box-shadow: 8px 8px 15px rgba(0,0,0,0.3);
             border-radius: 2px;
-            border-left: 2px solid rgba(255,255,255,0.3); /* 书脊高光 */
+            border-left: 2px solid rgba(255,255,255,0.3);
         }
         .retro-ep-sticker {
             position: absolute; bottom: -15px; right: -15px;
@@ -122,11 +123,19 @@
             box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
         }
 
-        /* 4. 底部信息：保持位置，因为书本上移了，现在不会重叠了 */
+        /* 4. 底部信息：调整位置并增加背景保护 */
         .retro-footer {
-            position: absolute; bottom: 25px; left: 30px;
-            display: flex; align-items: center; gap: 12px;
+            position: absolute;
+            bottom: 20px; /* 稍微下移 */
+            left: 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
             z-index: 5;
+            /* 确保背景色能盖住可能重叠的部分（虽然目标是完全不重叠） */
+            background-color: #FDF5E6;
+            padding: 5px; /* 增加一点内边距 */
+            border-radius: 5px;
         }
         .avatar-img {
             width: 45px; height: 45px; border-radius: 50%; object-fit: cover;
@@ -138,7 +147,7 @@
         /* ================= 方案二：播放器风 (Player) ================= */
         .style-modern {
             background: #333; color: white;
-            display: flex; flex-direction: column; /* 弹性布局防止重叠 */
+            display: flex; flex-direction: column;
         }
         .modern-bg {
             position: absolute; inset: 0;
@@ -160,7 +169,7 @@
         }
 
         .modern-cover {
-            width: 220px; height: 220px; margin: 0 auto; /* 稍微调小适配小屏 */
+            width: 220px; height: 220px; margin: 0 auto;
             border-radius: 12px; overflow: hidden;
             box-shadow: 0 20px 40px rgba(0,0,0,0.4);
             flex-shrink: 0;
