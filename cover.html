@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>夏洛的网 - 小红书海报生成器</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --ratio-w: 375px; /* 模拟手机宽度 */
+            --ratio-h: 500px; /* 3:4 比例 */
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px;
+            gap: 40px;
+            min-height: 100vh;
+        }
+
+        /* 左侧控制面板 */
+        .controls {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 320px;
+            flex-shrink: 0;
+        }
+
+        .controls h2 { margin-top: 0; color: #333; font-size: 18px; margin-bottom: 20px;}
+        .control-group { margin-bottom: 15px; }
+        .control-group label { display: block; font-size: 14px; color: #666; margin-bottom: 5px; }
+        .control-group input[type="text"] {
+            width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box;
+        }
+        .control-group input[type="file"] { font-size: 12px; }
+        
+        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        .btn {
+            flex: 1; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s;
+        }
+        .btn-style { background: #e0e0e0; color: #333; }
+        .btn-style.active { background: #333; color: white; }
+        .btn-download { background: #ff2e4d; color: white; width: 100%; margin-top: 10px; }
+        .btn-download:hover { background: #e60023; }
+
+        /* 右侧预览区域 */
+        .preview-wrapper {
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        /* 通用海报容器 */
+        .poster {
+            width: var(--ratio-w);
+            height: var(--ratio-h);
+            position: relative;
+            overflow: hidden;
+            background-color: white;
+            transition: all 0.3s ease;
+            display: none; /* 默认隐藏，通过JS控制显示 */
+        }
+
+        .poster.active { display: block; }
+
+        /* ================= 方案一：复古绘本风 (Retro) ================= */
+        .style-retro {
+            background-color: #FDF5E6; /* 米黄色 */
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjRkRGNUU2Ii8+CjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IixEODDk4IiBvcGFjaXR5PSIwLjEiLz4KPC9zdmc+'); /* 噪点纹理 */
+            color: #333;
+        }
+
+        .retro-tag {
+            position: absolute; top: 30px; left: 0;
+            background: #B22222; color: white;
+            padding: 8px 15px; font-weight: bold; font-size: 14px;
+            border-top-right-radius: 4px; border-bottom-right-radius: 4px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+
+        .retro-title {
+            position: absolute; top: 80px; left: 30px; right: 30px;
+            font-family: 'Times New Roman', serif;
+        }
+        .retro-h1 { font-size: 32px; font-weight: bold; color: #2c3e50; margin-bottom: 5px; line-height: 1.1; }
+        .retro-sub { font-size: 14px; color: #556B2F; font-weight: 500; letter-spacing: 1px; }
+
+        .retro-book-container {
+            position: absolute; top: 180px; left: 50%; transform: translateX(-50%);
+            width: 200px; height: 260px;
+        }
+        .retro-book-img {
+            width: 100%; height: 100%; object-fit: cover;
+            box-shadow: 10px 10px 20px rgba(0,0,0,0.25); /* 阴影 */
+            border-radius: 2px;
+        }
+        .retro-ep-sticker {
+            position: absolute; bottom: -20px; right: -20px;
+            width: 70px; height: 70px; background: #CD5C5C;
+            border-radius: 50%; border: 3px solid #fff;
+            display: flex; justify-content: center; align-items: center;
+            color: white; font-weight: bold; font-size: 18px;
+            transform: rotate(-15deg);
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .retro-footer {
+            position: absolute; bottom: 30px; left: 30px;
+            display: flex; align-items: center; gap: 12px;
+        }
+        .avatar-img {
+            width: 45px; height: 45px; border-radius: 50%; object-fit: cover;
+            border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .footer-text h3 { margin: 0; font-size: 16px; color: #333; }
+        .footer-text p { margin: 0; font-size: 10px; color: #888; margin-top: 2px; }
+
+        /* ================= 方案二：播放器风 (Player) ================= */
+        .style-modern {
+            background: #333; color: white;
+        }
+        .modern-bg {
+            position: absolute; inset: 0;
+            background-size: cover; background-position: center;
+            filter: blur(30px) brightness(0.6);
+            z-index: 0;
+        }
+        
+        .modern-content { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; padding: 30px; box-sizing: border-box; }
+        
+        .modern-tag {
+            align-self: flex-start; background: #FFD700; color: #000;
+            padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold;
+            margin-bottom: 40px;
+        }
+
+        .modern-cover {
+            width: 240px; height: 240px; margin: 0 auto;
+            border-radius: 12px; overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+        .modern-cover img { width: 100%; height: 100%; object-fit: cover; }
+
+        .modern-info { margin-top: 40px; }
+        .modern-title { font-size: 24px; font-weight: bold; margin-bottom: 8px; }
+        .modern-sub { font-size: 14px; opacity: 0.8; }
+
+        .progress-bar {
+            margin-top: 20px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; position: relative;
+        }
+        .progress-fill { width: 30%; height: 100%; background: white; border-radius: 2px; position: relative; }
+        .progress-dot {
+            width: 10px; height: 10px; background: white; border-radius: 50%;
+            position: absolute; right: -5px; top: -3px;
+        }
+        .time-codes { display: flex; justify-content: space-between; font-size: 10px; margin-top: 8px; opacity: 0.6; }
+
+        .modern-footer {
+            margin-top: auto; display: flex; align-items: center; gap: 10px;
+            background: rgba(255,255,255,0.1); padding: 10px; border-radius: 50px;
+            backdrop-filter: blur(10px);
+        }
+        .modern-footer .avatar-img { width: 30px; height: 30px; border: none; }
+        .modern-footer span { font-size: 12px; font-weight: 500; }
+
+        /* 移动端适配 */
+        @media (max-width: 800px) {
+            body { flex-direction: column; align-items: center; padding: 20px; }
+            .controls { width: 100%; max-width: 375px; box-sizing: border-box; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <h2>🎨 海报设计器</h2>
+        
+        <div class="btn-group">
+            <button class="btn btn-style active" onclick="switchStyle('retro')">方案一：复古绘本</button>
+            <button class="btn btn-style" onclick="switchStyle('modern')">方案二：播放器</button>
+        </div>
+
+        <div class="control-group">
+            <label>主标题 (English Title)</label>
+            <input type="text" id="inputTitle" value="Charlotte's Web" oninput="updateText()">
+        </div>
+        <div class="control-group">
+            <label>副标题 (Subtitle)</label>
+            <input type="text" id="inputSub" value="英文原版广播剧" oninput="updateText()">
+        </div>
+        <div class="control-group">
+            <label>标签 (Tag)</label>
+            <input type="text" id="inputTag" value="全网首发 🔥" oninput="updateText()">
+        </div>
+        <div class="control-group">
+            <label>集数 (Episode)</label>
+            <input type="text" id="inputEp" value="EP.01" oninput="updateText()">
+        </div>
+        <div class="control-group">
+            <label>所有者名称 (Owner)</label>
+            <input type="text" id="inputOwner" value="周末英语剧场" oninput="updateText()">
+        </div>
+        
+        <hr style="border:0; border-top:1px solid #eee; margin: 15px 0;">
+
+        <div class="control-group">
+            <label>🖼️ 书本封面图 (Cover)</label>
+            <input type="file" accept="image/*" onchange="loadImage(this, 'cover')">
+        </div>
+        <div class="control-group">
+            <label>👤 头像图片 (Avatar)</label>
+            <input type="file" accept="image/*" onchange="loadImage(this, 'avatar')">
+        </div>
+
+        <button class="btn btn-download" onclick="downloadPoster()">⬇️ 生成并下载图片</button>
+    </div>
+
+    <div class="preview-wrapper" id="captureArea">
+        
+        <div id="style-retro" class="poster style-retro active">
+            <div class="retro-tag" id="retro-tag-text">全网首发 🔥</div>
+            <div class="retro-title">
+                <div class="retro-h1" id="retro-h1-text">Charlotte's Web</div>
+                <div class="retro-sub" id="retro-sub-text">英文原版广播剧</div>
+            </div>
+            
+            <div class="retro-book-container">
+                <img src="" class="retro-book-img cover-img-target" alt="Cover" style="background: #ddd;">
+                <div class="retro-ep-sticker" id="retro-ep-text">EP.01</div>
+            </div>
+
+            <div class="retro-footer">
+                <img src="" class="avatar-img avatar-img-target" alt="Avatar" style="background: #ccc;">
+                <div class="footer-text">
+                    <h3 id="retro-owner-text">周末英语剧场</h3>
+                    <p>© 版权所有 · 侵权必究</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="style-modern" class="poster style-modern">
+            <div class="modern-bg cover-bg-target" style="background-color: #555;"></div>
+            
+            <div class="modern-content">
+                <div class="modern-tag" id="modern-tag-text">全网首发 🔥</div>
+                
+                <div class="modern-cover">
+                    <img src="" class="cover-img-target" alt="Cover" style="background: #888;">
+                </div>
+
+                <div class="modern-info">
+                    <div class="modern-title" id="modern-h1-text">Charlotte's Web</div>
+                    <div class="modern-sub" id="modern-sub-text">英文原版广播剧 · EP.01</div>
+                </div>
+
+                <div class="progress-bar">
+                    <div class="progress-fill">
+                        <div class="progress-dot"></div>
+                    </div>
+                </div>
+                <div class="time-codes">
+                    <span>04:20</span>
+                    <span>15:30</span>
+                </div>
+
+                <div class="modern-footer">
+                    <img src="" class="avatar-img avatar-img-target" alt="Avatar" style="background: #ccc;">
+                    <span id="modern-owner-text">周末英语剧场</span>
+                    <span style="opacity: 0.6; font-weight: normal; margin-left: auto; font-size: 10px;">© Copyright</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 默认图片占位符 (防止空白)
+        const defaultCover = "https://via.placeholder.com/300x400?text=Book+Cover"; 
+        const defaultAvatar = "https://via.placeholder.com/100?text=Avatar";
+
+        // 初始化图片
+        document.querySelectorAll('.cover-img-target').forEach(img => img.src = defaultCover);
+        document.querySelectorAll('.avatar-img-target').forEach(img => img.src = defaultAvatar);
+
+        // 切换风格
+        function switchStyle(styleName) {
+            // 按钮样式
+            document.querySelectorAll('.btn-style').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // 显示对应的海报
+            document.querySelectorAll('.poster').forEach(p => p.classList.remove('active'));
+            document.getElementById('style-' + styleName).classList.add('active');
+        }
+
+        // 实时更新文字
+        function updateText() {
+            const title = document.getElementById('inputTitle').value;
+            const sub = document.getElementById('inputSub').value;
+            const tag = document.getElementById('inputTag').value;
+            const ep = document.getElementById('inputEp').value;
+            const owner = document.getElementById('inputOwner').value;
+
+            // Retro Style
+            document.getElementById('retro-h1-text').innerText = title;
+            document.getElementById('retro-sub-text').innerText = sub;
+            document.getElementById('retro-tag-text').innerText = tag;
+            document.getElementById('retro-ep-text').innerText = ep;
+            document.getElementById('retro-owner-text').innerText = owner;
+
+            // Modern Style
+            document.getElementById('modern-h1-text').innerText = title;
+            document.getElementById('modern-sub-text').innerText = sub + " · " + ep;
+            document.getElementById('modern-tag-text').innerText = tag;
+            document.getElementById('modern-owner-text').innerText = owner;
+        }
+
+        // 图片上传处理
+        function loadImage(input, type) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (type === 'cover') {
+                        // 更新所有封面图 img
+                        document.querySelectorAll('.cover-img-target').forEach(img => img.src = e.target.result);
+                        // 更新现代风的背景图
+                        document.querySelector('.cover-bg-target').style.backgroundImage = `url(${e.target.result})`;
+                    } else if (type === 'avatar') {
+                        // 更新所有头像 img
+                        document.querySelectorAll('.avatar-img-target').forEach(img => img.src = e.target.result);
+                    }
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // 下载功能
+        function downloadPoster() {
+            const activePoster = document.querySelector('.poster.active');
+            
+            // 使用 html2canvas 截图
+            html2canvas(activePoster, {
+                scale: 2, // 提高清晰度 (2倍图)
+                useCORS: true, // 允许跨域图片
+                backgroundColor: null // 保持透明度设置
+            }).then(canvas => {
+                // 创建下载链接
+                const link = document.createElement('a');
+                link.download = 'xiaohongshu-poster.png';
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+            });
+        }
+    </script>
+</body>
+</html>
