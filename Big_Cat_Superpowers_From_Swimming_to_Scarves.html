@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Big Cat Superpowers From Swimming to Scarves</title>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --accent-color: #a855f7;
+            
+            /* 定义颜色变量 */
+            --female-color: #ec4899; /* 粉色 */
+            --male-color: #2dd4bf;   /* 青色 */
+            --unknown-color: #9ca3af;
+
+            --text-normal: rgba(255, 255, 255, 0.4);
+            --text-active: #ffffff;
+            --word-highlight: #ff9f0a;
+            --font-stack: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            font-family: var(--font-stack);
+            background-color: var(--bg-color);
+            color: white;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.5s ease;
+        }
+
+        .ambient-bg {
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 50% 50%, #4c1d95, #0f172a 70%, #000);
+            z-index: -1;
+            filter: blur(80px);
+            opacity: 0.8;
+            animation: breathe 10s infinite alternate;
+        }
+
+        @keyframes breathe {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1); }
+        }
+
+        .player-header {
+            padding: 40px 20px 10px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+            transition: all 0.5s ease;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+            flex-shrink: 0;
+        }
+
+        .artwork-container {
+            width: 140px;
+            height: 185px;
+            border-radius: 8px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            margin-bottom: 15px;
+            overflow: hidden;
+            background-color: #333;
+            position: relative;
+            transition: all 0.5s ease;
+        }
+
+        .artwork-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .track-info { 
+            text-align: center; 
+            transition: all 0.5s ease;
+        }
+        .track-title { font-size: 20px; font-weight: 800; margin: 0; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .track-artist { font-size: 14px; color: rgba(255,255,255,0.9); margin-top: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        .track-subtitle { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 4px; font-weight: 400; letter-spacing: 0.5px; }
+
+        .ui-controls {
+            width: 100%;
+            max-width: 400px;
+            margin-top: 20px;
+            transition: opacity 0.5s, transform 0.5s;
+        }
+
+        .hidden-ui {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-20px);
+            height: 0; 
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .progress-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; margin-bottom: 20px; cursor: pointer; }
+        .progress-fill { height: 100%; background: white; border-radius: 2px; width: 0%; transition: width 0.1s linear; }
+
+        .transcript-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 30px 150px 30px;
+            mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+            scroll-behavior: smooth;
+            transition: all 0.5s ease;
+        }
+        .transcript-container::-webkit-scrollbar { display: none; }
+
+        .transcript-item {
+            margin-bottom: 30px;
+            transition: opacity 0.4s ease, transform 0.4s ease, filter 0.4s ease;
+            opacity: 0.3; 
+            filter: blur(1.5px);
+            transform: scale(0.98);
+            transform-origin: left center;
+            cursor: pointer;
+            scroll-margin-top: 150px; 
+        }
+
+        .transcript-item.active {
+            opacity: 1;
+            filter: blur(0);
+            transform: scale(1.0);
+        }
+
+        .speaker-tag {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            opacity: 0.9;
+            color: #fff;
+        }
+
+        /* 直接根据 JSON 中的 speaker 名字匹配
+           如果 JSON 里是 "Female"，会匹配 .speaker-female
+           如果 JSON 里是 "Male"，会匹配 .speaker-male
+        */
+        .speaker-female { background-color: var(--female-color); }
+        .speaker-male   { background-color: var(--male-color); color: #000 !important; }
+        .speaker-unknown { background-color: var(--unknown-color); }
+
+        .text-content {
+            font-size: 24px;
+            line-height: 1.6;
+            font-weight: 600;
+            margin: 0;
+            color: var(--text-active);
+            word-wrap: break-word;
+        }
+
+        .word-span {
+            transition: color 0.1s ease, text-shadow 0.1s ease;
+            display: inline;
+            border-radius: 4px;
+            margin: 0; 
+            padding: 0;
+        }
+
+        .word-active {
+            color: var(--word-highlight);
+            text-shadow: 0 0 15px rgba(255, 159, 10, 0.7);
+        }
+
+        /* 底部按钮栏 */
+        .btn-container {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 100;
+            transition: all 0.3s;
+            width: 90%;
+            justify-content: center;
+        }
+
+        .overlay-btn {
+            background: white;
+            color: black;
+            padding: 14px 20px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s;
+            white-space: nowrap;
+        }
+        .overlay-btn:active { transform: scale(0.95); }
+        
+        /* 录制进度条 (PC) */
+        .recording-controls {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px; 
+            z-index: 2000;
+            display: none; 
+        }
+
+        .rec-progress-bar {
+            height: 100%;
+            background-color: #ff4444;
+            width: 0%;
+            transition: width 0.1s linear;
+            box-shadow: 0 0 10px rgba(255, 68, 68, 0.8);
+        }
+
+        /* 电脑端停止按钮 (悬停) */
+        .stop-rec-hitbox {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 150px; 
+            height: 100px;
+            z-index: 2001;
+            display: none; 
+        }
+
+        .stop-rec-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 68, 68, 0.9);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: none;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            pointer-events: none; 
+        }
+
+        .stop-rec-hitbox:hover .stop-rec-btn {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        #debugTime {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #0f0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            z-index: 2000;
+            pointer-events: none;
+        }
+
+        /* =========================================
+           沉浸/录制模式通用样式
+           ========================================= */
+        body.recording-mode {
+            position: fixed; 
+            width: 100%;
+            height: 100%;
+            background: #000;
+        }
+
+        body.recording-mode .player-header { 
+            padding-top: 40px; 
+            padding-bottom: 0px; 
+        }
+        
+        body.recording-mode .artwork-container { 
+            width: 120px; 
+            height: 160px; 
+            margin-top: 0; 
+            margin-bottom: 5px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        
+        body.recording-mode .track-info { 
+            transform: scale(0.9); 
+            margin-bottom: 0;
+        }
+        
+        body.recording-mode .transcript-container { 
+            padding-top: 0px; 
+            mask-image: linear-gradient(to bottom, transparent 0%, black 5%, black 90%, transparent 100%);
+        }
+        
+        body.recording-mode .transcript-item.active .text-content { 
+            color: rgba(255,255,255,0.95);
+        }
+        
+        /* 隐藏 UI */
+        body.recording-mode #debugTime { display: none; }
+        body.recording-mode .btn-container { opacity: 0; pointer-events: none; }
+        body.recording-mode .ui-controls { opacity: 0; pointer-events: none; height: 0; margin: 0;}
+
+        /* PC特有：仅PC模式显示录制控制条 */
+        body.recording-mode.pc-mode .recording-controls { display: block; }
+        body.recording-mode.pc-mode .stop-rec-hitbox { display: block; }
+
+    </style>
+</head>
+<body>
+
+<div class="ambient-bg"></div>
+<div id="debugTime">0.000</div>
+
+<div class="recording-controls">
+    <div class="rec-progress-bar" id="recProgressBar"></div>
+</div>
+<div class="stop-rec-hitbox" id="stopRecHitbox">
+    <button class="stop-rec-btn" id="stopRecBtn">⏹ 停止录制</button>
+</div>
+
+<div class="player-header">
+    <div class="artwork-container">
+        <img src="301.jpg" alt="Magazine Cover" class="artwork-img" onerror="this.style.display='none'; document.getElementById('placeholder').style.display='flex';">
+        <div id="placeholder" class="artwork-placeholder" style="display:none;">📖</div>
+    </div>
+    <div class="track-info">
+        <h1 class="track-title">Symbols of strength in the wild</h1>
+        <div class="track-artist">The Week Junior Podcast</div>
+        <div class="track-subtitle">301 期 20260124</div>
+    </div>
+
+    <div class="ui-controls" id="uiControls">
+        <div class="progress-bar" id="progressBarContainer">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div style="text-align: center; color: rgba(255,255,255,0.5); font-size: 12px; margin-top: 5px;" id="tips">
+            </div>
+    </div>
+</div>
+
+<div class="transcript-container" id="transcriptContainer"></div>
+
+<div class="btn-container" id="btnContainer">
+    <button class="overlay-btn" id="playModeBtn">
+        🎵 仅播放
+    </button>
+    <button class="overlay-btn" id="recordVideoBtn" style="display:none;">
+        🎥 电脑内录 1080P
+    </button>
+    <button class="overlay-btn" id="mobileRecordBtn" style="display:none;">
+        📱 手机全屏 (无UI)
+    </button>
+</div>
+
+<audio id="audioPlayer">
+    <source src="Big_Cat_Superpowers_From_Swimming_to_Scarves.m4a" type="audio/mp4">
+</audio>
+
+<script>
+    const rawTranscriptData = [{"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Wait, I'm looking at this article and is this for real?", "start": 0.031, "end": 3.656, "words": [{"word": "Wait,", "start": 0.031, "end": 0.291}, {"word": "I'm", "start": 0.311, "end": 0.412}, {"word": "looking", "start": 0.432, "end": 0.632}, {"word": "at", "start": 0.692, "end": 0.732}, {"word": "this", "start": 0.752, "end": 0.872}, {"word": "article", "start": 0.932, "end": 1.293}, {"word": "and", "start": 1.413, "end": 1.513}, {"word": "is", "start": 2.755, "end": 2.835}, {"word": "this", "start": 2.875, "end": 2.995}, {"word": "for", "start": 3.075, "end": 3.236}, {"word": "real?", "start": 3.356, "end": 3.656}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Is it true that a lion's roar is so loud you can hear it from five miles away?", "start": 4.177, "end": 8.623, "words": [{"word": "Is", "start": 4.177, "end": 4.257}, {"word": "it", "start": 4.317, "end": 4.357}, {"word": "true", "start": 4.457, "end": 4.698}, {"word": "that", "start": 4.758, "end": 4.878}, {"word": "a", "start": 4.958, "end": 4.978}, {"word": "lion's", "start": 5.058, "end": 5.559}, {"word": "roar", "start": 5.639, "end": 5.939}, {"word": "is", "start": 6.04, "end": 6.12}, {"word": "so", "start": 6.24, "end": 6.44}, {"word": "loud", "start": 6.5, "end": 6.721}, {"word": "you", "start": 6.761, "end": 6.881}, {"word": "can", "start": 6.921, "end": 7.041}, {"word": "hear", "start": 7.121, "end": 7.301}, {"word": "it", "start": 7.341, "end": 7.382}, {"word": "from", "start": 7.422, "end": 7.542}, {"word": "five", "start": 7.662, "end": 7.902}, {"word": "miles", "start": 7.982, "end": 8.283}, {"word": "away?", "start": 8.363, "end": 8.623}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Oh, it is absolutely true, five miles.", "start": 8.643, "end": 10.947, "words": [{"word": "Oh,", "start": 8.643, "end": 9.224}, {"word": "it", "start": 9.464, "end": 9.525}, {"word": "is", "start": 9.665, "end": 9.725}, {"word": "absolutely", "start": 9.765, "end": 10.125}, {"word": "true,", "start": 10.145, "end": 10.306}, {"word": "five", "start": 10.346, "end": 10.606}, {"word": "miles.", "start": 10.686, "end": 10.947}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "That's just one reason we call them the king of beasts.", "start": 11.527, "end": 13.931, "words": [{"word": "That's", "start": 11.527, "end": 11.728}, {"word": "just", "start": 12.168, "end": 12.269}, {"word": "one", "start": 12.429, "end": 12.509}, {"word": "reason", "start": 12.569, "end": 12.789}, {"word": "we", "start": 12.809, "end": 12.909}, {"word": "call", "start": 12.949, "end": 13.09}, {"word": "them", "start": 13.11, "end": 13.23}, {"word": "the", "start": 13.25, "end": 13.33}, {"word": "king", "start": 13.37, "end": 13.51}, {"word": "of", "start": 13.55, "end": 13.61}, {"word": "beasts.", "start": 13.63, "end": 13.931}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Wow.", "start": 14.512, "end": 14.892, "words": [{"word": "Wow.", "start": 14.512, "end": 14.892}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "And that's actually a great place to start.", "start": 14.912, "end": 16.495, "words": [{"word": "And", "start": 14.912, "end": 14.972}, {"word": "that's", "start": 15.012, "end": 15.173}, {"word": "actually", "start": 15.233, "end": 15.493}, {"word": "a", "start": 15.533, "end": 15.573}, {"word": "great", "start": 15.653, "end": 15.834}, {"word": "place", "start": 15.894, "end": 16.094}, {"word": "to", "start": 16.134, "end": 16.214}, {"word": "start.", "start": 16.254, "end": 16.495}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Today we're doing a deep dive into the article all about big cats to really understand the world's most powerful felines.", "start": 16.735, "end": 23.545, "words": [{"word": "Today", "start": 16.735, "end": 16.955}, {"word": "we're", "start": 16.995, "end": 17.155}, {"word": "doing", "start": 17.176, "end": 17.376}, {"word": "a", "start": 17.396, "end": 17.416}, {"word": "deep", "start": 17.556, "end": 17.736}, {"word": "dive", "start": 17.796, "end": 18.057}, {"word": "into", "start": 18.137, "end": 18.277}, {"word": "the", "start": 18.317, "end": 18.397}, {"word": "article", "start": 18.497, "end": 18.778}, {"word": "all", "start": 18.918, "end": 19.058}, {"word": "about", "start": 19.098, "end": 19.279}, {"word": "big", "start": 19.319, "end": 19.539}, {"word": "cats", "start": 19.599, "end": 19.919}, {"word": "to", "start": 20.24, "end": 20.941}, {"word": "really", "start": 21.161, "end": 21.402}, {"word": "understand", "start": 21.482, "end": 21.882}, {"word": "the", "start": 21.922, "end": 22.002}, {"word": "world's", "start": 22.042, "end": 22.263}, {"word": "most", "start": 22.323, "end": 22.463}, {"word": "powerful", "start": 22.523, "end": 22.864}, {"word": "felines.", "start": 22.904, "end": 23.545}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "I'm ready.", "start": 23.565, "end": 23.885, "words": [{"word": "I'm", "start": 23.565, "end": 23.665}, {"word": "ready.", "start": 23.705, "end": 23.885}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "But first, who are we actually talking about?", "start": 24.166, "end": 26.289, "words": [{"word": "But", "start": 24.166, "end": 24.286}, {"word": "first,", "start": 24.346, "end": 24.626}, {"word": "who", "start": 24.967, "end": 25.067}, {"word": "are", "start": 25.107, "end": 25.187}, {"word": "we", "start": 25.227, "end": 25.307}, {"word": "actually", "start": 25.367, "end": 25.668}, {"word": "talking", "start": 25.728, "end": 26.028}, {"word": "about?", "start": 26.068, "end": 26.289}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "The term big cat gets used a lot, but it's a specific group, right?", "start": 26.329, "end": 29.413, "words": [{"word": "The", "start": 26.329, "end": 26.409}, {"word": "term", "start": 26.449, "end": 26.669}, {"word": "big", "start": 26.709, "end": 26.829}, {"word": "cat", "start": 26.889, "end": 27.11}, {"word": "gets", "start": 27.15, "end": 27.31}, {"word": "used", "start": 27.41, "end": 27.53}, {"word": "a", "start": 27.61, "end": 27.63}, {"word": "lot,", "start": 27.671, "end": 27.851}, {"word": "but", "start": 27.871, "end": 27.971}, {"word": "it's", "start": 28.011, "end": 28.111}, {"word": "a", "start": 28.151, "end": 28.171}, {"word": "specific", "start": 28.231, "end": 28.672}, {"word": "group,", "start": 28.732, "end": 28.992}, {"word": "right?", "start": 29.012, "end": 29.413}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It is a very specific group.", "start": 29.461, "end": 30.863, "words": [{"word": "It", "start": 29.461, "end": 29.601}, {"word": "is", "start": 29.681, "end": 29.762}, {"word": "a", "start": 29.782, "end": 29.802}, {"word": "very", "start": 29.982, "end": 30.182}, {"word": "specific", "start": 30.202, "end": 30.623}, {"word": "group.", "start": 30.663, "end": 30.863}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Scientifically, we're talking about the genus Panthera.", "start": 31.204, "end": 33.648, "words": [{"word": "Scientifically,", "start": 31.204, "end": 31.805}, {"word": "we're", "start": 31.825, "end": 31.965}, {"word": "talking", "start": 32.005, "end": 32.226}, {"word": "about", "start": 32.246, "end": 32.386}, {"word": "the", "start": 32.406, "end": 32.486}, {"word": "genus", "start": 32.546, "end": 32.827}, {"word": "Panthera.", "start": 32.867, "end": 33.648}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "And in that group, you have five main members.", "start": 34.69, "end": 36.974, "words": [{"word": "And", "start": 34.69, "end": 34.83}, {"word": "in", "start": 34.87, "end": 35.071}, {"word": "that", "start": 35.111, "end": 35.231}, {"word": "group,", "start": 35.251, "end": 35.451}, {"word": "you", "start": 35.471, "end": 35.531}, {"word": "have", "start": 35.551, "end": 35.652}, {"word": "five", "start": 35.772, "end": 36.132}, {"word": "main", "start": 36.433, "end": 36.613}, {"word": "members.", "start": 36.633, "end": 36.974}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "There's the tiger, the lion, the jaguar, the leopard, and the snow leopard.", "start": 37.435, "end": 44.787, "words": [{"word": "There's", "start": 37.435, "end": 37.675}, {"word": "the", "start": 37.755, "end": 37.835}, {"word": "tiger,", "start": 37.895, "end": 38.236}, {"word": "the", "start": 38.276, "end": 39.318}, {"word": "lion,", "start": 39.378, "end": 39.779}, {"word": "the", "start": 39.819, "end": 41.822}, {"word": "jaguar,", "start": 41.882, "end": 42.463}, {"word": "the", "start": 42.764, "end": 42.864}, {"word": "leopard,", "start": 42.924, "end": 43.284}, {"word": "and", "start": 43.946, "end": 44.026}, {"word": "the", "start": 44.066, "end": 44.126}, {"word": "snow", "start": 44.166, "end": 44.366}, {"word": "leopard.", "start": 44.406, "end": 44.787}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Tiger, lion, jaguar, leopard, and snow leopard.", "start": 44.834, "end": 47.417, "words": [{"word": "Tiger,", "start": 44.834, "end": 45.275}, {"word": "lion,", "start": 45.475, "end": 45.875}, {"word": "jaguar,", "start": 45.975, "end": 46.356}, {"word": "leopard,", "start": 46.436, "end": 46.736}, {"word": "and", "start": 46.776, "end": 46.836}, {"word": "snow", "start": 46.877, "end": 47.097}, {"word": "leopard.", "start": 47.137, "end": 47.417}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Exactly.", "start": 47.758, "end": 48.458, "words": [{"word": "Exactly.", "start": 47.758, "end": 48.458}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "And the snow leopard, let's talk about that one.", "start": 48.479, "end": 50.221, "words": [{"word": "And", "start": 48.479, "end": 48.579}, {"word": "the", "start": 48.619, "end": 48.679}, {"word": "snow", "start": 48.739, "end": 48.979}, {"word": "leopard,", "start": 49.039, "end": 49.46}, {"word": "let's", "start": 49.48, "end": 49.62}, {"word": "talk", "start": 49.64, "end": 49.8}, {"word": "about", "start": 49.82, "end": 49.94}, {"word": "that", "start": 49.98, "end": 50.121}, {"word": "one.", "start": 50.141, "end": 50.221}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "They live in these freezing, high-altitude mountains.", "start": 50.541, "end": 52.463, "words": [{"word": "They", "start": 50.541, "end": 50.661}, {"word": "live", "start": 50.701, "end": 50.821}, {"word": "in", "start": 50.861, "end": 50.902}, {"word": "these", "start": 50.922, "end": 51.042}, {"word": "freezing,", "start": 51.162, "end": 51.542}, {"word": "high-altitude", "start": 51.602, "end": 52.123}, {"word": "mountains.", "start": 52.163, "end": 52.463}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "I saw the picture.", "start": 52.704, "end": 53.244, "words": [{"word": "I", "start": 52.704, "end": 52.744}, {"word": "saw", "start": 52.764, "end": 52.884}, {"word": "the", "start": 52.924, "end": 53.004}, {"word": "picture.", "start": 53.044, "end": 53.244}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It looks so cold up there.", "start": 53.284, "end": 54.526, "words": [{"word": "It", "start": 53.284, "end": 53.325}, {"word": "looks", "start": 53.345, "end": 53.525}, {"word": "so", "start": 53.585, "end": 53.745}, {"word": "cold", "start": 53.805, "end": 54.045}, {"word": "up", "start": 54.126, "end": 54.186}, {"word": "there.", "start": 54.226, "end": 54.526}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It is.", "start": 54.546, "end": 54.786, "words": [{"word": "It", "start": 54.546, "end": 54.626}, {"word": "is.", "start": 54.646, "end": 54.786}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "But the snow leopard has this amazing trick.", "start": 55.127, "end": 57.069, "words": [{"word": "But", "start": 55.127, "end": 55.227}, {"word": "the", "start": 55.247, "end": 55.347}, {"word": "snow", "start": 55.407, "end": 55.627}, {"word": "leopard", "start": 55.667, "end": 55.908}, {"word": "has", "start": 55.948, "end": 56.088}, {"word": "this", "start": 56.108, "end": 56.268}, {"word": "amazing", "start": 56.348, "end": 56.789}, {"word": "trick.", "start": 56.849, "end": 57.069}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It has a really long, thick tail.", "start": 57.089, "end": 59.132, "words": [{"word": "It", "start": 57.089, "end": 57.129}, {"word": "has", "start": 57.169, "end": 57.249}, {"word": "a", "start": 57.289, "end": 57.329}, {"word": "really", "start": 57.53, "end": 57.89}, {"word": "long,", "start": 58.01, "end": 58.371}, {"word": "thick", "start": 58.591, "end": 58.771}, {"word": "tail.", "start": 58.851, "end": 59.132}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Uh-huh.", "start": 59.432, "end": 59.612, "words": [{"word": "Uh-huh.", "start": 59.432, "end": 59.612}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "For balance, I guess.", "start": 60.013, "end": 61.354, "words": [{"word": "For", "start": 60.013, "end": 60.113}, {"word": "balance,", "start": 60.173, "end": 60.493}, {"word": "I", "start": 60.553, "end": 60.594}, {"word": "guess.", "start": 60.734, "end": 61.354}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Well, yes, for balance.", "start": 61.375, "end": 63.197, "words": [{"word": "Well,", "start": 61.375, "end": 61.595}, {"word": "yes,", "start": 62.256, "end": 62.536}, {"word": "for", "start": 62.596, "end": 62.716}, {"word": "balance.", "start": 62.776, "end": 63.197}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "But also, it wraps that tail around its body and face when it rests.", "start": 63.377, "end": 68.243, "words": [{"word": "But", "start": 63.377, "end": 63.477}, {"word": "also,", "start": 63.577, "end": 63.958}, {"word": "it", "start": 64.879, "end": 64.919}, {"word": "wraps", "start": 65.019, "end": 65.299}, {"word": "that", "start": 65.359, "end": 65.54}, {"word": "tail", "start": 65.66, "end": 65.92}, {"word": "around", "start": 65.98, "end": 66.16}, {"word": "its", "start": 66.2, "end": 66.301}, {"word": "body", "start": 66.361, "end": 66.681}, {"word": "and", "start": 66.881, "end": 66.961}, {"word": "face", "start": 67.042, "end": 67.322}, {"word": "when", "start": 67.422, "end": 67.562}, {"word": "it", "start": 67.602, "end": 67.642}, {"word": "rests.", "start": 67.722, "end": 68.243}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "No way.", "start": 68.324, "end": 69.105, "words": [{"word": "No", "start": 68.324, "end": 68.645}, {"word": "way.", "start": 68.725, "end": 69.105}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Like a scarf.", "start": 69.506, "end": 70.167, "words": [{"word": "Like", "start": 69.506, "end": 69.626}, {"word": "a", "start": 69.646, "end": 69.686}, {"word": "scarf.", "start": 69.767, "end": 70.167}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Just like a built-in scarf.", "start": 70.488, "end": 71.61, "words": [{"word": "Just", "start": 70.488, "end": 70.608}, {"word": "like", "start": 70.648, "end": 70.748}, {"word": "a", "start": 70.768, "end": 70.808}, {"word": "built-in", "start": 70.868, "end": 71.209}, {"word": "scarf.", "start": 71.249, "end": 71.61}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It even warms the cold air before it breathes it in.", "start": 71.83, "end": 74.034, "words": [{"word": "It", "start": 71.83, "end": 71.87}, {"word": "even", "start": 71.91, "end": 72.05}, {"word": "warms", "start": 72.091, "end": 72.351}, {"word": "the", "start": 72.371, "end": 72.491}, {"word": "cold", "start": 72.531, "end": 72.752}, {"word": "air", "start": 72.852, "end": 72.952}, {"word": "before", "start": 73.012, "end": 73.253}, {"word": "it", "start": 73.293, "end": 73.333}, {"word": "breathes", "start": 73.373, "end": 73.673}, {"word": "it", "start": 73.733, "end": 73.773}, {"word": "in.", "start": 73.894, "end": 74.034}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It's one of their, well, survival superpowers.", "start": 74.094, "end": 76.658, "words": [{"word": "It's", "start": 74.094, "end": 74.214}, {"word": "one", "start": 74.354, "end": 74.415}, {"word": "of", "start": 74.455, "end": 74.495}, {"word": "their,", "start": 74.555, "end": 74.755}, {"word": "well,", "start": 75.036, "end": 75.296}, {"word": "survival", "start": 75.516, "end": 75.977}, {"word": "superpowers.", "start": 76.017, "end": 76.658}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "The tail is a scarf.", "start": 76.699, "end": 78.902, "words": [{"word": "The", "start": 76.699, "end": 76.799}, {"word": "tail", "start": 76.859, "end": 77.139}, {"word": "is", "start": 77.199, "end": 77.28}, {"word": "a", "start": 77.32, "end": 77.36}, {"word": "scarf.", "start": 77.44, "end": 78.902}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "That is so smart.", "start": 78.922, "end": 79.784, "words": [{"word": "That", "start": 78.922, "end": 79.063}, {"word": "is", "start": 79.123, "end": 79.183}, {"word": "so", "start": 79.243, "end": 79.403}, {"word": "smart.", "start": 79.443, "end": 79.784}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "So what about the other cats?", "start": 79.904, "end": 80.926, "words": [{"word": "So", "start": 79.904, "end": 80.004}, {"word": "what", "start": 80.044, "end": 80.145}, {"word": "about", "start": 80.165, "end": 80.285}, {"word": "the", "start": 80.305, "end": 80.365}, {"word": "other", "start": 80.425, "end": 80.585}, {"word": "cats?", "start": 80.625, "end": 80.926}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "What's the tiger's superpower?", "start": 81.006, "end": 82.489, "words": [{"word": "What's", "start": 81.006, "end": 81.206}, {"word": "the", "start": 81.266, "end": 81.347}, {"word": "tiger's", "start": 81.407, "end": 81.787}, {"word": "superpower?", "start": 81.827, "end": 82.489}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Ah, the tiger.", "start": 83.11, "end": 83.671, "words": [{"word": "Ah,", "start": 83.11, "end": 83.21}, {"word": "the", "start": 83.23, "end": 83.33}, {"word": "tiger.", "start": 83.37, "end": 83.671}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Well, tigers are what we call solitary animals.", "start": 83.871, "end": 86.215, "words": [{"word": "Well,", "start": 83.871, "end": 84.031}, {"word": "tigers", "start": 84.051, "end": 84.332}, {"word": "are", "start": 84.392, "end": 84.452}, {"word": "what", "start": 84.472, "end": 84.572}, {"word": "we", "start": 84.612, "end": 84.692}, {"word": "call", "start": 84.732, "end": 84.933}, {"word": "solitary", "start": 84.973, "end": 85.634}, {"word": "animals.", "start": 85.734, "end": 86.215}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Solitary.", "start": 86.195, "end": 87.017, "words": [{"word": "Solitary.", "start": 86.195, "end": 87.017}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "So they like to be alone.", "start": 87.217, "end": 88.339, "words": [{"word": "So", "start": 87.217, "end": 87.357}, {"word": "they", "start": 87.377, "end": 87.498}, {"word": "like", "start": 87.538, "end": 87.658}, {"word": "to", "start": 87.678, "end": 87.738}, {"word": "be", "start": 87.778, "end": 87.858}, {"word": "alone.", "start": 87.939, "end": 88.339}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "That's it.", "start": 88.52, "end": 88.86, "words": [{"word": "That's", "start": 88.52, "end": 88.72}, {"word": "it.", "start": 88.78, "end": 88.86}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Exactly.", "start": 88.9, "end": 89.301, "words": [{"word": "Exactly.", "start": 88.9, "end": 89.301}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "They live and hunt all by themselves, not in a group.", "start": 89.341, "end": 92.448, "words": [{"word": "They", "start": 89.341, "end": 89.522}, {"word": "live", "start": 89.582, "end": 89.782}, {"word": "and", "start": 89.822, "end": 89.882}, {"word": "hunt", "start": 89.923, "end": 90.183}, {"word": "all", "start": 90.564, "end": 90.684}, {"word": "by", "start": 90.724, "end": 90.804}, {"word": "themselves,", "start": 90.844, "end": 91.325}, {"word": "not", "start": 91.385, "end": 91.506}, {"word": "in", "start": 91.546, "end": 91.586}, {"word": "a", "start": 91.626, "end": 91.646}, {"word": "group.", "start": 91.706, "end": 92.448}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "So they need an edge.", "start": 92.468, "end": 93.329, "words": [{"word": "So", "start": 92.468, "end": 92.568}, {"word": "they", "start": 92.608, "end": 92.708}, {"word": "need", "start": 92.748, "end": 92.909}, {"word": "an", "start": 92.949, "end": 92.989}, {"word": "edge.", "start": 93.149, "end": 93.329}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Their advantage is their eyesight.", "start": 94.492, "end": 95.854, "words": [{"word": "Their", "start": 94.492, "end": 94.652}, {"word": "advantage", "start": 94.692, "end": 95.093}, {"word": "is", "start": 95.133, "end": 95.193}, {"word": "their", "start": 95.213, "end": 95.373}, {"word": "eyesight.", "start": 95.474, "end": 95.854}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "A tiger's night vision is about six times better than ours.", "start": 96.476, "end": 99.001, "words": [{"word": "A", "start": 96.476, "end": 96.516}, {"word": "tiger's", "start": 96.556, "end": 96.897}, {"word": "night", "start": 96.957, "end": 97.097}, {"word": "vision", "start": 97.137, "end": 97.378}, {"word": "is", "start": 97.458, "end": 97.518}, {"word": "about", "start": 97.558, "end": 97.778}, {"word": "six", "start": 97.899, "end": 98.099}, {"word": "times", "start": 98.119, "end": 98.339}, {"word": "better", "start": 98.4, "end": 98.6}, {"word": "than", "start": 98.64, "end": 98.74}, {"word": "ours.", "start": 98.82, "end": 99.001}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Six times.", "start": 99.221, "end": 99.822, "words": [{"word": "Six", "start": 99.221, "end": 99.482}, {"word": "times.", "start": 99.542, "end": 99.822}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "OK, that explains how they can hunt in a dark jungle.", "start": 99.903, "end": 101.927, "words": [{"word": "OK,", "start": 99.903, "end": 100.063}, {"word": "that", "start": 100.103, "end": 100.223}, {"word": "explains", "start": 100.263, "end": 100.544}, {"word": "how", "start": 100.584, "end": 100.644}, {"word": "they", "start": 100.684, "end": 100.784}, {"word": "can", "start": 100.804, "end": 100.925}, {"word": "hunt", "start": 100.945, "end": 101.145}, {"word": "in", "start": 101.205, "end": 101.245}, {"word": "a", "start": 101.285, "end": 101.325}, {"word": "dark", "start": 101.366, "end": 101.566}, {"word": "jungle.", "start": 101.606, "end": 101.927}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It really does.", "start": 102.147, "end": 102.688, "words": [{"word": "It", "start": 102.147, "end": 102.187}, {"word": "really", "start": 102.227, "end": 102.428}, {"word": "does.", "start": 102.468, "end": 102.688}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Now, what about the two cats that people always mix up?", "start": 103.269, "end": 105.574, "words": [{"word": "Now,", "start": 103.269, "end": 103.37}, {"word": "what", "start": 103.39, "end": 103.51}, {"word": "about", "start": 103.53, "end": 103.69}, {"word": "the", "start": 103.73, "end": 103.81}, {"word": "two", "start": 103.871, "end": 104.031}, {"word": "cats", "start": 104.111, "end": 104.372}, {"word": "that", "start": 104.412, "end": 104.532}, {"word": "people", "start": 104.592, "end": 104.833}, {"word": "always", "start": 104.873, "end": 105.093}, {"word": "mix", "start": 105.153, "end": 105.354}, {"word": "up?", "start": 105.494, "end": 105.574}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "The jaguar and the leopard.", "start": 106.416, "end": 107.578, "words": [{"word": "The", "start": 106.416, "end": 106.496}, {"word": "jaguar", "start": 106.536, "end": 107.017}, {"word": "and", "start": 107.077, "end": 107.137}, {"word": "the", "start": 107.177, "end": 107.237}, {"word": "leopard.", "start": 107.277, "end": 107.578}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Oh, yeah.", "start": 107.761, "end": 108.242, "words": [{"word": "Oh,", "start": 107.761, "end": 107.981}, {"word": "yeah.", "start": 108.001, "end": 108.242}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "I admit, I get them confused.", "start": 108.602, "end": 109.664, "words": [{"word": "I", "start": 108.602, "end": 108.662}, {"word": "admit,", "start": 108.722, "end": 108.923}, {"word": "I", "start": 108.943, "end": 109.003}, {"word": "get", "start": 109.043, "end": 109.123}, {"word": "them", "start": 109.143, "end": 109.283}, {"word": "confused.", "start": 109.323, "end": 109.664}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "They both have spots.", "start": 109.684, "end": 110.485, "words": [{"word": "They", "start": 109.684, "end": 109.804}, {"word": "both", "start": 109.824, "end": 109.964}, {"word": "have", "start": 110.004, "end": 110.124}, {"word": "spots.", "start": 110.144, "end": 110.485}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "They do.", "start": 110.585, "end": 110.925, "words": [{"word": "They", "start": 110.585, "end": 110.725}, {"word": "do.", "start": 110.745, "end": 110.925}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "But here's the secret.", "start": 111.406, "end": 112.307, "words": [{"word": "But", "start": 111.406, "end": 111.506}, {"word": "here's", "start": 111.566, "end": 111.807}, {"word": "the", "start": 111.827, "end": 111.927}, {"word": "secret.", "start": 111.967, "end": 112.307}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Look very closely at the spots.", "start": 112.808, "end": 114.19, "words": [{"word": "Look", "start": 112.808, "end": 112.988}, {"word": "very", "start": 113.068, "end": 113.269}, {"word": "closely", "start": 113.309, "end": 113.649}, {"word": "at", "start": 113.689, "end": 113.729}, {"word": "the", "start": 113.749, "end": 113.829}, {"word": "spots.", "start": 113.849, "end": 114.19}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Jaguar spots are called rosettes, like little roses.", "start": 114.991, "end": 117.815, "words": [{"word": "Jaguar", "start": 114.991, "end": 115.392}, {"word": "spots", "start": 115.432, "end": 115.672}, {"word": "are", "start": 115.712, "end": 115.772}, {"word": "called", "start": 115.792, "end": 115.952}, {"word": "rosettes,", "start": 115.992, "end": 116.533}, {"word": "like", "start": 116.994, "end": 117.114}, {"word": "little", "start": 117.154, "end": 117.394}, {"word": "roses.", "start": 117.434, "end": 117.815}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "And they have a tiny dot right inside the spot.", "start": 118.576, "end": 121.34, "words": [{"word": "And", "start": 118.576, "end": 118.636}, {"word": "they", "start": 118.656, "end": 118.756}, {"word": "have", "start": 118.796, "end": 118.876}, {"word": "a", "start": 118.896, "end": 118.936}, {"word": "tiny", "start": 118.977, "end": 119.237}, {"word": "dot", "start": 119.297, "end": 119.577}, {"word": "right", "start": 120.398, "end": 120.579}, {"word": "inside", "start": 120.679, "end": 120.939}, {"word": "the", "start": 120.979, "end": 121.079}, {"word": "spot.", "start": 121.099, "end": 121.34}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "A dot inside the spot?", "start": 121.54, "end": 122.341, "words": [{"word": "A", "start": 121.54, "end": 121.6}, {"word": "dot", "start": 121.64, "end": 121.84}, {"word": "inside", "start": 121.86, "end": 122.061}, {"word": "the", "start": 122.081, "end": 122.161}, {"word": "spot?", "start": 122.181, "end": 122.341}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "I'm looking at the picture now.", "start": 122.381, "end": 123.343, "words": [{"word": "I'm", "start": 122.381, "end": 122.461}, {"word": "looking", "start": 122.501, "end": 122.702}, {"word": "at", "start": 122.742, "end": 122.782}, {"word": "the", "start": 122.802, "end": 122.882}, {"word": "picture", "start": 122.922, "end": 123.182}, {"word": "now.", "start": 123.222, "end": 123.343}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "I see it.", "start": 123.383, "end": 123.783, "words": [{"word": "I", "start": 123.383, "end": 123.443}, {"word": "see", "start": 123.503, "end": 123.663}, {"word": "it.", "start": 123.723, "end": 123.783}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "That's your giveaway.", "start": 124.184, "end": 124.945, "words": [{"word": "That's", "start": 124.184, "end": 124.404}, {"word": "your", "start": 124.424, "end": 124.544}, {"word": "giveaway.", "start": 124.564, "end": 124.945}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "And their behaviors are totally different too.", "start": 125.686, "end": 127.128, "words": [{"word": "And", "start": 125.686, "end": 125.746}, {"word": "their", "start": 125.786, "end": 125.906}, {"word": "behaviors", "start": 125.926, "end": 126.327}, {"word": "are", "start": 126.367, "end": 126.427}, {"word": "totally", "start": 126.467, "end": 126.687}, {"word": "different", "start": 126.707, "end": 126.927}, {"word": "too.", "start": 126.968, "end": 127.128}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Most cats hate water.", "start": 127.388, "end": 128.59, "words": [{"word": "Most", "start": 127.388, "end": 127.548}, {"word": "cats", "start": 127.588, "end": 127.789}, {"word": "hate", "start": 127.989, "end": 128.189}, {"word": "water.", "start": 128.329, "end": 128.59}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "My cat definitely hates water.", "start": 129.111, "end": 130.933, "words": [{"word": "My", "start": 129.111, "end": 129.271}, {"word": "cat", "start": 129.331, "end": 129.531}, {"word": "definitely", "start": 129.751, "end": 130.272}, {"word": "hates", "start": 130.312, "end": 130.512}, {"word": "water.", "start": 130.573, "end": 130.933}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Well, jaguars love to swim.", "start": 130.981, "end": 132.303, "words": [{"word": "Well,", "start": 130.981, "end": 131.161}, {"word": "jaguars", "start": 131.241, "end": 131.682}, {"word": "love", "start": 131.782, "end": 131.963}, {"word": "to", "start": 131.983, "end": 132.043}, {"word": "swim.", "start": 132.083, "end": 132.303}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "They're fantastic swimmers.", "start": 132.383, "end": 133.485, "words": [{"word": "They're", "start": 132.383, "end": 132.564}, {"word": "fantastic", "start": 132.584, "end": 133.145}, {"word": "swimmers.", "start": 133.165, "end": 133.485}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "That's so unusual for a cat.", "start": 133.645, "end": 135.789, "words": [{"word": "That's", "start": 133.645, "end": 133.866}, {"word": "so", "start": 134.066, "end": 134.367}, {"word": "unusual", "start": 134.507, "end": 135.128}, {"word": "for", "start": 135.208, "end": 135.328}, {"word": "a", "start": 135.408, "end": 135.428}, {"word": "cat.", "start": 135.488, "end": 135.789}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "So if the jaguar is the swimmer, what about the leopard?", "start": 136.21, "end": 139.675, "words": [{"word": "So", "start": 136.21, "end": 136.33}, {"word": "if", "start": 136.41, "end": 136.49}, {"word": "the", "start": 136.55, "end": 136.63}, {"word": "jaguar", "start": 136.69, "end": 137.111}, {"word": "is", "start": 137.191, "end": 137.251}, {"word": "the", "start": 137.291, "end": 137.391}, {"word": "swimmer,", "start": 137.452, "end": 137.832}, {"word": "what", "start": 137.872, "end": 138.954}, {"word": "about", "start": 138.994, "end": 139.134}, {"word": "the", "start": 139.174, "end": 139.254}, {"word": "leopard?", "start": 139.295, "end": 139.675}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "The leopard is the climber.", "start": 140.216, "end": 141.318, "words": [{"word": "The", "start": 140.216, "end": 140.296}, {"word": "leopard", "start": 140.356, "end": 140.637}, {"word": "is", "start": 140.677, "end": 140.757}, {"word": "the", "start": 140.797, "end": 140.877}, {"word": "climber.", "start": 140.937, "end": 141.318}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "They are incredibly strong.", "start": 141.718, "end": 142.92, "words": [{"word": "They", "start": 141.718, "end": 141.839}, {"word": "are", "start": 141.879, "end": 141.979}, {"word": "incredibly", "start": 142.039, "end": 142.48}, {"word": "strong.", "start": 142.52, "end": 142.92}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "The article says they can drag their prey 50 feet up into a tree to keep it safe.", "start": 143.361, "end": 147.288, "words": [{"word": "The", "start": 143.361, "end": 143.461}, {"word": "article", "start": 143.521, "end": 143.782}, {"word": "says", "start": 143.842, "end": 143.982}, {"word": "they", "start": 144.022, "end": 144.142}, {"word": "can", "start": 144.162, "end": 144.283}, {"word": "drag", "start": 144.343, "end": 144.603}, {"word": "their", "start": 144.643, "end": 144.803}, {"word": "prey", "start": 144.884, "end": 145.164}, {"word": "50", "start": 145.184, "end": 145.685}, {"word": "feet", "start": 145.745, "end": 145.925}, {"word": "up", "start": 145.985, "end": 146.045}, {"word": "into", "start": 146.106, "end": 146.246}, {"word": "a", "start": 146.306, "end": 146.326}, {"word": "tree", "start": 146.386, "end": 146.586}, {"word": "to", "start": 146.626, "end": 146.687}, {"word": "keep", "start": 146.727, "end": 146.867}, {"word": "it", "start": 146.927, "end": 146.987}, {"word": "safe.", "start": 147.047, "end": 147.288}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "50 feet?", "start": 147.448, "end": 148.249, "words": [{"word": "50", "start": 147.448, "end": 147.768}, {"word": "feet?", "start": 147.929, "end": 148.249}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "That's some serious strength.", "start": 148.63, "end": 150.112, "words": [{"word": "That's", "start": 148.63, "end": 148.79}, {"word": "some", "start": 148.81, "end": 148.95}, {"word": "serious", "start": 149.191, "end": 149.631}, {"word": "strength.", "start": 149.711, "end": 150.112}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "OK, so we have the lone tiger, the swimming jaguar, the climbing leopard.", "start": 150.533, "end": 154.98, "words": [{"word": "OK,", "start": 150.533, "end": 150.773}, {"word": "so", "start": 150.853, "end": 150.893}, {"word": "we", "start": 150.933, "end": 151.014}, {"word": "have", "start": 151.054, "end": 151.214}, {"word": "the", "start": 151.234, "end": 151.354}, {"word": "lone", "start": 151.434, "end": 151.695}, {"word": "tiger,", "start": 151.755, "end": 152.115}, {"word": "the", "start": 152.175, "end": 152.796}, {"word": "swimming", "start": 152.837, "end": 153.157}, {"word": "jaguar,", "start": 153.197, "end": 153.718}, {"word": "the", "start": 154.018, "end": 154.119}, {"word": "climbing", "start": 154.159, "end": 154.539}, {"word": "leopard.", "start": 154.599, "end": 154.98}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "What about lions?", "start": 156.422, "end": 157.444, "words": [{"word": "What", "start": 156.422, "end": 156.523}, {"word": "about", "start": 156.543, "end": 156.703}, {"word": "lions?", "start": 156.743, "end": 157.444}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Lions are the big exception.", "start": 157.694, "end": 159.098, "words": [{"word": "Lions", "start": 157.694, "end": 158.095}, {"word": "are", "start": 158.135, "end": 158.216}, {"word": "the", "start": 158.256, "end": 158.316}, {"word": "big", "start": 158.396, "end": 158.597}, {"word": "exception.", "start": 158.657, "end": 159.098}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "They're the only truly social big cats.", "start": 159.279, "end": 161.486, "words": [{"word": "They're", "start": 159.279, "end": 159.48}, {"word": "the", "start": 159.5, "end": 159.58}, {"word": "only", "start": 159.7, "end": 159.901}, {"word": "truly", "start": 160.242, "end": 160.583}, {"word": "social", "start": 160.704, "end": 161.005}, {"word": "big", "start": 161.065, "end": 161.205}, {"word": "cats.", "start": 161.245, "end": 161.486}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "They live in family groups.", "start": 161.526, "end": 162.489, "words": [{"word": "They", "start": 161.526, "end": 161.647}, {"word": "live", "start": 161.687, "end": 161.807}, {"word": "in", "start": 161.847, "end": 161.887}, {"word": "family", "start": 161.948, "end": 162.228}, {"word": "groups.", "start": 162.269, "end": 162.489}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "They're called prides, right?", "start": 162.63, "end": 163.994, "words": [{"word": "They're", "start": 162.63, "end": 162.77}, {"word": "called", "start": 162.79, "end": 162.911}, {"word": "prides,", "start": 162.991, "end": 163.492}, {"word": "right?", "start": 163.753, "end": 163.994}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Prides, yes.", "start": 164.255, "end": 164.917, "words": [{"word": "Prides,", "start": 164.255, "end": 164.656}, {"word": "yes.", "start": 164.716, "end": 164.917}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "And here's something really interesting.", "start": 165.238, "end": 167.164, "words": [{"word": "And", "start": 165.238, "end": 165.318}, {"word": "here's", "start": 165.378, "end": 165.559}, {"word": "something", "start": 165.579, "end": 165.86}, {"word": "really", "start": 165.9, "end": 166.121}, {"word": "interesting.", "start": 166.181, "end": 167.164}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "In a pride, it's almost always the Males, the lionesses, who do all the hunting.", "start": 167.279, "end": 172.066, "words": [{"word": "In", "start": 167.279, "end": 167.439}, {"word": "a", "start": 167.479, "end": 167.499}, {"word": "pride,", "start": 167.579, "end": 167.98}, {"word": "it's", "start": 168.481, "end": 168.601}, {"word": "almost", "start": 168.641, "end": 168.881}, {"word": "always", "start": 168.921, "end": 169.222}, {"word": "the", "start": 169.242, "end": 169.382}, {"word": "Males,", "start": 169.462, "end": 169.943}, {"word": "the", "start": 170.183, "end": 170.263}, {"word": "lionesses,", "start": 170.303, "end": 170.804}, {"word": "who", "start": 171.144, "end": 171.265}, {"word": "do", "start": 171.305, "end": 171.425}, {"word": "all", "start": 171.485, "end": 171.585}, {"word": "the", "start": 171.625, "end": 171.705}, {"word": "hunting.", "start": 171.725, "end": 172.066}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "The Males do the hunting.", "start": 172.146, "end": 173.127, "words": [{"word": "The", "start": 172.146, "end": 172.226}, {"word": "Males", "start": 172.266, "end": 172.566}, {"word": "do", "start": 172.586, "end": 172.687}, {"word": "the", "start": 172.727, "end": 172.787}, {"word": "hunting.", "start": 172.827, "end": 173.127}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "That's very cool.", "start": 173.247, "end": 173.888, "words": [{"word": "That's", "start": 173.247, "end": 173.408}, {"word": "very", "start": 173.468, "end": 173.648}, {"word": "cool.", "start": 173.688, "end": 173.888}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "They sound unstoppable.", "start": 173.908, "end": 174.91, "words": [{"word": "They", "start": 173.908, "end": 174.008}, {"word": "sound", "start": 174.048, "end": 174.209}, {"word": "unstoppable.", "start": 174.289, "end": 174.91}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "But the article also mentions some pretty serious problems they're facing.", "start": 174.97, "end": 179.837, "words": [{"word": "But", "start": 174.97, "end": 175.17}, {"word": "the", "start": 175.21, "end": 176.051}, {"word": "article", "start": 176.111, "end": 176.412}, {"word": "also", "start": 176.472, "end": 176.712}, {"word": "mentions", "start": 176.752, "end": 177.073}, {"word": "some", "start": 177.153, "end": 177.373}, {"word": "pretty", "start": 178.294, "end": 178.475}, {"word": "serious", "start": 178.515, "end": 178.815}, {"word": "problems", "start": 178.895, "end": 179.236}, {"word": "they're", "start": 179.276, "end": 179.436}, {"word": "facing.", "start": 179.456, "end": 179.837}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Yes.", "start": 179.857, "end": 180.097, "words": [{"word": "Yes.", "start": 179.857, "end": 180.097}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "This is the more difficult part.", "start": 180.277, "end": 181.399, "words": [{"word": "This", "start": 180.277, "end": 180.417}, {"word": "is", "start": 180.477, "end": 180.518}, {"word": "the", "start": 180.558, "end": 180.618}, {"word": "more", "start": 180.638, "end": 180.758}, {"word": "difficult", "start": 180.798, "end": 181.158}, {"word": "part.", "start": 181.178, "end": 181.399}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "These amazing animals are in trouble.", "start": 181.739, "end": 183.422, "words": [{"word": "These", "start": 181.739, "end": 181.92}, {"word": "amazing", "start": 182.04, "end": 182.5}, {"word": "animals", "start": 182.58, "end": 182.861}, {"word": "are", "start": 182.921, "end": 183.021}, {"word": "in", "start": 183.061, "end": 183.121}, {"word": "trouble.", "start": 183.161, "end": 183.422}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "They're losing their homes.", "start": 183.442, "end": 184.223, "words": [{"word": "They're", "start": 183.442, "end": 183.582}, {"word": "losing", "start": 183.602, "end": 183.802}, {"word": "their", "start": 183.822, "end": 183.962}, {"word": "homes.", "start": 184.002, "end": 184.223}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Because of deforestation.", "start": 184.283, "end": 185.545, "words": [{"word": "Because", "start": 184.283, "end": 184.503}, {"word": "of", "start": 184.543, "end": 184.623}, {"word": "deforestation.", "start": 184.663, "end": 185.545}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "That's when people cut down forests.", "start": 185.565, "end": 187.387, "words": [{"word": "That's", "start": 185.565, "end": 185.705}, {"word": "when", "start": 185.745, "end": 185.865}, {"word": "people", "start": 185.885, "end": 186.105}, {"word": "cut", "start": 186.165, "end": 186.326}, {"word": "down", "start": 186.366, "end": 186.546}, {"word": "forests.", "start": 186.646, "end": 187.387}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Right.", "start": 187.407, "end": 187.648, "words": [{"word": "Right.", "start": 187.407, "end": 187.648}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Exactly.", "start": 187.888, "end": 188.288, "words": [{"word": "Exactly.", "start": 187.888, "end": 188.288}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Their homes are shrinking.", "start": 188.429, "end": 189.37, "words": [{"word": "Their", "start": 188.429, "end": 188.569}, {"word": "homes", "start": 188.609, "end": 188.809}, {"word": "are", "start": 188.889, "end": 188.969}, {"word": "shrinking.", "start": 188.989, "end": 189.37}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "And on top of that, they face the threat of poaching.", "start": 189.67, "end": 192.274, "words": [{"word": "And", "start": 189.67, "end": 189.771}, {"word": "on", "start": 189.831, "end": 189.871}, {"word": "top", "start": 189.931, "end": 190.171}, {"word": "of", "start": 190.231, "end": 190.271}, {"word": "that,", "start": 190.331, "end": 190.512}, {"word": "they", "start": 190.792, "end": 190.932}, {"word": "face", "start": 190.972, "end": 191.213}, {"word": "the", "start": 191.253, "end": 191.333}, {"word": "threat", "start": 191.393, "end": 191.613}, {"word": "of", "start": 191.673, "end": 191.713}, {"word": "poaching.", "start": 191.833, "end": 192.274}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Poaching is illegal hunting, isn't it?", "start": 192.44, "end": 194.282, "words": [{"word": "Poaching", "start": 192.44, "end": 192.82}, {"word": "is", "start": 192.881, "end": 192.941}, {"word": "illegal", "start": 193.021, "end": 193.461}, {"word": "hunting,", "start": 193.521, "end": 193.862}, {"word": "isn't", "start": 193.942, "end": 194.142}, {"word": "it?", "start": 194.222, "end": 194.282}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "For their fur and things.", "start": 195.123, "end": 196.324, "words": [{"word": "For", "start": 195.123, "end": 195.223}, {"word": "their", "start": 195.263, "end": 195.423}, {"word": "fur", "start": 195.484, "end": 195.764}, {"word": "and", "start": 195.844, "end": 195.944}, {"word": "things.", "start": 196.004, "end": 196.324}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Badly, yes.", "start": 196.385, "end": 197.005, "words": [{"word": "Badly,", "start": 196.385, "end": 196.745}, {"word": "yes.", "start": 196.765, "end": 197.005}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It's a huge crisis for them.", "start": 197.165, "end": 198.307, "words": [{"word": "It's", "start": 197.165, "end": 197.266}, {"word": "a", "start": 197.306, "end": 197.326}, {"word": "huge", "start": 197.386, "end": 197.586}, {"word": "crisis", "start": 197.626, "end": 197.986}, {"word": "for", "start": 198.026, "end": 198.127}, {"word": "them.", "start": 198.167, "end": 198.307}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "That's just so sad.", "start": 198.527, "end": 199.628, "words": [{"word": "That's", "start": 198.527, "end": 198.747}, {"word": "just", "start": 198.787, "end": 198.948}, {"word": "so", "start": 198.988, "end": 199.128}, {"word": "sad.", "start": 199.228, "end": 199.628}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Why is it so important to protect them?", "start": 199.688, "end": 201.25, "words": [{"word": "Why", "start": 199.688, "end": 199.849}, {"word": "is", "start": 199.909, "end": 199.969}, {"word": "it", "start": 200.029, "end": 200.069}, {"word": "so", "start": 200.109, "end": 200.229}, {"word": "important", "start": 200.269, "end": 200.569}, {"word": "to", "start": 200.589, "end": 200.629}, {"word": "protect", "start": 200.649, "end": 200.97}, {"word": "them?", "start": 201.03, "end": 201.25}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "I mean, besides them just being so cool?", "start": 201.37, "end": 203.293, "words": [{"word": "I", "start": 201.37, "end": 201.39}, {"word": "mean,", "start": 201.43, "end": 201.551}, {"word": "besides", "start": 201.611, "end": 202.071}, {"word": "them", "start": 202.111, "end": 202.271}, {"word": "just", "start": 202.311, "end": 202.432}, {"word": "being", "start": 202.452, "end": 202.612}, {"word": "so", "start": 202.692, "end": 202.852}, {"word": "cool?", "start": 202.932, "end": 203.293}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Because they're essential.", "start": 203.573, "end": 204.334, "words": [{"word": "Because", "start": 203.573, "end": 203.753}, {"word": "they're", "start": 203.773, "end": 203.913}, {"word": "essential.", "start": 203.953, "end": 204.334}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "They keep nature in balance.", "start": 204.934, "end": 206.676, "words": [{"word": "They", "start": 204.934, "end": 205.095}, {"word": "keep", "start": 205.115, "end": 205.295}, {"word": "nature", "start": 205.335, "end": 205.615}, {"word": "in", "start": 205.655, "end": 205.715}, {"word": "balance.", "start": 205.755, "end": 206.676}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "As the top predators, they control the populations of other animals.", "start": 206.696, "end": 209.82, "words": [{"word": "As", "start": 206.696, "end": 206.777}, {"word": "the", "start": 206.797, "end": 206.957}, {"word": "top", "start": 207.037, "end": 207.297}, {"word": "predators,", "start": 207.357, "end": 207.818}, {"word": "they", "start": 207.898, "end": 208.038}, {"word": "control", "start": 208.058, "end": 208.378}, {"word": "the", "start": 208.418, "end": 208.479}, {"word": "populations", "start": 208.519, "end": 209.159}, {"word": "of", "start": 209.199, "end": 209.239}, {"word": "other", "start": 209.259, "end": 209.44}, {"word": "animals.", "start": 209.54, "end": 209.82}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "If you take them away, the whole ecosystem can just fall apart.", "start": 210.401, "end": 214.405, "words": [{"word": "If", "start": 210.401, "end": 210.461}, {"word": "you", "start": 210.501, "end": 210.621}, {"word": "take", "start": 210.661, "end": 210.781}, {"word": "them", "start": 210.821, "end": 210.921}, {"word": "away,", "start": 210.981, "end": 211.262}, {"word": "the", "start": 211.802, "end": 211.882}, {"word": "whole", "start": 211.943, "end": 212.163}, {"word": "ecosystem", "start": 212.303, "end": 212.884}, {"word": "can", "start": 212.924, "end": 213.044}, {"word": "just", "start": 213.084, "end": 213.264}, {"word": "fall", "start": 213.845, "end": 214.065}, {"word": "apart.", "start": 214.085, "end": 214.405}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "So protecting the big cats means you're protecting the entire forest.", "start": 214.686, "end": 218.43, "words": [{"word": "So", "start": 214.686, "end": 214.806}, {"word": "protecting", "start": 214.866, "end": 215.306}, {"word": "the", "start": 215.346, "end": 215.447}, {"word": "big", "start": 215.487, "end": 215.627}, {"word": "cats", "start": 215.687, "end": 216.047}, {"word": "means", "start": 216.147, "end": 216.328}, {"word": "you're", "start": 216.348, "end": 216.508}, {"word": "protecting", "start": 216.548, "end": 217.008}, {"word": "the", "start": 217.048, "end": 217.149}, {"word": "entire", "start": 217.209, "end": 217.749}, {"word": "forest.", "start": 217.869, "end": 218.43}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "I get it.", "start": 219.018, "end": 219.539, "words": [{"word": "I", "start": 219.018, "end": 219.158}, {"word": "get", "start": 219.198, "end": 219.378}, {"word": "it.", "start": 219.419, "end": 219.539}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It's sad they're losing their homes.", "start": 219.759, "end": 221.201, "words": [{"word": "It's", "start": 219.759, "end": 219.879}, {"word": "sad", "start": 219.939, "end": 220.18}, {"word": "they're", "start": 220.22, "end": 220.4}, {"word": "losing", "start": 220.42, "end": 220.66}, {"word": "their", "start": 220.7, "end": 220.86}, {"word": "homes.", "start": 220.901, "end": 221.201}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "But it's amazing how they are these symbols of strength.", "start": 221.581, "end": 224.325, "words": [{"word": "But", "start": 221.581, "end": 221.682}, {"word": "it's", "start": 221.742, "end": 221.862}, {"word": "amazing", "start": 221.902, "end": 222.403}, {"word": "how", "start": 222.443, "end": 222.583}, {"word": "they", "start": 222.643, "end": 222.783}, {"word": "are", "start": 222.803, "end": 222.883}, {"word": "these", "start": 222.923, "end": 223.103}, {"word": "symbols", "start": 223.264, "end": 223.684}, {"word": "of", "start": 223.764, "end": 223.804}, {"word": "strength.", "start": 223.925, "end": 224.325}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "I agree completely.", "start": 224.545, "end": 225.387, "words": [{"word": "I", "start": 224.545, "end": 224.626}, {"word": "agree", "start": 224.686, "end": 224.906}, {"word": "completely.", "start": 224.946, "end": 225.387}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Now, before we finish, I have a little assignment for you.", "start": 225.787, "end": 227.95, "words": [{"word": "Now,", "start": 225.787, "end": 225.947}, {"word": "before", "start": 226.067, "end": 226.348}, {"word": "we", "start": 226.388, "end": 226.488}, {"word": "finish,", "start": 226.528, "end": 226.748}, {"word": "I", "start": 226.768, "end": 226.788}, {"word": "have", "start": 226.808, "end": 226.889}, {"word": "a", "start": 226.909, "end": 226.929}, {"word": "little", "start": 226.949, "end": 227.129}, {"word": "assignment", "start": 227.169, "end": 227.57}, {"word": "for", "start": 227.63, "end": 227.77}, {"word": "you.", "start": 227.81, "end": 227.95}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Go back to the article and look at the pictures again.", "start": 228.391, "end": 230.313, "words": [{"word": "Go", "start": 228.391, "end": 228.511}, {"word": "back", "start": 228.571, "end": 228.691}, {"word": "to", "start": 228.711, "end": 228.791}, {"word": "the", "start": 228.811, "end": 228.891}, {"word": "article", "start": 228.991, "end": 229.272}, {"word": "and", "start": 229.292, "end": 229.352}, {"word": "look", "start": 229.372, "end": 229.512}, {"word": "at", "start": 229.552, "end": 229.592}, {"word": "the", "start": 229.612, "end": 229.692}, {"word": "pictures", "start": 229.752, "end": 230.073}, {"word": "again.", "start": 230.133, "end": 230.313}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "See if you can spot the difference yourself.", "start": 230.754, "end": 232.336, "words": [{"word": "See", "start": 230.754, "end": 230.894}, {"word": "if", "start": 230.934, "end": 230.974}, {"word": "you", "start": 231.014, "end": 231.094}, {"word": "can", "start": 231.114, "end": 231.234}, {"word": "spot", "start": 231.254, "end": 231.515}, {"word": "the", "start": 231.535, "end": 231.615}, {"word": "difference", "start": 231.655, "end": 231.935}, {"word": "yourself.", "start": 231.955, "end": 232.336}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "The jaguars rosette versus the leopard spot.", "start": 232.797, "end": 235.16, "words": [{"word": "The", "start": 232.797, "end": 232.877}, {"word": "jaguars", "start": 232.917, "end": 233.377}, {"word": "rosette", "start": 233.437, "end": 233.858}, {"word": "versus", "start": 233.998, "end": 234.299}, {"word": "the", "start": 234.359, "end": 234.419}, {"word": "leopard", "start": 234.479, "end": 234.799}, {"word": "spot.", "start": 234.839, "end": 235.16}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "I will.", "start": 235.46, "end": 235.921, "words": [{"word": "I", "start": 235.46, "end": 235.52}, {"word": "will.", "start": 235.58, "end": 235.921}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "I'll look for that dot inside the spot.", "start": 236.161, "end": 237.984, "words": [{"word": "I'll", "start": 236.161, "end": 236.281}, {"word": "look", "start": 236.321, "end": 236.441}, {"word": "for", "start": 236.461, "end": 236.542}, {"word": "that", "start": 236.582, "end": 236.702}, {"word": "dot", "start": 236.722, "end": 237.022}, {"word": "inside", "start": 237.062, "end": 237.463}, {"word": "the", "start": 237.483, "end": 237.583}, {"word": "spot.", "start": 237.623, "end": 237.984}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Keep reading and keep exploring the world.", "start": 238.144, "end": 240.587, "words": [{"word": "Keep", "start": 238.144, "end": 238.344}, {"word": "reading", "start": 238.424, "end": 238.745}, {"word": "and", "start": 239.045, "end": 239.125}, {"word": "keep", "start": 239.185, "end": 239.345}, {"word": "exploring", "start": 239.385, "end": 239.886}, {"word": "the", "start": 239.926, "end": 240.006}, {"word": "world.", "start": 240.046, "end": 240.587}]}];
+
+    const audio = document.getElementById('audioPlayer');
+    const container = document.getElementById('transcriptContainer');
+    const playModeBtn = document.getElementById('playModeBtn');
+    const recordVideoBtn = document.getElementById('recordVideoBtn');
+    const mobileRecordBtn = document.getElementById('mobileRecordBtn');
+    const stopRecBtn = document.getElementById('stopRecBtn');
+    const btnContainer = document.getElementById('btnContainer');
+    const uiControls = document.getElementById('uiControls');
+    const progressFill = document.getElementById('progressFill');
+    const progressBarContainer = document.getElementById('progressBarContainer');
+    const debugTime = document.getElementById('debugTime');
+    const recProgressBar = document.getElementById('recProgressBar');
+    const tips = document.getElementById('tips');
+
+    let isRecordingMode = false;
+    let processedData = []; 
+    let currentActiveBlockIndex = -1;
+    let currentActiveWordElement = null;
+    let animationFrameId;
+    let mediaRecorder;
+    let recordedChunks = [];
+    let recStream = null;
+
+    // --- 设备检测 ---
+    function checkDevice() {
+        if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+            // PC
+            recordVideoBtn.style.display = 'flex';
+            tips.textContent = '提示: 电脑录制请勾选 "分享音频"';
+        } else {
+            // Mobile
+            mobileRecordBtn.style.display = 'flex';
+            tips.textContent = '提示: 点击下方按钮进入全屏沉浸模式';
+        }
+    }
+    checkDevice();
+
+    function mergeTranscriptSegments(rawData) {
+        if (!rawData || rawData.length === 0) return [];
+        const merged = [];
+        let currentBlock = {
+            speaker: rawData[0].speaker, // 直接用 speaker 名称
+            start: rawData[0].start,
+            end: rawData[0].end,
+            words: [...(rawData[0].words || [])]
+        };
+        for (let i = 1; i < rawData.length; i++) {
+            const nextSegment = rawData[i];
+            const projectedDuration = nextSegment.end - currentBlock.start;
+            
+            // 依据 Speaker 名称合并
+            if (nextSegment.speaker === currentBlock.speaker && projectedDuration <= 10.0) {
+                currentBlock.end = nextSegment.end;
+                if (nextSegment.words) {
+                    currentBlock.words = currentBlock.words.concat(nextSegment.words);
+                }
+            } else {
+                merged.push(currentBlock);
+                currentBlock = {
+                    speaker: nextSegment.speaker, // 直接用 speaker 名称
+                    start: nextSegment.start,
+                    end: nextSegment.end,
+                    words: [...(nextSegment.words || [])]
+                };
+            }
+        }
+        merged.push(currentBlock);
+        return merged;
+    }
+
+    function initTranscript() {
+        if (!rawTranscriptData || rawTranscriptData.length === 0) {
+            container.innerHTML = '<div style="padding:20px; text-align:center; color:#666;">暂无数据</div>';
+            return;
+        }
+
+        processedData = mergeTranscriptSegments(rawTranscriptData);
+        container.innerHTML = '';
+        
+        processedData.forEach((block, index) => {
+            const div = document.createElement('div');
+            div.className = 'transcript-item';
+            div.dataset.start = block.start;
+            div.dataset.end = block.end;
+            div.dataset.index = index;
+
+            // --- Speaker 逻辑 (直接读取名称) ---
+            const speakerSpan = document.createElement('span');
+            // 获取 JSON 中的名字，例如 "Female", "Male", "John"
+            const speakerName = block.speaker || 'Unknown';
+            
+            // 转换为 CSS 安全类名 (小写，去除空格)
+            // Example: "Female" -> "speaker-female", "Mr. John" -> "speaker-mr-john"
+            const cssClassSuffix = speakerName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+            
+            speakerSpan.className = `speaker-tag speaker-${cssClassSuffix}`;
+            speakerSpan.textContent = speakerName;
+            
+            div.appendChild(speakerSpan);
+            // ----------------------------------
+
+            const p = document.createElement('p');
+            p.className = 'text-content';
+
+            if (block.words) {
+                block.words.forEach((wordObj, wIndex) => {
+                    const wordSpan = document.createElement('span');
+                    wordSpan.className = 'word-span';
+                    wordSpan.textContent = wordObj.word; 
+                    wordSpan.dataset.start = wordObj.start;
+                    wordSpan.dataset.end = wordObj.end;
+                    p.appendChild(wordSpan);
+                    if (wIndex < block.words.length - 1) {
+                        p.appendChild(document.createTextNode(" "));
+                    }
+                });
+            } else {
+                p.textContent = block.sentence;
+            }
+
+            div.appendChild(p);
+            container.appendChild(div);
+
+            div.addEventListener('click', (e) => {
+                if (e.target.classList.contains('word-span')) {
+                    audio.currentTime = parseFloat(e.target.dataset.start);
+                } else {
+                    audio.currentTime = block.start;
+                }
+                if (audio.paused) audio.play();
+            });
+        });
+    }
+
+    function renderLoop() {
+        if (!audio.paused) {
+            updateTranscript();
+            if (isRecordingMode && audio.duration) {
+                const pct = (audio.currentTime / audio.duration) * 100;
+                recProgressBar.style.width = pct + '%';
+            }
+        }
+        animationFrameId = requestAnimationFrame(renderLoop);
+    }
+
+    function updateTranscript() {
+        const t = audio.currentTime;
+        let activeBlockIndex = -1;
+        for (let i = 0; i < processedData.length; i++) {
+            if (t >= processedData[i].start && t < processedData[i].end) {
+                activeBlockIndex = i;
+                break;
+            }
+        }
+
+        if (activeBlockIndex !== -1 && activeBlockIndex !== currentActiveBlockIndex) {
+            const prev = document.querySelector('.transcript-item.active');
+            if (prev) prev.classList.remove('active');
+
+            const current = container.children[activeBlockIndex];
+            if (current) {
+                current.classList.add('active');
+                current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            currentActiveBlockIndex = activeBlockIndex;
+        }
+
+        if (currentActiveBlockIndex !== -1) {
+            const activeBlockElement = container.children[currentActiveBlockIndex];
+            const wordSpans = activeBlockElement.querySelectorAll('.word-span');
+            let foundWord = false;
+
+            for (let span of wordSpans) {
+                const start = parseFloat(span.dataset.start);
+                const end = parseFloat(span.dataset.end);
+                if (t >= start && t < end + 0.05) { 
+                    if (currentActiveWordElement !== span) {
+                        if (currentActiveWordElement) currentActiveWordElement.classList.remove('word-active');
+                        span.classList.add('word-active');
+                        currentActiveWordElement = span;
+                    }
+                    foundWord = true;
+                    break; 
+                }
+            }
+            if (!foundWord && currentActiveWordElement) {
+                currentActiveWordElement.classList.remove('word-active');
+                currentActiveWordElement = null;
+            }
+        }
+    }
+
+    // --- PC 内录 ---
+    async function startVideoRecording() {
+        try {
+            const stream = await navigator.mediaDevices.getDisplayMedia({
+                video: {
+                    width: { ideal: 1080 },  
+                    height: { ideal: 1920 }, 
+                    frameRate: { ideal: 60 } 
+                },
+                audio: {
+                    echoCancellation: false, 
+                    noiseSuppression: false, 
+                    autoGainControl: false,  
+                    sampleRate: 48000        
+                },
+                preferCurrentTab: true, 
+                selfBrowserSurface: "include", 
+                systemAudio: "include" 
+            });
+
+            recStream = stream;
+
+            const audioTrack = stream.getAudioTracks()[0];
+            if (!audioTrack) {
+                alert("❌ 错误：您未勾选【分享音频】。");
+                stopEverything();
+                return;
+            }
+
+            enterRecordingMode('pc');
+
+            const mimeType = MediaRecorder.isTypeSupported("video/webm; codecs=vp9,opus") 
+                           ? "video/webm; codecs=vp9,opus" 
+                           : "video/webm";
+            
+            mediaRecorder = new MediaRecorder(stream, { 
+                mimeType, 
+                videoBitsPerSecond: 15000000 
+            }); 
+            
+            recordedChunks = [];
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) recordedChunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = saveRecording;
+
+            mediaRecorder.start();
+            console.log("🎥 PC内录开始");
+            
+            setTimeout(() => {
+                audio.currentTime = 0;
+                audio.play();
+            }, 1000);
+
+            audio.onended = () => stopEverything();
+            stream.getVideoTracks()[0].onended = () => stopEverything();
+
+        } catch (err) {
+            console.error("Error:", err);
+            if (err.name !== 'NotAllowedError') alert("启动失败：" + err.message);
+        }
+    }
+
+    // --- 手机全屏沉浸 (无弹窗) ---
+    function startMobileRecordingPrep() {
+        // 尝试全屏
+        const docEl = document.documentElement;
+        if (docEl.requestFullscreen) {
+            docEl.requestFullscreen().catch(e => {});
+        } else if (docEl.webkitRequestFullscreen) {
+            docEl.webkitRequestFullscreen();
+        }
+
+        enterRecordingMode('mobile');
+        
+        console.log("📱 手机沉浸模式，静默倒计时5秒");
+        setTimeout(() => {
+            audio.currentTime = 0;
+            audio.play();
+        }, 5000);
+    }
+
+    function stopEverything() {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
+        }
+        audio.pause();
+        if (recStream) {
+            recStream.getTracks().forEach(track => track.stop());
+        }
+        exitRecordingMode();
+    }
+
+    function saveRecording() {
+        const blob = new Blob(recordedChunks, { type: "video/webm" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        document.body.appendChild(a);
+        a.style.display = "none";
+        a.href = url;
+        const filename = document.title.replace(/\s+/g, '_') + "_1080P.webm";
+        a.download = filename;
+        a.click();
+        window.URL.revokeObjectURL(url);
+    }
+
+    function enterRecordingMode(type) {
+        isRecordingMode = true;
+        document.body.classList.add('recording-mode');
+        
+        if (type === 'pc') {
+            document.body.classList.add('pc-mode');
+        } else if (type === 'mobile') {
+            document.body.classList.add('mobile-mode');
+        }
+
+        uiControls.classList.add('hidden-ui');
+        btnContainer.style.opacity = '0'; 
+        btnContainer.style.pointerEvents = 'none';
+        recProgressBar.style.width = '0%';
+    }
+
+    function exitRecordingMode() {
+        isRecordingMode = false;
+        document.body.classList.remove('recording-mode', 'pc-mode', 'mobile-mode');
+        uiControls.classList.remove('hidden-ui');
+        btnContainer.style.opacity = '1';
+        btnContainer.style.pointerEvents = 'auto';
+        
+        if (document.exitFullscreen) {
+            document.exitFullscreen().catch(e => {});
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        }
+    }
+
+    // Listeners
+    audio.addEventListener('play', () => {
+        cancelAnimationFrame(animationFrameId);
+        renderLoop();
+    });
+    audio.addEventListener('pause', () => cancelAnimationFrame(animationFrameId));
+    audio.addEventListener('timeupdate', () => {
+        if (!audio.duration) return;
+        const percent = (audio.currentTime / audio.duration) * 100;
+        progressFill.style.width = percent + '%';
+        if(!isRecordingMode) debugTime.textContent = audio.currentTime.toFixed(3);
+    });
+
+    playModeBtn.addEventListener('click', () => {
+        if (!isRecordingMode) {
+            // 复用手机模式，不显示 PC 控件
+            enterRecordingMode('mobile');
+            console.log("5秒后播放...");
+            setTimeout(() => { audio.play(); }, 5000);
+        }
+    });
+
+    recordVideoBtn.addEventListener('click', startVideoRecording);
+    mobileRecordBtn.addEventListener('click', startMobileRecordingPrep);
+    
+    stopRecBtn.addEventListener('click', stopEverything);
+
+    progressBarContainer.addEventListener('click', (e) => {
+        const rect = progressBarContainer.getBoundingClientRect();
+        const pos = (e.clientX - rect.left) / rect.width;
+        audio.currentTime = pos * audio.duration;
+        updateTranscript();
+    });
+
+    initTranscript();
+
+</script>
+
+</body>
+</html>
