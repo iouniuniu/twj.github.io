@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Week Junior Handout (PDF Supported)</title>
+    <title>The Week Junior Handout (Bilingual Sync)</title>
     <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700&family=Noto+Sans+SC:wght@300;400;500;700&family=Lato:wght@400;700;900&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -15,8 +15,10 @@
             /* 词性颜色 */
             --t-subj: #C0392B; --t-verb: #2980B9; --t-obj: #27AE60; --t-mod: #D35400; --t-prep: #8E44AD; --t-conn: #7F8C8D;
             
-            /* 词性背景 */
-            --bg-noun: #D6EAF8; --bg-verb: #D5F5E3; --bg-adj: #E8DAEF;
+            /* 词性背景 - 更加柔和的护眼色 */
+            --bg-noun: #D6EAF8; /* 淡蓝 n. */
+            --bg-verb: #D5F5E3; /* 淡绿 v. */
+            --bg-adj: #E8DAEF;  /* 淡紫 adj/adv. */
             
             /* 长难句背景 */
             --bg-trunk: #EBF5FB; --bg-clause-1: #FEF5E7; --bg-clause-2: #E9F7EF;
@@ -74,8 +76,10 @@
         .row.supp-style h3 { font-size: 16pt !important; border-left-width: 5px; }
 
         /* 词性高亮 (通用) */
-        .hl { padding: 0 4px; border-radius: 4px; font-weight: 600; display: inline-block; }
-        .hl-n { background-color: var(--bg-noun); } .hl-v { background-color: var(--bg-verb); } .hl-adj { background-color: var(--bg-adj); }
+        .hl { padding: 0 4px; border-radius: 4px; font-weight: 600; display: inline-block; transition: background 0.3s; }
+        .hl-n { background-color: var(--bg-noun); border-bottom: 2px solid #AED6F1; } 
+        .hl-v { background-color: var(--bg-verb); border-bottom: 2px solid #A9DFBF; } 
+        .hl-adj { background-color: var(--bg-adj); border-bottom: 2px solid #D7BDE2; }
         sup { color: #555; font-size: 0.6em; vertical-align: super; font-weight: 700; margin-left: 2px; }
 
         /* 附录 */
@@ -175,12 +179,13 @@
         themeColor: "#27ae60" 
     };
     
-    // [Audit: Atomized & Cleaned]
+    // [Audit: BILINGUAL SYNC ENABLED]
+    // 关键更新：现在中文翻译中的对应词汇也被高亮了（如 "证据", "放松", "察觉" 等）。
     const MAIN_CONTENT = [
-        { eng: "A new study has found <span class='hl hl-n'>evidence</span><sup>①</sup> that horses can smell fear in humans\' sweat, and it causes them to feel the same emotion.", chi: "一项新研究发现证据，表明马能够“闻”到人类汗液中的恐惧，这会导致它们产生同样的情绪。" },
-        { eng: "For a long time, people have believed that horses can \"smell fear\", and riders are often told to <span class='hl hl-v'>relax</span><sup>②</sup> in order to keep their horse calm too.", chi: "长期以来，人们一直相信马能“闻到恐惧”，骑手也经常被告知要保持放松，以让马也保持冷静。" },
-        { eng: "Other studies have found that horses pick up human emotions from our <span class='hl hl-adj'>facial</span><sup>③</sup> expressions and voices.", chi: "其他研究发现，马会通过我们的面部表情和声音来捕捉人类的情绪。" },
-        { eng: "Recently, a team of researchers set out to see if horses can <span class='hl hl-v'>detect</span><sup>④</sup> people\'s emotions from smell alone.", chi: "最近，一组研究人员着手调查马是否仅凭气味就能察觉人类的情绪。" },
+        { eng: "A new study has found <span class='hl hl-n'>evidence</span><sup>①</sup> that horses can smell fear in humans\' sweat, and it causes them to feel the same emotion.", chi: "一项新研究发现<span class='hl hl-n'>证据</span><sup>①</sup>，表明马能够“闻”到人类汗液中的恐惧，这会导致它们产生同样的情绪。" },
+        { eng: "For a long time, people have believed that horses can \"smell fear\", and riders are often told to <span class='hl hl-v'>relax</span><sup>②</sup> in order to keep their horse calm too.", chi: "长期以来，人们一直相信马能“闻到恐惧”，骑手也经常被告知要<span class='hl hl-v'>放松</span><sup>②</sup>，以让马也保持冷静。" },
+        { eng: "Other studies have found that horses pick up human emotions from our <span class='hl hl-adj'>facial</span><sup>③</sup> expressions and voices.", chi: "其他研究发现，马会通过我们的<span class='hl hl-adj'>面部</span><sup>③</sup>表情和声音来捕捉人类的情绪。" },
+        { eng: "Recently, a team of researchers set out to see if horses can <span class='hl hl-v'>detect</span><sup>④</sup> people\'s emotions from smell alone.", chi: "最近，一组研究人员着手调查马是否仅凭气味就能<span class='hl hl-v'>察觉</span><sup>④</sup>人类的情绪。" },
         { eng: "In the study, 30 people were invited to watch happy video clips with cotton pads under their arms to collect their sweat.", chi: "在研究中，30人受邀观看快乐视频片段，并在腋下放置棉垫收集汗液。" },
         { eng: "Then they watched a scary film with new pads.", chi: "随后，他们带着新的棉垫观看了一部恐怖电影。" },
         { eng: "The researchers divided 43 horses into three groups.", chi: "研究人员将43匹马分成三组。" },
@@ -188,20 +193,20 @@
         { eng: "One group had a muzzle with a happy sweat pad in it; one group had a scary pad and the third group had no pad.", chi: "一组马佩戴含有“快乐”汗垫的口嚼；一组佩戴含有“恐惧”汗垫的；第三组则没有佩戴汗垫。" },
         { eng: "The team then tested the horses to see how they reacted to different actions, such as an umbrella being opened near them or seeing a strange new object.", chi: "随后，团队测试了马对不同动作的反应，例如在它们附近打开雨伞或看到奇怪的新物体。" },
         { eng: "Horses who wore the \"fear\" muzzle were more scared.", chi: "佩戴“恐惧”口嚼的马表现得更为害怕。" },
-        { eng: "Their hearts beat faster, they were more likely to startle, and they were less likely to be <span class='hl hl-adj'>curious</span><sup>⑤</sup> about the new object or approach humans.", chi: "它们的心跳加快，更容易受惊，并且对新物体产生好奇或接近人类的可能性降低了。" },
-        { eng: "\"The fearful odours from humans <span class='hl hl-v'>amplify</span><sup>⑥</sup> (make bigger) the reactions of horses,\" lead study author Plotine Jardat told CNN.", chi: "“来自人类的恐惧气味放大了马的反应，”研究主要作者Plotine Jardat告诉CNN。" },
-        { eng: "\"The <span class='hl hl-n'>significance</span><sup>⑦</sup> is that horses can smell how we feel, even if they can\'t hear or see us,\" she said.", chi: "她说：“其重要意义在于，即使马听不到也看不到我们，它们也能通过气味感知我们的感受。”" },
+        { eng: "Their hearts beat faster, they were more likely to startle, and they were less likely to be <span class='hl hl-adj'>curious</span><sup>⑤</sup> about the new object or approach humans.", chi: "它们的心跳加快，更容易受惊，并且对新物体产生<span class='hl hl-adj'>好奇</span><sup>⑤</sup>或接近人类的可能性降低了。" },
+        { eng: "\"The fearful odours from humans <span class='hl hl-v'>amplify</span><sup>⑥</sup> (make bigger) the reactions of horses,\" lead study author Plotine Jardat told CNN.", chi: "“来自人类的恐惧气味<span class='hl hl-v'>放大</span><sup>⑥</sup>了马的反应，”研究主要作者Plotine Jardat告诉CNN。" },
+        { eng: "\"The <span class='hl hl-n'>significance</span><sup>⑦</sup> is that horses can smell how we feel, even if they can\'t hear or see us,\" she said.", chi: "她说：“其重要<span class='hl hl-n'>意义</span><sup>⑦</sup>在于，即使马听不到也看不到我们，它们也能通过气味感知我们的感受。”" },
         { eng: "The researchers hope the study will help to improve horse happiness and health and keep humans safe too.", chi: "研究人员希望这项研究有助于提高马的幸福感和健康水平，同时也保障人类的安全。" },
         { eng: "Stressed horses often react with behaviour that can be dangerous, such as kicking or running away.", chi: "处于压力下的马通常会做出危险的反应，如踢人或逃跑。" },
         { eng: "Understanding horses\' emotions better can help people interact more positively with them.", chi: "更好地理解马的情绪可以帮助人们与它们进行更积极的互动。" },
         
         // Sidebar Content
         { type: "supp", eng: "<h3>Horses and their noses</h3>Horses are prey animals, meaning that in the wild other animals hunt them.", chi: "<h3>马与它们的鼻子</h3>马是猎物动物，意味着在野外其他动物会捕食它们。" },
-        { type: "supp", eng: "To help them <span class='hl hl-v'>survive</span><sup>⑧</sup>, they have a very good sense of smell and can sniff <span class='hl hl-n'>predators</span><sup>⑨</sup> out before they pounce.", chi: "为了生存，它们拥有极佳的嗅觉，能在捕食者扑向它们之前就嗅出其踪迹。" },
-        { type: "supp", eng: "They have something called a Jacobson\'s <span class='hl hl-n'>organ</span><sup>⑩</sup> that helps them to pick up the scents of other animals and each other.", chi: "它们有一种叫做雅各布森器官的结构，能帮助它们捕捉其他动物以及同类之间的气味。" },
+        { type: "supp", eng: "To help them <span class='hl hl-v'>survive</span><sup>⑧</sup>, they have a very good sense of smell and can sniff <span class='hl hl-n'>predators</span><sup>⑨</sup> out before they pounce.", chi: "为了帮助它们<span class='hl hl-v'>生存</span><sup>⑧</sup>，它们拥有极佳的嗅觉，能在<span class='hl hl-n'>捕食者</span><sup>⑨</sup>扑向它们之前就嗅出其踪迹。" },
+        { type: "supp", eng: "They have something called a Jacobson\'s <span class='hl hl-n'>organ</span><sup>⑩</sup> that helps them to pick up the scents of other animals and each other.", chi: "它们有一种叫做雅各布森<span class='hl hl-n'>器官</span><sup>⑩</sup>的结构，能帮助它们捕捉其他动物以及同类之间的气味。" },
         { type: "supp", eng: "Unlike humans, horses are only able to breathe through their noses.", chi: "与人类不同，马只能通过鼻子呼吸。" },
-        { type: "supp", eng: "Horses\' snouts do more than smell. They are full of <span class='hl hl-n'>nerves</span><sup>⑪</sup> and covered in whiskers that allow them to \"feel\" what they touch, like fingers.", chi: "马的口鼻部不仅仅用于嗅闻。它们充满神经并覆盖着胡须，使其能像手指一样“感觉”触摸到的东西。" },
-        { type: "supp", eng: "Horses also <span class='hl hl-v'>communicate</span><sup>⑫</sup> by flaring or huffing breaths out of their nostrils.", chi: "马还会通过鼻孔扩张或喷气来进行交流。" }
+        { type: "supp", eng: "Horses\' snouts do more than smell. They are full of <span class='hl hl-n'>nerves</span><sup>⑪</sup> and covered in whiskers that allow them to \"feel\" what they touch, like fingers.", chi: "马的口鼻部不仅仅用于嗅闻。它们充满<span class='hl hl-n'>神经</span><sup>⑪</sup>并覆盖着胡须，使其能像手指一样“感觉”触摸到的东西。" },
+        { type: "supp", eng: "Horses also <span class='hl hl-v'>communicate</span><sup>⑫</sup> by flaring or huffing breaths out of their nostrils.", chi: "马还会通过鼻孔扩张或喷气来进行<span class='hl hl-v'>交流</span><sup>⑫</sup>。" }
     ]; 
     
     // [Audit: Sync & Dedup]
