@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>夏洛的网 - 超清海报生成器 (1242x1660)</title>
+    <title>夏洛的网 - 超清海报生成器 (最终修复版)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
-            /* 【核心修改点1】微调基础比例，以匹配目标的纵横比 */
+            /* 基础尺寸，用于屏幕预览 (375 x 501.2) */
+            /* 最终输出通过 JS 缩放 3.312 倍达到 1242 x 1660 */
             --ratio-w: 375px; 
-            --ratio-h: 501.2px; /* 从 500px 微调至 501.2px，确保最终输出为 1660px 高 */
+            --ratio-h: 501.2px; 
         }
 
         body {
@@ -55,18 +56,22 @@
             color: white; width: 100%; margin-top: 15px; border: none; padding: 12px;
             border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px;
             box-shadow: 0 4px 10px rgba(255, 46, 77, 0.3);
+            transition: transform 0.1s;
         }
+        .btn-download:active { transform: scale(0.98); }
 
         /* === 右侧预览框 === */
         .preview-wrapper {
             position: relative;
             box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-            border: 4px solid #333; 
+            /* 这个边框之前可能是导致嵌套的原因之一 */
+            border: 4px solid #444; 
             border-radius: 8px;
             background: #fff;
-            /* 确保预览框大小固定，内部元素超出隐藏 */
+            /* 确保预览框大小固定 */
             width: var(--ratio-w);
             height: var(--ratio-h);
+            /* 极其重要：确保内容不溢出 */
             overflow: hidden;
         }
 
@@ -74,6 +79,7 @@
             width: 100%;
             height: 100%;
             position: relative;
+            /* 极其重要：确保海报内部元素不溢出 */
             overflow: hidden;
             background-color: white;
             display: none; 
@@ -296,7 +302,7 @@
 <body>
 
     <div class="controls">
-        <h2>🎨 小红书海报工厂 (超清版)</h2>
+        <h2>🎨 小红书海报工厂 (超清修复版)</h2>
         
         <div class="style-grid">
             <button class="btn-style active" onclick="switchStyle('retro')">📜 复古绘本</button>
@@ -337,7 +343,7 @@
             <input type="file" accept="image/*" onchange="loadImage(this, 'avatar')">
         </div>
 
-        <button class="btn-download" onclick="downloadPoster()">✨ 生成 1242x1660 超清海报</button>
+        <button class="btn-download" id="downloadBtn" onclick="downloadPoster()">✨ 生成 1242x1660 超清海报</button>
     </div>
 
     <div class="preview-wrapper">
@@ -416,83 +422,4 @@
             <div class="scrap-title-area">
                 <div class="scrap-tag tag-text">全网首发 🔥</div><br>
                 <div class="scrap-h1 title-text">Charlotte's Web</div>
-                <div style="font-size: 14px; color: #666; margin-top: 5px;" class="sub-text">英文原版广播剧</div>
-            </div>
-
-            <div class="scrap-tape"></div>
-            
-            <div class="scrap-polaroid">
-                <img src="" class="scrap-img cover-target" alt="Cover">
-                <div class="scrap-handwriting ep-text">EP.01 - Must Listen!</div>
-            </div>
-
-            <div class="scrap-sticker">
-                <span class="owner-text">周末<br>英语</span>
-            </div>
-
-            <div class="scrap-footer">
-                <img src="" class="scrap-avatar avatar-target">
-                <span class="scrap-owner owner-text">周末英语剧场</span>
-                <span style="font-size: 10px; color: #999;">© Copyright</span>
-            </div>
-        </div>
-
-    </div>
-
-    <script>
-        const defaultCover = "https://via.placeholder.com/300x400?text=Cover"; 
-        const defaultAvatar = "https://via.placeholder.com/100?text=Avatar";
-
-        document.querySelectorAll('.cover-target').forEach(img => img.src = defaultCover);
-        document.querySelectorAll('.avatar-target').forEach(img => img.src = defaultAvatar);
-
-        function switchStyle(styleName) {
-            document.querySelectorAll('.btn-style').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            document.querySelectorAll('.poster').forEach(p => p.classList.remove('active'));
-            document.getElementById('style-' + styleName).classList.add('active');
-        }
-
-        function updateText() {
-            const title = document.getElementById('inputTitle').value;
-            const sub = document.getElementById('inputSub').value;
-            const tag = document.getElementById('inputTag').value;
-            const ep = document.getElementById('inputEp').value;
-            const owner = document.getElementById('inputOwner').value;
-
-            document.querySelectorAll('.title-text').forEach(el => el.innerText = title);
-            document.querySelectorAll('.sub-text').forEach(el => el.innerText = sub);
-            document.querySelectorAll('.tag-text').forEach(el => el.innerText = tag);
-            document.querySelectorAll('.ep-text').forEach(el => el.innerText = ep.includes('!') ? ep : ep); 
-            document.querySelectorAll('.owner-text').forEach(el => el.innerText = owner);
-        }
-
-        function loadImage(input, type) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    if (type === 'cover') {
-                        document.querySelectorAll('.cover-target').forEach(img => img.src = e.target.result);
-                        document.querySelectorAll('.cover-bg-target').forEach(div => div.style.backgroundImage = `url(${e.target.result})`);
-                    } else if (type === 'avatar') {
-                        document.querySelectorAll('.avatar-target').forEach(img => img.src = e.target.result);
-                    }
-                }
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        function downloadPoster() {
-            const activePoster = document.querySelector('.poster.active');
-            // 【核心修改点2】设置精确的缩放倍数，以达到目标宽度 1242px
-            // 1242 / 375 = 3.312
-            html2canvas(activePoster, { scale: 3.312, useCORS: true }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = 'xiaohongshu-poster-HD.png';
-                link.href = canvas.toDataURL("image/png");
-                link.click();
-            });
-        }
-    </script>
-</body>
-</html>
+                <div style="font-
