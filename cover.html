@@ -422,4 +422,119 @@
             <div class="scrap-title-area">
                 <div class="scrap-tag tag-text">全网首发 🔥</div><br>
                 <div class="scrap-h1 title-text">Charlotte's Web</div>
-                <div style="font-
+                <div style="font-size: 14px; color: #666; margin-top: 5px;" class="sub-text">英文原版广播剧</div>
+            </div>
+
+            <div class="scrap-tape"></div>
+            
+            <div class="scrap-polaroid">
+                <img src="" class="scrap-img cover-target" alt="Cover">
+                <div class="scrap-handwriting ep-text">EP.01 - Must Listen!</div>
+            </div>
+
+            <div class="scrap-sticker">
+                <span class="owner-text">周末<br>英语</span>
+            </div>
+
+            <div class="scrap-footer">
+                <img src="" class="scrap-avatar avatar-target">
+                <span class="scrap-owner owner-text">周末英语剧场</span>
+                <span style="font-size: 10px; color: #999;">© Copyright</span>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const defaultCover = "https://via.placeholder.com/300x400?text=Cover"; 
+        const defaultAvatar = "https://via.placeholder.com/100?text=Avatar";
+
+        document.querySelectorAll('.cover-target').forEach(img => img.src = defaultCover);
+        document.querySelectorAll('.avatar-target').forEach(img => img.src = defaultAvatar);
+
+        function switchStyle(styleName) {
+            document.querySelectorAll('.btn-style').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            document.querySelectorAll('.poster').forEach(p => p.classList.remove('active'));
+            document.getElementById('style-' + styleName).classList.add('active');
+        }
+
+        function updateText() {
+            const title = document.getElementById('inputTitle').value;
+            const sub = document.getElementById('inputSub').value;
+            const tag = document.getElementById('inputTag').value;
+            const ep = document.getElementById('inputEp').value;
+            const owner = document.getElementById('inputOwner').value;
+
+            document.querySelectorAll('.title-text').forEach(el => el.innerText = title);
+            document.querySelectorAll('.sub-text').forEach(el => el.innerText = sub);
+            document.querySelectorAll('.tag-text').forEach(el => el.innerText = tag);
+            document.querySelectorAll('.ep-text').forEach(el => el.innerText = ep.includes('!') ? ep : ep); 
+            document.querySelectorAll('.owner-text').forEach(el => el.innerText = owner);
+        }
+
+        function loadImage(input, type) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (type === 'cover') {
+                        document.querySelectorAll('.cover-target').forEach(img => img.src = e.target.result);
+                        document.querySelectorAll('.cover-bg-target').forEach(div => div.style.backgroundImage = `url(${e.target.result})`);
+                    } else if (type === 'avatar') {
+                        document.querySelectorAll('.avatar-target').forEach(img => img.src = e.target.result);
+                    }
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // 【核心修复】使用克隆和隔离技术来解决嵌套和溢出问题
+        function downloadPoster() {
+            const btn = document.getElementById('downloadBtn');
+            const originalText = btn.innerText;
+            btn.innerText = "⚡️ 正在高清渲染中...";
+            btn.disabled = true;
+
+            const activePoster = document.querySelector('.poster.active');
+            const title = document.getElementById('inputTitle').value.replace(/\s+/g, '_');
+
+            // 1. 克隆目标元素
+            const clone = activePoster.cloneNode(true);
+
+            // 2. 创建一个临时的、不可见的容器来放置克隆元素
+            // 这样可以确保捕获环境是干净的，不受外部 CSS（如预览框边框）影响
+            const container = document.createElement('div');
+            container.style.position = 'fixed';
+            container.style.top = '-10000px';
+            container.style.left = '-10000px';
+            // 强制设定为基础尺寸，确保布局一致
+            container.style.width = activePoster.offsetWidth + 'px';
+            container.style.height = activePoster.offsetHeight + 'px';
+            container.style.overflow = 'hidden'; // 再次确保溢出隐藏
+            container.appendChild(clone);
+            document.body.appendChild(container);
+
+            // 3. 捕获克隆元素
+            // 缩放比例：1242 / 375 = 3.312
+            html2canvas(clone, {
+                scale: 3.312, 
+                useCORS: true,
+                backgroundColor: null,
+                scrollX: 0, // 防止滚动偏移
+                scrollY: 0,
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `Poster_${title}_HD.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+
+                // 4. 清理战场：移除临时容器
+                document.body.removeChild(container);
+                
+                btn.innerText = originalText;
+                btn.disabled = false;
+            });
+        }
+    </script>
+</body>
+</html>
