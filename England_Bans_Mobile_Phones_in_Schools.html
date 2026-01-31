@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>England Bans Mobile Phones in Schools</title>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --accent-color: #a855f7;
+            
+            /* 定义颜色变量 */
+            --female-color: #ec4899; /* 粉色 */
+            --male-color: #2dd4bf;   /* 青色 */
+            --unknown-color: #9ca3af;
+
+            --text-normal: rgba(255, 255, 255, 0.4);
+            --text-active: #ffffff;
+            --word-highlight: #ff9f0a;
+            --font-stack: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            font-family: var(--font-stack);
+            background-color: var(--bg-color);
+            color: white;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.5s ease;
+        }
+
+        .ambient-bg {
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 50% 50%, #4c1d95, #0f172a 70%, #000);
+            z-index: -1;
+            filter: blur(80px);
+            opacity: 0.8;
+            animation: breathe 10s infinite alternate;
+        }
+
+        @keyframes breathe {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1); }
+        }
+
+        .player-header {
+            padding: 40px 20px 10px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+            transition: all 0.5s ease;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+            flex-shrink: 0;
+        }
+
+        .artwork-container {
+            width: 140px;
+            height: 185px;
+            border-radius: 8px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            margin-bottom: 15px;
+            overflow: hidden;
+            background-color: #333;
+            position: relative;
+            transition: all 0.5s ease;
+        }
+
+        .artwork-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .track-info { 
+            text-align: center; 
+            transition: all 0.5s ease;
+        }
+        .track-title { font-size: 20px; font-weight: 800; margin: 0; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .track-artist { font-size: 14px; color: rgba(255,255,255,0.9); margin-top: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        .track-subtitle { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 4px; font-weight: 400; letter-spacing: 0.5px; }
+
+        .ui-controls {
+            width: 100%;
+            max-width: 400px;
+            margin-top: 20px;
+            transition: opacity 0.5s, transform 0.5s;
+        }
+
+        .hidden-ui {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-20px);
+            height: 0; 
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .progress-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; margin-bottom: 20px; cursor: pointer; }
+        .progress-fill { height: 100%; background: white; border-radius: 2px; width: 0%; transition: width 0.1s linear; }
+
+        .transcript-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 30px 150px 30px;
+            mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+            scroll-behavior: smooth;
+            transition: all 0.5s ease;
+        }
+        .transcript-container::-webkit-scrollbar { display: none; }
+
+        .transcript-item {
+            margin-bottom: 30px;
+            transition: opacity 0.4s ease, transform 0.4s ease, filter 0.4s ease;
+            opacity: 0.3; 
+            filter: blur(1.5px);
+            transform: scale(0.98);
+            transform-origin: left center;
+            cursor: pointer;
+            scroll-margin-top: 150px; 
+        }
+
+        .transcript-item.active {
+            opacity: 1;
+            filter: blur(0);
+            transform: scale(1.0);
+        }
+
+        .speaker-tag {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            opacity: 0.9;
+            color: #fff;
+        }
+
+        /* 直接根据 JSON 中的 speaker 名字匹配
+           如果 JSON 里是 "Female"，会匹配 .speaker-female
+           如果 JSON 里是 "Male"，会匹配 .speaker-male
+        */
+        .speaker-female { background-color: var(--female-color); }
+        .speaker-male   { background-color: var(--male-color); color: #000 !important; }
+        .speaker-unknown { background-color: var(--unknown-color); }
+
+        .text-content {
+            font-size: 24px;
+            line-height: 1.6;
+            font-weight: 600;
+            margin: 0;
+            color: var(--text-active);
+            word-wrap: break-word;
+        }
+
+        .word-span {
+            transition: color 0.1s ease, text-shadow 0.1s ease;
+            display: inline;
+            border-radius: 4px;
+            margin: 0; 
+            padding: 0;
+        }
+
+        .word-active {
+            color: var(--word-highlight);
+            text-shadow: 0 0 15px rgba(255, 159, 10, 0.7);
+        }
+
+        /* 底部按钮栏 */
+        .btn-container {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 100;
+            transition: all 0.3s;
+            width: 90%;
+            justify-content: center;
+        }
+
+        .overlay-btn {
+            background: white;
+            color: black;
+            padding: 14px 20px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s;
+            white-space: nowrap;
+        }
+        .overlay-btn:active { transform: scale(0.95); }
+        
+        /* 录制进度条 (PC) */
+        .recording-controls {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px; 
+            z-index: 2000;
+            display: none; 
+        }
+
+        .rec-progress-bar {
+            height: 100%;
+            background-color: #ff4444;
+            width: 0%;
+            transition: width 0.1s linear;
+            box-shadow: 0 0 10px rgba(255, 68, 68, 0.8);
+        }
+
+        /* 电脑端停止按钮 (悬停) */
+        .stop-rec-hitbox {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 150px; 
+            height: 100px;
+            z-index: 2001;
+            display: none; 
+        }
+
+        .stop-rec-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 68, 68, 0.9);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: none;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            pointer-events: none; 
+        }
+
+        .stop-rec-hitbox:hover .stop-rec-btn {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        #debugTime {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #0f0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            z-index: 2000;
+            pointer-events: none;
+        }
+
+        /* =========================================
+           沉浸/录制模式通用样式
+           ========================================= */
+        body.recording-mode {
+            position: fixed; 
+            width: 100%;
+            height: 100%;
+            background: #000;
+        }
+
+        body.recording-mode .player-header { 
+            padding-top: 40px; 
+            padding-bottom: 0px; 
+        }
+        
+        body.recording-mode .artwork-container { 
+            width: 120px; 
+            height: 160px; 
+            margin-top: 0; 
+            margin-bottom: 5px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        
+        body.recording-mode .track-info { 
+            transform: scale(0.9); 
+            margin-bottom: 0;
+        }
+        
+        body.recording-mode .transcript-container { 
+            padding-top: 0px; 
+            mask-image: linear-gradient(to bottom, transparent 0%, black 5%, black 90%, transparent 100%);
+        }
+        
+        body.recording-mode .transcript-item.active .text-content { 
+            color: rgba(255,255,255,0.95);
+        }
+        
+        /* 隐藏 UI */
+        body.recording-mode #debugTime { display: none; }
+        body.recording-mode .btn-container { opacity: 0; pointer-events: none; }
+        body.recording-mode .ui-controls { opacity: 0; pointer-events: none; height: 0; margin: 0;}
+
+        /* PC特有：仅PC模式显示录制控制条 */
+        body.recording-mode.pc-mode .recording-controls { display: block; }
+        body.recording-mode.pc-mode .stop-rec-hitbox { display: block; }
+
+    </style>
+</head>
+<body>
+
+<div class="ambient-bg"></div>
+<div id="debugTime">0.000</div>
+
+<div class="recording-controls">
+    <div class="rec-progress-bar" id="recProgressBar"></div>
+</div>
+<div class="stop-rec-hitbox" id="stopRecHitbox">
+    <button class="stop-rec-btn" id="stopRecBtn">⏹ 停止录制</button>
+</div>
+
+<div class="player-header">
+    <div class="artwork-container">
+        <img src="529.jpg" alt="Magazine Cover" class="artwork-img" onerror="this.style.display='none'; document.getElementById('placeholder').style.display='flex';">
+        <div id="placeholder" class="artwork-placeholder" style="display:none;">📖</div>
+    </div>
+    <div class="track-info">
+        <h1 class="track-title">Schools told to keep phones off</h1>
+        <div class="track-artist">The Week Junior Podcast</div>
+        <div class="track-subtitle">529 期 20260130</div>
+    </div>
+
+    <div class="ui-controls" id="uiControls">
+        <div class="progress-bar" id="progressBarContainer">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div style="text-align: center; color: rgba(255,255,255,0.5); font-size: 12px; margin-top: 5px;" id="tips">
+            </div>
+    </div>
+</div>
+
+<div class="transcript-container" id="transcriptContainer"></div>
+
+<div class="btn-container" id="btnContainer">
+    <button class="overlay-btn" id="playModeBtn">
+        🎵 仅播放
+    </button>
+    <button class="overlay-btn" id="recordVideoBtn" style="display:none;">
+        🎥 电脑内录 1080P
+    </button>
+    <button class="overlay-btn" id="mobileRecordBtn" style="display:none;">
+        📱 手机全屏 (无UI)
+    </button>
+</div>
+
+<audio id="audioPlayer">
+    <source src="England_Bans_Mobile_Phones_in_Schools.m4a" type="audio/mp4">
+</audio>
+
+<script>
+    const rawTranscriptData = [{"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Wait, teacher, does this text really say, I cannot use my phone, even at lunchtime, and teachers cannot use them either?", "start": 0.031, "end": 7.081, "words": [{"word": "Wait,", "start": 0.031, "end": 0.331}, {"word": "teacher,", "start": 0.371, "end": 0.692}, {"word": "does", "start": 1.313, "end": 1.433}, {"word": "this", "start": 1.473, "end": 1.593}, {"word": "text", "start": 1.633, "end": 1.874}, {"word": "really", "start": 1.934, "end": 2.174}, {"word": "say,", "start": 2.274, "end": 2.534}, {"word": "I", "start": 2.555, "end": 2.575}, {"word": "cannot", "start": 2.935, "end": 3.276}, {"word": "use", "start": 3.356, "end": 3.456}, {"word": "my", "start": 3.496, "end": 3.616}, {"word": "phone,", "start": 3.676, "end": 3.976}, {"word": "even", "start": 4.457, "end": 4.617}, {"word": "at", "start": 4.657, "end": 4.697}, {"word": "lunchtime,", "start": 4.758, "end": 5.218}, {"word": "and", "start": 5.739, "end": 5.819}, {"word": "teachers", "start": 5.859, "end": 6.16}, {"word": "cannot", "start": 6.2, "end": 6.44}, {"word": "use", "start": 6.52, "end": 6.6}, {"word": "them", "start": 6.66, "end": 6.76}, {"word": "either?", "start": 6.82, "end": 7.081}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "That is correct.", "start": 7.121, "end": 8.102, "words": [{"word": "That", "start": 7.121, "end": 7.582}, {"word": "is", "start": 7.642, "end": 7.702}, {"word": "correct.", "start": 7.762, "end": 8.102}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It is quite a shock, isn't it?", "start": 8.343, "end": 9.504, "words": [{"word": "It", "start": 8.343, "end": 8.383}, {"word": "is", "start": 8.463, "end": 8.543}, {"word": "quite", "start": 8.623, "end": 8.803}, {"word": "a", "start": 8.843, "end": 8.863}, {"word": "shock,", "start": 8.923, "end": 9.204}, {"word": "isn't", "start": 9.244, "end": 9.404}, {"word": "it?", "start": 9.444, "end": 9.504}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It really is.", "start": 9.644, "end": 10.185, "words": [{"word": "It", "start": 9.644, "end": 9.684}, {"word": "really", "start": 9.745, "end": 10.005}, {"word": "is.", "start": 10.105, "end": 10.185}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "On the 26th of January, the education secretary, a woman named Bridget Phillipson, sent a letter out with these new rules.", "start": 10.946, "end": 18.997, "words": [{"word": "On", "start": 10.946, "end": 10.986}, {"word": "the", "start": 11.026, "end": 11.106}, {"word": "26th", "start": 11.126, "end": 11.367}, {"word": "of", "start": 11.787, "end": 11.827}, {"word": "January,", "start": 11.908, "end": 12.468}, {"word": "the", "start": 12.769, "end": 12.849}, {"word": "education", "start": 12.949, "end": 13.43}, {"word": "secretary,", "start": 13.47, "end": 14.01}, {"word": "a", "start": 14.511, "end": 14.551}, {"word": "woman", "start": 14.591, "end": 14.772}, {"word": "named", "start": 14.792, "end": 14.932}, {"word": "Bridget", "start": 14.992, "end": 15.312}, {"word": "Phillipson,", "start": 15.352, "end": 15.833}, {"word": "sent", "start": 16.594, "end": 16.794}, {"word": "a", "start": 16.834, "end": 16.854}, {"word": "letter", "start": 16.935, "end": 17.195}, {"word": "out", "start": 17.315, "end": 17.435}, {"word": "with", "start": 18.016, "end": 18.136}, {"word": "these", "start": 18.176, "end": 18.356}, {"word": "new", "start": 18.377, "end": 18.597}, {"word": "rules.", "start": 18.677, "end": 18.997}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "That sounds very, very strict.", "start": 19.238, "end": 20.64, "words": [{"word": "That", "start": 19.238, "end": 19.358}, {"word": "sounds", "start": 19.398, "end": 19.578}, {"word": "very,", "start": 19.658, "end": 19.839}, {"word": "very", "start": 19.879, "end": 20.059}, {"word": "strict.", "start": 20.119, "end": 20.64}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It is a big change.", "start": 20.66, "end": 21.561, "words": [{"word": "It", "start": 20.66, "end": 20.7}, {"word": "is", "start": 20.76, "end": 20.8}, {"word": "a", "start": 20.84, "end": 20.86}, {"word": "big", "start": 20.94, "end": 21.12}, {"word": "change.", "start": 21.2, "end": 21.561}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Today, we're doing a deep dive into an article from The Week Junior.", "start": 22.482, "end": 26.187, "words": [{"word": "Today,", "start": 22.482, "end": 22.863}, {"word": "we're", "start": 22.903, "end": 23.404}, {"word": "doing", "start": 23.424, "end": 23.644}, {"word": "a", "start": 23.684, "end": 23.744}, {"word": "deep", "start": 23.824, "end": 24.044}, {"word": "dive", "start": 24.084, "end": 24.425}, {"word": "into", "start": 24.465, "end": 24.785}, {"word": "an", "start": 24.846, "end": 24.886}, {"word": "article", "start": 24.906, "end": 25.286}, {"word": "from", "start": 25.326, "end": 25.446}, {"word": "The", "start": 25.486, "end": 25.546}, {"word": "Week", "start": 25.587, "end": 25.767}, {"word": "Junior.", "start": 25.827, "end": 26.187}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It's called, Schools Told to Keep Phones Off.", "start": 26.528, "end": 29.532, "words": [{"word": "It's", "start": 26.528, "end": 26.628}, {"word": "called,", "start": 26.668, "end": 26.988}, {"word": "Schools", "start": 27.509, "end": 27.97}, {"word": "Told", "start": 28.19, "end": 28.451}, {"word": "to", "start": 28.471, "end": 28.531}, {"word": "Keep", "start": 28.571, "end": 28.751}, {"word": "Phones", "start": 28.791, "end": 29.091}, {"word": "Off.", "start": 29.212, "end": 29.532}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Okay.", "start": 29.68, "end": 30.182, "words": [{"word": "Okay.", "start": 29.68, "end": 30.182}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "And we're going to explore why mobile phones might, well, disappear from schools in England.", "start": 30.824, "end": 37.648, "words": [{"word": "And", "start": 30.824, "end": 30.944}, {"word": "we're", "start": 31.005, "end": 31.225}, {"word": "going", "start": 31.266, "end": 31.466}, {"word": "to", "start": 31.506, "end": 31.587}, {"word": "explore", "start": 31.607, "end": 32.209}, {"word": "why", "start": 32.249, "end": 33.012}, {"word": "mobile", "start": 33.052, "end": 33.835}, {"word": "phones", "start": 33.855, "end": 34.276}, {"word": "might,", "start": 34.537, "end": 34.999}, {"word": "well,", "start": 35.019, "end": 35.32}, {"word": "disappear", "start": 35.781, "end": 36.263}, {"word": "from", "start": 36.343, "end": 36.464}, {"word": "schools", "start": 36.544, "end": 36.905}, {"word": "in", "start": 36.946, "end": 37.126}, {"word": "England.", "start": 37.247, "end": 37.648}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Let's start with the facts, then.", "start": 37.797, "end": 39.119, "words": [{"word": "Let's", "start": 37.797, "end": 38.077}, {"word": "start", "start": 38.097, "end": 38.298}, {"word": "with", "start": 38.318, "end": 38.418}, {"word": "the", "start": 38.458, "end": 38.518}, {"word": "facts,", "start": 38.598, "end": 38.899}, {"word": "then.", "start": 38.959, "end": 39.119}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "What exactly is banned?", "start": 39.62, "end": 40.862, "words": [{"word": "What", "start": 39.62, "end": 39.76}, {"word": "exactly", "start": 39.84, "end": 40.241}, {"word": "is", "start": 40.281, "end": 40.461}, {"word": "banned?", "start": 40.521, "end": 40.862}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Is it just for, you know, texting?", "start": 41.062, "end": 42.825, "words": [{"word": "Is", "start": 41.062, "end": 41.143}, {"word": "it", "start": 41.203, "end": 41.243}, {"word": "just", "start": 41.283, "end": 41.403}, {"word": "for,", "start": 41.443, "end": 41.603}, {"word": "you", "start": 41.683, "end": 41.964}, {"word": "know,", "start": 42.004, "end": 42.144}, {"word": "texting?", "start": 42.264, "end": 42.825}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Oh, it is much more than that.", "start": 42.845, "end": 44.228, "words": [{"word": "Oh,", "start": 42.845, "end": 42.966}, {"word": "it", "start": 43.246, "end": 43.286}, {"word": "is", "start": 43.366, "end": 43.446}, {"word": "much", "start": 43.546, "end": 43.707}, {"word": "more", "start": 43.767, "end": 43.867}, {"word": "than", "start": 43.907, "end": 44.027}, {"word": "that.", "start": 44.047, "end": 44.228}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "The letter actually says phones have no place in schools.", "start": 44.628, "end": 46.992, "words": [{"word": "The", "start": 44.628, "end": 44.708}, {"word": "letter", "start": 44.728, "end": 44.929}, {"word": "actually", "start": 44.969, "end": 45.209}, {"word": "says", "start": 45.249, "end": 45.41}, {"word": "phones", "start": 45.49, "end": 45.75}, {"word": "have", "start": 45.79, "end": 45.93}, {"word": "no", "start": 46.051, "end": 46.211}, {"word": "place", "start": 46.271, "end": 46.511}, {"word": "in", "start": 46.571, "end": 46.632}, {"word": "schools.", "start": 46.672, "end": 46.992}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "No place.", "start": 47.052, "end": 47.393, "words": [{"word": "No", "start": 47.052, "end": 47.152}, {"word": "place.", "start": 47.192, "end": 47.393}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "At all.", "start": 47.573, "end": 47.994, "words": [{"word": "At", "start": 47.573, "end": 47.653}, {"word": "all.", "start": 47.854, "end": 47.994}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "At all.", "start": 48.094, "end": 48.435, "words": [{"word": "At", "start": 48.094, "end": 48.154}, {"word": "all.", "start": 48.314, "end": 48.435}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "So that means students cannot use them during lessons.", "start": 48.715, "end": 51.039, "words": [{"word": "So", "start": 48.715, "end": 48.795}, {"word": "that", "start": 48.835, "end": 48.935}, {"word": "means", "start": 48.975, "end": 49.156}, {"word": "students", "start": 49.196, "end": 49.516}, {"word": "cannot", "start": 49.616, "end": 49.937}, {"word": "use", "start": 50.077, "end": 50.177}, {"word": "them", "start": 50.237, "end": 50.338}, {"word": "during", "start": 50.378, "end": 50.598}, {"word": "lessons.", "start": 50.658, "end": 51.039}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "But, and this is the big one, you also cannot use them during break times or lunch times.", "start": 51.64, "end": 55.807, "words": [{"word": "But,", "start": 51.64, "end": 51.82}, {"word": "and", "start": 52.04, "end": 52.121}, {"word": "this", "start": 52.141, "end": 52.241}, {"word": "is", "start": 52.261, "end": 52.301}, {"word": "the", "start": 52.321, "end": 52.381}, {"word": "big", "start": 52.421, "end": 52.541}, {"word": "one,", "start": 52.601, "end": 52.702}, {"word": "you", "start": 53.022, "end": 53.142}, {"word": "also", "start": 53.242, "end": 53.483}, {"word": "cannot", "start": 53.563, "end": 53.823}, {"word": "use", "start": 53.924, "end": 54.044}, {"word": "them", "start": 54.084, "end": 54.184}, {"word": "during", "start": 54.224, "end": 54.444}, {"word": "break", "start": 54.525, "end": 54.725}, {"word": "times", "start": 54.765, "end": 55.045}, {"word": "or", "start": 55.186, "end": 55.246}, {"word": "lunch", "start": 55.306, "end": 55.506}, {"word": "times.", "start": 55.566, "end": 55.807}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Wow.", "start": 56.007, "end": 56.568, "words": [{"word": "Wow.", "start": 56.007, "end": 56.568}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "So I can't even tuck a message while I'm eating my sandwich.", "start": 56.748, "end": 58.912, "words": [{"word": "So", "start": 56.748, "end": 56.828}, {"word": "I", "start": 56.848, "end": 56.888}, {"word": "can't", "start": 56.908, "end": 57.049}, {"word": "even", "start": 57.069, "end": 57.189}, {"word": "tuck", "start": 57.229, "end": 57.369}, {"word": "a", "start": 57.409, "end": 57.449}, {"word": "message", "start": 57.509, "end": 57.81}, {"word": "while", "start": 57.83, "end": 57.97}, {"word": "I'm", "start": 58.01, "end": 58.07}, {"word": "eating", "start": 58.11, "end": 58.291}, {"word": "my", "start": 58.331, "end": 58.451}, {"word": "sandwich.", "start": 58.491, "end": 58.912}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "No, you cannot.", "start": 59.032, "end": 59.693, "words": [{"word": "No,", "start": 59.032, "end": 59.152}, {"word": "you", "start": 59.212, "end": 59.292}, {"word": "cannot.", "start": 59.332, "end": 59.693}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "And there is more.", "start": 60.034, "end": 60.595, "words": [{"word": "And", "start": 60.034, "end": 60.094}, {"word": "there", "start": 60.114, "end": 60.234}, {"word": "is", "start": 60.294, "end": 60.334}, {"word": "more.", "start": 60.414, "end": 60.595}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "You cannot use your phone as a calculator in your math class.", "start": 60.995, "end": 63.94, "words": [{"word": "You", "start": 60.995, "end": 61.115}, {"word": "cannot", "start": 61.236, "end": 61.516}, {"word": "use", "start": 61.596, "end": 61.676}, {"word": "your", "start": 61.716, "end": 61.817}, {"word": "phone", "start": 61.837, "end": 62.017}, {"word": "as", "start": 62.037, "end": 62.097}, {"word": "a", "start": 62.137, "end": 62.177}, {"word": "calculator", "start": 62.217, "end": 62.858}, {"word": "in", "start": 62.998, "end": 63.059}, {"word": "your", "start": 63.099, "end": 63.219}, {"word": "math", "start": 63.259, "end": 63.479}, {"word": "class.", "start": 63.519, "end": 63.94}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Really?", "start": 64.004, "end": 64.525, "words": [{"word": "Really?", "start": 64.004, "end": 64.525}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Not even as a calculator?", "start": 64.545, "end": 66.108, "words": [{"word": "Not", "start": 64.545, "end": 64.946}, {"word": "even", "start": 64.986, "end": 65.106}, {"word": "as", "start": 65.146, "end": 65.206}, {"word": "a", "start": 65.266, "end": 65.286}, {"word": "calculator?", "start": 65.326, "end": 66.108}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "And you cannot use it to research information for a school project.", "start": 66.128, "end": 70.435, "words": [{"word": "And", "start": 66.128, "end": 66.248}, {"word": "you", "start": 66.288, "end": 66.568}, {"word": "cannot", "start": 66.689, "end": 67.19}, {"word": "use", "start": 67.47, "end": 67.63}, {"word": "it", "start": 67.731, "end": 67.771}, {"word": "to", "start": 68.111, "end": 68.231}, {"word": "research", "start": 68.332, "end": 68.732}, {"word": "information", "start": 68.792, "end": 69.353}, {"word": "for", "start": 69.393, "end": 69.494}, {"word": "a", "start": 69.534, "end": 69.554}, {"word": "school", "start": 69.574, "end": 69.814}, {"word": "project.", "start": 69.854, "end": 70.435}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "That is going to be difficult.", "start": 70.455, "end": 71.858, "words": [{"word": "That", "start": 70.455, "end": 70.676}, {"word": "is", "start": 70.796, "end": 70.856}, {"word": "going", "start": 70.896, "end": 71.016}, {"word": "to", "start": 71.056, "end": 71.096}, {"word": "be", "start": 71.136, "end": 71.217}, {"word": "difficult.", "start": 71.257, "end": 71.858}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "I use my phone for everything.", "start": 72.078, "end": 73.42, "words": [{"word": "I", "start": 72.078, "end": 72.138}, {"word": "use", "start": 72.218, "end": 72.298}, {"word": "my", "start": 72.319, "end": 72.419}, {"word": "phone", "start": 72.459, "end": 72.679}, {"word": "for", "start": 72.719, "end": 72.819}, {"word": "everything.", "start": 72.96, "end": 73.42}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Does this apply to every school in the United Kingdom?", "start": 73.601, "end": 76.406, "words": [{"word": "Does", "start": 73.601, "end": 73.761}, {"word": "this", "start": 73.801, "end": 73.961}, {"word": "apply", "start": 74.042, "end": 74.322}, {"word": "to", "start": 74.382, "end": 74.462}, {"word": "every", "start": 74.723, "end": 74.983}, {"word": "school", "start": 75.063, "end": 75.384}, {"word": "in", "start": 75.464, "end": 75.524}, {"word": "the", "start": 75.544, "end": 75.604}, {"word": "United", "start": 75.664, "end": 75.965}, {"word": "Kingdom?", "start": 76.045, "end": 76.406}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "That is a very important question.", "start": 76.806, "end": 78.309, "words": [{"word": "That", "start": 76.806, "end": 76.927}, {"word": "is", "start": 76.987, "end": 77.067}, {"word": "a", "start": 77.127, "end": 77.147}, {"word": "very", "start": 77.287, "end": 77.528}, {"word": "important", "start": 77.568, "end": 77.908}, {"word": "question.", "start": 77.948, "end": 78.309}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "This guidance, it applies only to schools in England.", "start": 79.09, "end": 83.498, "words": [{"word": "This", "start": 79.09, "end": 79.311}, {"word": "guidance,", "start": 79.431, "end": 79.932}, {"word": "it", "start": 80.873, "end": 81.314}, {"word": "applies", "start": 81.354, "end": 81.675}, {"word": "only", "start": 81.695, "end": 82.096}, {"word": "to", "start": 82.176, "end": 82.256}, {"word": "schools", "start": 82.316, "end": 82.657}, {"word": "in", "start": 82.737, "end": 82.777}, {"word": "England.", "start": 82.897, "end": 83.498}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Oh, just England.", "start": 83.613, "end": 84.574, "words": [{"word": "Oh,", "start": 83.613, "end": 83.873}, {"word": "just", "start": 83.953, "end": 84.174}, {"word": "England.", "start": 84.274, "end": 84.574}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Yes.", "start": 84.594, "end": 84.795, "words": [{"word": "Yes.", "start": 84.594, "end": 84.795}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Education is managed separately in different parts of the UK.", "start": 85.556, "end": 88.38, "words": [{"word": "Education", "start": 85.556, "end": 85.996}, {"word": "is", "start": 86.056, "end": 86.117}, {"word": "managed", "start": 86.177, "end": 86.517}, {"word": "separately", "start": 86.577, "end": 87.038}, {"word": "in", "start": 87.058, "end": 87.218}, {"word": "different", "start": 87.278, "end": 87.518}, {"word": "parts", "start": 87.559, "end": 87.759}, {"word": "of", "start": 87.799, "end": 87.839}, {"word": "the", "start": 87.879, "end": 87.939}, {"word": "UK.", "start": 88.039, "end": 88.38}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "So Scotland, Wales, and Northern Ireland, they all make their own decisions.", "start": 89.001, "end": 92.465, "words": [{"word": "So", "start": 89.001, "end": 89.141}, {"word": "Scotland,", "start": 89.201, "end": 89.641}, {"word": "Wales,", "start": 89.842, "end": 90.262}, {"word": "and", "start": 90.362, "end": 90.443}, {"word": "Northern", "start": 90.483, "end": 90.763}, {"word": "Ireland,", "start": 90.883, "end": 91.164}, {"word": "they", "start": 91.224, "end": 91.364}, {"word": "all", "start": 91.444, "end": 91.564}, {"word": "make", "start": 91.604, "end": 91.724}, {"word": "their", "start": 91.744, "end": 91.865}, {"word": "own", "start": 91.905, "end": 91.985}, {"word": "decisions.", "start": 92.025, "end": 92.465}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "I see.", "start": 92.746, "end": 93.106, "words": [{"word": "I", "start": 92.746, "end": 92.806}, {"word": "see.", "start": 92.866, "end": 93.106}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "And you mentioned a rule for teachers.", "start": 93.367, "end": 95.009, "words": [{"word": "And", "start": 93.367, "end": 93.467}, {"word": "you", "start": 93.647, "end": 93.767}, {"word": "mentioned", "start": 93.807, "end": 94.068}, {"word": "a", "start": 94.108, "end": 94.128}, {"word": "rule", "start": 94.168, "end": 94.328}, {"word": "for", "start": 94.348, "end": 94.448}, {"word": "teachers.", "start": 94.528, "end": 95.009}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "They have to put their phones away, too.", "start": 95.089, "end": 96.331, "words": [{"word": "They", "start": 95.089, "end": 95.169}, {"word": "have", "start": 95.189, "end": 95.269}, {"word": "to", "start": 95.289, "end": 95.329}, {"word": "put", "start": 95.35, "end": 95.43}, {"word": "their", "start": 95.45, "end": 95.59}, {"word": "phones", "start": 95.67, "end": 95.83}, {"word": "away,", "start": 95.89, "end": 96.091}, {"word": "too.", "start": 96.131, "end": 96.331}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Yes.", "start": 96.631, "end": 96.872, "words": [{"word": "Yes.", "start": 96.631, "end": 96.872}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "The guidance is clear that teachers should not use their personal phones when students are present.", "start": 97.272, "end": 101.378, "words": [{"word": "The", "start": 97.272, "end": 97.372}, {"word": "guidance", "start": 97.412, "end": 97.793}, {"word": "is", "start": 97.813, "end": 97.873}, {"word": "clear", "start": 97.933, "end": 98.173}, {"word": "that", "start": 98.214, "end": 98.334}, {"word": "teachers", "start": 98.394, "end": 98.754}, {"word": "should", "start": 98.814, "end": 98.995}, {"word": "not", "start": 99.055, "end": 99.255}, {"word": "use", "start": 99.395, "end": 99.495}, {"word": "their", "start": 99.535, "end": 99.656}, {"word": "personal", "start": 99.696, "end": 100.036}, {"word": "phones", "start": 100.096, "end": 100.377}, {"word": "when", "start": 100.417, "end": 100.557}, {"word": "students", "start": 100.617, "end": 100.897}, {"word": "are", "start": 100.957, "end": 101.017}, {"word": "present.", "start": 101.058, "end": 101.378}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It's all about setting a good example.", "start": 101.738, "end": 103.341, "words": [{"word": "It's", "start": 101.738, "end": 101.859}, {"word": "all", "start": 101.939, "end": 102.079}, {"word": "about", "start": 102.139, "end": 102.319}, {"word": "setting", "start": 102.379, "end": 102.66}, {"word": "a", "start": 102.72, "end": 102.74}, {"word": "good", "start": 102.8, "end": 102.94}, {"word": "example.", "start": 102.96, "end": 103.341}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "OK.", "start": 103.601, "end": 103.922, "words": [{"word": "OK.", "start": 103.601, "end": 103.922}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "So why?", "start": 104.202, "end": 104.703, "words": [{"word": "So", "start": 104.202, "end": 104.362}, {"word": "why?", "start": 104.402, "end": 104.703}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Why is government being so strict about this?", "start": 104.923, "end": 107.106, "words": [{"word": "Why", "start": 104.923, "end": 105.123}, {"word": "is", "start": 105.203, "end": 105.243}, {"word": "government", "start": 105.283, "end": 105.644}, {"word": "being", "start": 105.684, "end": 105.844}, {"word": "so", "start": 105.904, "end": 106.025}, {"word": "strict", "start": 106.045, "end": 106.285}, {"word": "about", "start": 106.345, "end": 106.505}, {"word": "this?", "start": 106.565, "end": 107.106}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Well, the government believes that phones are a problem for three key things.", "start": 107.39, "end": 110.936, "words": [{"word": "Well,", "start": 107.39, "end": 107.65}, {"word": "the", "start": 107.69, "end": 107.771}, {"word": "government", "start": 107.811, "end": 108.171}, {"word": "believes", "start": 108.251, "end": 108.612}, {"word": "that", "start": 108.652, "end": 108.772}, {"word": "phones", "start": 108.872, "end": 109.193}, {"word": "are", "start": 109.253, "end": 109.333}, {"word": "a", "start": 109.373, "end": 109.393}, {"word": "problem", "start": 109.453, "end": 109.814}, {"word": "for", "start": 109.854, "end": 109.974}, {"word": "three", "start": 109.994, "end": 110.274}, {"word": "key", "start": 110.355, "end": 110.575}, {"word": "things.", "start": 110.635, "end": 110.936}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Learning, behavior, and well-being.", "start": 111.917, "end": 115.983, "words": [{"word": "Learning,", "start": 111.917, "end": 112.278}, {"word": "behavior,", "start": 112.778, "end": 113.319}, {"word": "and", "start": 114.12, "end": 114.321}, {"word": "well-being.", "start": 114.361, "end": 115.983}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Well-being.", "start": 116.244, "end": 116.765, "words": [{"word": "Well-being.", "start": 116.244, "end": 116.765}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "What does that mean?", "start": 116.785, "end": 117.366, "words": [{"word": "What", "start": 116.785, "end": 116.885}, {"word": "does", "start": 116.905, "end": 116.985}, {"word": "that", "start": 117.025, "end": 117.125}, {"word": "mean?", "start": 117.165, "end": 117.366}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It's a word we use to describe how healthy and happy you are overall.", "start": 117.406, "end": 121.091, "words": [{"word": "It's", "start": 117.406, "end": 117.986}, {"word": "a", "start": 118.047, "end": 118.067}, {"word": "word", "start": 118.107, "end": 118.267}, {"word": "we", "start": 118.307, "end": 118.427}, {"word": "use", "start": 118.507, "end": 118.627}, {"word": "to", "start": 118.668, "end": 118.728}, {"word": "describe", "start": 118.768, "end": 119.128}, {"word": "how", "start": 119.168, "end": 119.289}, {"word": "healthy", "start": 119.349, "end": 119.689}, {"word": "and", "start": 119.729, "end": 119.809}, {"word": "happy", "start": 119.869, "end": 120.13}, {"word": "you", "start": 120.17, "end": 120.27}, {"word": "are", "start": 120.39, "end": 120.49}, {"word": "overall.", "start": 120.53, "end": 121.091}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "They think phones are a big distraction.", "start": 121.612, "end": 123.475, "words": [{"word": "They", "start": 121.612, "end": 121.732}, {"word": "think", "start": 121.772, "end": 121.913}, {"word": "phones", "start": 121.973, "end": 122.233}, {"word": "are", "start": 122.293, "end": 122.393}, {"word": "a", "start": 122.453, "end": 122.494}, {"word": "big", "start": 122.554, "end": 122.734}, {"word": "distraction.", "start": 122.794, "end": 123.475}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "I guess that makes sense.", "start": 123.623, "end": 124.524, "words": [{"word": "I", "start": 123.623, "end": 123.743}, {"word": "guess", "start": 123.783, "end": 123.923}, {"word": "that", "start": 123.964, "end": 124.064}, {"word": "makes", "start": 124.104, "end": 124.244}, {"word": "sense.", "start": 124.284, "end": 124.524}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It is hard to focus when my phone buzzes.", "start": 124.725, "end": 126.548, "words": [{"word": "It", "start": 124.725, "end": 124.785}, {"word": "is", "start": 124.845, "end": 124.905}, {"word": "hard", "start": 124.965, "end": 125.105}, {"word": "to", "start": 125.125, "end": 125.185}, {"word": "focus", "start": 125.246, "end": 125.546}, {"word": "when", "start": 125.566, "end": 125.686}, {"word": "my", "start": 125.726, "end": 125.806}, {"word": "phone", "start": 125.867, "end": 126.067}, {"word": "buzzes.", "start": 126.107, "end": 126.548}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Exactly.", "start": 126.728, "end": 127.229, "words": [{"word": "Exactly.", "start": 126.728, "end": 127.229}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "And to make sure schools follow these rules, an organization called Ofsted will be involved.", "start": 127.83, "end": 132.036, "words": [{"word": "And", "start": 127.83, "end": 127.91}, {"word": "to", "start": 127.93, "end": 127.97}, {"word": "make", "start": 128.03, "end": 128.15}, {"word": "sure", "start": 128.17, "end": 128.31}, {"word": "schools", "start": 128.351, "end": 128.631}, {"word": "follow", "start": 128.691, "end": 128.992}, {"word": "these", "start": 129.032, "end": 129.192}, {"word": "rules,", "start": 129.252, "end": 129.532}, {"word": "an", "start": 129.833, "end": 129.913}, {"word": "organization", "start": 129.973, "end": 130.474}, {"word": "called", "start": 130.514, "end": 130.734}, {"word": "Ofsted", "start": 130.895, "end": 131.275}, {"word": "will", "start": 131.355, "end": 131.516}, {"word": "be", "start": 131.556, "end": 131.616}, {"word": "involved.", "start": 131.676, "end": 132.036}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Ofsted?", "start": 132.337, "end": 132.778, "words": [{"word": "Ofsted?", "start": 132.337, "end": 132.778}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Yes.", "start": 132.798, "end": 133.018, "words": [{"word": "Yes.", "start": 132.798, "end": 133.018}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Ofsted is the group that inspects or checks schools in England.", "start": 133.599, "end": 137.084, "words": [{"word": "Ofsted", "start": 133.599, "end": 133.899}, {"word": "is", "start": 133.939, "end": 134.0}, {"word": "the", "start": 134.04, "end": 134.1}, {"word": "group", "start": 134.14, "end": 134.3}, {"word": "that", "start": 134.34, "end": 134.46}, {"word": "inspects", "start": 134.54, "end": 135.121}, {"word": "or", "start": 135.462, "end": 135.542}, {"word": "checks", "start": 135.602, "end": 135.903}, {"word": "schools", "start": 136.283, "end": 136.584}, {"word": "in", "start": 136.644, "end": 136.704}, {"word": "England.", "start": 136.784, "end": 137.084}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "They will now check if schools are following these new phone rules when they visit.", "start": 137.605, "end": 141.251, "words": [{"word": "They", "start": 137.605, "end": 137.725}, {"word": "will", "start": 137.746, "end": 137.886}, {"word": "now", "start": 137.926, "end": 138.086}, {"word": "check", "start": 138.186, "end": 138.447}, {"word": "if", "start": 138.907, "end": 138.967}, {"word": "schools", "start": 139.008, "end": 139.268}, {"word": "are", "start": 139.328, "end": 139.408}, {"word": "following", "start": 139.448, "end": 139.789}, {"word": "these", "start": 139.829, "end": 139.969}, {"word": "new", "start": 140.029, "end": 140.129}, {"word": "phone", "start": 140.169, "end": 140.41}, {"word": "rules", "start": 140.43, "end": 140.61}, {"word": "when", "start": 140.69, "end": 140.81}, {"word": "they", "start": 140.83, "end": 140.951}, {"word": "visit.", "start": 140.991, "end": 141.251}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It seems like a very big reaction.", "start": 141.491, "end": 143.114, "words": [{"word": "It", "start": 141.491, "end": 141.552}, {"word": "seems", "start": 141.592, "end": 141.792}, {"word": "like", "start": 141.812, "end": 141.932}, {"word": "a", "start": 141.972, "end": 142.012}, {"word": "very", "start": 142.112, "end": 142.373}, {"word": "big", "start": 142.413, "end": 142.553}, {"word": "reaction.", "start": 142.593, "end": 143.114}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Are there really that many phones in schools?", "start": 143.274, "end": 145.598, "words": [{"word": "Are", "start": 143.274, "end": 143.354}, {"word": "there", "start": 143.395, "end": 143.535}, {"word": "really", "start": 143.575, "end": 143.815}, {"word": "that", "start": 143.875, "end": 144.036}, {"word": "many", "start": 144.076, "end": 144.276}, {"word": "phones", "start": 144.336, "end": 144.636}, {"word": "in", "start": 144.737, "end": 144.817}, {"word": "schools?", "start": 144.917, "end": 145.598}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "There are.", "start": 145.679, "end": 146.14, "words": [{"word": "There", "start": 145.679, "end": 145.879}, {"word": "are.", "start": 146.04, "end": 146.14}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "The article shares a number that is, well, it's very surprising.", "start": 146.18, "end": 149.686, "words": [{"word": "The", "start": 146.18, "end": 146.641}, {"word": "article", "start": 146.681, "end": 146.961}, {"word": "shares", "start": 147.021, "end": 147.262}, {"word": "a", "start": 147.322, "end": 147.342}, {"word": "number", "start": 147.402, "end": 147.603}, {"word": "that", "start": 147.623, "end": 147.743}, {"word": "is,", "start": 147.823, "end": 147.903}, {"word": "well,", "start": 148.785, "end": 148.885}, {"word": "it's", "start": 148.905, "end": 148.985}, {"word": "very", "start": 149.005, "end": 149.206}, {"word": "surprising.", "start": 149.246, "end": 149.686}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "In 2024, a study found that 97% of children in the UK owned a mobile phone by the time they were 12 years old.", "start": 150.147, "end": 157.461, "words": [{"word": "In", "start": 150.147, "end": 150.227}, {"word": "2024,", "start": 150.247, "end": 150.588}, {"word": "a", "start": 150.788, "end": 150.808}, {"word": "study", "start": 151.169, "end": 151.47}, {"word": "found", "start": 151.51, "end": 151.69}, {"word": "that", "start": 151.71, "end": 151.83}, {"word": "97%", "start": 151.85, "end": 152.351}, {"word": "of", "start": 153.253, "end": 153.293}, {"word": "children", "start": 153.393, "end": 153.714}, {"word": "in", "start": 153.754, "end": 153.794}, {"word": "the", "start": 153.834, "end": 153.914}, {"word": "UK", "start": 154.034, "end": 154.415}, {"word": "owned", "start": 154.455, "end": 155.277}, {"word": "a", "start": 155.337, "end": 155.357}, {"word": "mobile", "start": 155.397, "end": 155.718}, {"word": "phone", "start": 155.778, "end": 156.038}, {"word": "by", "start": 156.078, "end": 156.158}, {"word": "the", "start": 156.198, "end": 156.259}, {"word": "time", "start": 156.299, "end": 156.459}, {"word": "they", "start": 156.479, "end": 156.599}, {"word": "were", "start": 156.619, "end": 156.719}, {"word": "12", "start": 156.739, "end": 157.02}, {"word": "years", "start": 157.04, "end": 157.22}, {"word": "old.", "start": 157.341, "end": 157.461}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Wow.", "start": 157.821, "end": 158.202, "words": [{"word": "Wow.", "start": 157.821, "end": 158.202}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "97%.", "start": 158.222, "end": 159.485, "words": [{"word": "97%.", "start": 158.222, "end": 159.485}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "That's almost everyone.", "start": 159.585, "end": 160.506, "words": [{"word": "That's", "start": 159.585, "end": 159.725}, {"word": "almost", "start": 159.765, "end": 159.965}, {"word": "everyone.", "start": 160.126, "end": 160.506}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It is.", "start": 161.067, "end": 161.308, "words": [{"word": "It", "start": 161.067, "end": 161.108}, {"word": "is.", "start": 161.208, "end": 161.308}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "So with so many phones, does everyone agree with this ban?", "start": 161.669, "end": 165.696, "words": [{"word": "So", "start": 161.669, "end": 161.889}, {"word": "with", "start": 162.069, "end": 162.23}, {"word": "so", "start": 162.27, "end": 162.55}, {"word": "many", "start": 162.59, "end": 162.771}, {"word": "phones,", "start": 162.851, "end": 163.252}, {"word": "does", "start": 163.752, "end": 163.933}, {"word": "everyone", "start": 164.093, "end": 164.534}, {"word": "agree", "start": 164.574, "end": 164.955}, {"word": "with", "start": 164.995, "end": 165.095}, {"word": "this", "start": 165.155, "end": 165.275}, {"word": "ban?", "start": 165.375, "end": 165.696}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Is this a popular idea?", "start": 165.836, "end": 167.299, "words": [{"word": "Is", "start": 165.836, "end": 165.896}, {"word": "this", "start": 165.916, "end": 166.017}, {"word": "a", "start": 166.057, "end": 166.077}, {"word": "popular", "start": 166.177, "end": 166.658}, {"word": "idea?", "start": 166.738, "end": 167.299}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Not everyone agrees on how to do it.", "start": 167.566, "end": 169.109, "words": [{"word": "Not", "start": 167.566, "end": 167.806}, {"word": "everyone", "start": 167.866, "end": 168.127}, {"word": "agrees", "start": 168.167, "end": 168.407}, {"word": "on", "start": 168.488, "end": 168.548}, {"word": "how", "start": 168.588, "end": 168.688}, {"word": "to", "start": 168.728, "end": 168.788}, {"word": "do", "start": 168.848, "end": 168.968}, {"word": "it.", "start": 169.048, "end": 169.109}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "The text shows a few different opinions.", "start": 169.369, "end": 171.052, "words": [{"word": "The", "start": 169.369, "end": 169.449}, {"word": "text", "start": 169.509, "end": 169.77}, {"word": "shows", "start": 169.85, "end": 170.07}, {"word": "a", "start": 170.13, "end": 170.15}, {"word": "few", "start": 170.19, "end": 170.331}, {"word": "different", "start": 170.371, "end": 170.591}, {"word": "opinions.", "start": 170.631, "end": 171.052}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "For example, a head teacher named Jamie Lewis agrees with the idea, but he says schools need help from parents.", "start": 171.172, "end": 176.921, "words": [{"word": "For", "start": 171.172, "end": 171.272}, {"word": "example,", "start": 171.332, "end": 171.673}, {"word": "a", "start": 171.773, "end": 171.793}, {"word": "head", "start": 171.853, "end": 171.993}, {"word": "teacher", "start": 172.053, "end": 172.354}, {"word": "named", "start": 172.414, "end": 172.574}, {"word": "Jamie", "start": 172.594, "end": 172.875}, {"word": "Lewis", "start": 172.915, "end": 173.215}, {"word": "agrees", "start": 173.616, "end": 173.856}, {"word": "with", "start": 173.876, "end": 173.977}, {"word": "the", "start": 173.997, "end": 174.057}, {"word": "idea,", "start": 174.137, "end": 174.437}, {"word": "but", "start": 175.178, "end": 175.259}, {"word": "he", "start": 175.299, "end": 175.359}, {"word": "says", "start": 175.399, "end": 175.579}, {"word": "schools", "start": 175.619, "end": 175.98}, {"word": "need", "start": 176.04, "end": 176.2}, {"word": "help", "start": 176.24, "end": 176.401}, {"word": "from", "start": 176.421, "end": 176.541}, {"word": "parents.", "start": 176.581, "end": 176.921}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Help from parents?", "start": 177.102, "end": 178.003, "words": [{"word": "Help", "start": 177.102, "end": 177.402}, {"word": "from", "start": 177.462, "end": 177.582}, {"word": "parents?", "start": 177.623, "end": 178.003}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "How?", "start": 178.123, "end": 178.424, "words": [{"word": "How?", "start": 178.123, "end": 178.424}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "He says parents have to start messaging their children during the school day.", "start": 178.724, "end": 181.749, "words": [{"word": "He", "start": 178.724, "end": 178.804}, {"word": "says", "start": 178.845, "end": 178.985}, {"word": "parents", "start": 179.045, "end": 179.305}, {"word": "have", "start": 179.365, "end": 179.486}, {"word": "to", "start": 179.526, "end": 179.586}, {"word": "start", "start": 179.646, "end": 179.866}, {"word": "messaging", "start": 179.926, "end": 180.327}, {"word": "their", "start": 180.367, "end": 180.507}, {"word": "children", "start": 180.567, "end": 180.928}, {"word": "during", "start": 181.028, "end": 181.208}, {"word": "the", "start": 181.248, "end": 181.329}, {"word": "school", "start": 181.369, "end": 181.589}, {"word": "day.", "start": 181.609, "end": 181.749}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Oh, that's a good point.", "start": 181.849, "end": 182.991, "words": [{"word": "Oh,", "start": 181.849, "end": 181.95}, {"word": "that's", "start": 181.97, "end": 182.11}, {"word": "a", "start": 182.15, "end": 182.17}, {"word": "good", "start": 182.21, "end": 182.33}, {"word": "point.", "start": 182.37, "end": 182.991}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "If parents keep texting, kids will want to check their phones.", "start": 183.011, "end": 185.756, "words": [{"word": "If", "start": 183.011, "end": 183.071}, {"word": "parents", "start": 183.152, "end": 183.452}, {"word": "keep", "start": 183.492, "end": 183.652}, {"word": "texting,", "start": 183.713, "end": 184.173}, {"word": "kids", "start": 184.494, "end": 184.694}, {"word": "will", "start": 184.714, "end": 184.854}, {"word": "want", "start": 184.874, "end": 184.975}, {"word": "to", "start": 184.995, "end": 185.035}, {"word": "check", "start": 185.075, "end": 185.255}, {"word": "their", "start": 185.275, "end": 185.415}, {"word": "phones.", "start": 185.435, "end": 185.756}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "That's the idea.", "start": 185.796, "end": 186.577, "words": [{"word": "That's", "start": 185.796, "end": 186.016}, {"word": "the", "start": 186.076, "end": 186.197}, {"word": "idea.", "start": 186.297, "end": 186.577}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Then you have a charity called the NSPCC.", "start": 186.918, "end": 188.941, "words": [{"word": "Then", "start": 186.918, "end": 187.038}, {"word": "you", "start": 187.058, "end": 187.158}, {"word": "have", "start": 187.198, "end": 187.278}, {"word": "a", "start": 187.298, "end": 187.318}, {"word": "charity", "start": 187.358, "end": 187.699}, {"word": "called", "start": 187.739, "end": 187.899}, {"word": "the", "start": 187.919, "end": 187.98}, {"word": "NSPCC.", "start": 188.06, "end": 188.941}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "They work to protect children.", "start": 189.342, "end": 190.424, "words": [{"word": "They", "start": 189.342, "end": 189.502}, {"word": "work", "start": 189.542, "end": 189.702}, {"word": "to", "start": 189.742, "end": 189.782}, {"word": "protect", "start": 189.803, "end": 190.063}, {"word": "children.", "start": 190.103, "end": 190.424}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "And what do they think?", "start": 190.564, "end": 191.405, "words": [{"word": "And", "start": 190.564, "end": 190.644}, {"word": "what", "start": 190.664, "end": 190.764}, {"word": "do", "start": 190.804, "end": 190.884}, {"word": "they", "start": 190.904, "end": 191.025}, {"word": "think?", "start": 191.065, "end": 191.405}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "They are worried about a total ban.", "start": 191.425, "end": 193.168, "words": [{"word": "They", "start": 191.425, "end": 191.545}, {"word": "are", "start": 191.585, "end": 191.666}, {"word": "worried", "start": 191.706, "end": 192.026}, {"word": "about", "start": 192.066, "end": 192.267}, {"word": "a", "start": 192.287, "end": 192.307}, {"word": "total", "start": 192.467, "end": 192.727}, {"word": "ban.", "start": 192.787, "end": 193.168}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "They say that for some teenagers who feel lonely or isolated, social media is a lifeline.", "start": 194.093, "end": 200.283, "words": [{"word": "They", "start": 194.093, "end": 194.273}, {"word": "say", "start": 194.333, "end": 194.514}, {"word": "that", "start": 194.554, "end": 194.654}, {"word": "for", "start": 194.694, "end": 194.794}, {"word": "some", "start": 194.834, "end": 195.014}, {"word": "teenagers", "start": 195.095, "end": 195.676}, {"word": "who", "start": 195.756, "end": 195.876}, {"word": "feel", "start": 195.956, "end": 196.216}, {"word": "lonely", "start": 196.337, "end": 196.737}, {"word": "or", "start": 196.837, "end": 196.918}, {"word": "isolated,", "start": 197.098, "end": 197.599}, {"word": "social", "start": 198.34, "end": 198.64}, {"word": "media", "start": 198.68, "end": 198.981}, {"word": "is", "start": 199.141, "end": 199.281}, {"word": "a", "start": 199.301, "end": 199.321}, {"word": "lifeline.", "start": 199.802, "end": 200.283}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "A lifeline.", "start": 200.583, "end": 201.144, "words": [{"word": "A", "start": 200.583, "end": 200.603}, {"word": "lifeline.", "start": 200.663, "end": 201.144}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Yes.", "start": 201.284, "end": 201.525, "words": [{"word": "Yes.", "start": 201.284, "end": 201.525}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "A lifeline is something that saves you in a difficult situation.", "start": 202.106, "end": 205.111, "words": [{"word": "A", "start": 202.106, "end": 202.146}, {"word": "lifeline", "start": 202.206, "end": 202.687}, {"word": "is", "start": 202.787, "end": 202.847}, {"word": "something", "start": 202.907, "end": 203.188}, {"word": "that", "start": 203.228, "end": 203.348}, {"word": "saves", "start": 203.428, "end": 203.688}, {"word": "you", "start": 203.728, "end": 203.849}, {"word": "in", "start": 203.929, "end": 203.989}, {"word": "a", "start": 204.049, "end": 204.069}, {"word": "difficult", "start": 204.169, "end": 204.53}, {"word": "situation.", "start": 204.57, "end": 205.111}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "They mean, for some kids, connecting online is how they find friends and support.", "start": 205.972, "end": 209.718, "words": [{"word": "They", "start": 205.972, "end": 206.112}, {"word": "mean,", "start": 206.172, "end": 206.393}, {"word": "for", "start": 206.493, "end": 206.593}, {"word": "some", "start": 206.653, "end": 206.813}, {"word": "kids,", "start": 206.873, "end": 207.174}, {"word": "connecting", "start": 207.354, "end": 207.735}, {"word": "online", "start": 207.855, "end": 208.276}, {"word": "is", "start": 208.336, "end": 208.396}, {"word": "how", "start": 208.436, "end": 208.516}, {"word": "they", "start": 208.556, "end": 208.676}, {"word": "find", "start": 208.716, "end": 208.917}, {"word": "friends", "start": 208.957, "end": 209.237}, {"word": "and", "start": 209.297, "end": 209.357}, {"word": "support.", "start": 209.397, "end": 209.718}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "I see.", "start": 210.299, "end": 210.619, "words": [{"word": "I", "start": 210.299, "end": 210.379}, {"word": "see.", "start": 210.419, "end": 210.619}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "So the charity thinks we should fix the apps, not ban the phones.", "start": 210.659, "end": 214.225, "words": [{"word": "So", "start": 210.659, "end": 210.78}, {"word": "the", "start": 210.82, "end": 210.9}, {"word": "charity", "start": 210.96, "end": 211.381}, {"word": "thinks", "start": 211.481, "end": 211.701}, {"word": "we", "start": 211.741, "end": 211.821}, {"word": "should", "start": 211.841, "end": 212.022}, {"word": "fix", "start": 212.162, "end": 212.402}, {"word": "the", "start": 212.482, "end": 212.583}, {"word": "apps,", "start": 212.783, "end": 213.003}, {"word": "not", "start": 213.163, "end": 213.364}, {"word": "ban", "start": 213.464, "end": 213.684}, {"word": "the", "start": 213.704, "end": 213.804}, {"word": "phones.", "start": 213.825, "end": 214.225}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Exactly.", "start": 214.425, "end": 214.966, "words": [{"word": "Exactly.", "start": 214.425, "end": 214.966}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "They believe the technology companies should be making their apps safer.", "start": 215.267, "end": 218.532, "words": [{"word": "They", "start": 215.267, "end": 215.447}, {"word": "believe", "start": 215.507, "end": 215.828}, {"word": "the", "start": 215.868, "end": 215.968}, {"word": "technology", "start": 216.008, "end": 216.569}, {"word": "companies", "start": 216.629, "end": 217.01}, {"word": "should", "start": 217.03, "end": 217.19}, {"word": "be", "start": 217.21, "end": 217.29}, {"word": "making", "start": 217.35, "end": 217.591}, {"word": "their", "start": 217.631, "end": 217.771}, {"word": "apps", "start": 217.871, "end": 218.031}, {"word": "safer.", "start": 218.111, "end": 218.532}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It sounds like a really complicated problem.", "start": 218.731, "end": 220.975, "words": [{"word": "It", "start": 218.731, "end": 218.891}, {"word": "sounds", "start": 218.971, "end": 219.172}, {"word": "like", "start": 219.212, "end": 219.332}, {"word": "a", "start": 219.372, "end": 219.392}, {"word": "really", "start": 219.432, "end": 219.713}, {"word": "complicated", "start": 219.773, "end": 220.374}, {"word": "problem.", "start": 220.494, "end": 220.975}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Are there any people who want even stricter rules?", "start": 221.075, "end": 223.92, "words": [{"word": "Are", "start": 221.075, "end": 221.155}, {"word": "there", "start": 221.195, "end": 221.335}, {"word": "any", "start": 221.456, "end": 221.616}, {"word": "people", "start": 221.676, "end": 221.956}, {"word": "who", "start": 222.017, "end": 222.157}, {"word": "want", "start": 222.237, "end": 222.517}, {"word": "even", "start": 222.678, "end": 222.838}, {"word": "stricter", "start": 222.978, "end": 223.479}, {"word": "rules?", "start": 223.559, "end": 223.92}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Yes, there are.", "start": 224.26, "end": 225.002, "words": [{"word": "Yes,", "start": 224.26, "end": 224.521}, {"word": "there", "start": 224.621, "end": 224.801}, {"word": "are.", "start": 224.901, "end": 225.002}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Some politicians, like Kimmy Badanok, want to go much, much further.", "start": 225.703, "end": 229.79, "words": [{"word": "Some", "start": 225.703, "end": 225.923}, {"word": "politicians,", "start": 226.023, "end": 226.765}, {"word": "like", "start": 227.025, "end": 227.165}, {"word": "Kimmy", "start": 227.205, "end": 227.426}, {"word": "Badanok,", "start": 227.466, "end": 228.427}, {"word": "want", "start": 228.447, "end": 228.588}, {"word": "to", "start": 228.608, "end": 228.668}, {"word": "go", "start": 228.688, "end": 228.788}, {"word": "much,", "start": 228.928, "end": 229.149}, {"word": "much", "start": 229.269, "end": 229.429}, {"word": "further.", "start": 229.489, "end": 229.79}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "She has suggested banning social media for everyone under the age of 16.", "start": 230.591, "end": 234.377, "words": [{"word": "She", "start": 230.591, "end": 230.731}, {"word": "has", "start": 230.771, "end": 230.892}, {"word": "suggested", "start": 230.932, "end": 231.392}, {"word": "banning", "start": 231.473, "end": 231.833}, {"word": "social", "start": 231.873, "end": 232.174}, {"word": "media", "start": 232.234, "end": 232.554}, {"word": "for", "start": 232.614, "end": 232.735}, {"word": "everyone", "start": 232.895, "end": 233.256}, {"word": "under", "start": 233.356, "end": 233.496}, {"word": "the", "start": 233.516, "end": 233.616}, {"word": "age", "start": 233.676, "end": 233.817}, {"word": "of", "start": 233.857, "end": 233.897}, {"word": "16.", "start": 233.917, "end": 234.377}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Banning social media until you are 16?", "start": 234.558, "end": 236.621, "words": [{"word": "Banning", "start": 234.558, "end": 234.898}, {"word": "social", "start": 234.938, "end": 235.259}, {"word": "media", "start": 235.319, "end": 235.6}, {"word": "until", "start": 235.66, "end": 235.94}, {"word": "you", "start": 235.98, "end": 236.08}, {"word": "are", "start": 236.12, "end": 236.201}, {"word": "16?", "start": 236.221, "end": 236.621}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "That would change everything for teenagers.", "start": 236.721, "end": 238.605, "words": [{"word": "That", "start": 236.721, "end": 236.882}, {"word": "would", "start": 236.902, "end": 237.022}, {"word": "change", "start": 237.042, "end": 237.262}, {"word": "everything", "start": 237.443, "end": 237.823}, {"word": "for", "start": 237.903, "end": 238.004}, {"word": "teenagers.", "start": 238.044, "end": 238.605}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It certainly would.", "start": 238.865, "end": 239.566, "words": [{"word": "It", "start": 238.865, "end": 238.925}, {"word": "certainly", "start": 238.985, "end": 239.326}, {"word": "would.", "start": 239.346, "end": 239.566}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "As you can see, this topic has many different sides to it.", "start": 239.867, "end": 242.131, "words": [{"word": "As", "start": 239.867, "end": 239.927}, {"word": "you", "start": 239.967, "end": 240.027}, {"word": "can", "start": 240.067, "end": 240.167}, {"word": "see,", "start": 240.227, "end": 240.388}, {"word": "this", "start": 240.448, "end": 240.588}, {"word": "topic", "start": 240.628, "end": 240.909}, {"word": "has", "start": 240.949, "end": 241.049}, {"word": "many", "start": 241.169, "end": 241.349}, {"word": "different", "start": 241.409, "end": 241.63}, {"word": "sides", "start": 241.65, "end": 241.87}, {"word": "to", "start": 241.91, "end": 242.01}, {"word": "it.", "start": 242.07, "end": 242.131}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "I really encourage you to read the text again.", "start": 242.351, "end": 243.894, "words": [{"word": "I", "start": 242.351, "end": 242.431}, {"word": "really", "start": 242.451, "end": 242.651}, {"word": "encourage", "start": 242.692, "end": 242.972}, {"word": "you", "start": 242.992, "end": 243.052}, {"word": "to", "start": 243.092, "end": 243.132}, {"word": "read", "start": 243.172, "end": 243.293}, {"word": "the", "start": 243.313, "end": 243.373}, {"word": "text", "start": 243.413, "end": 243.633}, {"word": "again.", "start": 243.693, "end": 243.894}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "OK.", "start": 243.934, "end": 244.755, "words": [{"word": "OK.", "start": 243.934, "end": 244.755}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Look for words like guidance, well-being, and lifeline.", "start": 244.735, "end": 248.09, "words": [{"word": "Look", "start": 244.735, "end": 244.996}, {"word": "for", "start": 245.016, "end": 245.117}, {"word": "words", "start": 245.137, "end": 245.338}, {"word": "like", "start": 245.378, "end": 245.539}, {"word": "guidance,", "start": 245.92, "end": 246.402}, {"word": "well-being,", "start": 246.684, "end": 247.266}, {"word": "and", "start": 247.507, "end": 247.588}, {"word": "lifeline.", "start": 247.628, "end": 248.09}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It's a great way to learn new vocabulary about this topic.", "start": 248.492, "end": 251.344, "words": [{"word": "It's", "start": 248.492, "end": 248.612}, {"word": "a", "start": 248.652, "end": 248.673}, {"word": "great", "start": 248.773, "end": 249.054}, {"word": "way", "start": 249.094, "end": 249.215}, {"word": "to", "start": 249.255, "end": 249.315}, {"word": "learn", "start": 249.376, "end": 249.597}, {"word": "new", "start": 249.637, "end": 249.918}, {"word": "vocabulary", "start": 249.938, "end": 250.621}, {"word": "about", "start": 250.661, "end": 250.842}, {"word": "this", "start": 250.862, "end": 250.983}, {"word": "topic.", "start": 251.043, "end": 251.344}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "I will.", "start": 251.425, "end": 251.907, "words": [{"word": "I", "start": 251.425, "end": 251.485}, {"word": "will.", "start": 251.565, "end": 251.907}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It really makes you think about how much we all use our screens every day.", "start": 252.228, "end": 255.483, "words": [{"word": "It", "start": 252.228, "end": 252.268}, {"word": "really", "start": 252.329, "end": 252.53}, {"word": "makes", "start": 252.59, "end": 252.731}, {"word": "you", "start": 252.771, "end": 252.851}, {"word": "think", "start": 252.891, "end": 253.052}, {"word": "about", "start": 253.112, "end": 253.293}, {"word": "how", "start": 253.373, "end": 253.474}, {"word": "much", "start": 253.534, "end": 253.655}, {"word": "we", "start": 253.735, "end": 253.856}, {"word": "all", "start": 253.956, "end": 254.077}, {"word": "use", "start": 254.117, "end": 254.338}, {"word": "our", "start": 254.398, "end": 254.478}, {"word": "screens", "start": 254.559, "end": 254.96}, {"word": "every", "start": 255.041, "end": 255.222}, {"word": "day.", "start": 255.242, "end": 255.483}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Keep reading and keep exploring the world.", "start": 255.523, "end": 258.255, "words": [{"word": "Keep", "start": 255.523, "end": 255.885}, {"word": "reading", "start": 255.945, "end": 256.286}, {"word": "and", "start": 256.306, "end": 256.688}, {"word": "keep", "start": 256.748, "end": 256.949}, {"word": "exploring", "start": 257.01, "end": 257.492}, {"word": "the", "start": 257.532, "end": 257.592}, {"word": "world.", "start": 257.632, "end": 258.255}]}];
+
+    const audio = document.getElementById('audioPlayer');
+    const container = document.getElementById('transcriptContainer');
+    const playModeBtn = document.getElementById('playModeBtn');
+    const recordVideoBtn = document.getElementById('recordVideoBtn');
+    const mobileRecordBtn = document.getElementById('mobileRecordBtn');
+    const stopRecBtn = document.getElementById('stopRecBtn');
+    const btnContainer = document.getElementById('btnContainer');
+    const uiControls = document.getElementById('uiControls');
+    const progressFill = document.getElementById('progressFill');
+    const progressBarContainer = document.getElementById('progressBarContainer');
+    const debugTime = document.getElementById('debugTime');
+    const recProgressBar = document.getElementById('recProgressBar');
+    const tips = document.getElementById('tips');
+
+    let isRecordingMode = false;
+    let processedData = []; 
+    let currentActiveBlockIndex = -1;
+    let currentActiveWordElement = null;
+    let animationFrameId;
+    let mediaRecorder;
+    let recordedChunks = [];
+    let recStream = null;
+
+    // --- 设备检测 ---
+    function checkDevice() {
+        if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+            // PC
+            recordVideoBtn.style.display = 'flex';
+            tips.textContent = '提示: 电脑录制请勾选 "分享音频"';
+        } else {
+            // Mobile
+            mobileRecordBtn.style.display = 'flex';
+            tips.textContent = '提示: 点击下方按钮进入全屏沉浸模式';
+        }
+    }
+    checkDevice();
+
+    function mergeTranscriptSegments(rawData) {
+        if (!rawData || rawData.length === 0) return [];
+        const merged = [];
+        let currentBlock = {
+            speaker: rawData[0].speaker, // 直接用 speaker 名称
+            start: rawData[0].start,
+            end: rawData[0].end,
+            words: [...(rawData[0].words || [])]
+        };
+        for (let i = 1; i < rawData.length; i++) {
+            const nextSegment = rawData[i];
+            const projectedDuration = nextSegment.end - currentBlock.start;
+            
+            // 依据 Speaker 名称合并
+            if (nextSegment.speaker === currentBlock.speaker && projectedDuration <= 10.0) {
+                currentBlock.end = nextSegment.end;
+                if (nextSegment.words) {
+                    currentBlock.words = currentBlock.words.concat(nextSegment.words);
+                }
+            } else {
+                merged.push(currentBlock);
+                currentBlock = {
+                    speaker: nextSegment.speaker, // 直接用 speaker 名称
+                    start: nextSegment.start,
+                    end: nextSegment.end,
+                    words: [...(nextSegment.words || [])]
+                };
+            }
+        }
+        merged.push(currentBlock);
+        return merged;
+    }
+
+    function initTranscript() {
+        if (!rawTranscriptData || rawTranscriptData.length === 0) {
+            container.innerHTML = '<div style="padding:20px; text-align:center; color:#666;">暂无数据</div>';
+            return;
+        }
+
+        processedData = mergeTranscriptSegments(rawTranscriptData);
+        container.innerHTML = '';
+        
+        processedData.forEach((block, index) => {
+            const div = document.createElement('div');
+            div.className = 'transcript-item';
+            div.dataset.start = block.start;
+            div.dataset.end = block.end;
+            div.dataset.index = index;
+
+            // --- Speaker 逻辑 (直接读取名称) ---
+            const speakerSpan = document.createElement('span');
+            // 获取 JSON 中的名字，例如 "Female", "Male", "John"
+            const speakerName = block.speaker || 'Unknown';
+            
+            // 转换为 CSS 安全类名 (小写，去除空格)
+            // Example: "Female" -> "speaker-female", "Mr. John" -> "speaker-mr-john"
+            const cssClassSuffix = speakerName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+            
+            speakerSpan.className = `speaker-tag speaker-${cssClassSuffix}`;
+            speakerSpan.textContent = speakerName;
+            
+            div.appendChild(speakerSpan);
+            // ----------------------------------
+
+            const p = document.createElement('p');
+            p.className = 'text-content';
+
+            if (block.words) {
+                block.words.forEach((wordObj, wIndex) => {
+                    const wordSpan = document.createElement('span');
+                    wordSpan.className = 'word-span';
+                    wordSpan.textContent = wordObj.word; 
+                    wordSpan.dataset.start = wordObj.start;
+                    wordSpan.dataset.end = wordObj.end;
+                    p.appendChild(wordSpan);
+                    if (wIndex < block.words.length - 1) {
+                        p.appendChild(document.createTextNode(" "));
+                    }
+                });
+            } else {
+                p.textContent = block.sentence;
+            }
+
+            div.appendChild(p);
+            container.appendChild(div);
+
+            div.addEventListener('click', (e) => {
+                if (e.target.classList.contains('word-span')) {
+                    audio.currentTime = parseFloat(e.target.dataset.start);
+                } else {
+                    audio.currentTime = block.start;
+                }
+                if (audio.paused) audio.play();
+            });
+        });
+    }
+
+    function renderLoop() {
+        if (!audio.paused) {
+            updateTranscript();
+            if (isRecordingMode && audio.duration) {
+                const pct = (audio.currentTime / audio.duration) * 100;
+                recProgressBar.style.width = pct + '%';
+            }
+        }
+        animationFrameId = requestAnimationFrame(renderLoop);
+    }
+
+    function updateTranscript() {
+        const t = audio.currentTime;
+        let activeBlockIndex = -1;
+        for (let i = 0; i < processedData.length; i++) {
+            if (t >= processedData[i].start && t < processedData[i].end) {
+                activeBlockIndex = i;
+                break;
+            }
+        }
+
+        if (activeBlockIndex !== -1 && activeBlockIndex !== currentActiveBlockIndex) {
+            const prev = document.querySelector('.transcript-item.active');
+            if (prev) prev.classList.remove('active');
+
+            const current = container.children[activeBlockIndex];
+            if (current) {
+                current.classList.add('active');
+                current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            currentActiveBlockIndex = activeBlockIndex;
+        }
+
+        if (currentActiveBlockIndex !== -1) {
+            const activeBlockElement = container.children[currentActiveBlockIndex];
+            const wordSpans = activeBlockElement.querySelectorAll('.word-span');
+            let foundWord = false;
+
+            for (let span of wordSpans) {
+                const start = parseFloat(span.dataset.start);
+                const end = parseFloat(span.dataset.end);
+                if (t >= start && t < end + 0.05) { 
+                    if (currentActiveWordElement !== span) {
+                        if (currentActiveWordElement) currentActiveWordElement.classList.remove('word-active');
+                        span.classList.add('word-active');
+                        currentActiveWordElement = span;
+                    }
+                    foundWord = true;
+                    break; 
+                }
+            }
+            if (!foundWord && currentActiveWordElement) {
+                currentActiveWordElement.classList.remove('word-active');
+                currentActiveWordElement = null;
+            }
+        }
+    }
+
+    // --- PC 内录 ---
+    async function startVideoRecording() {
+        try {
+            const stream = await navigator.mediaDevices.getDisplayMedia({
+                video: {
+                    width: { ideal: 1080 },  
+                    height: { ideal: 1920 }, 
+                    frameRate: { ideal: 60 } 
+                },
+                audio: {
+                    echoCancellation: false, 
+                    noiseSuppression: false, 
+                    autoGainControl: false,  
+                    sampleRate: 48000        
+                },
+                preferCurrentTab: true, 
+                selfBrowserSurface: "include", 
+                systemAudio: "include" 
+            });
+
+            recStream = stream;
+
+            const audioTrack = stream.getAudioTracks()[0];
+            if (!audioTrack) {
+                alert("❌ 错误：您未勾选【分享音频】。");
+                stopEverything();
+                return;
+            }
+
+            enterRecordingMode('pc');
+
+            const mimeType = MediaRecorder.isTypeSupported("video/webm; codecs=vp9,opus") 
+                           ? "video/webm; codecs=vp9,opus" 
+                           : "video/webm";
+            
+            mediaRecorder = new MediaRecorder(stream, { 
+                mimeType, 
+                videoBitsPerSecond: 15000000 
+            }); 
+            
+            recordedChunks = [];
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) recordedChunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = saveRecording;
+
+            mediaRecorder.start();
+            console.log("🎥 PC内录开始");
+            
+            setTimeout(() => {
+                audio.currentTime = 0;
+                audio.play();
+            }, 1000);
+
+            audio.onended = () => stopEverything();
+            stream.getVideoTracks()[0].onended = () => stopEverything();
+
+        } catch (err) {
+            console.error("Error:", err);
+            if (err.name !== 'NotAllowedError') alert("启动失败：" + err.message);
+        }
+    }
+
+    // --- 手机全屏沉浸 (无弹窗) ---
+    function startMobileRecordingPrep() {
+        // 尝试全屏
+        const docEl = document.documentElement;
+        if (docEl.requestFullscreen) {
+            docEl.requestFullscreen().catch(e => {});
+        } else if (docEl.webkitRequestFullscreen) {
+            docEl.webkitRequestFullscreen();
+        }
+
+        enterRecordingMode('mobile');
+        
+        console.log("📱 手机沉浸模式，静默倒计时5秒");
+        setTimeout(() => {
+            audio.currentTime = 0;
+            audio.play();
+        }, 5000);
+    }
+
+    function stopEverything() {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
+        }
+        audio.pause();
+        if (recStream) {
+            recStream.getTracks().forEach(track => track.stop());
+        }
+        exitRecordingMode();
+    }
+
+    function saveRecording() {
+        const blob = new Blob(recordedChunks, { type: "video/webm" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        document.body.appendChild(a);
+        a.style.display = "none";
+        a.href = url;
+        const filename = document.title.replace(/\s+/g, '_') + "_1080P.webm";
+        a.download = filename;
+        a.click();
+        window.URL.revokeObjectURL(url);
+    }
+
+    function enterRecordingMode(type) {
+        isRecordingMode = true;
+        document.body.classList.add('recording-mode');
+        
+        if (type === 'pc') {
+            document.body.classList.add('pc-mode');
+        } else if (type === 'mobile') {
+            document.body.classList.add('mobile-mode');
+        }
+
+        uiControls.classList.add('hidden-ui');
+        btnContainer.style.opacity = '0'; 
+        btnContainer.style.pointerEvents = 'none';
+        recProgressBar.style.width = '0%';
+    }
+
+    function exitRecordingMode() {
+        isRecordingMode = false;
+        document.body.classList.remove('recording-mode', 'pc-mode', 'mobile-mode');
+        uiControls.classList.remove('hidden-ui');
+        btnContainer.style.opacity = '1';
+        btnContainer.style.pointerEvents = 'auto';
+        
+        if (document.exitFullscreen) {
+            document.exitFullscreen().catch(e => {});
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        }
+    }
+
+    // Listeners
+    audio.addEventListener('play', () => {
+        cancelAnimationFrame(animationFrameId);
+        renderLoop();
+    });
+    audio.addEventListener('pause', () => cancelAnimationFrame(animationFrameId));
+    audio.addEventListener('timeupdate', () => {
+        if (!audio.duration) return;
+        const percent = (audio.currentTime / audio.duration) * 100;
+        progressFill.style.width = percent + '%';
+        if(!isRecordingMode) debugTime.textContent = audio.currentTime.toFixed(3);
+    });
+
+    playModeBtn.addEventListener('click', () => {
+        if (!isRecordingMode) {
+            // 复用手机模式，不显示 PC 控件
+            enterRecordingMode('mobile');
+            console.log("5秒后播放...");
+            setTimeout(() => { audio.play(); }, 5000);
+        }
+    });
+
+    recordVideoBtn.addEventListener('click', startVideoRecording);
+    mobileRecordBtn.addEventListener('click', startMobileRecordingPrep);
+    
+    stopRecBtn.addEventListener('click', stopEverything);
+
+    progressBarContainer.addEventListener('click', (e) => {
+        const rect = progressBarContainer.getBoundingClientRect();
+        const pos = (e.clientX - rect.left) / rect.width;
+        audio.currentTime = pos * audio.duration;
+        updateTranscript();
+    });
+
+    initTranscript();
+
+</script>
+
+</body>
+</html>
