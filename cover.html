@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>夏洛的网 - 最终完美修复版</title>
+    <title>夏洛的网 - 重心上移修复版 (V5.0)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
-            /* 基础预览尺寸 (375 x 501.2) -> 最终输出 1242 x 1660 */
             --ratio-w: 375px; 
             --ratio-h: 501.2px; 
         }
@@ -57,7 +56,7 @@
             background: #000;
             width: var(--ratio-w);
             height: var(--ratio-h);
-            overflow: hidden; /* 关键：防止溢出 */
+            overflow: hidden;
             user-select: none;
         }
 
@@ -67,7 +66,7 @@
         .poster.active { display: block; }
 
         /* ============================================================
-           方案一：复古绘本风 (Retro Book)
+           方案一：复古绘本风 (上移版)
         ============================================================ */
         .style-retro {
             background-color: #FDF5E6;
@@ -75,28 +74,26 @@
             color: #333;
         }
         .retro-tag {
-            position: absolute; top: 25px; left: 0;
+            position: absolute; top: 20px; left: 0; /* 上移 */
             background: #c0392b; color: white;
             padding: 6px 15px; font-weight: bold; font-size: 14px;
             border-top-right-radius: 4px; border-bottom-right-radius: 4px;
             box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
         }
-        .retro-title-group { position: absolute; top: 70px; left: 30px; right: 30px; font-family: serif; }
+        .retro-title-group { position: absolute; top: 50px; left: 30px; right: 30px; font-family: serif; } /* 大幅上移 */
         .retro-h1 { font-size: 34px; font-weight: 800; color: #2c3e50; line-height: 1.1; margin-bottom: 5px; }
         .retro-sub { font-size: 14px; color: #556B2F; font-weight: 600; letter-spacing: 1px; }
         
         .retro-book-container {
-            position: absolute; top: 160px; left: 50%; transform: translateX(-50%);
-            /* 【修改】不再强制宽高，而是限制宽度，高度自适应 */
-            width: 180px; 
-            max-height: 250px; /* 防止过长 */
+            position: absolute; top: 130px; /* 大幅上移 (原160) */
+            left: 50%; transform: translateX(-50%);
+            width: 180px; max-height: 260px;
             display: flex; justify-content: center;
         }
         .retro-book-img { 
-            width: 100%; height: auto; /* 【关键】高度自动，保持比例 */
+            width: 100%; height: auto; 
             box-shadow: 12px 12px 25px rgba(0,0,0,0.25);
-            border-left: 1px solid rgba(255,255,255,0.4);
-            display: block;
+            border-left: 1px solid rgba(255,255,255,0.4); display: block;
         }
         .retro-ep-sticker {
             position: absolute; bottom: -20px; right: -25px;
@@ -104,27 +101,21 @@
             border-radius: 50%; border: 3px solid #fff;
             display: flex; justify-content: center; align-items: center;
             color: white; font-weight: bold; font-size: 16px;
-            transform: rotate(-10deg); box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
-            z-index: 10;
+            transform: rotate(-10deg); box-shadow: 2px 2px 8px rgba(0,0,0,0.2); z-index: 10;
         }
         .retro-footer {
-            position: absolute; bottom: 25px; left: 30px; display: flex; align-items: center; gap: 12px;
+            position: absolute; bottom: 30px; left: 30px; display: flex; align-items: center; gap: 12px;
         }
 
         /* ============================================================
-           方案二：深邃播放器 (Modern Dark) - 修复显示不全 & 比例
+           方案二：深邃播放器 (上移 + 紧凑)
         ============================================================ */
         .style-modern { background: #050505; color: white; }
-        
-        /* 背景层：修复边缘问题，使用 scale 放大确保覆盖 */
         .modern-bg {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background-size: cover; background-position: center;
-            filter: blur(50px) brightness(0.4); /* 压暗背景 */
-            transform: scale(1.2); /* 放大防止白边 */
-            z-index: 0;
+            filter: blur(50px) brightness(0.4); transform: scale(1.2); z-index: 0;
         }
-        
         .modern-overlay { 
             position: absolute; inset: 0; 
             background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.95) 100%);
@@ -132,9 +123,9 @@
         }
 
         .modern-content { 
-            position: relative; z-index: 2; height: 100%; padding: 25px 30px; /* 减少上下padding防止挤压 */
-            display: flex; flex-direction: column; 
-            box-sizing: border-box;
+            position: relative; z-index: 2; height: 100%; 
+            padding: 20px 30px; /* 减少顶部Padding，内容上移 */
+            display: flex; flex-direction: column; box-sizing: border-box;
         }
         
         .modern-tag {
@@ -142,102 +133,78 @@
             color: #fff; border: 1px solid rgba(255,255,255,0.2);
             padding: 6px 12px; border-radius: 100px; font-size: 11px; font-weight: 600;
             backdrop-filter: blur(10px); display: flex; align-items: center; gap: 4px;
-            margin-bottom: 20px; flex-shrink: 0; /* 防止被压缩 */
+            margin-bottom: 15px; /* 减少间距 */
+            flex-shrink: 0;
         }
 
-        /* 【核心修复】封面容器：弹性高度，但有最大限制 */
         .modern-cover {
-            width: 220px; /* 稍微调窄一点 */
-            /* 移除固定高度，改为 max-height */
-            max-height: 280px; 
-            margin: 0 auto 20px auto; 
-            border-radius: 10px; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.6); 
+            width: 200px; /* 再次调窄，给高度留空间 */
+            max-height: 250px; /* 限制高度，防止挤压底部 */
+            margin: 0 auto 15px auto; /* 减少底部间距 */
+            border-radius: 10px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); 
             border: 1px solid rgba(255,255,255,0.1);
             display: flex; justify-content: center; align-items: center;
-            overflow: hidden;
-            flex-shrink: 1; /* 允许在空间不足时缩小 */
+            overflow: hidden; flex-shrink: 1;
         }
-        .modern-cover img { 
-            width: 100%; height: auto; /* 【关键】保持原比例 */
-            display: block;
-        }
+        .modern-cover img { width: 100%; height: auto; display: block; }
 
-        .modern-info-area {
-            flex-shrink: 0; /* 确保文字区域不被压缩没 */
-        }
-
+        .modern-info-area { flex-shrink: 0; margin-top: 5px; } /* 确保紧凑 */
         .modern-title { 
-            font-size: 24px; font-weight: 700; margin-bottom: 6px; 
-            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-            line-height: 1.2;
+            font-size: 24px; font-weight: 700; margin-bottom: 4px; 
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5); line-height: 1.2;
         }
         .modern-sub { font-size: 14px; opacity: 0.7; font-weight: 400; }
         
         .progress-bar {
-            margin-top: 20px; height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; flex-shrink: 0;
+            margin-top: 15px; /* 减少间距 */
+            height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; flex-shrink: 0;
         }
-        .progress-fill { 
-            width: 30%; height: 100%; background: #fff; border-radius: 2px; position: relative; 
-            box-shadow: 0 0 10px rgba(255,255,255,0.5);
-        }
+        .progress-fill { width: 30%; height: 100%; background: #fff; border-radius: 2px; position: relative; box-shadow: 0 0 10px rgba(255,255,255,0.5);}
         .time-text {
             display: flex; justify-content: space-between; font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 6px; flex-shrink: 0;
         }
-
         .modern-footer {
-            margin-top: auto; display: flex; align-items: center; gap: 10px; padding-top: 15px; flex-shrink: 0;
+            margin-top: auto; display: flex; align-items: center; gap: 10px; padding-top: 10px; flex-shrink: 0;
+            padding-bottom: 10px; /* 确保底部有空隙 */
         }
 
         /* ============================================================
-           方案三：通透白玻风 (Apple Glass) - 修复比例
+           方案三：通透白玻风 (重心上移)
         ============================================================ */
         .style-apple { background: #f0f0f0; color: #333; overflow: hidden; }
-        
         .apple-bg {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background-size: cover; background-position: center;
-            filter: blur(40px) brightness(1.1) saturate(1.5);
-            transform: scale(1.2);
+            filter: blur(40px) brightness(1.1) saturate(1.5); transform: scale(1.2);
             opacity: 0.8; z-index: 0;
         }
         
         .apple-card {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 315px; 
-            /* 【修改】卡片高度自适应，防止内容溢出 */
-            height: auto; max-height: 90%; 
+            position: absolute; 
+            top: 42%; /* 【关键】重心上移 (原50%) */
+            left: 50%; transform: translate(-50%, -50%);
+            width: 315px; height: auto; max-height: 85%; /* 限制卡片高度 */
             z-index: 2;
             background: rgba(255, 255, 255, 0.7); 
             backdrop-filter: blur(30px) saturate(1.8); -webkit-backdrop-filter: blur(30px);
-            border-radius: 32px;
-            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 32px; border: 1px solid rgba(255, 255, 255, 0.6);
             box-shadow: 0 20px 60px rgba(0,0,0,0.15), inset 0 0 0 1px rgba(255,255,255,0.2);
-            display: flex; flex-direction: column; padding: 25px; box-sizing: border-box;
-            text-align: center;
+            display: flex; flex-direction: column; padding: 25px; box-sizing: border-box; text-align: center;
         }
         
         .apple-tag {
             position: absolute; top: 20px; right: 20px;
-            background: #000; color: white;
-            padding: 5px 12px; border-radius: 20px;
+            background: #000; color: white; padding: 5px 12px; border-radius: 20px;
             font-size: 10px; font-weight: 700;
         }
-
         .apple-cover-shadow {
-            width: 150px; 
-            margin: 25px auto 20px auto; 
-            position: relative; 
-            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
-            border-radius: 8px; /* 书籍圆角小一点 */
+            width: 140px; /* 稍微缩小 */
+            margin: 20px auto 15px auto; /* 减少间距 */
+            position: relative; box-shadow: 0 15px 30px rgba(0,0,0,0.2); border-radius: 8px;
         }
-        .apple-cover-img { 
-            width: 100%; height: auto; /* 【关键】保持比例 */
-            border-radius: 8px; display: block;
-        }
-
+        .apple-cover-img { width: 100%; height: auto; border-radius: 8px; display: block; }
         .apple-h1 { font-size: 22px; font-weight: 800; margin-bottom: 5px; color: #000; letter-spacing: -0.5px; }
-        .apple-sub { font-size: 13px; color: #666; margin-bottom: 25px; font-weight: 500; }
+        .apple-sub { font-size: 13px; color: #666; margin-bottom: 20px; font-weight: 500; }
         
         .apple-controls {
             background: rgba(255,255,255,0.5); padding: 12px 15px; border-radius: 20px;
@@ -252,12 +219,11 @@
             width: 0; height: 0; border-top: 5px solid transparent; border-bottom: 5px solid transparent;
             border-left: 8px solid white; margin-left: 3px;
         }
-        
         .apple-footer-info { display: flex; align-items: center; gap: 8px; text-align: left;}
         .apple-owner-text { font-size: 12px; font-weight: 700; color: #333; }
 
         /* ============================================================
-           方案四：手账拼贴风 (Scrapbook) - 修复比例
+           方案四：手账拼贴风 (大幅上移)
         ============================================================ */
         .style-scrap {
             background-color: #f8f9fa; color: #333;
@@ -265,7 +231,7 @@
             background-size: 25px 25px;
         }
         
-        .scrap-title-area { position: absolute; top: 50px; left: 30px; }
+        .scrap-title-area { position: absolute; top: 30px; left: 30px; } /* 原50 */
         .scrap-tag {
             background: #ff6b6b; color: white; padding: 4px 10px; display: inline-block;
             font-size: 12px; font-weight: 700; transform: rotate(-2deg);
@@ -280,20 +246,19 @@
         .scrap-tape {
             position: absolute; width: 110px; height: 32px; background: rgba(255, 248, 220, 0.9);
             border-left: 3px dotted rgba(0,0,0,0.15); border-right: 3px dotted rgba(0,0,0,0.15);
-            transform: rotate(-4deg); top: 140px; left: 50%; margin-left: -55px; z-index: 20; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transform: rotate(-4deg); 
+            top: 90px; /* 大幅上移 (原140) */
+            left: 50%; margin-left: -55px; z-index: 20; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         
         .scrap-polaroid {
-            position: absolute; top: 155px; left: 50%; transform: translateX(-50%) rotate(2.5deg);
-            width: 220px; /* 固定宽度 */
-            background: white; padding: 12px 12px 50px 12px;
-            box-shadow: 5px 8px 20px rgba(0,0,0,0.15); 
-            display: flex; flex-direction: column;
+            position: absolute; 
+            top: 105px; /* 大幅上移 (原155) */
+            left: 50%; transform: translateX(-50%) rotate(2.5deg);
+            width: 220px; background: white; padding: 12px 12px 50px 12px;
+            box-shadow: 5px 8px 20px rgba(0,0,0,0.15); display: flex; flex-direction: column;
         }
-        .scrap-img { 
-            width: 100%; height: auto; /* 【关键】高度自适应 */
-            filter: contrast(1.05) sepia(0.1); display: block;
-        }
+        .scrap-img { width: 100%; height: auto; filter: contrast(1.05) sepia(0.1); display: block; }
         .scrap-handwriting {
             position: absolute; bottom: 15px; left: 0; width: 100%; text-align: center;
             font-family: 'Comic Sans MS', cursive; 
@@ -301,7 +266,9 @@
         }
 
         .scrap-sticker-new {
-            position: absolute; bottom: 110px; right: 35px;
+            position: absolute; 
+            bottom: 130px; /* 上移 (原110) */
+            right: 35px;
             width: 85px; height: 85px; background: #ffeaa7; border-radius: 50%;
             display: flex; align-items: center; justify-content: center; text-align: center;
             font-family: 'Comic Sans MS', cursive; font-weight: 700; color: #d35400; font-size: 13px; line-height: 1.3;
@@ -320,13 +287,12 @@
         .footer-text { text-align: left; }
         .footer-text h3 { margin: 0; font-size: 14px; font-weight: 700; }
         .footer-text p { margin: 0; font-size: 10px; opacity: 0.7; margin-top: 2px;}
-
     </style>
 </head>
 <body>
 
     <div class="controls">
-        <h2>🔥 小红书海报 (最终完美修复)</h2>
+        <h2>🔥 小红书海报 (V5.0 重心上移)</h2>
         
         <div style="display:flex; flex-wrap:wrap; justify-content:space-between;">
             <button class="btn-style active" onclick="switchStyle('retro')">📜 复古绘本</button>
@@ -533,7 +499,6 @@
             const activePoster = document.querySelector('.poster.active');
             const clone = activePoster.cloneNode(true);
             
-            // 使用独立容器，防止样式污染
             const container = document.createElement('div');
             container.style.position = 'fixed'; container.style.top = '-10000px'; container.style.left = '-10000px';
             container.style.width = activePoster.offsetWidth + 'px'; container.style.height = activePoster.offsetHeight + 'px';
