@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>夏洛的网 - 小红书海报生成器 (方案二修复版)</title>
+    <title>夏洛的网 - 超清海报生成器 (1242x1660)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
+            /* 【核心修改点1】微调基础比例，以匹配目标的纵横比 */
             --ratio-w: 375px; 
-            --ratio-h: 500px; 
+            --ratio-h: 501.2px; /* 从 500px 微调至 501.2px，确保最终输出为 1660px 高 */
         }
 
         body {
-            font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            background-color: #222; /* 网页背景改深色，护眼 */
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #2c2c2c;
             display: flex;
             flex-direction: row;
             justify-content: center;
@@ -23,243 +24,338 @@
             min-height: 100vh;
         }
 
-        /* 左侧控制面板 */
+        /* === 左侧控制面板 === */
         .controls {
             background: white;
             padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
             width: 320px;
             flex-shrink: 0;
+            height: fit-content;
         }
 
-        .controls h2 { margin-top: 0; color: #333; font-size: 18px; margin-bottom: 20px;}
-        .control-group { margin-bottom: 15px; }
-        .control-group label { display: block; font-size: 14px; color: #666; margin-bottom: 5px; }
+        .controls h2 { margin-top: 0; color: #333; font-size: 20px; margin-bottom: 20px;}
+        .control-group { margin-bottom: 12px; }
+        .control-group label { display: block; font-size: 13px; color: #666; margin-bottom: 4px; font-weight: 500;}
         .control-group input[type="text"] {
-            width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box;
+            width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px;
         }
         
-        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; }
-        .btn {
-            flex: 1; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s;
+        .style-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+        .btn-style { 
+            padding: 10px; border: 1px solid #ddd; background: #f9f9f9; 
+            border-radius: 8px; cursor: pointer; font-size: 13px; transition: 0.2s; 
         }
-        .btn-style { background: #e0e0e0; color: #333; }
-        .btn-style.active { background: #333; color: white; }
-        .btn-download { background: #ff2e4d; color: white; width: 100%; margin-top: 10px; }
-        .btn-download:hover { background: #e60023; }
+        .btn-style:hover { background: #eee; }
+        .btn-style.active { background: #333; color: white; border-color: #333; font-weight: bold; }
+        
+        .btn-download { 
+            background: linear-gradient(45deg, #ff2e4d, #ff5e3a); 
+            color: white; width: 100%; margin-top: 15px; border: none; padding: 12px;
+            border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px;
+            box-shadow: 0 4px 10px rgba(255, 46, 77, 0.3);
+        }
 
-        /* 右侧预览区域框 */
+        /* === 右侧预览框 === */
         .preview-wrapper {
             position: relative;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            border: 4px solid #444; 
-            border-radius: 4px;
-        }
-
-        /* 通用海报容器 */
-        .poster {
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            border: 4px solid #333; 
+            border-radius: 8px;
+            background: #fff;
+            /* 确保预览框大小固定，内部元素超出隐藏 */
             width: var(--ratio-w);
             height: var(--ratio-h);
+            overflow: hidden;
+        }
+
+        .poster {
+            width: 100%;
+            height: 100%;
             position: relative;
             overflow: hidden;
             background-color: white;
-            transition: all 0.3s ease;
             display: none; 
         }
-
         .poster.active { display: block; }
 
-        /* ================= 方案一：复古绘本风 (保持不变) ================= */
+        /* ============================================================
+           方案一：复古绘本风 (Retro Book)
+        ============================================================ */
         .style-retro {
             background-color: #FDF5E6;
-            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjRkRGNUU2Ii8+CjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNDQ0MiIG9wYWNpdHk9IjAuMiIvPjwvc3ZnPg==');
+            background-image: radial-gradient(#dcdcdc 1px, transparent 1px);
+            background-size: 20px 20px;
             color: #333;
         }
         .retro-tag {
-            position: absolute; top: 20px; left: 0;
+            position: absolute; top: 25px; left: 0;
             background: #B22222; color: white;
             padding: 6px 15px; font-weight: bold; font-size: 14px;
             border-top-right-radius: 4px; border-bottom-right-radius: 4px;
             box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
-            z-index: 10;
         }
-        .retro-title {
-            position: absolute; top: 60px; left: 30px; right: 30px;
+        .retro-title-group {
+            position: absolute; top: 70px; left: 30px; right: 30px;
             font-family: 'Times New Roman', serif;
         }
-        .retro-h1 { font-size: 32px; font-weight: bold; color: #2c3e50; margin-bottom: 5px; line-height: 1.1; }
+        .retro-h1 { font-size: 34px; font-weight: bold; color: #2c3e50; line-height: 1.1; margin-bottom: 5px; }
         .retro-sub { font-size: 14px; color: #556B2F; font-weight: 500; letter-spacing: 1px; }
         .retro-book-container {
-            position: absolute; top: 140px; left: 50%; transform: translateX(-50%);
-            width: 180px; height: 230px; margin-bottom: 20px;
+            position: absolute; top: 160px; left: 50%; transform: translateX(-50%);
+            width: 180px; height: 230px; 
+            box-shadow: 10px 10px 20px rgba(0,0,0,0.2);
+            border-left: 1px solid rgba(255,255,255,0.4);
         }
-        .retro-book-img {
-            width: 100%; height: 100%; object-fit: cover;
-            box-shadow: 8px 8px 15px rgba(0,0,0,0.3); border-radius: 2px;
-            border-left: 2px solid rgba(255,255,255,0.3);
-        }
+        .retro-book-img { width: 100%; height: 100%; object-fit: cover; }
         .retro-ep-sticker {
-            position: absolute; bottom: -15px; right: -15px;
-            width: 60px; height: 60px; background: #CD5C5C;
+            position: absolute; bottom: -20px; right: -25px;
+            width: 65px; height: 65px; background: #CD5C5C;
             border-radius: 50%; border: 3px solid #fff;
             display: flex; justify-content: center; align-items: center;
             color: white; font-weight: bold; font-size: 16px;
-            transform: rotate(-15deg); box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+            transform: rotate(-10deg); box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
         }
         .retro-footer {
-            position: absolute; bottom: 20px; left: 30px;
-            display: flex; align-items: center; gap: 12px; z-index: 5;
-            background-color: #FDF5E6; padding: 5px; border-radius: 5px;
+            position: absolute; bottom: 25px; left: 30px;
+            display: flex; align-items: center; gap: 12px;
+            background: rgba(253, 245, 230, 0.9); padding: 8px; border-radius: 8px;
         }
-        .avatar-img {
-            width: 45px; height: 45px; border-radius: 50%; object-fit: cover;
-            border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .footer-text h3 { margin: 0; font-size: 16px; color: #333; }
-        .footer-text p { margin: 0; font-size: 10px; color: #888; margin-top: 2px; }
 
-        /* ================= 方案二：播放器风 (修复版) ================= */
-        .style-modern {
-            background: #000; /* 底色纯黑 */
-            color: white;
+        /* ============================================================
+           方案二：播放器风 (Player)
+        ============================================================ */
+        .style-modern { background: #000; color: white; }
+        .modern-bg {
+            position: absolute; inset: -20px; background-size: cover; background-position: center;
+            filter: blur(25px); opacity: 0.7;
+        }
+        .modern-overlay { position: absolute; inset: 0; background: rgba(0,0,0, 0.7); backdrop-filter: blur(10px); }
+        .modern-content { 
+            position: relative; z-index: 2; height: 100%; padding: 30px; 
             display: flex; flex-direction: column;
         }
-        
-        /* 1. 背景图层：模糊 */
-        .modern-bg {
-            position: absolute; inset: -20px; /* 稍微放大一点防止边缘露白 */
-            background-size: cover; background-position: center;
-            filter: blur(20px); /* 模糊 */
-            z-index: 0;
-            opacity: 0.8;
-        }
-
-        /* 2. 黑色遮罩层 (关键修复点) */
-        .modern-overlay {
-            position: absolute; inset: 0;
-            background: rgba(0,0,0, 0.65); /* 65% 黑色透明度，确保文字清晰 */
-            z-index: 1;
-            backdrop-filter: blur(10px); /* 二次模糊，增加磨砂感 */
-        }
-        
-        /* 3. 内容层：浮在遮罩之上 */
-        .modern-content { 
-            position: relative; z-index: 2; 
-            height: 100%; display: flex; flex-direction: column; 
-            padding: 30px; box-sizing: border-box; 
-        }
-        
         .modern-tag {
             align-self: flex-start; background: #FFD700; color: #000;
-            padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 1px;
         }
-
         .modern-cover {
-            width: 220px; height: 220px; margin: 10px auto; 
-            border-radius: 12px; overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); /* 加深阴影 */
-            flex-shrink: 0;
+            width: 220px; height: 220px; margin: 30px auto; 
+            border-radius: 8px; overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
             border: 1px solid rgba(255,255,255,0.1);
         }
-        .modern-cover img { width: 100%; height: 100%; object-fit: cover; }
-
-        .modern-info { margin-top: 30px; text-align: left;}
-        .modern-title { 
-            font-size: 24px; font-weight: bold; margin-bottom: 8px; line-height: 1.2; 
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5); /* 文字加阴影 */
-        }
-        .modern-sub { font-size: 14px; opacity: 0.9; color: #ddd; }
-
+        .modern-title { font-size: 24px; font-weight: bold; margin-bottom: 5px; margin-top: 10px; }
+        .modern-sub { font-size: 14px; opacity: 0.7; }
         .progress-bar {
-            margin-top: 25px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; position: relative;
+            margin-top: 25px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px;
         }
-        .progress-fill { width: 30%; height: 100%; background: white; border-radius: 2px; position: relative; box-shadow: 0 0 10px rgba(255,255,255,0.5);}
-        .progress-dot {
-            width: 12px; height: 12px; background: white; border-radius: 50%;
-            position: absolute; right: -6px; top: -4px;
-        }
-        .time-codes { display: flex; justify-content: space-between; font-size: 11px; margin-top: 10px; opacity: 0.8; font-family: monospace;}
+        .progress-fill { width: 30%; height: 100%; background: white; border-radius: 2px; position: relative; }
+        .progress-dot { width: 10px; height: 10px; background: white; border-radius: 50%; position: absolute; right: -5px; top: -3px; }
 
-        .modern-footer {
-            margin-top: auto; display: flex; align-items: center; gap: 10px;
-            background: rgba(255,255,255,0.15); padding: 8px 12px; border-radius: 50px;
-            backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.1);
+        /* ============================================================
+           方案三：苹果磨砂风 (Apple Glass)
+        ============================================================ */
+        .style-apple { background: #111; color: white; overflow: hidden; }
+        .apple-bg {
+            position: absolute; width: 150%; height: 150%; top: -25%; left: -25%;
+            background-size: cover; background-position: center;
+            filter: blur(50px) saturation(180%);
+            opacity: 0.6; animation: breathe 10s infinite alternate;
         }
-        .modern-footer .avatar-img { width: 28px; height: 28px; border: 1px solid rgba(255,255,255,0.5); }
-        .modern-footer span { font-size: 12px; font-weight: 500; letter-spacing: 0.5px;}
+        @keyframes breathe { from { transform: scale(1); } to { transform: scale(1.1); } }
+        
+        .apple-card {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 315px; height: 440px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            display: flex; flex-direction: column; padding: 25px; box-sizing: border-box;
+            text-align: center;
+        }
+        
+        .apple-tag {
+            position: absolute; top: 15px; right: 15px;
+            background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 20px;
+            font-size: 10px; font-weight: bold; color: rgba(255,255,255,0.9);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .apple-cover-shadow {
+            width: 180px; height: 180px; margin: 20px auto 30px auto;
+            position: relative;
+        }
+        .apple-cover-img {
+            width: 100%; height: 100%; object-fit: cover; border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            position: relative; z-index: 2;
+        }
+        .apple-reflection {
+            position: absolute; bottom: -20px; left: 5%; width: 90%; height: 90%;
+            background-size: cover; background-position: center;
+            filter: blur(15px); opacity: 0.6; z-index: 1; border-radius: 12px;
+        }
+
+        .apple-h1 { font-size: 26px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.5px; }
+        .apple-sub { font-size: 14px; opacity: 0.6; margin-bottom: 25px; }
+        
+        .apple-controls {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(0,0,0,0.2); padding: 12px 20px; border-radius: 16px;
+            margin-top: auto;
+        }
+        .apple-play-btn {
+            width: 30px; height: 30px; background: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .apple-play-icon {
+            width: 0; height: 0; 
+            border-top: 5px solid transparent; border-bottom: 5px solid transparent;
+            border-left: 8px solid black; margin-left: 2px;
+        }
+        .apple-ep { font-size: 14px; font-weight: bold; }
+
+        /* ============================================================
+           方案四：手账拼贴风 (Scrapbook)
+        ============================================================ */
+        .style-scrap {
+            background-color: #f4f4f4;
+            background-image: 
+                linear-gradient(#e0e0e0 1px, transparent 1px),
+                linear-gradient(90deg, #e0e0e0 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: #333;
+        }
+
+        .scrap-tape {
+            position: absolute; width: 100px; height: 30px;
+            background: rgba(255, 255, 230, 0.8);
+            border-left: 2px dotted rgba(0,0,0,0.1); border-right: 2px dotted rgba(0,0,0,0.1);
+            transform: rotate(-5deg); top: 110px; left: 50%; margin-left: -50px; z-index: 20;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .scrap-polaroid {
+            position: absolute; top: 120px; left: 50%; transform: translateX(-50%) rotate(3deg);
+            width: 220px; background: white; padding: 10px 10px 40px 10px;
+            box-shadow: 2px 5px 15px rgba(0,0,0,0.15);
+            transition: transform 0.3s;
+        }
+        .scrap-img { width: 100%; height: 220px; object-fit: cover; filter: contrast(1.1); }
+        .scrap-handwriting {
+            position: absolute; bottom: 10px; left: 0; width: 100%; text-align: center;
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            color: #555; font-size: 14px; transform: rotate(-2deg);
+        }
+
+        .scrap-title-area {
+            position: absolute; top: 40px; left: 30px;
+        }
+        .scrap-h1 {
+            background: #333; color: white; padding: 5px 15px; display: inline-block;
+            font-size: 24px; font-weight: bold; transform: rotate(-2deg); margin-bottom: 5px;
+        }
+        .scrap-tag {
+            background: #ff4757; color: white; padding: 3px 10px; display: inline-block;
+            font-size: 12px; font-weight: bold; transform: rotate(1deg);
+            border-radius: 20px; border: 2px solid white;
+        }
+
+        .scrap-sticker {
+            position: absolute; bottom: 100px; right: 30px;
+            width: 70px; height: 70px; background: #ffeaa7; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            text-align: center; font-size: 12px; font-weight: bold; color: #d35400;
+            transform: rotate(15deg); border: 2px dashed #d35400;
+        }
+
+        .scrap-footer {
+            position: absolute; bottom: 20px; left: 0; width: 100%;
+            display: flex; justify-content: center; align-items: center; gap: 10px;
+        }
+        .scrap-avatar { width: 35px; height: 35px; border-radius: 50%; border: 2px solid #333; }
+        .scrap-owner { font-weight: bold; font-size: 14px; background: white; padding: 2px 8px; border: 1px solid #333;}
+
+
+        /* 通用底部头像文字 */
+        .footer-text h3 { margin: 0; font-size: 16px; }
+        .footer-text p { margin: 0; font-size: 10px; opacity: 0.7; }
+        .avatar-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
 
         @media (max-width: 800px) {
             body { flex-direction: column; align-items: center; padding: 20px; }
-            .controls { width: 100%; max-width: 375px; box-sizing: border-box; }
+            .controls { width: 100%; max-width: 375px; }
         }
     </style>
 </head>
 <body>
 
     <div class="controls">
-        <h2>🎨 海报设计器</h2>
+        <h2>🎨 小红书海报工厂 (超清版)</h2>
         
-        <div class="btn-group">
-            <button class="btn btn-style active" onclick="switchStyle('retro')">方案一：复古绘本</button>
-            <button class="btn btn-style" onclick="switchStyle('modern')">方案二：播放器</button>
+        <div class="style-grid">
+            <button class="btn-style active" onclick="switchStyle('retro')">📜 复古绘本</button>
+            <button class="btn-style" onclick="switchStyle('modern')">🎵 播放器(黑)</button>
+            <button class="btn-style" onclick="switchStyle('apple')">🍎 苹果磨砂</button>
+            <button class="btn-style" onclick="switchStyle('scrap')">✂️ 手账拼贴</button>
         </div>
 
         <div class="control-group">
-            <label>主标题 (Title)</label>
+            <label>主标题</label>
             <input type="text" id="inputTitle" value="Charlotte's Web" oninput="updateText()">
         </div>
         <div class="control-group">
-            <label>副标题 (Subtitle)</label>
+            <label>副标题</label>
             <input type="text" id="inputSub" value="英文原版广播剧" oninput="updateText()">
         </div>
         <div class="control-group">
-            <label>标签 (Tag)</label>
+            <label>标签/短语</label>
             <input type="text" id="inputTag" value="全网首发 🔥" oninput="updateText()">
         </div>
         <div class="control-group">
-            <label>集数 (Episode)</label>
+            <label>集数</label>
             <input type="text" id="inputEp" value="EP.01" oninput="updateText()">
         </div>
         <div class="control-group">
-            <label>所有者 (Owner)</label>
+            <label>所有者</label>
             <input type="text" id="inputOwner" value="周末英语剧场" oninput="updateText()">
         </div>
         
         <hr style="border:0; border-top:1px solid #eee; margin: 15px 0;">
 
         <div class="control-group">
-            <label>🖼️ 书本封面图 (Cover)</label>
+            <label>🖼️ 上传封面图</label>
             <input type="file" accept="image/*" onchange="loadImage(this, 'cover')">
         </div>
         <div class="control-group">
-            <label>👤 头像图片 (Avatar)</label>
+            <label>👤 上传头像</label>
             <input type="file" accept="image/*" onchange="loadImage(this, 'avatar')">
         </div>
 
-        <button class="btn btn-download" onclick="downloadPoster()">⬇️ 生成并下载图片</button>
+        <button class="btn-download" onclick="downloadPoster()">✨ 生成 1242x1660 超清海报</button>
     </div>
 
-    <div class="preview-wrapper" id="captureArea">
+    <div class="preview-wrapper">
         
         <div id="style-retro" class="poster style-retro active">
-            <div class="retro-tag" id="retro-tag-text">全网首发 🔥</div>
-            <div class="retro-title">
-                <div class="retro-h1" id="retro-h1-text">Charlotte's Web</div>
-                <div class="retro-sub" id="retro-sub-text">英文原版广播剧</div>
+            <div class="retro-tag tag-text">全网首发 🔥</div>
+            <div class="retro-title-group">
+                <div class="retro-h1 title-text">Charlotte's Web</div>
+                <div class="retro-sub sub-text">英文原版广播剧</div>
             </div>
-            
             <div class="retro-book-container">
-                <img src="" class="retro-book-img cover-img-target" alt="Cover" style="background: #ddd;">
-                <div class="retro-ep-sticker" id="retro-ep-text">EP.01</div>
+                <img src="" class="retro-book-img cover-target" alt="Cover">
+                <div class="retro-ep-sticker ep-text">EP.01</div>
             </div>
-
             <div class="retro-footer">
-                <img src="" class="avatar-img avatar-img-target" alt="Avatar" style="background: #ccc;">
+                <img src="" class="avatar-img avatar-target" alt="Avatar">
                 <div class="footer-text">
-                    <h3 id="retro-owner-text">周末英语剧场</h3>
+                    <h3 class="owner-text">周末英语剧场</h3>
                     <p>© 版权所有 · 侵权必究</p>
                 </div>
             </div>
@@ -267,48 +363,88 @@
 
         <div id="style-modern" class="poster style-modern">
             <div class="modern-bg cover-bg-target" style="background-color: #333;"></div>
-            
             <div class="modern-overlay"></div>
-            
             <div class="modern-content">
-                <div class="modern-tag" id="modern-tag-text">全网首发 🔥</div>
-                
+                <div class="modern-tag tag-text">全网首发 🔥</div>
                 <div class="modern-cover">
-                    <img src="" class="cover-img-target" alt="Cover" style="background: #555;">
+                    <img src="" class="cover-target" alt="Cover">
                 </div>
-
                 <div class="modern-info">
-                    <div class="modern-title" id="modern-h1-text">Charlotte's Web</div>
-                    <div class="modern-sub" id="modern-sub-text">英文原版广播剧 · EP.01</div>
+                    <div class="modern-title title-text">Charlotte's Web</div>
+                    <div class="modern-sub"><span class="sub-text">英文原版广播剧</span> · <span class="ep-text">EP.01</span></div>
                 </div>
-
                 <div class="progress-bar">
-                    <div class="progress-fill">
-                        <div class="progress-dot"></div>
+                    <div class="progress-fill"><div class="progress-dot"></div></div>
+                </div>
+                <div class="retro-footer" style="position:relative; bottom:0; left:0; margin-top:auto; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.1); color:white;">
+                    <img src="" class="avatar-img avatar-target" style="border:none;">
+                    <div class="footer-text">
+                        <h3 class="owner-text" style="color:white;">周末英语剧场</h3>
+                        <p style="color:#ddd;">© Copyright Reserved</p>
                     </div>
                 </div>
-                <div class="time-codes">
-                    <span>04:20</span>
-                    <span>15:30</span>
+            </div>
+        </div>
+
+        <div id="style-apple" class="poster style-apple">
+            <div class="apple-bg cover-bg-target" style="background-color: #555;"></div>
+            
+            <div class="apple-card">
+                <div class="apple-tag tag-text">全网首发 🔥</div>
+                
+                <div class="apple-cover-shadow">
+                    <div class="apple-reflection cover-bg-target"></div>
+                    <img src="" class="apple-cover-img cover-target" alt="Cover">
                 </div>
 
-                <div class="modern-footer">
-                    <img src="" class="avatar-img avatar-img-target" alt="Avatar" style="background: #ccc;">
-                    <span id="modern-owner-text">周末英语剧场</span>
-                    <span style="opacity: 0.6; font-weight: normal; margin-left: auto; font-size: 10px;">© Copyright</span>
+                <div class="apple-h1 title-text">Charlotte's Web</div>
+                <div class="apple-sub sub-text">英文原版广播剧</div>
+
+                <div class="apple-controls">
+                    <div class="apple-play-btn"><div class="apple-play-icon"></div></div>
+                    <div class="apple-ep ep-text">EP.01</div>
+                    <img src="" class="avatar-target" style="width:24px; height:24px; border-radius:50%;">
                 </div>
+                
+                <div style="margin-top: 20px; font-size: 10px; opacity: 0.5;">
+                    <span class="owner-text">周末英语剧场</span> <br> © All Rights Reserved
+                </div>
+            </div>
+        </div>
+
+        <div id="style-scrap" class="poster style-scrap">
+            <div class="scrap-title-area">
+                <div class="scrap-tag tag-text">全网首发 🔥</div><br>
+                <div class="scrap-h1 title-text">Charlotte's Web</div>
+                <div style="font-size: 14px; color: #666; margin-top: 5px;" class="sub-text">英文原版广播剧</div>
+            </div>
+
+            <div class="scrap-tape"></div>
+            
+            <div class="scrap-polaroid">
+                <img src="" class="scrap-img cover-target" alt="Cover">
+                <div class="scrap-handwriting ep-text">EP.01 - Must Listen!</div>
+            </div>
+
+            <div class="scrap-sticker">
+                <span class="owner-text">周末<br>英语</span>
+            </div>
+
+            <div class="scrap-footer">
+                <img src="" class="scrap-avatar avatar-target">
+                <span class="scrap-owner owner-text">周末英语剧场</span>
+                <span style="font-size: 10px; color: #999;">© Copyright</span>
             </div>
         </div>
 
     </div>
 
     <script>
-        // 默认占位图
-        const defaultCover = "https://via.placeholder.com/300x400?text=Cover+Image"; 
+        const defaultCover = "https://via.placeholder.com/300x400?text=Cover"; 
         const defaultAvatar = "https://via.placeholder.com/100?text=Avatar";
 
-        document.querySelectorAll('.cover-img-target').forEach(img => img.src = defaultCover);
-        document.querySelectorAll('.avatar-img-target').forEach(img => img.src = defaultAvatar);
+        document.querySelectorAll('.cover-target').forEach(img => img.src = defaultCover);
+        document.querySelectorAll('.avatar-target').forEach(img => img.src = defaultAvatar);
 
         function switchStyle(styleName) {
             document.querySelectorAll('.btn-style').forEach(btn => btn.classList.remove('active'));
@@ -324,18 +460,11 @@
             const ep = document.getElementById('inputEp').value;
             const owner = document.getElementById('inputOwner').value;
 
-            // Retro Style
-            document.getElementById('retro-h1-text').innerText = title;
-            document.getElementById('retro-sub-text').innerText = sub;
-            document.getElementById('retro-tag-text').innerText = tag;
-            document.getElementById('retro-ep-text').innerText = ep;
-            document.getElementById('retro-owner-text').innerText = owner;
-
-            // Modern Style
-            document.getElementById('modern-h1-text').innerText = title;
-            document.getElementById('modern-sub-text').innerText = sub + " · " + ep;
-            document.getElementById('modern-tag-text').innerText = tag;
-            document.getElementById('modern-owner-text').innerText = owner;
+            document.querySelectorAll('.title-text').forEach(el => el.innerText = title);
+            document.querySelectorAll('.sub-text').forEach(el => el.innerText = sub);
+            document.querySelectorAll('.tag-text').forEach(el => el.innerText = tag);
+            document.querySelectorAll('.ep-text').forEach(el => el.innerText = ep.includes('!') ? ep : ep); 
+            document.querySelectorAll('.owner-text').forEach(el => el.innerText = owner);
         }
 
         function loadImage(input, type) {
@@ -343,11 +472,10 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     if (type === 'cover') {
-                        document.querySelectorAll('.cover-img-target').forEach(img => img.src = e.target.result);
-                        // 更新现代风背景
-                        document.querySelector('.cover-bg-target').style.backgroundImage = `url(${e.target.result})`;
+                        document.querySelectorAll('.cover-target').forEach(img => img.src = e.target.result);
+                        document.querySelectorAll('.cover-bg-target').forEach(div => div.style.backgroundImage = `url(${e.target.result})`);
                     } else if (type === 'avatar') {
-                        document.querySelectorAll('.avatar-img-target').forEach(img => img.src = e.target.result);
+                        document.querySelectorAll('.avatar-target').forEach(img => img.src = e.target.result);
                     }
                 }
                 reader.readAsDataURL(input.files[0]);
@@ -356,13 +484,11 @@
 
         function downloadPoster() {
             const activePoster = document.querySelector('.poster.active');
-            html2canvas(activePoster, {
-                scale: 2, 
-                useCORS: true, 
-                backgroundColor: null 
-            }).then(canvas => {
+            // 【核心修改点2】设置精确的缩放倍数，以达到目标宽度 1242px
+            // 1242 / 375 = 3.312
+            html2canvas(activePoster, { scale: 3.312, useCORS: true }).then(canvas => {
                 const link = document.createElement('a');
-                link.download = 'xiaohongshu-poster.png';
+                link.download = 'xiaohongshu-poster-HD.png';
                 link.href = canvas.toDataURL("image/png");
                 link.click();
             });
