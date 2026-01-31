@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Week Junior Handout</title>
+    <title>The Week Junior Handout (PDF Supported)</title>
     <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700&family=Noto+Sans+SC:wght@300;400;500;700&family=Lato:wght@400;700;900&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
             /* 动态主题色 */
@@ -110,6 +111,7 @@
         .l-verb { color: var(--t-verb); border-color: var(--t-verb); } 
         .l-obj { color: var(--t-obj); border-color: var(--t-obj); } 
         .l-conn { color: var(--t-conn); border-color: var(--t-conn); }
+        .l-mod { color: var(--t-mod); border-color: var(--t-mod); }
 
         .sa-step-box, .q-card { background: #fdfefe; padding: 20px 25px; border-radius: 8px; border: 1px solid #eee; box-shadow: 2px 2px 8px rgba(0,0,0,0.02); margin-bottom: 12px; width: 100%; }
         .bd-struct { border-left: 5px solid var(--bd-struct); }
@@ -133,9 +135,13 @@
         .normal-page .footer { padding: 0; }
         .footer-right { font-weight: 700; color: #333; }
 
-        #btn-download { position: fixed; bottom: 20px; right: 20px; z-index: 9999; padding: 15px 25px; background: #2c3e50; color: white; border: none; border-radius: 50px; cursor: pointer; font-family: sans-serif; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.2s; }
-        #btn-download:hover { transform: scale(1.05); background: #34495e; }
-        #btn-download:active { transform: scale(0.95); }
+        /* 按钮组 */
+        .btn-group { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; gap: 15px; }
+        .btn-float { padding: 15px 25px; background: #2c3e50; color: white; border: none; border-radius: 50px; cursor: pointer; font-family: sans-serif; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.2s; display: flex; align-items: center; gap: 8px; }
+        .btn-float:hover { transform: scale(1.05); background: #34495e; }
+        .btn-float:active { transform: scale(0.95); }
+        .btn-pdf { background: #c0392b; }
+        .btn-pdf:hover { background: #e74c3c; }
     </style>
 </head>
 <body>
@@ -144,7 +150,12 @@
     <div class="spinner"></div>
     <div>Generating Content...</div>
 </div>
-<button id="btn-download" onclick="downloadAllPages()">📸 Save Pages</button>
+
+<div class="btn-group">
+    <button class="btn-float btn-pdf" id="btn-pdf" onclick="downloadPDF()">📄 Save PDF</button>
+    <button class="btn-float" id="btn-img" onclick="downloadAllPages()">📸 Save Images</button>
+</div>
+
 <div id="card-container"></div>
 <input type="file" id="upload-trigger" style="display:none" onchange="loadFile(event)">
 
@@ -395,7 +406,7 @@
     function updateFooters(total) { document.querySelectorAll('.page-num').forEach((el, i) => el.innerText = `Page ${i+1}/${total}`); }
     
     async function downloadAllPages() {
-        const btn = document.getElementById('btn-download');
+        const btn = document.getElementById('btn-img');
         const originalText = btn.innerText;
         btn.innerText = "Processing... (Please Wait)";
         btn.style.opacity = "0.7";
@@ -418,6 +429,47 @@
         } catch (e) {
             console.error(e);
             alert("Error: " + e.message);
+        } finally {
+            btn.innerText = originalText;
+            btn.style.opacity = "1";
+            btn.disabled = false;
+        }
+    }
+
+    async function downloadPDF() {
+        const btn = document.getElementById('btn-pdf');
+        const originalText = btn.innerText;
+        btn.innerText = "Generating PDF...";
+        btn.style.opacity = "0.7";
+        btn.disabled = true;
+
+        try {
+            // Access jsPDF
+            const { jsPDF } = window.jspdf;
+            const cards = document.querySelectorAll('.card');
+            
+            // Define PDF size (match CSS pixel dimensions)
+            const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'px',
+                format: [1080, 1440]
+            });
+
+            for (let i = 0; i < cards.length; i++) {
+                if (i > 0) pdf.addPage([1080, 1440]);
+                
+                // Render Canvas
+                const canvas = await html2canvas(cards[i], { scale: 1.5, useCORS: true, logging: false });
+                const imgData = canvas.toDataURL('image/jpeg', 0.9);
+                
+                // Add to PDF
+                pdf.addImage(imgData, 'JPEG', 0, 0, 1080, 1440);
+            }
+            
+            pdf.save('TheWeekJunior_Handout.pdf');
+        } catch (e) {
+            console.error(e);
+            alert("PDF Error: " + e.message);
         } finally {
             btn.innerText = originalText;
             btn.style.opacity = "1";
