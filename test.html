@@ -8,46 +8,78 @@
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
         :root {
-            --theme-color: #2c3e50; 
+            /* 动态主题色 */
+            --theme-color: #27ae60; 
+
+            /* 词性颜色 */
             --t-subj: #C0392B; --t-verb: #2980B9; --t-obj: #27AE60; --t-mod: #D35400; --t-prep: #8E44AD; --t-conn: #7F8C8D;
+            
+            /* 词性背景 */
             --bg-noun: #D6EAF8; --bg-verb: #D5F5E3; --bg-adj: #E8DAEF;
+            
+            /* 长难句背景 */
             --bg-trunk: #EBF5FB; --bg-clause-1: #FEF5E7; --bg-clause-2: #E9F7EF;
+            /* 边框色 */
             --bd-trunk: #3498DB; --bd-clause-1: #F39C12; --bd-clause-2: #2ECC71; --bd-struct: #2C3E50;
+            
+            /* 通用 */
             --text-main: #2c3e50; --bg: #ffffff; --supp-bg: #F0F8FF;
             --p-w: 1080px; --p-h: 1440px;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; }
         body { background: #444; display: flex; flex-direction: column; align-items: center; padding: 40px 0; gap: 40px; font-family: 'Noto Sans SC', sans-serif; }
+        
+        /* 错误提示条 */
         #status-bar { position: fixed; top: 0; left: 0; width: 100%; background: #e74c3c; color: white; text-align: center; padding: 15px; font-weight: bold; z-index: 10000; display: none; font-size: 14pt; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+        /* Loading 遮罩 */
         #loading-mask { position: fixed; inset: 0; background: #f9f9f9; z-index: 9998; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: 'Lato'; color: #555; }
         .spinner { width: 50px; height: 50px; border: 5px solid #ccc; border-top-color: var(--theme-color); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* 容器 */
         .card { width: var(--p-w); height: var(--p-h); background: var(--bg); display: flex; flex-direction: column; overflow: hidden; position: relative; box-shadow: 0 30px 80px rgba(0,0,0,0.6); flex-shrink: 0; }
         .card.cover-page { padding: 0; } .card.normal-page { padding: 50px 60px; }
         .content-body { flex-grow: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 0; overflow: hidden; width: 100%; }
         .cover-page .content-body { padding: 0 60px; } .normal-page .content-body { padding: 0; }
+
+        /* 首页 (960px Height) */
         .hero-section { width: 100%; height: 960px; background: #e0e0e0; cursor: pointer; border-bottom: 8px solid var(--theme-color); position: relative; flex-shrink: 0; }
         .hero-img { width: 100%; height: 100%; object-fit: cover; display: none; }
         .hero-placeholder { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #777; font-size: 20pt; font-family: 'Lato'; text-align: center; border: 3px dashed #bbb; padding: 15px 30px; border-radius: 10px; }
+        
         .cover-header { padding: 30px 60px 10px 60px; display: flex; flex-direction: column; align-items: center; text-align: center; flex-shrink: 0; }
         .meta-tag { background: var(--theme-color); color: white; padding: 6px 20px; border-radius: 50px; font-family: 'Lato'; font-weight: 900; font-size: 12pt; margin-bottom: 15px; letter-spacing: 1px; }
+        
+        /* 标题增强 */
         .poster-title { font-family: 'Lora'; font-size: 60pt; font-weight: 700; color: var(--text-main); line-height: 1.0; margin-bottom: 10px; }
         .poster-subtitle { font-family: 'Noto Sans SC'; font-size: 40pt; color: #5d6d7e; font-weight: 400; margin-bottom: 20px; position: relative; display: inline-block; }
         .poster-subtitle::after { content: ""; display: block; width: 60px; height: 3px; background: var(--theme-color); margin: 10px auto 0 auto; }
+
+        /* 续页头 */
         .mini-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #ccc; padding-bottom: 15px; margin-bottom: 20px; height: 60px; flex-shrink: 0; width: 100%; }
         .mini-title { font-family: 'Lora'; font-weight: 700; font-size: 16pt; color: var(--text-main); }
         .continued-tag { font-family: 'Lato'; font-weight: 700; font-style: italic; background: transparent; padding: 5px 0; border-radius: 0; font-size: 11pt; color: #666; }
+
+        /* 正文 */
         .row { display: flex; gap: 40px; width: 100%; padding: 15px 0; border-bottom: 1px solid #f9f9f9; align-items: flex-start; flex-shrink: 0; }
         .col-eng { flex: 6; font-family: 'Lora'; font-size: 18pt; line-height: 1.8; text-align: justify; padding-right: 25px; border-right: 2px solid #f0f0f0; }
         .col-chi { flex: 4; font-family: 'Noto Sans SC'; font-size: 16pt; line-height: 1.8; color: #5d6d7e; text-align: justify; font-weight: 400; padding-top: 2px; }
+
+        /* 边栏 (一致布局) */
         .row.supp-style { background: var(--supp-bg); padding: 20px 25px; border-radius: 8px; margin: 5px 0; border: none; }
         .row.supp-style .col-eng { border-right: 2px solid #aec6cf; font-size: 16pt; line-height: 1.6; }
         .row.supp-style .col-chi { font-size: 14pt !important; line-height: 1.6; color: #555; }
         h3 { font-family: 'Lato'; font-weight: 900; font-size: 18pt; color: var(--theme-color); margin: 0 0 10px 0; display: block; border-left: 8px solid var(--theme-color); padding-left: 15px; }
+        .row.supp-style h3 { font-size: 16pt !important; border-left-width: 5px; }
+
+        /* 词性高亮 (通用) */
         .hl { padding: 0 4px; border-radius: 4px; font-weight: 600; display: inline-block; }
         .hl-n { background-color: var(--bg-noun); } .hl-v { background-color: var(--bg-verb); } .hl-adj { background-color: var(--bg-adj); }
         sup { color: #555; font-size: 0.6em; vertical-align: super; font-weight: 700; margin-left: 2px; }
+
+        /* 附录 */
         .app-h { font-size: 18pt; font-weight: 700; color: var(--text-main); border-left: 6px solid #555; padding-left: 12px; display: block; margin: 25px 0 20px 0; font-family: 'Noto Sans SC'; flex-shrink: 0; width: 100%; }
+        
         .vocab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px 40px; width: 100%; margin-bottom: 30px; flex-shrink: 0; }
         .vocab-item { background: #fff; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 5px; display: flex; flex-direction: column; gap: 6px; }
         .v-line-1 { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
@@ -58,33 +90,52 @@
         .v-pos { color: var(--theme-color); font-weight: bold; font-family: 'Times New Roman'; font-style: italic; font-size: 13pt; margin-right: 2px;}
         .v-line-2 { font-size: 14pt; color: #d35400; font-family: 'Roboto Mono'; font-weight: 500; }
         .v-line-3 { font-size: 14pt; color: #7f8c8d; font-style: italic; font-family: 'Lora'; line-height: 1.4; margin-top: 2px; }
+
         .sa-sentence-wrapper { display: flex; flex-wrap: wrap; column-gap: 0; row-gap: 35px; line-height: 1.5; margin-bottom: 25px; padding-top: 10px; align-items: flex-end; width: 100%; }
         .chunk { display: inline-flex; flex-direction: column; align-items: center; margin: 0; vertical-align: bottom; }
         .chunk-text { font-family: 'Lora'; font-size: 20pt; color: #2c3e50; padding: 4px 5px; font-weight: 500; border-radius: 0; }
         .chunk-group { border-bottom: 3px solid #ccc; padding-bottom: 2px; margin: 0 3px; }
+        .chunk-group .chunk-text { padding-bottom: 0; } 
         .chunk-lbl { font-size: 10pt; font-family: 'Noto Sans SC'; font-weight: 800; margin-top: 4px; white-space: nowrap; width: 100%; text-align: center; height: 15px; }
+        .chunk-lbl:empty { height: 0; margin-top: 0; }
         .bracket { font-size: 20pt; color: #d35400; font-family: 'Lato'; font-weight: 300; padding: 4px 6px; display: inline-block; }
+        
         .bg-trunk .chunk-text { background-color: var(--bg-trunk); }
         .bg-clause-1 .chunk-text { background-color: var(--bg-clause-1); }
         .bg-clause-1.bracket { background-color: var(--bg-clause-1); }
+        .bg-clause-2 .chunk-text { background-color: var(--bg-clause-2); }
+        .bg-clause-2.bracket { background-color: var(--bg-clause-2); }
+        
         .l-subj { color: var(--t-subj); border-color: var(--t-subj); } 
         .l-verb { color: var(--t-verb); border-color: var(--t-verb); } 
         .l-obj { color: var(--t-obj); border-color: var(--t-obj); } 
+        .l-conn { color: var(--t-conn); border-color: var(--t-conn); }
+
         .sa-step-box, .q-card { background: #fdfefe; padding: 20px 25px; border-radius: 8px; border: 1px solid #eee; box-shadow: 2px 2px 8px rgba(0,0,0,0.02); margin-bottom: 12px; width: 100%; }
         .bd-struct { border-left: 5px solid var(--bd-struct); }
         .bd-trunk { border-left: 5px solid var(--bd-trunk); background-color: #FDFEFE; }
         .bd-clause-1 { border-left: 5px solid var(--bd-clause-1); background-color: #FEF9E7; }
+        .bd-clause-2 { border-left: 5px solid var(--bd-clause-2); background-color: #E9F7EF; }
+        .q-card { border-left: 5px solid var(--theme-color); }
+        
         .sa-trans { font-size: 16pt; color: #444; font-weight: 600; font-style: italic; margin-bottom: 20px; padding: 15px; border: 1px dashed #ccc; border-radius: 8px; width: 100%; background: #fff; }
         .sa-step { margin-bottom: 12px; font-size: 15pt; color: #555; line-height: 1.6; }
         .sa-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11pt; margin-right: 10px; font-weight: 800; color: #fff; background: #555; font-family: 'Lato'; text-transform: uppercase; }
+
         .q-header { display: flex; align-items: baseline; margin-bottom: 5px; }
         .q-num { color: var(--theme-color); font-size: 18pt; font-weight: 900; margin-right: 10px; font-family: 'Lato'; }
         .q-text { font-size: 18pt; color: #2c3e50; font-weight: 600; font-family: 'Lora'; }
         .q-opts { display: flex; gap: 25px; flex-wrap: wrap; margin-left: 0; margin-top: 5px; }
         .q-opt { font-size: 15pt; color: #555; font-family: 'Lato'; }
+        .q-blank { border-bottom: 2px solid #333; width: 100px; display: inline-block; }
+
         .footer { margin-top: auto; display: flex; justify-content: space-between; border-top: 1px solid #eee; padding: 0 60px; font-size: 11pt; color: #95a5a6; flex-shrink: 0; height: 70px; align-items: center; width: 100%; box-sizing: border-box; font-family: 'Lato'; }
         .normal-page .footer { padding: 0; }
+        .footer-right { font-weight: 700; color: #333; }
+
         #btn-download { position: fixed; bottom: 20px; right: 20px; z-index: 9999; padding: 15px 25px; background: #2c3e50; color: white; border: none; border-radius: 50px; cursor: pointer; font-family: sans-serif; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.2s; }
+        #btn-download:hover { transform: scale(1.05); background: #34495e; }
+        #btn-download:active { transform: scale(0.95); }
     </style>
 </head>
 <body>
@@ -98,48 +149,91 @@
 <input type="file" id="upload-trigger" style="display:none" onchange="loadFile(event)">
 
 <script>
+    // --- Global Error Trap ---
+    window.onerror = function(message, source, lineno, colno, error) {
+        document.getElementById('loading-mask').style.display = 'none';
+        document.getElementById('status-bar').style.display = 'block';
+        document.getElementById('status-bar').innerText = "System Error: " + message + " (Line " + lineno + ")";
+    };
+
+    // --- Phase 4: Data Injection ---
     const META = { 
-        issue: "January 30, 2026", 
+        issue: "30 January 2026", 
         title: "Horses can catch our emotions", 
-        subtitle: "你的压力，马儿都能“闻”到", 
+        subtitle: "你的情绪，马儿能“闻”到", 
         themeColor: "#27ae60" 
     };
     
+    // [Audit: Atomized & Cleaned]
     const MAIN_CONTENT = [
-        { eng: "A new study has found evidence that horses can <span class='hl hl-v'>smell</span><sup>①</sup> fear in humans\' sweat, and it causes them to feel the same emotion.", chi: "一项新研究发现证据，表明马能够“闻”到人类汗液中的恐惧，这会导致它们产生同样的情绪。" },
+        { eng: "A new study has found <span class='hl hl-n'>evidence</span><sup>①</sup> that horses can smell fear in humans\' sweat, and it causes them to feel the same emotion.", chi: "一项新研究发现证据，表明马能够“闻”到人类汗液中的恐惧，这会导致它们产生同样的情绪。" },
         { eng: "For a long time, people have believed that horses can \"smell fear\", and riders are often told to <span class='hl hl-v'>relax</span><sup>②</sup> in order to keep their horse calm too.", chi: "长期以来，人们一直相信马能“闻到恐惧”，骑手也经常被告知要保持放松，以让马也保持冷静。" },
         { eng: "Other studies have found that horses pick up human emotions from our <span class='hl hl-adj'>facial</span><sup>③</sup> expressions and voices.", chi: "其他研究发现，马会通过我们的面部表情和声音来捕捉人类的情绪。" },
-        { eng: "In the study, 30 people were invited to watch happy video clips with cotton pads under their arms to collect their sweat. Then they watched a scary film with new pads.", chi: "在研究中，30人受邀观看快乐视频片段，并在腋下放置棉垫收集汗液。随后，他们带着新的棉垫观看了一部恐怖电影。" },
-        { eng: "Horses who wore the \"fear\" muzzle were more scared. Their hearts beat faster, and they were less likely to be <span class='hl hl-adj'>curious</span><sup>④</sup> about new objects.", chi: "佩戴“恐惧”口嚼的马表现得更为害怕。它们的心跳加快，并且对新事物产生好奇心的可能性降低了。" },
-        { type: "supp", eng: "<h3>Horses and their noses</h3>Horses are prey animals. To help them <span class='hl hl-v'>survive</span><sup>⑤</sup>, they have a very good sense of smell and can sniff predators out before they pounce.", chi: "<h3>马与它们的鼻子</h3>马是捕食对象。为了帮助生存，它们拥有极佳的嗅觉，能在捕食者扑向它们之前就嗅出其踪迹。" },
-        { type: "supp", eng: "They have something called a Jacobson\'s <span class='hl hl-n'>organ</span><sup>⑥</sup> that helps them to pick up the scents of other animals and each other.", chi: "它们有一种叫做雅各布森器官的结构，能帮助它们捕捉其他动物以及同类之间的气味。" }
+        { eng: "Recently, a team of researchers set out to see if horses can <span class='hl hl-v'>detect</span><sup>④</sup> people\'s emotions from smell alone.", chi: "最近，一组研究人员着手调查马是否仅凭气味就能察觉人类的情绪。" },
+        { eng: "In the study, 30 people were invited to watch happy video clips with cotton pads under their arms to collect their sweat.", chi: "在研究中，30人受邀观看快乐视频片段，并在腋下放置棉垫收集汗液。" },
+        { eng: "Then they watched a scary film with new pads.", chi: "随后，他们带着新的棉垫观看了一部恐怖电影。" },
+        { eng: "The researchers divided 43 horses into three groups.", chi: "研究人员将43匹马分成三组。" },
+        { eng: "The horses wore muzzles, the name given to a device that fits over a horse\'s own muzzle – the nose and mouth area of their head.", chi: "这些马佩戴着口嚼（muzzle），这是一种套在马口鼻部的装置。" },
+        { eng: "One group had a muzzle with a happy sweat pad in it; one group had a scary pad and the third group had no pad.", chi: "一组马佩戴含有“快乐”汗垫的口嚼；一组佩戴含有“恐惧”汗垫的；第三组则没有佩戴汗垫。" },
+        { eng: "The team then tested the horses to see how they reacted to different actions, such as an umbrella being opened near them or seeing a strange new object.", chi: "随后，团队测试了马对不同动作的反应，例如在它们附近打开雨伞或看到奇怪的新物体。" },
+        { eng: "Horses who wore the \"fear\" muzzle were more scared.", chi: "佩戴“恐惧”口嚼的马表现得更为害怕。" },
+        { eng: "Their hearts beat faster, they were more likely to startle, and they were less likely to be <span class='hl hl-adj'>curious</span><sup>⑤</sup> about the new object or approach humans.", chi: "它们的心跳加快，更容易受惊，并且对新物体产生好奇或接近人类的可能性降低了。" },
+        { eng: "\"The fearful odours from humans <span class='hl hl-v'>amplify</span><sup>⑥</sup> (make bigger) the reactions of horses,\" lead study author Plotine Jardat told CNN.", chi: "“来自人类的恐惧气味放大了马的反应，”研究主要作者Plotine Jardat告诉CNN。" },
+        { eng: "\"The <span class='hl hl-n'>significance</span><sup>⑦</sup> is that horses can smell how we feel, even if they can\'t hear or see us,\" she said.", chi: "她说：“其重要意义在于，即使马听不到也看不到我们，它们也能通过气味感知我们的感受。”" },
+        { eng: "The researchers hope the study will help to improve horse happiness and health and keep humans safe too.", chi: "研究人员希望这项研究有助于提高马的幸福感和健康水平，同时也保障人类的安全。" },
+        { eng: "Stressed horses often react with behaviour that can be dangerous, such as kicking or running away.", chi: "处于压力下的马通常会做出危险的反应，如踢人或逃跑。" },
+        { eng: "Understanding horses\' emotions better can help people interact more positively with them.", chi: "更好地理解马的情绪可以帮助人们与它们进行更积极的互动。" },
+        
+        // Sidebar Content
+        { type: "supp", eng: "<h3>Horses and their noses</h3>Horses are prey animals, meaning that in the wild other animals hunt them.", chi: "<h3>马与它们的鼻子</h3>马是猎物动物，意味着在野外其他动物会捕食它们。" },
+        { type: "supp", eng: "To help them <span class='hl hl-v'>survive</span><sup>⑧</sup>, they have a very good sense of smell and can sniff <span class='hl hl-n'>predators</span><sup>⑨</sup> out before they pounce.", chi: "为了生存，它们拥有极佳的嗅觉，能在捕食者扑向它们之前就嗅出其踪迹。" },
+        { type: "supp", eng: "They have something called a Jacobson\'s <span class='hl hl-n'>organ</span><sup>⑩</sup> that helps them to pick up the scents of other animals and each other.", chi: "它们有一种叫做雅各布森器官的结构，能帮助它们捕捉其他动物以及同类之间的气味。" },
+        { type: "supp", eng: "Unlike humans, horses are only able to breathe through their noses.", chi: "与人类不同，马只能通过鼻子呼吸。" },
+        { type: "supp", eng: "Horses\' snouts do more than smell. They are full of <span class='hl hl-n'>nerves</span><sup>⑪</sup> and covered in whiskers that allow them to \"feel\" what they touch, like fingers.", chi: "马的口鼻部不仅仅用于嗅闻。它们充满神经并覆盖着胡须，使其能像手指一样“感觉”触摸到的东西。" },
+        { type: "supp", eng: "Horses also <span class='hl hl-v'>communicate</span><sup>⑫</sup> by flaring or huffing breaths out of their nostrils.", chi: "马还会通过鼻孔扩张或喷气来进行交流。" }
     ]; 
     
+    // [Audit: Sync & Dedup]
     const VOCAB_LIST = [
-        { w: "smell", idx: 1, ipa: "smel", p: "v. 闻到", m: "嗅，闻", c: "smell of...", e: "Horses can smell fear in humans\' sweat." },
-        { w: "relax", idx: 2, ipa: "rɪˈlæks", p: "v. 放松", m: "放松，休息", c: "relax oneself", e: "Riders are often told to relax to keep horses calm." },
-        { w: "facial", idx: 3, ipa: "ˈfeɪʃl", p: "adj. 面部的", m: "脸部的", c: "facial expression", e: "Horses pick up emotions from facial expressions." },
-        { w: "curious", idx: 4, ipa: "ˈkjʊəriəs", p: "adj. 好奇的", m: "求知欲强的", c: "be curious about", e: "They were less likely to be curious about the new object." },
-        { w: "survive", idx: 5, ipa: "səˈvaɪv", p: "v. 生存", m: "幸存，活下来", c: "survive from", e: "A good sense of smell helps them survive in the wild." },
-        { w: "organ", idx: 6, ipa: "ˈɔːɡən", p: "n. 器官", m: "人体或动物器官", c: "internal organs", e: "The Jacobson\'s organ helps horses pick up scents." }
+        { w: "evidence", idx: 1, ipa: "ˈevɪdəns", p: "n. 证据", m: "证明，迹象", c: "find evidence", e: "A new study has found evidence that horses can smell fear." },
+        { w: "relax", idx: 2, ipa: "rɪˈlæks", p: "v. 放松", m: "松弛，休息", c: "relax oneself", e: "Riders are told to relax to keep their horse calm." },
+        { w: "facial", idx: 3, ipa: "ˈfeɪʃl", p: "adj. 面部的", m: "脸上的", c: "facial expression", e: "Horses pick up emotions from facial expressions." },
+        { w: "detect", idx: 4, ipa: "dɪˈtekt", p: "v. 察觉", m: "发现，探测", c: "detect emotions", e: "Can horses detect people's emotions from smell alone?" },
+        { w: "curious", idx: 5, ipa: "ˈkjʊəriəs", p: "adj. 好奇的", m: "求知欲强的", c: "be curious about", e: "They were less likely to be curious about the new object." },
+        { w: "amplify", idx: 6, ipa: "ˈæmplɪfaɪ", p: "v. 放大", m: "增强", c: "amplify the reaction", e: "Fearful odours amplify the reactions of horses." },
+        { w: "significance", idx: 7, ipa: "sɪɡˈnɪfɪkəns", p: "n. 重要性", m: "意义", c: "the significance of", e: "The significance is that horses can smell how we feel." },
+        { w: "survive", idx: 8, ipa: "səˈvaɪv", p: "v. 生存", m: "幸存", c: "survive in the wild", e: "To help them survive, they have a good sense of smell." },
+        { w: "predator", idx: 9, ipa: "ˈpredətə(r)", p: "n. 捕食者", m: "天敌", c: "sniff predators out", e: "They can sniff predators out before they pounce." },
+        { w: "organ", idx: 10, ipa: "ˈɔːɡən", p: "n. 器官", m: "生物器官", c: "internal organ", e: "They have something called a Jacobson's organ." },
+        { w: "nerve", idx: 11, ipa: "nɜːv", p: "n. 神经", m: "神经系统", c: "full of nerves", e: "Their snouts are full of nerves." },
+        { w: "communicate", idx: 12, ipa: "kəˈmjuːnɪkeɪt", p: "v. 交流", m: "沟通", c: "communicate with", e: "Horses also communicate by flaring their nostrils." }
     ];
     
+    // [Audit: Syntax Localization]
     const SA_CHUNKS = [
-        { w: "(A new study)", t: "bracket bg-clause-1", txt: "主语", l: "l-subj" },
+        { w: "A new study", t: "chunk bg-trunk", txt: "主语", l: "l-subj" },
         { w: "has found", t: "chunk bg-trunk", txt: "谓语", l: "l-verb" },
         { w: "evidence", t: "chunk bg-trunk", txt: "宾语", l: "l-obj" },
-        { w: "(that horses can smell fear in humans' sweat)", t: "bracket bg-clause-1", txt: "同位语从句" }
+        { w: "( that horses can smell fear in humans' sweat )", t: "bracket bg-clause-1", txt: "同位语从句" },
+        { w: ",", t: "chunk" },
+        { w: "and", t: "chunk", txt: "连词", l: "l-conn" },
+        { w: "it", t: "chunk bg-trunk", txt: "主语", l: "l-subj" },
+        { w: "causes", t: "chunk bg-trunk", txt: "谓语", l: "l-verb" },
+        { w: "them", t: "chunk bg-trunk", txt: "宾语", l: "l-obj" },
+        { w: "to feel the same emotion", t: "chunk bg-trunk", txt: "宾补", l: "l-mod" }
     ];
-    const SA_TRANS = "一项新的研究已经发现了证据，即马能够闻出人类汗液中的恐惧。";
+    const SA_TRANS = "一项新研究已经发现了证据，即马能够闻出人类汗液中的恐惧，并且这会导致它们感受到同样的情绪。";
     const SA_STEPS = [
-        { type: "bd-trunk", label: "主干拆解", text: "句子主干是 A new study has found evidence（一项新研究发现了证据）。" },
-        { type: "bd-clause-1", label: "从句解析", text: "that 引导的从句作为 evidence 的同位语，进一步解释了证据的具体内容。" }
+        { type: "bd-trunk", label: "结构总览", text: "这是一个由 and 连接的并列复合句。前一个分句的主干是 A new study has found evidence；后一个分句的主干是 it causes them to feel...。" },
+        { type: "bd-clause-1", label: "从句解析", text: "that 引导的同位语从句 (that horses can smell fear...) 紧跟在 evidence 后面，对“证据”的具体内容进行解释说明。" },
+        { type: "bd-struct", label: "词组搭配", text: "cause sb. to do sth. 意为“导致某人做某事”，此处指导致马产生同样的情绪。" }
     ];
     const QUIZ_ITEMS = [
-        { q: "What helps horses pick up scents of other animals?", a: "<span class='q-opt'>A. Ears</span> <span class='q-opt'>B. Jacobson\'s organ</span> <span class='q-opt'>C. Eyes</span>" },
-        { q: "What happened to horses exposed to 'fear' sweat?", a: "<span class='q-opt'>A. Slept more</span> <span class='q-opt'>B. Hearts beat faster</span> <span class='q-opt'>C. Felt happy</span>" }
+        { q: "What special body part helps horses smell other animals?", a: "<span class='q-opt'>A. Whiskers</span> <span class='q-opt'>B. Jacobson's organ</span> <span class='q-opt'>C. Hooves</span>" },
+        { q: "How did horses react to the 'fear' sweat in the study?", a: "<span class='q-opt'>A. They became sleepy</span> <span class='q-opt'>B. Their hearts beat faster</span> <span class='q-opt'>C. They approached humans</span>" }
     ];
 
+    // --- Core Logic ---
     function render() {
         let cardIdx = 1;
         let currentCard;
@@ -171,82 +265,126 @@
         try {
             document.documentElement.style.setProperty('--theme-color', META.themeColor);
             const root = document.getElementById('card-container');
+            
+            // Initial Page Setup
             currentCard = createCoverPage();
             root.appendChild(currentCard);
             container = currentCard.querySelector('.content-body');
 
+            // 1. Content (Atomic Row Flow)
             MAIN_CONTENT.forEach(item => {
                 const row = createContentRow(item);
                 container.appendChild(row);
                 checkAndMove(row, SAFE_BOTTOM);
             });
 
+            // Start new page for Appendix
             createNewPage();
+
+            // 2. Vocab
             appendWithCheck(createTitle('中考高频词汇 (Vocab)'));
             let grid = document.createElement('div'); grid.className = 'vocab-grid';
             container.appendChild(grid);
-            VOCAB_LIST.forEach((v, i) => {
-                const item = createVocabItem(v, i+1); grid.appendChild(item);
-                if ((grid.getBoundingClientRect().bottom - currentCard.getBoundingClientRect().top) > SAFE_BOTTOM) {
-                    grid.removeChild(item); createNewPage();
-                    grid = document.createElement('div'); grid.className = 'vocab-grid';
-                    container.appendChild(grid); grid.appendChild(item);
-                }
-            });
+            if (VOCAB_LIST) {
+                VOCAB_LIST.forEach((v, i) => {
+                    const item = createVocabItem(v, i+1); grid.appendChild(item);
+                    if ((grid.getBoundingClientRect().bottom - currentCard.getBoundingClientRect().top) > SAFE_BOTTOM) {
+                        grid.removeChild(item); 
+                        createNewPage();
+                        grid = document.createElement('div'); grid.className = 'vocab-grid';
+                        container.appendChild(grid); grid.appendChild(item);
+                    }
+                });
+            }
 
+            // 3. Sentence Analysis
             appendWithCheck(createTitle('长难句分析 (Sentence Analysis)'));
             let saWrapper = document.createElement('div'); saWrapper.className = 'sa-sentence-wrapper';
             container.appendChild(saWrapper);
-            SA_CHUNKS.forEach(chunk => {
-                let el = createSaChunk(chunk);
-                saWrapper.appendChild(el);
-                if ((saWrapper.getBoundingClientRect().bottom - currentCard.getBoundingClientRect().top) > SAFE_BOTTOM) {
-                    saWrapper.removeChild(el); createNewPage();
-                    saWrapper = document.createElement('div'); saWrapper.className = 'sa-sentence-wrapper';
-                    container.appendChild(saWrapper); saWrapper.appendChild(el);
-                }
-            });
+            if (SA_CHUNKS) {
+                SA_CHUNKS.forEach(chunk => {
+                    let el = createSaChunk(chunk);
+                    if (el) { 
+                        saWrapper.appendChild(el);
+                        if ((saWrapper.getBoundingClientRect().bottom - currentCard.getBoundingClientRect().top) > SAFE_BOTTOM) {
+                            saWrapper.removeChild(el); 
+                            createNewPage();
+                            saWrapper = document.createElement('div'); saWrapper.className = 'sa-sentence-wrapper';
+                            container.appendChild(saWrapper); saWrapper.appendChild(el);
+                        }
+                    }
+                });
+            }
 
-            appendWithCheck(Object.assign(document.createElement('div'), {className: 'sa-trans', innerHTML: SA_TRANS}));
-            SA_STEPS.forEach(step => appendWithCheck(createSaStep(step)));
+            const transEl = document.createElement('div'); transEl.className = 'sa-trans'; transEl.innerHTML = SA_TRANS || "";
+            appendWithCheck(transEl);
 
+            if (SA_STEPS) {
+                SA_STEPS.forEach(step => { const el = createSaStep(step); appendWithCheck(el); });
+            }
+
+            // 4. Quiz
             appendWithCheck(createTitle('趣闻挑战 (Little Quiz)'));
-            QUIZ_ITEMS.forEach((q, i) => {
-                const qCard = document.createElement('div'); qCard.className = 'q-card';
-                qCard.innerHTML = `<div class="q-header"><div class="q-num">${i+1}</div><div class="q-text">${q.q}</div></div><div class="q-opts">${q.a}</div>`;
-                appendWithCheck(qCard);
-            });
+            if (QUIZ_ITEMS) {
+                QUIZ_ITEMS.forEach((q, i) => {
+                    const qCard = document.createElement('div'); qCard.className = 'q-card';
+                    qCard.innerHTML = `<div class="q-header"><div class="q-num">${i+1}</div><div class="q-text">${q.q}</div></div><div class="q-opts">${q.a}</div>`;
+                    appendWithCheck(qCard);
+                });
+            }
 
             updateFooters(cardIdx);
+            
             document.getElementById('loading-mask').style.display = 'none';
-        } catch(e) { console.error(e); }
+
+        } catch(e) {
+            console.error(e);
+            document.getElementById('loading-mask').style.display = 'none';
+            document.getElementById('status-bar').style.display = 'block';
+            document.getElementById('status-bar').innerText = "Render Error: " + e.message;
+        }
     }
 
+    // --- Generators ---
     function createCoverPage() {
         const d = document.createElement('div'); d.className = 'card cover-page';
-        d.innerHTML = `<div class="hero-section" onclick="document.getElementById('upload-trigger').click()"><img id="hero-img" class="hero-img"><div class="hero-placeholder" id="hero-txt">Tap to Upload Cover Image</div></div><div class="cover-header"><div class="meta-tag">${META.issue}</div><div class="poster-title">${META.title}</div><div class="poster-subtitle">${META.subtitle}</div></div><div class="content-body"></div><div class="footer"><span class="footer-left">Gemini AI Adaptive Handout</span><span class="footer-right page-num"></span></div>`;
+        d.innerHTML = `<div class="hero-section" onclick="document.getElementById('upload-trigger').click()"><img id="hero-img" class="hero-img"><div class="hero-placeholder" id="hero-txt">Tap to Upload Cover</div></div><div class="cover-header"><div class="meta-tag">${META.issue}</div><div class="poster-title">${META.title}</div><div class="poster-subtitle">${META.subtitle}</div></div><div class="content-body" style="padding:0 60px;"></div><div class="footer"><span class="footer-left">Designed for Educational Purpose</span><span class="footer-right page-num"></span></div>`;
         return d;
     }
     function createNormalPage(idx) {
         const d = document.createElement('div'); d.className = 'card normal-page';
-        d.innerHTML = `<header class="mini-header"><div class="mini-title">${META.title}</div><div class="continued-tag">Continued...</div></header><div class="content-body"></div><div class="footer"><span class="footer-left">Gemini AI Adaptive Handout</span><span class="footer-right page-num"></span></div>`;
+        d.innerHTML = `<header class="mini-header"><div class="mini-title">${META.title}</div><div class="continued-tag">Continued...</div></header><div class="content-body"></div><div class="footer"><span class="footer-left">Designed for Educational Purpose</span><span class="footer-right page-num"></span></div>`;
         return d;
     }
     function createContentRow(item) {
-        const d = document.createElement('div'); d.className = 'row' + (item.type === 'supp' ? ' supp-style' : '');
+        const d = document.createElement('div'); d.className = 'row';
+        if (item.type === 'supp') d.classList.add('supp-style');
         d.innerHTML = `<div class="col-eng">${item.eng}</div><div class="col-chi">${item.chi}</div>`;
         return d;
     }
     function createTitle(text) { const d = document.createElement('div'); d.className = 'app-h'; d.innerText = text; return d; }
+    
     function createVocabItem(v, idx) {
-        let bg = v.p.includes('n.') ? 'hl-n' : (v.p.includes('v.') ? 'hl-v' : 'hl-adj');
+        let bgClass = '';
+        if (v.p.includes('n.')) bgClass = 'hl-n';
+        else if (v.p.includes('v.')) bgClass = 'hl-v';
+        else if (v.p.includes('adj') || v.p.includes('adv')) bgClass = 'hl-adj';
+        else bgClass = 'hl-n'; 
         const d = document.createElement('div'); d.className = 'vocab-item';
-        d.innerHTML = `<div class="v-line-1"><span class="v-word ${bg}">${v.w}</span><span class="v-idx">${idx}</span><span class="v-ipa">[${v.ipa}]</span><span class="v-pos">${v.p}</span><span class="v-mean">${v.m}</span></div><div class="v-line-2">${v.c}</div><div class="v-line-3">"${v.e}"</div>`;
+        d.innerHTML = `<div class="v-line-1"><span class="v-word ${bgClass}">${v.w}</span><span class="v-idx">${idx}</span><span class="v-ipa">[${v.ipa}]</span><span class="v-pos">${v.p}</span><span class="v-mean">${v.m}</span></div><div class="v-line-2">${v.c}</div><div class="v-line-3">"${v.e}"</div>`;
         return d;
     }
+    
     function createSaChunk(c) {
+        if (!c || !c.t) return null;
         const d = document.createElement('div'); d.className = `chunk ${c.t}`;
-        d.innerHTML = `<span class="chunk-lbl ${c.l||''}">${c.txt||''}</span><span class="chunk-text">${c.w}</span>`;
+        if (c.t.includes('chunk-group')) {
+            const color = c.l ? `var(--${c.l.replace('l-', 't-')})` : '#ccc';
+            d.style.borderBottomColor = color;
+        }
+        const label = c.l ? c.l : '';
+        const txt = c.txt ? c.txt : '';
+        d.innerHTML = `<span class="chunk-lbl ${label}">${txt}</span><span class="chunk-text">${c.w}</span>`;
         return d;
     }
     function createSaStep(s) {
@@ -255,13 +393,38 @@
         return d;
     }
     function updateFooters(total) { document.querySelectorAll('.page-num').forEach((el, i) => el.innerText = `Page ${i+1}/${total}`); }
+    
     async function downloadAllPages() {
-        const cards = document.querySelectorAll('.card');
-        for (let i = 0; i < cards.length; i++) {
-            const canvas = await html2canvas(cards[i], { scale: 2 });
-            const link = document.createElement('a'); link.download = `Handout_Page_${i+1}.png`; link.href = canvas.toDataURL(); link.click();
+        const btn = document.getElementById('btn-download');
+        const originalText = btn.innerText;
+        btn.innerText = "Processing... (Please Wait)";
+        btn.style.opacity = "0.7";
+        btn.disabled = true;
+
+        try {
+            const cards = document.querySelectorAll('.card');
+            for (let i = 0; i < cards.length; i++) {
+                const canvas = await html2canvas(cards[i], { scale: 2, useCORS: true, allowTaint: false, backgroundColor: '#ffffff', logging: false });
+                canvas.toBlob(function(blob) {
+                    if (!blob) { alert("Security Error: Use Local Server."); return; }
+                    const link = document.createElement('a');
+                    link.download = `TheWeekJunior_Page_${i + 1}.png`;
+                    link.href = URL.createObjectURL(blob);
+                    link.click();
+                    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+                }, 'image/png');
+                await new Promise(r => setTimeout(r, 500));
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Error: " + e.message);
+        } finally {
+            btn.innerText = originalText;
+            btn.style.opacity = "1";
+            btn.disabled = false;
         }
     }
+
     window.loadFile = function(e) { document.getElementById('hero-img').src = URL.createObjectURL(e.target.files[0]); document.getElementById('hero-img').style.display='block'; document.getElementById('hero-txt').style.display='none'; };
     window.onload = render;
 </script>
