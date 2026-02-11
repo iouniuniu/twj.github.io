@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Milestone for Black History Month</title>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --accent-color: #a855f7;
+            
+            /* 定义颜色变量 */
+            --female-color: #ec4899; /* 粉色 */
+            --male-color: #2dd4bf;   /* 青色 */
+            --unknown-color: #9ca3af;
+
+            --text-normal: rgba(255, 255, 255, 0.4);
+            --text-active: #ffffff;
+            --word-highlight: #ff9f0a;
+            --font-stack: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            font-family: var(--font-stack);
+            background-color: var(--bg-color);
+            color: white;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.5s ease;
+        }
+
+        .ambient-bg {
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 50% 50%, #4c1d95, #0f172a 70%, #000);
+            z-index: -1;
+            filter: blur(80px);
+            opacity: 0.8;
+            animation: breathe 10s infinite alternate;
+        }
+
+        @keyframes breathe {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1); }
+        }
+
+        .player-header {
+            padding: 40px 20px 10px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+            transition: all 0.5s ease;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+            flex-shrink: 0;
+        }
+
+        .artwork-container {
+            width: 140px;
+            height: 185px;
+            border-radius: 8px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            margin-bottom: 15px;
+            overflow: hidden;
+            background-color: #333;
+            position: relative;
+            transition: all 0.5s ease;
+        }
+
+        .artwork-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .track-info { 
+            text-align: center; 
+            transition: all 0.5s ease;
+        }
+        .track-title { font-size: 20px; font-weight: 800; margin: 0; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .track-artist { font-size: 14px; color: rgba(255,255,255,0.9); margin-top: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        .track-subtitle { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 4px; font-weight: 400; letter-spacing: 0.5px; }
+
+        .ui-controls {
+            width: 100%;
+            max-width: 400px;
+            margin-top: 20px;
+            transition: opacity 0.5s, transform 0.5s;
+        }
+
+        .hidden-ui {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-20px);
+            height: 0; 
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .progress-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; margin-bottom: 20px; cursor: pointer; }
+        .progress-fill { height: 100%; background: white; border-radius: 2px; width: 0%; transition: width 0.1s linear; }
+
+        .transcript-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 30px 150px 30px;
+            mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+            scroll-behavior: smooth;
+            transition: all 0.5s ease;
+        }
+        .transcript-container::-webkit-scrollbar { display: none; }
+
+        .transcript-item {
+            margin-bottom: 30px;
+            transition: opacity 0.4s ease, transform 0.4s ease, filter 0.4s ease;
+            opacity: 0.3; 
+            filter: blur(1.5px);
+            transform: scale(0.98);
+            transform-origin: left center;
+            cursor: pointer;
+            scroll-margin-top: 150px; 
+        }
+
+        .transcript-item.active {
+            opacity: 1;
+            filter: blur(0);
+            transform: scale(1.0);
+        }
+
+        .speaker-tag {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            opacity: 0.9;
+            color: #fff;
+        }
+
+        /* 直接根据 JSON 中的 speaker 名字匹配
+           如果 JSON 里是 "Female"，会匹配 .speaker-female
+           如果 JSON 里是 "Male"，会匹配 .speaker-male
+        */
+        .speaker-female { background-color: var(--female-color); }
+        .speaker-male   { background-color: var(--male-color); color: #000 !important; }
+        .speaker-unknown { background-color: var(--unknown-color); }
+
+        .text-content {
+            font-size: 24px;
+            line-height: 1.6;
+            font-weight: 600;
+            margin: 0;
+            color: var(--text-active);
+            word-wrap: break-word;
+        }
+
+        .word-span {
+            transition: color 0.1s ease, text-shadow 0.1s ease;
+            display: inline;
+            border-radius: 4px;
+            margin: 0; 
+            padding: 0;
+        }
+
+        .word-active {
+            color: var(--word-highlight);
+            text-shadow: 0 0 15px rgba(255, 159, 10, 0.7);
+        }
+
+        /* 底部按钮栏 */
+        .btn-container {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 100;
+            transition: all 0.3s;
+            width: 90%;
+            justify-content: center;
+        }
+
+        .overlay-btn {
+            background: white;
+            color: black;
+            padding: 14px 20px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s;
+            white-space: nowrap;
+        }
+        .overlay-btn:active { transform: scale(0.95); }
+        
+        /* 录制进度条 (PC) */
+        .recording-controls {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px; 
+            z-index: 2000;
+            display: none; 
+        }
+
+        .rec-progress-bar {
+            height: 100%;
+            background-color: #ff4444;
+            width: 0%;
+            transition: width 0.1s linear;
+            box-shadow: 0 0 10px rgba(255, 68, 68, 0.8);
+        }
+
+        /* 电脑端停止按钮 (悬停) */
+        .stop-rec-hitbox {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 150px; 
+            height: 100px;
+            z-index: 2001;
+            display: none; 
+        }
+
+        .stop-rec-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 68, 68, 0.9);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: none;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            pointer-events: none; 
+        }
+
+        .stop-rec-hitbox:hover .stop-rec-btn {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        #debugTime {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #0f0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            z-index: 2000;
+            pointer-events: none;
+        }
+
+        /* =========================================
+           沉浸/录制模式通用样式
+           ========================================= */
+        body.recording-mode {
+            position: fixed; 
+            width: 100%;
+            height: 100%;
+            background: #000;
+        }
+
+        body.recording-mode .player-header { 
+            padding-top: 40px; 
+            padding-bottom: 0px; 
+        }
+        
+        body.recording-mode .artwork-container { 
+            width: 120px; 
+            height: 160px; 
+            margin-top: 0; 
+            margin-bottom: 5px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        
+        body.recording-mode .track-info { 
+            transform: scale(0.9); 
+            margin-bottom: 0;
+        }
+        
+        body.recording-mode .transcript-container { 
+            padding-top: 0px; 
+            mask-image: linear-gradient(to bottom, transparent 0%, black 5%, black 90%, transparent 100%);
+        }
+        
+        body.recording-mode .transcript-item.active .text-content { 
+            color: rgba(255,255,255,0.95);
+        }
+        
+        /* 隐藏 UI */
+        body.recording-mode #debugTime { display: none; }
+        body.recording-mode .btn-container { opacity: 0; pointer-events: none; }
+        body.recording-mode .ui-controls { opacity: 0; pointer-events: none; height: 0; margin: 0;}
+
+        /* PC特有：仅PC模式显示录制控制条 */
+        body.recording-mode.pc-mode .recording-controls { display: block; }
+        body.recording-mode.pc-mode .stop-rec-hitbox { display: block; }
+
+    </style>
+</head>
+<body>
+
+<div class="ambient-bg"></div>
+<div id="debugTime">0.000</div>
+
+<div class="recording-controls">
+    <div class="rec-progress-bar" id="recProgressBar"></div>
+</div>
+<div class="stop-rec-hitbox" id="stopRecHitbox">
+    <button class="stop-rec-btn" id="stopRecBtn">⏹ 停止录制</button>
+</div>
+
+<div class="player-header">
+    <div class="artwork-container">
+        <img src="530.jpg" alt="Magazine Cover" class="artwork-img" onerror="this.style.display='none'; document.getElementById('placeholder').style.display='flex';">
+        <div id="placeholder" class="artwork-placeholder" style="display:none;">📖</div>
+    </div>
+    <div class="track-info">
+        <h1 class="track-title">Milestone for Black History Month</h1>
+        <div class="track-artist">The Week Junior Podcast</div>
+        <div class="track-subtitle">530 期 20260206</div>
+    </div>
+
+    <div class="ui-controls" id="uiControls">
+        <div class="progress-bar" id="progressBarContainer">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div style="text-align: center; color: rgba(255,255,255,0.5); font-size: 12px; margin-top: 5px;" id="tips">
+            </div>
+    </div>
+</div>
+
+<div class="transcript-container" id="transcriptContainer"></div>
+
+<div class="btn-container" id="btnContainer">
+    <button class="overlay-btn" id="playModeBtn">
+        🎵 仅播放
+    </button>
+    <button class="overlay-btn" id="recordVideoBtn" style="display:none;">
+        🎥 电脑内录 1080P
+    </button>
+    <button class="overlay-btn" id="mobileRecordBtn" style="display:none;">
+        📱 手机全屏 (无UI)
+    </button>
+</div>
+
+<audio id="audioPlayer">
+    <source src="Milestone for Black History Month.m4a" type="audio/mp4">
+</audio>
+
+<script>
+    const rawTranscriptData = [{"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Wait, teacher, is it true that the man who started Black History Month, that his parents were enslaved?", "start": 0.031, "end": 7.398, "words": [{"word": "Wait,", "start": 0.031, "end": 0.331}, {"word": "teacher,", "start": 0.371, "end": 0.732}, {"word": "is", "start": 0.872, "end": 0.952}, {"word": "it", "start": 0.992, "end": 1.032}, {"word": "true", "start": 1.112, "end": 1.392}, {"word": "that", "start": 1.412, "end": 1.672}, {"word": "the", "start": 1.753, "end": 1.853}, {"word": "man", "start": 1.913, "end": 2.153}, {"word": "who", "start": 2.193, "end": 2.333}, {"word": "started", "start": 2.353, "end": 2.673}, {"word": "Black", "start": 2.713, "end": 3.014}, {"word": "History", "start": 3.034, "end": 3.374}, {"word": "Month,", "start": 3.454, "end": 3.734}, {"word": "that", "start": 4.135, "end": 4.275}, {"word": "his", "start": 4.315, "end": 4.455}, {"word": "parents", "start": 4.555, "end": 4.975}, {"word": "were", "start": 5.156, "end": 5.416}, {"word": "enslaved?", "start": 5.456, "end": 7.398}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Yes, that is absolutely true.", "start": 7.918, "end": 9.5, "words": [{"word": "Yes,", "start": 7.918, "end": 8.158}, {"word": "that", "start": 8.399, "end": 8.539}, {"word": "is", "start": 8.599, "end": 8.659}, {"word": "absolutely", "start": 8.799, "end": 9.259}, {"word": "true.", "start": 9.299, "end": 9.5}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Wow.", "start": 9.84, "end": 10.18, "words": [{"word": "Wow.", "start": 9.84, "end": 10.18}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "And it's not just a fact, it's really central to the whole story.", "start": 10.2, "end": 13.083, "words": [{"word": "And", "start": 10.2, "end": 10.28}, {"word": "it's", "start": 10.32, "end": 10.4}, {"word": "not", "start": 10.44, "end": 10.54}, {"word": "just", "start": 10.58, "end": 10.721}, {"word": "a", "start": 10.761, "end": 10.781}, {"word": "fact,", "start": 10.881, "end": 11.201}, {"word": "it's", "start": 11.421, "end": 11.541}, {"word": "really", "start": 11.641, "end": 11.862}, {"word": "central", "start": 11.942, "end": 12.302}, {"word": "to", "start": 12.342, "end": 12.422}, {"word": "the", "start": 12.462, "end": 12.542}, {"word": "whole", "start": 12.602, "end": 12.762}, {"word": "story.", "start": 12.802, "end": 13.083}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "That just seems almost impossible.", "start": 13.103, "end": 14.484, "words": [{"word": "That", "start": 13.103, "end": 13.223}, {"word": "just", "start": 13.243, "end": 13.363}, {"word": "seems", "start": 13.383, "end": 13.583}, {"word": "almost", "start": 13.623, "end": 13.803}, {"word": "impossible.", "start": 13.863, "end": 14.484}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "The man you're talking about is Carter G.", "start": 14.804, "end": 16.286, "words": [{"word": "The", "start": 14.804, "end": 14.884}, {"word": "man", "start": 14.924, "end": 15.025}, {"word": "you're", "start": 15.045, "end": 15.205}, {"word": "talking", "start": 15.245, "end": 15.505}, {"word": "about", "start": 15.545, "end": 15.685}, {"word": "is", "start": 15.745, "end": 15.785}, {"word": "Carter", "start": 15.825, "end": 16.105}, {"word": "G.", "start": 16.125, "end": 16.286}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Woodson.", "start": 16.306, "end": 16.626, "words": [{"word": "Woodson.", "start": 16.306, "end": 16.626}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Carter G.", "start": 16.786, "end": 17.287, "words": [{"word": "Carter", "start": 16.786, "end": 17.126}, {"word": "G.", "start": 17.146, "end": 17.287}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Woodson, right.", "start": 17.307, "end": 18.007, "words": [{"word": "Woodson,", "start": 17.307, "end": 17.747}, {"word": "right.", "start": 17.767, "end": 18.007}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "He was born in the year 1875, and his parents had indeed been enslaved people.", "start": 18.187, "end": 24.193, "words": [{"word": "He", "start": 18.187, "end": 18.247}, {"word": "was", "start": 18.267, "end": 18.368}, {"word": "born", "start": 18.408, "end": 18.588}, {"word": "in", "start": 18.628, "end": 18.668}, {"word": "the", "start": 18.688, "end": 18.748}, {"word": "year", "start": 18.788, "end": 18.908}, {"word": "1875,", "start": 18.928, "end": 19.368}, {"word": "and", "start": 20.85, "end": 20.93}, {"word": "his", "start": 20.97, "end": 21.07}, {"word": "parents", "start": 21.11, "end": 21.49}, {"word": "had", "start": 22.231, "end": 22.411}, {"word": "indeed", "start": 22.471, "end": 22.872}, {"word": "been", "start": 23.152, "end": 23.332}, {"word": "enslaved", "start": 23.392, "end": 23.852}, {"word": "people.", "start": 23.892, "end": 24.193}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "And yes, he went on to found the group that created the very tradition we are celebrating today.", "start": 24.833, "end": 30.038, "words": [{"word": "And", "start": 24.833, "end": 24.913}, {"word": "yes,", "start": 24.953, "end": 25.214}, {"word": "he", "start": 25.614, "end": 25.714}, {"word": "went", "start": 25.754, "end": 25.894}, {"word": "on", "start": 25.994, "end": 26.074}, {"word": "to", "start": 26.114, "end": 26.195}, {"word": "found", "start": 26.255, "end": 26.515}, {"word": "the", "start": 26.575, "end": 26.655}, {"word": "group", "start": 26.695, "end": 26.935}, {"word": "that", "start": 26.995, "end": 27.155}, {"word": "created", "start": 27.215, "end": 27.576}, {"word": "the", "start": 27.636, "end": 27.716}, {"word": "very", "start": 27.816, "end": 28.076}, {"word": "tradition", "start": 28.136, "end": 28.637}, {"word": "we", "start": 28.697, "end": 28.817}, {"word": "are", "start": 28.877, "end": 28.957}, {"word": "celebrating", "start": 29.037, "end": 29.598}, {"word": "today.", "start": 29.638, "end": 30.038}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "That is an incredible journey.", "start": 30.22, "end": 31.862, "words": [{"word": "That", "start": 30.22, "end": 30.54}, {"word": "is", "start": 30.561, "end": 30.641}, {"word": "an", "start": 30.681, "end": 30.721}, {"word": "incredible", "start": 30.781, "end": 31.442}, {"word": "journey.", "start": 31.522, "end": 31.862}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "I mean, to go from that kind of family history to establishing a national tradition.", "start": 31.983, "end": 36.63, "words": [{"word": "I", "start": 31.983, "end": 32.023}, {"word": "mean,", "start": 32.063, "end": 32.223}, {"word": "to", "start": 32.243, "end": 32.323}, {"word": "go", "start": 32.363, "end": 32.503}, {"word": "from", "start": 32.604, "end": 32.744}, {"word": "that", "start": 32.764, "end": 33.104}, {"word": "kind", "start": 33.184, "end": 33.385}, {"word": "of", "start": 33.445, "end": 33.485}, {"word": "family", "start": 33.725, "end": 34.066}, {"word": "history", "start": 34.126, "end": 34.506}, {"word": "to", "start": 34.607, "end": 34.807}, {"word": "establishing", "start": 34.847, "end": 35.468}, {"word": "a", "start": 35.528, "end": 35.548}, {"word": "national", "start": 35.628, "end": 36.069}, {"word": "tradition.", "start": 36.149, "end": 36.63}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It is a very powerful story.", "start": 36.79, "end": 38.212, "words": [{"word": "It", "start": 36.79, "end": 36.85}, {"word": "is", "start": 36.89, "end": 36.95}, {"word": "a", "start": 36.99, "end": 37.01}, {"word": "very", "start": 37.11, "end": 37.331}, {"word": "powerful", "start": 37.411, "end": 37.791}, {"word": "story.", "start": 37.851, "end": 38.212}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "And that is exactly what we are going to explore.", "start": 38.312, "end": 40.616, "words": [{"word": "And", "start": 38.312, "end": 38.372}, {"word": "that", "start": 38.412, "end": 38.532}, {"word": "is", "start": 38.592, "end": 38.653}, {"word": "exactly", "start": 38.773, "end": 39.414}, {"word": "what", "start": 39.454, "end": 39.694}, {"word": "we", "start": 39.754, "end": 39.874}, {"word": "are", "start": 39.914, "end": 39.995}, {"word": "going", "start": 40.035, "end": 40.175}, {"word": "to", "start": 40.215, "end": 40.275}, {"word": "explore.", "start": 40.315, "end": 40.616}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "We're looking at this today because, well, we have hit a major milestone.", "start": 40.896, "end": 44.982, "words": [{"word": "We're", "start": 40.896, "end": 41.076}, {"word": "looking", "start": 41.116, "end": 41.417}, {"word": "at", "start": 41.457, "end": 41.497}, {"word": "this", "start": 41.537, "end": 41.697}, {"word": "today", "start": 41.737, "end": 41.998}, {"word": "because,", "start": 42.078, "end": 42.478}, {"word": "well,", "start": 42.879, "end": 43.079}, {"word": "we", "start": 43.159, "end": 43.3}, {"word": "have", "start": 43.34, "end": 43.46}, {"word": "hit", "start": 43.5, "end": 43.66}, {"word": "a", "start": 43.74, "end": 43.8}, {"word": "major", "start": 44.021, "end": 44.381}, {"word": "milestone.", "start": 44.421, "end": 44.982}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "A milestone.", "start": 45.002, "end": 45.783, "words": [{"word": "A", "start": 45.002, "end": 45.022}, {"word": "milestone.", "start": 45.122, "end": 45.783}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Yes.", "start": 45.883, "end": 46.124, "words": [{"word": "Yes.", "start": 45.883, "end": 46.124}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Yeah.", "start": 46.204, "end": 46.685, "words": [{"word": "Yeah.", "start": 46.204, "end": 46.685}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "This February in the year 2026 marks exactly 100 years of this tradition.", "start": 46.705, "end": 52.413, "words": [{"word": "This", "start": 46.705, "end": 46.885}, {"word": "February", "start": 46.965, "end": 47.446}, {"word": "in", "start": 47.646, "end": 47.706}, {"word": "the", "start": 47.726, "end": 47.786}, {"word": "year", "start": 47.826, "end": 47.946}, {"word": "2026", "start": 47.966, "end": 48.207}, {"word": "marks", "start": 49.208, "end": 49.429}, {"word": "exactly", "start": 49.509, "end": 49.909}, {"word": "100", "start": 49.929, "end": 50.23}, {"word": "years", "start": 50.33, "end": 51.071}, {"word": "of", "start": 51.311, "end": 51.372}, {"word": "this", "start": 51.432, "end": 51.572}, {"word": "tradition.", "start": 51.612, "end": 52.413}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "100 years.", "start": 52.433, "end": 53.314, "words": [{"word": "100", "start": 52.433, "end": 53.034}, {"word": "years.", "start": 53.074, "end": 53.314}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Wow.", "start": 53.375, "end": 53.715, "words": [{"word": "Wow.", "start": 53.375, "end": 53.715}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "OK, so before we go any further, that word you just used, milestone.", "start": 53.775, "end": 57.561, "words": [{"word": "OK,", "start": 53.775, "end": 54.015}, {"word": "so", "start": 54.036, "end": 54.176}, {"word": "before", "start": 54.216, "end": 54.456}, {"word": "we", "start": 54.496, "end": 54.576}, {"word": "go", "start": 54.616, "end": 54.676}, {"word": "any", "start": 54.717, "end": 54.837}, {"word": "further,", "start": 54.877, "end": 55.237}, {"word": "that", "start": 55.297, "end": 55.818}, {"word": "word", "start": 55.858, "end": 56.039}, {"word": "you", "start": 56.059, "end": 56.159}, {"word": "just", "start": 56.199, "end": 56.319}, {"word": "used,", "start": 56.419, "end": 56.579}, {"word": "milestone.", "start": 56.86, "end": 57.561}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "What does that mean exactly?", "start": 57.781, "end": 59.063, "words": [{"word": "What", "start": 57.781, "end": 57.881}, {"word": "does", "start": 57.901, "end": 57.981}, {"word": "that", "start": 58.021, "end": 58.102}, {"word": "mean", "start": 58.142, "end": 58.342}, {"word": "exactly?", "start": 58.402, "end": 59.063}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "That's a great question.", "start": 59.296, "end": 60.099, "words": [{"word": "That's", "start": 59.296, "end": 59.477}, {"word": "a", "start": 59.537, "end": 59.557}, {"word": "great", "start": 59.597, "end": 59.738}, {"word": "question.", "start": 59.778, "end": 60.099}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "So a milestone is a really important point in the, well, in the development of something.", "start": 60.119, "end": 64.075, "words": [{"word": "So", "start": 60.119, "end": 60.26}, {"word": "a", "start": 60.38, "end": 60.42}, {"word": "milestone", "start": 60.501, "end": 61.103}, {"word": "is", "start": 61.163, "end": 61.203}, {"word": "a", "start": 61.284, "end": 61.304}, {"word": "really", "start": 61.364, "end": 61.565}, {"word": "important", "start": 61.605, "end": 61.986}, {"word": "point", "start": 62.047, "end": 62.268}, {"word": "in", "start": 62.408, "end": 62.468}, {"word": "the,", "start": 62.529, "end": 62.629}, {"word": "well,", "start": 62.729, "end": 62.95}, {"word": "in", "start": 62.97, "end": 63.031}, {"word": "the", "start": 63.071, "end": 63.131}, {"word": "development", "start": 63.171, "end": 63.613}, {"word": "of", "start": 63.653, "end": 63.693}, {"word": "something.", "start": 63.753, "end": 64.075}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Think of it like this.", "start": 64.235, "end": 64.938, "words": [{"word": "Think", "start": 64.235, "end": 64.356}, {"word": "of", "start": 64.396, "end": 64.436}, {"word": "it", "start": 64.496, "end": 64.536}, {"word": "like", "start": 64.577, "end": 64.697}, {"word": "this.", "start": 64.737, "end": 64.938}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Imagine you were walking on a very long road.", "start": 65.741, "end": 68.833, "words": [{"word": "Imagine", "start": 65.741, "end": 66.223}, {"word": "you", "start": 66.263, "end": 66.504}, {"word": "were", "start": 66.544, "end": 66.665}, {"word": "walking", "start": 66.705, "end": 67.046}, {"word": "on", "start": 67.147, "end": 67.207}, {"word": "a", "start": 67.267, "end": 67.287}, {"word": "very", "start": 67.387, "end": 67.648}, {"word": "long", "start": 67.729, "end": 67.97}, {"word": "road.", "start": 68.03, "end": 68.833}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "A long time ago, there would be these stone markers on the side of the road, and they would tell you how far you have traveled.", "start": 69.286, "end": 76.054, "words": [{"word": "A", "start": 69.286, "end": 69.366}, {"word": "long", "start": 69.406, "end": 69.606}, {"word": "time", "start": 69.646, "end": 69.827}, {"word": "ago,", "start": 69.887, "end": 70.067}, {"word": "there", "start": 70.528, "end": 70.648}, {"word": "would", "start": 70.668, "end": 70.788}, {"word": "be", "start": 70.808, "end": 70.888}, {"word": "these", "start": 70.948, "end": 71.088}, {"word": "stone", "start": 71.208, "end": 71.569}, {"word": "markers", "start": 71.649, "end": 72.13}, {"word": "on", "start": 72.59, "end": 72.65}, {"word": "the", "start": 72.69, "end": 72.77}, {"word": "side", "start": 72.81, "end": 72.971}, {"word": "of", "start": 72.991, "end": 73.031}, {"word": "the", "start": 73.071, "end": 73.131}, {"word": "road,", "start": 73.191, "end": 73.431}, {"word": "and", "start": 74.272, "end": 74.332}, {"word": "they", "start": 74.352, "end": 74.452}, {"word": "would", "start": 74.492, "end": 74.633}, {"word": "tell", "start": 74.653, "end": 74.793}, {"word": "you", "start": 74.833, "end": 74.933}, {"word": "how", "start": 75.013, "end": 75.153}, {"word": "far", "start": 75.233, "end": 75.374}, {"word": "you", "start": 75.414, "end": 75.514}, {"word": "have", "start": 75.534, "end": 75.634}, {"word": "traveled.", "start": 75.674, "end": 76.054}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Right, like how many miles.", "start": 76.135, "end": 77.296, "words": [{"word": "Right,", "start": 76.135, "end": 76.355}, {"word": "like", "start": 76.375, "end": 76.475}, {"word": "how", "start": 76.515, "end": 76.615}, {"word": "many", "start": 76.635, "end": 76.795}, {"word": "miles.", "start": 76.895, "end": 77.296}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Exactly.", "start": 77.356, "end": 77.837, "words": [{"word": "Exactly.", "start": 77.356, "end": 77.837}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "That stone, that is a milestone.", "start": 78.337, "end": 80.64, "words": [{"word": "That", "start": 78.337, "end": 78.497}, {"word": "stone,", "start": 78.558, "end": 78.918}, {"word": "that", "start": 79.359, "end": 79.579}, {"word": "is", "start": 79.919, "end": 79.999}, {"word": "a", "start": 80.059, "end": 80.079}, {"word": "milestone.", "start": 80.14, "end": 80.64}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "So reaching 100 years is a huge milestone.", "start": 80.84, "end": 83.944, "words": [{"word": "So", "start": 80.84, "end": 81.301}, {"word": "reaching", "start": 81.381, "end": 81.661}, {"word": "100", "start": 81.681, "end": 81.842}, {"word": "years", "start": 82.122, "end": 82.382}, {"word": "is", "start": 82.863, "end": 82.943}, {"word": "a", "start": 83.003, "end": 83.023}, {"word": "huge", "start": 83.143, "end": 83.464}, {"word": "milestone.", "start": 83.544, "end": 83.944}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It shows how far we've come.", "start": 83.964, "end": 85.026, "words": [{"word": "It", "start": 83.964, "end": 84.004}, {"word": "shows", "start": 84.044, "end": 84.225}, {"word": "how", "start": 84.265, "end": 84.385}, {"word": "far", "start": 84.465, "end": 84.605}, {"word": "we've", "start": 84.645, "end": 84.805}, {"word": "come.", "start": 84.845, "end": 85.026}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "I see.", "start": 85.226, "end": 85.506, "words": [{"word": "I", "start": 85.226, "end": 85.286}, {"word": "see.", "start": 85.346, "end": 85.506}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "So it's a marker of time.", "start": 85.526, "end": 86.588, "words": [{"word": "So", "start": 85.526, "end": 85.626}, {"word": "it's", "start": 85.666, "end": 85.747}, {"word": "a", "start": 85.807, "end": 85.827}, {"word": "marker", "start": 85.867, "end": 86.147}, {"word": "of", "start": 86.187, "end": 86.227}, {"word": "time.", "start": 86.247, "end": 86.588}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "So what's happening right now to celebrate this 100-year marker?", "start": 86.708, "end": 90.653, "words": [{"word": "So", "start": 86.708, "end": 86.868}, {"word": "what's", "start": 87.128, "end": 87.348}, {"word": "happening", "start": 87.429, "end": 87.829}, {"word": "right", "start": 87.849, "end": 88.149}, {"word": "now", "start": 88.21, "end": 88.41}, {"word": "to", "start": 88.45, "end": 88.63}, {"word": "celebrate", "start": 88.71, "end": 89.131}, {"word": "this", "start": 89.171, "end": 89.311}, {"word": "100-year", "start": 89.451, "end": 90.132}, {"word": "marker?", "start": 90.312, "end": 90.653}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Well, the United States is celebrating the anniversary nationwide.", "start": 90.813, "end": 94.197, "words": [{"word": "Well,", "start": 90.813, "end": 90.973}, {"word": "the", "start": 90.993, "end": 91.053}, {"word": "United", "start": 91.113, "end": 91.374}, {"word": "States", "start": 91.414, "end": 91.634}, {"word": "is", "start": 91.694, "end": 91.754}, {"word": "celebrating", "start": 91.794, "end": 92.175}, {"word": "the", "start": 92.195, "end": 92.275}, {"word": "anniversary", "start": 92.315, "end": 92.775}, {"word": "nationwide.", "start": 92.835, "end": 94.197}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "But there's a specific group that organizes the official theme every single year.", "start": 94.177, "end": 99.904, "words": [{"word": "But", "start": 94.177, "end": 94.598}, {"word": "there's", "start": 94.638, "end": 95.278}, {"word": "a", "start": 95.318, "end": 95.358}, {"word": "specific", "start": 95.419, "end": 95.979}, {"word": "group", "start": 96.059, "end": 96.38}, {"word": "that", "start": 96.74, "end": 96.9}, {"word": "organizes", "start": 97.041, "end": 97.621}, {"word": "the", "start": 97.661, "end": 97.761}, {"word": "official", "start": 97.822, "end": 98.182}, {"word": "theme", "start": 98.302, "end": 98.623}, {"word": "every", "start": 98.663, "end": 99.303}, {"word": "single", "start": 99.363, "end": 99.664}, {"word": "year.", "start": 99.704, "end": 99.904}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "And that's a group Carter G.", "start": 100.265, "end": 101.566, "words": [{"word": "And", "start": 100.265, "end": 100.345}, {"word": "that's", "start": 100.385, "end": 100.565}, {"word": "a", "start": 100.625, "end": 100.665}, {"word": "group", "start": 100.685, "end": 100.905}, {"word": "Carter", "start": 101.166, "end": 101.446}, {"word": "G.", "start": 101.466, "end": 101.566}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Woodson founded.", "start": 101.586, "end": 102.227, "words": [{"word": "Woodson", "start": 101.586, "end": 101.887}, {"word": "founded.", "start": 101.927, "end": 102.227}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "The very same one.", "start": 102.267, "end": 103.208, "words": [{"word": "The", "start": 102.267, "end": 102.467}, {"word": "very", "start": 102.507, "end": 102.708}, {"word": "same", "start": 102.768, "end": 102.948}, {"word": "one.", "start": 103.088, "end": 103.208}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "They are called the Association for the Study of African American Life and History.", "start": 103.789, "end": 107.473, "words": [{"word": "They", "start": 103.789, "end": 103.909}, {"word": "are", "start": 103.949, "end": 104.029}, {"word": "called", "start": 104.069, "end": 104.31}, {"word": "the", "start": 104.35, "end": 104.41}, {"word": "Association", "start": 104.47, "end": 105.171}, {"word": "for", "start": 105.211, "end": 105.291}, {"word": "the", "start": 105.331, "end": 105.411}, {"word": "Study", "start": 105.451, "end": 105.771}, {"word": "of", "start": 105.811, "end": 105.851}, {"word": "African", "start": 105.871, "end": 106.292}, {"word": "American", "start": 106.332, "end": 106.672}, {"word": "Life", "start": 106.733, "end": 106.933}, {"word": "and", "start": 107.033, "end": 107.093}, {"word": "History.", "start": 107.153, "end": 107.473}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "That's a very long name.", "start": 107.614, "end": 108.735, "words": [{"word": "That's", "start": 107.614, "end": 107.774}, {"word": "a", "start": 107.834, "end": 107.854}, {"word": "very", "start": 107.954, "end": 108.194}, {"word": "long", "start": 108.254, "end": 108.455}, {"word": "name.", "start": 108.515, "end": 108.735}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It is.", "start": 108.995, "end": 109.216, "words": [{"word": "It", "start": 108.995, "end": 109.035}, {"word": "is.", "start": 109.136, "end": 109.216}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "That's why people often just use the letters A-S-A-L-H.", "start": 109.256, "end": 112.42, "words": [{"word": "That's", "start": 109.256, "end": 109.796}, {"word": "why", "start": 109.836, "end": 109.937}, {"word": "people", "start": 109.997, "end": 110.237}, {"word": "often", "start": 110.357, "end": 110.557}, {"word": "just", "start": 110.597, "end": 110.718}, {"word": "use", "start": 110.798, "end": 110.898}, {"word": "the", "start": 110.938, "end": 110.998}, {"word": "letters", "start": 111.038, "end": 111.258}, {"word": "A-S-A-L-H.", "start": 111.298, "end": 112.42}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "A-S-A-L-H.", "start": 112.78, "end": 114.362, "words": [{"word": "A-S-A-L-H.", "start": 112.78, "end": 114.362}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Got it.", "start": 114.967, "end": 115.328, "words": [{"word": "Got", "start": 114.967, "end": 115.227}, {"word": "it.", "start": 115.267, "end": 115.328}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "So do they pick a special subject for the month?", "start": 115.588, "end": 118.172, "words": [{"word": "So", "start": 115.588, "end": 115.748}, {"word": "do", "start": 116.129, "end": 116.229}, {"word": "they", "start": 116.269, "end": 116.389}, {"word": "pick", "start": 116.449, "end": 116.59}, {"word": "a", "start": 116.63, "end": 116.67}, {"word": "special", "start": 116.71, "end": 117.01}, {"word": "subject", "start": 117.07, "end": 117.451}, {"word": "for", "start": 117.531, "end": 117.631}, {"word": "the", "start": 117.651, "end": 117.711}, {"word": "month?", "start": 117.751, "end": 118.172}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "They do.", "start": 118.192, "end": 118.673, "words": [{"word": "They", "start": 118.192, "end": 118.352}, {"word": "do.", "start": 118.413, "end": 118.673}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Every year they choose a theme, which is a main idea to focus on.", "start": 118.873, "end": 121.738, "words": [{"word": "Every", "start": 118.873, "end": 119.074}, {"word": "year", "start": 119.114, "end": 119.294}, {"word": "they", "start": 119.334, "end": 119.534}, {"word": "choose", "start": 119.554, "end": 119.715}, {"word": "a", "start": 119.775, "end": 119.795}, {"word": "theme,", "start": 119.875, "end": 120.155}, {"word": "which", "start": 120.276, "end": 120.396}, {"word": "is", "start": 120.476, "end": 120.516}, {"word": "a", "start": 120.576, "end": 120.596}, {"word": "main", "start": 120.656, "end": 120.856}, {"word": "idea", "start": 120.897, "end": 121.097}, {"word": "to", "start": 121.117, "end": 121.177}, {"word": "focus", "start": 121.237, "end": 121.538}, {"word": "on.", "start": 121.638, "end": 121.738}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "And for this year, 2026, the theme is A Century of Black History Commemorations.", "start": 121.958, "end": 126.846, "words": [{"word": "And", "start": 121.958, "end": 122.038}, {"word": "for", "start": 122.078, "end": 122.179}, {"word": "this", "start": 122.219, "end": 122.379}, {"word": "year,", "start": 122.439, "end": 122.599}, {"word": "2026,", "start": 122.619, "end": 122.98}, {"word": "the", "start": 123.02, "end": 123.2}, {"word": "theme", "start": 123.36, "end": 123.801}, {"word": "is", "start": 123.881, "end": 123.981}, {"word": "A", "start": 124.522, "end": 124.542}, {"word": "Century", "start": 124.623, "end": 125.003}, {"word": "of", "start": 125.083, "end": 125.123}, {"word": "Black", "start": 125.244, "end": 125.484}, {"word": "History", "start": 125.524, "end": 125.965}, {"word": "Commemorations.", "start": 126.085, "end": 126.846}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Commemorations.", "start": 127.167, "end": 127.908, "words": [{"word": "Commemorations.", "start": 127.167, "end": 127.908}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "OK, that sounds pretty formal.", "start": 128.228, "end": 129.35, "words": [{"word": "OK,", "start": 128.228, "end": 128.429}, {"word": "that", "start": 128.449, "end": 128.549}, {"word": "sounds", "start": 128.609, "end": 128.789}, {"word": "pretty", "start": 128.849, "end": 129.05}, {"word": "formal.", "start": 129.09, "end": 129.35}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Can you explain that word for me?", "start": 129.37, "end": 130.512, "words": [{"word": "Can", "start": 129.37, "end": 129.45}, {"word": "you", "start": 129.47, "end": 129.55}, {"word": "explain", "start": 129.611, "end": 129.891}, {"word": "that", "start": 129.931, "end": 130.031}, {"word": "word", "start": 130.091, "end": 130.232}, {"word": "for", "start": 130.272, "end": 130.372}, {"word": "me?", "start": 130.412, "end": 130.512}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Of course, to commemorate something means to remember and to honor a special event from the past.", "start": 130.893, "end": 138.004, "words": [{"word": "Of", "start": 130.893, "end": 130.953}, {"word": "course,", "start": 131.033, "end": 131.293}, {"word": "to", "start": 131.934, "end": 132.075}, {"word": "commemorate", "start": 132.175, "end": 132.956}, {"word": "something", "start": 133.056, "end": 133.457}, {"word": "means", "start": 133.998, "end": 134.218}, {"word": "to", "start": 134.298, "end": 134.418}, {"word": "remember", "start": 134.478, "end": 134.999}, {"word": "and", "start": 135.039, "end": 135.46}, {"word": "to", "start": 135.48, "end": 135.56}, {"word": "honor", "start": 135.68, "end": 136.021}, {"word": "a", "start": 136.482, "end": 136.502}, {"word": "special", "start": 136.562, "end": 136.882}, {"word": "event", "start": 136.942, "end": 137.183}, {"word": "from", "start": 137.243, "end": 137.363}, {"word": "the", "start": 137.403, "end": 137.483}, {"word": "past.", "start": 137.523, "end": 138.004}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "So it's more than just a party.", "start": 138.203, "end": 140.005, "words": [{"word": "So", "start": 138.203, "end": 138.403}, {"word": "it's", "start": 138.443, "end": 138.543}, {"word": "more", "start": 138.684, "end": 138.884}, {"word": "than", "start": 138.964, "end": 139.084}, {"word": "just", "start": 139.124, "end": 139.324}, {"word": "a", "start": 139.585, "end": 139.605}, {"word": "party.", "start": 139.665, "end": 140.005}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Exactly.", "start": 140.345, "end": 140.846, "words": [{"word": "Exactly.", "start": 140.345, "end": 140.846}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "A commemoration is more respectful.", "start": 141.247, "end": 142.949, "words": [{"word": "A", "start": 141.247, "end": 141.287}, {"word": "commemoration", "start": 141.347, "end": 142.128}, {"word": "is", "start": 142.188, "end": 142.248}, {"word": "more", "start": 142.288, "end": 142.408}, {"word": "respectful.", "start": 142.448, "end": 142.949}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "We show respect for something important that happened.", "start": 143.589, "end": 146.533, "words": [{"word": "We", "start": 143.589, "end": 143.709}, {"word": "show", "start": 143.749, "end": 143.93}, {"word": "respect", "start": 143.97, "end": 144.41}, {"word": "for", "start": 144.45, "end": 144.57}, {"word": "something", "start": 144.61, "end": 144.891}, {"word": "important", "start": 144.951, "end": 145.351}, {"word": "that", "start": 145.371, "end": 145.491}, {"word": "happened.", "start": 145.532, "end": 146.533}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "So this year, we are looking back at 100 years of honoring this history.", "start": 146.553, "end": 151.158, "words": [{"word": "So", "start": 146.553, "end": 146.693}, {"word": "this", "start": 146.773, "end": 146.953}, {"word": "year,", "start": 147.013, "end": 147.234}, {"word": "we", "start": 147.854, "end": 147.934}, {"word": "are", "start": 147.994, "end": 148.054}, {"word": "looking", "start": 148.074, "end": 148.315}, {"word": "back", "start": 148.355, "end": 148.555}, {"word": "at", "start": 148.595, "end": 148.655}, {"word": "100", "start": 148.675, "end": 148.875}, {"word": "years", "start": 149.196, "end": 149.496}, {"word": "of", "start": 149.756, "end": 149.837}, {"word": "honoring", "start": 150.017, "end": 150.437}, {"word": "this", "start": 150.497, "end": 150.658}, {"word": "history.", "start": 150.738, "end": 151.158}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It's like the history of the history.", "start": 151.338, "end": 153.06, "words": [{"word": "It's", "start": 151.338, "end": 151.418}, {"word": "like", "start": 151.438, "end": 151.559}, {"word": "the", "start": 151.599, "end": 151.679}, {"word": "history", "start": 151.739, "end": 152.139}, {"word": "of", "start": 152.299, "end": 152.359}, {"word": "the", "start": 152.46, "end": 152.58}, {"word": "history.", "start": 152.64, "end": 153.06}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "That's pretty deep.", "start": 153.22, "end": 154.001, "words": [{"word": "That's", "start": 153.22, "end": 153.381}, {"word": "pretty", "start": 153.441, "end": 153.661}, {"word": "deep.", "start": 153.721, "end": 154.001}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "But I have to say, I'm still surprised it's been a whole century.", "start": 154.522, "end": 156.825, "words": [{"word": "But", "start": 154.522, "end": 154.602}, {"word": "I", "start": 154.622, "end": 154.642}, {"word": "have", "start": 154.682, "end": 154.802}, {"word": "to", "start": 154.822, "end": 154.862}, {"word": "say,", "start": 154.882, "end": 154.983}, {"word": "I'm", "start": 155.003, "end": 155.103}, {"word": "still", "start": 155.143, "end": 155.323}, {"word": "surprised", "start": 155.343, "end": 155.643}, {"word": "it's", "start": 155.723, "end": 155.824}, {"word": "been", "start": 155.864, "end": 156.004}, {"word": "a", "start": 156.044, "end": 156.064}, {"word": "whole", "start": 156.104, "end": 156.244}, {"word": "century.", "start": 156.324, "end": 156.825}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "I always sort of thought Black History Month started more recently.", "start": 157.385, "end": 160.889, "words": [{"word": "I", "start": 157.385, "end": 157.485}, {"word": "always", "start": 157.505, "end": 157.686}, {"word": "sort", "start": 157.726, "end": 157.886}, {"word": "of", "start": 157.926, "end": 157.966}, {"word": "thought", "start": 158.006, "end": 158.186}, {"word": "Black", "start": 158.266, "end": 158.467}, {"word": "History", "start": 158.487, "end": 158.767}, {"word": "Month", "start": 158.807, "end": 159.007}, {"word": "started", "start": 159.067, "end": 159.388}, {"word": "more", "start": 160.169, "end": 160.329}, {"word": "recently.", "start": 160.409, "end": 160.889}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "A lot of people think that.", "start": 160.99, "end": 161.951, "words": [{"word": "A", "start": 160.99, "end": 161.07}, {"word": "lot", "start": 161.25, "end": 161.41}, {"word": "of", "start": 161.43, "end": 161.47}, {"word": "people", "start": 161.49, "end": 161.61}, {"word": "think", "start": 161.63, "end": 161.77}, {"word": "that.", "start": 161.79, "end": 161.951}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Maybe during the Civil Rights Movement in the 1960s or 70s.", "start": 162.031, "end": 165.615, "words": [{"word": "Maybe", "start": 162.031, "end": 162.211}, {"word": "during", "start": 162.231, "end": 162.391}, {"word": "the", "start": 162.411, "end": 162.471}, {"word": "Civil", "start": 162.511, "end": 162.772}, {"word": "Rights", "start": 162.792, "end": 163.012}, {"word": "Movement", "start": 163.072, "end": 163.472}, {"word": "in", "start": 163.653, "end": 163.733}, {"word": "the", "start": 163.773, "end": 163.833}, {"word": "1960s", "start": 163.853, "end": 164.273}, {"word": "or", "start": 164.313, "end": 164.353}, {"word": "70s.", "start": 164.373, "end": 165.615}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "That's a very common thought, yes.", "start": 165.655, "end": 167.417, "words": [{"word": "That's", "start": 165.655, "end": 165.815}, {"word": "a", "start": 165.835, "end": 165.855}, {"word": "very", "start": 165.915, "end": 166.116}, {"word": "common", "start": 166.176, "end": 166.456}, {"word": "thought,", "start": 166.496, "end": 166.756}, {"word": "yes.", "start": 166.816, "end": 167.417}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "But the roots go much, much deeper.", "start": 167.397, "end": 169.86, "words": [{"word": "But", "start": 167.397, "end": 167.797}, {"word": "the", "start": 167.838, "end": 167.938}, {"word": "roots", "start": 168.038, "end": 168.378}, {"word": "go", "start": 168.438, "end": 168.598}, {"word": "much,", "start": 168.779, "end": 169.019}, {"word": "much", "start": 169.259, "end": 169.48}, {"word": "deeper.", "start": 169.56, "end": 169.86}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "And that brings us to the why and the how.", "start": 170.461, "end": 172.523, "words": [{"word": "And", "start": 170.461, "end": 170.541}, {"word": "that", "start": 170.581, "end": 170.701}, {"word": "brings", "start": 170.741, "end": 170.941}, {"word": "us", "start": 171.022, "end": 171.082}, {"word": "to", "start": 171.122, "end": 171.202}, {"word": "the", "start": 171.242, "end": 171.302}, {"word": "why", "start": 171.382, "end": 171.722}, {"word": "and", "start": 171.963, "end": 172.043}, {"word": "the", "start": 172.083, "end": 172.143}, {"word": "how.", "start": 172.223, "end": 172.523}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It all starts with Carter G.", "start": 172.964, "end": 174.246, "words": [{"word": "It", "start": 172.964, "end": 173.004}, {"word": "all", "start": 173.064, "end": 173.184}, {"word": "starts", "start": 173.224, "end": 173.485}, {"word": "with", "start": 173.545, "end": 173.645}, {"word": "Carter", "start": 173.725, "end": 174.065}, {"word": "G.", "start": 174.085, "end": 174.246}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Woodson.", "start": 174.266, "end": 174.786, "words": [{"word": "Woodson.", "start": 174.266, "end": 174.786}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Right, the man we started with.", "start": 174.806, "end": 176.108, "words": [{"word": "Right,", "start": 174.806, "end": 175.047}, {"word": "the", "start": 175.107, "end": 175.167}, {"word": "man", "start": 175.227, "end": 175.367}, {"word": "we", "start": 175.407, "end": 175.527}, {"word": "started", "start": 175.567, "end": 175.868}, {"word": "with.", "start": 175.908, "end": 176.108}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "So what was his motivation?", "start": 176.749, "end": 177.79, "words": [{"word": "So", "start": 176.749, "end": 176.869}, {"word": "what", "start": 176.889, "end": 176.989}, {"word": "was", "start": 177.009, "end": 177.089}, {"word": "his", "start": 177.149, "end": 177.229}, {"word": "motivation?", "start": 177.269, "end": 177.79}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Why did he feel he needed to do this?", "start": 177.83, "end": 179.652, "words": [{"word": "Why", "start": 177.83, "end": 178.13}, {"word": "did", "start": 178.17, "end": 178.291}, {"word": "he", "start": 178.331, "end": 178.411}, {"word": "feel", "start": 178.511, "end": 178.731}, {"word": "he", "start": 178.791, "end": 178.831}, {"word": "needed", "start": 178.891, "end": 179.112}, {"word": "to", "start": 179.152, "end": 179.232}, {"word": "do", "start": 179.272, "end": 179.392}, {"word": "this?", "start": 179.452, "end": 179.652}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Well, he wasn't a politician.", "start": 180.373, "end": 181.535, "words": [{"word": "Well,", "start": 180.373, "end": 180.533}, {"word": "he", "start": 180.553, "end": 180.613}, {"word": "wasn't", "start": 180.654, "end": 180.854}, {"word": "a", "start": 180.894, "end": 180.914}, {"word": "politician.", "start": 180.954, "end": 181.535}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "He was a scholar, a brilliant historian.", "start": 181.995, "end": 184.158, "words": [{"word": "He", "start": 181.995, "end": 182.075}, {"word": "was", "start": 182.115, "end": 182.215}, {"word": "a", "start": 182.256, "end": 182.316}, {"word": "scholar,", "start": 182.376, "end": 182.816}, {"word": "a", "start": 183.177, "end": 183.217}, {"word": "brilliant", "start": 183.277, "end": 183.617}, {"word": "historian.", "start": 183.657, "end": 184.158}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "In fact, he was the second black American to ever get a PhD from Harvard University.", "start": 184.598, "end": 189.204, "words": [{"word": "In", "start": 184.598, "end": 184.659}, {"word": "fact,", "start": 184.699, "end": 184.899}, {"word": "he", "start": 184.939, "end": 185.019}, {"word": "was", "start": 185.059, "end": 185.139}, {"word": "the", "start": 185.199, "end": 185.279}, {"word": "second", "start": 185.379, "end": 185.72}, {"word": "black", "start": 185.82, "end": 186.08}, {"word": "American", "start": 186.14, "end": 186.661}, {"word": "to", "start": 186.761, "end": 186.841}, {"word": "ever", "start": 186.941, "end": 187.082}, {"word": "get", "start": 187.122, "end": 187.242}, {"word": "a", "start": 187.282, "end": 187.302}, {"word": "PhD", "start": 187.362, "end": 187.923}, {"word": "from", "start": 187.963, "end": 188.083}, {"word": "Harvard", "start": 188.103, "end": 188.423}, {"word": "University.", "start": 188.483, "end": 189.204}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Wow.", "start": 189.224, "end": 189.565, "words": [{"word": "Wow.", "start": 189.224, "end": 189.565}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "And he saw a very big problem when he looked at the history books in the early 1900s.", "start": 190.005, "end": 193.63, "words": [{"word": "And", "start": 190.005, "end": 190.105}, {"word": "he", "start": 190.165, "end": 190.246}, {"word": "saw", "start": 190.286, "end": 190.446}, {"word": "a", "start": 190.506, "end": 190.546}, {"word": "very", "start": 190.666, "end": 190.926}, {"word": "big", "start": 190.986, "end": 191.147}, {"word": "problem", "start": 191.187, "end": 191.547}, {"word": "when", "start": 191.647, "end": 191.747}, {"word": "he", "start": 191.787, "end": 191.848}, {"word": "looked", "start": 191.888, "end": 192.068}, {"word": "at", "start": 192.088, "end": 192.128}, {"word": "the", "start": 192.148, "end": 192.228}, {"word": "history", "start": 192.268, "end": 192.548}, {"word": "books", "start": 192.588, "end": 192.809}, {"word": "in", "start": 192.909, "end": 192.969}, {"word": "the", "start": 192.989, "end": 193.049}, {"word": "early", "start": 193.109, "end": 193.269}, {"word": "1900s.", "start": 193.289, "end": 193.63}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "What did he see?", "start": 193.95, "end": 194.631, "words": [{"word": "What", "start": 193.95, "end": 194.07}, {"word": "did", "start": 194.11, "end": 194.21}, {"word": "he", "start": 194.251, "end": 194.331}, {"word": "see?", "start": 194.411, "end": 194.631}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Or what didn't he see?", "start": 195.212, "end": 196.273, "words": [{"word": "Or", "start": 195.212, "end": 195.352}, {"word": "what", "start": 195.532, "end": 195.632}, {"word": "didn't", "start": 195.672, "end": 195.853}, {"word": "he", "start": 195.873, "end": 195.953}, {"word": "see?", "start": 195.993, "end": 196.273}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Exactly.", "start": 196.456, "end": 196.977, "words": [{"word": "Exactly.", "start": 196.456, "end": 196.977}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "He saw nothing or very little.", "start": 196.997, "end": 199.861, "words": [{"word": "He", "start": 196.997, "end": 197.117}, {"word": "saw", "start": 197.197, "end": 197.477}, {"word": "nothing", "start": 197.517, "end": 198.699}, {"word": "or", "start": 199.32, "end": 199.4}, {"word": "very", "start": 199.44, "end": 199.6}, {"word": "little.", "start": 199.64, "end": 199.861}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "The history of black Americans was being ignored, overlooked.", "start": 200.261, "end": 203.426, "words": [{"word": "The", "start": 200.261, "end": 200.361}, {"word": "history", "start": 200.401, "end": 200.662}, {"word": "of", "start": 200.682, "end": 200.722}, {"word": "black", "start": 200.742, "end": 200.942}, {"word": "Americans", "start": 200.982, "end": 201.423}, {"word": "was", "start": 201.503, "end": 201.643}, {"word": "being", "start": 201.703, "end": 201.903}, {"word": "ignored,", "start": 201.984, "end": 202.484}, {"word": "overlooked.", "start": 202.925, "end": 203.426}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "He believed that if the people have no history, they have no future.", "start": 204.046, "end": 207.231, "words": [{"word": "He", "start": 204.046, "end": 204.167}, {"word": "believed", "start": 204.227, "end": 204.507}, {"word": "that", "start": 204.547, "end": 204.627}, {"word": "if", "start": 204.687, "end": 204.727}, {"word": "the", "start": 204.767, "end": 204.828}, {"word": "people", "start": 204.888, "end": 205.168}, {"word": "have", "start": 205.208, "end": 205.368}, {"word": "no", "start": 205.388, "end": 205.629}, {"word": "history,", "start": 205.709, "end": 206.069}, {"word": "they", "start": 206.43, "end": 206.53}, {"word": "have", "start": 206.57, "end": 206.67}, {"word": "no", "start": 206.69, "end": 206.79}, {"word": "future.", "start": 206.87, "end": 207.231}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "And he wanted to change that.", "start": 207.972, "end": 209.033, "words": [{"word": "And", "start": 207.972, "end": 208.052}, {"word": "he", "start": 208.092, "end": 208.152}, {"word": "wanted", "start": 208.212, "end": 208.432}, {"word": "to", "start": 208.473, "end": 208.533}, {"word": "change", "start": 208.573, "end": 208.813}, {"word": "that.", "start": 208.873, "end": 209.033}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "So he created Black History Month to to fill that empty space in the books.", "start": 209.434, "end": 214.06, "words": [{"word": "So", "start": 209.434, "end": 209.554}, {"word": "he", "start": 209.614, "end": 209.734}, {"word": "created", "start": 209.794, "end": 210.155}, {"word": "Black", "start": 210.235, "end": 210.475}, {"word": "History", "start": 210.515, "end": 210.816}, {"word": "Month", "start": 210.876, "end": 211.096}, {"word": "to", "start": 211.176, "end": 211.417}, {"word": "to", "start": 212.138, "end": 212.238}, {"word": "fill", "start": 212.378, "end": 212.578}, {"word": "that", "start": 212.618, "end": 212.758}, {"word": "empty", "start": 212.859, "end": 213.079}, {"word": "space", "start": 213.139, "end": 213.479}, {"word": "in", "start": 213.56, "end": 213.62}, {"word": "the", "start": 213.66, "end": 213.72}, {"word": "books.", "start": 213.76, "end": 214.06}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Not a whole month.", "start": 214.16, "end": 214.821, "words": [{"word": "Not", "start": 214.16, "end": 214.301}, {"word": "a", "start": 214.341, "end": 214.361}, {"word": "whole", "start": 214.401, "end": 214.541}, {"word": "month.", "start": 214.581, "end": 214.821}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Not at first.", "start": 214.961, "end": 215.542, "words": [{"word": "Not", "start": 214.961, "end": 215.082}, {"word": "at", "start": 215.142, "end": 215.182}, {"word": "first.", "start": 215.242, "end": 215.542}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "In the year 1926, he established a special week.", "start": 216.003, "end": 219.227, "words": [{"word": "In", "start": 216.003, "end": 216.043}, {"word": "the", "start": 216.083, "end": 216.163}, {"word": "year", "start": 216.203, "end": 216.343}, {"word": "1926,", "start": 216.363, "end": 216.804}, {"word": "he", "start": 217.465, "end": 217.545}, {"word": "established", "start": 217.605, "end": 218.066}, {"word": "a", "start": 218.146, "end": 218.166}, {"word": "special", "start": 218.206, "end": 218.526}, {"word": "week.", "start": 218.566, "end": 219.227}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "He called it Negro History Week.", "start": 219.247, "end": 221.29, "words": [{"word": "He", "start": 219.247, "end": 219.347}, {"word": "called", "start": 219.388, "end": 219.588}, {"word": "it", "start": 219.648, "end": 219.688}, {"word": "Negro", "start": 220.109, "end": 220.529}, {"word": "History", "start": 220.609, "end": 220.99}, {"word": "Week.", "start": 221.05, "end": 221.29}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Just one week.", "start": 221.39, "end": 222.051, "words": [{"word": "Just", "start": 221.39, "end": 221.571}, {"word": "one", "start": 221.711, "end": 221.791}, {"word": "week.", "start": 221.831, "end": 222.051}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "OK.", "start": 222.312, "end": 222.572, "words": [{"word": "OK.", "start": 222.312, "end": 222.572}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "But why February?", "start": 223.053, "end": 224.394, "words": [{"word": "But", "start": 223.053, "end": 223.173}, {"word": "why", "start": 223.273, "end": 223.593}, {"word": "February?", "start": 223.633, "end": 224.394}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Was there a reason for choosing that month?", "start": 224.615, "end": 226.277, "words": [{"word": "Was", "start": 224.615, "end": 224.715}, {"word": "there", "start": 224.735, "end": 224.915}, {"word": "a", "start": 224.935, "end": 224.975}, {"word": "reason", "start": 225.035, "end": 225.316}, {"word": "for", "start": 225.356, "end": 225.476}, {"word": "choosing", "start": 225.516, "end": 225.816}, {"word": "that", "start": 225.856, "end": 225.977}, {"word": "month?", "start": 226.017, "end": 226.277}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "A very specific one.", "start": 226.257, "end": 227.239, "words": [{"word": "A", "start": 226.257, "end": 226.397}, {"word": "very", "start": 226.437, "end": 226.618}, {"word": "specific", "start": 226.658, "end": 227.039}, {"word": "one.", "start": 227.119, "end": 227.239}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It was not random at all.", "start": 227.319, "end": 228.482, "words": [{"word": "It", "start": 227.319, "end": 227.379}, {"word": "was", "start": 227.42, "end": 227.5}, {"word": "not", "start": 227.6, "end": 227.78}, {"word": "random", "start": 227.881, "end": 228.181}, {"word": "at", "start": 228.221, "end": 228.261}, {"word": "all.", "start": 228.362, "end": 228.482}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "He chose the second week of February because that week contained the birthdays of two very important men.", "start": 228.943, "end": 234.716, "words": [{"word": "He", "start": 228.943, "end": 229.043}, {"word": "chose", "start": 229.123, "end": 229.384}, {"word": "the", "start": 229.444, "end": 229.544}, {"word": "second", "start": 229.604, "end": 229.885}, {"word": "week", "start": 229.925, "end": 230.045}, {"word": "of", "start": 230.105, "end": 230.146}, {"word": "February", "start": 230.186, "end": 230.667}, {"word": "because", "start": 231.168, "end": 231.428}, {"word": "that", "start": 231.468, "end": 231.689}, {"word": "week", "start": 231.729, "end": 232.01}, {"word": "contained", "start": 232.11, "end": 232.451}, {"word": "the", "start": 232.491, "end": 232.551}, {"word": "birthdays", "start": 232.591, "end": 233.052}, {"word": "of", "start": 233.192, "end": 233.232}, {"word": "two", "start": 233.272, "end": 233.533}, {"word": "very", "start": 233.834, "end": 234.074}, {"word": "important", "start": 234.114, "end": 234.475}, {"word": "men.", "start": 234.535, "end": 234.716}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Who were they?", "start": 234.936, "end": 235.377, "words": [{"word": "Who", "start": 234.936, "end": 235.056}, {"word": "were", "start": 235.076, "end": 235.197}, {"word": "they?", "start": 235.217, "end": 235.377}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Frederick Douglass and Abraham Lincoln.", "start": 235.577, "end": 237.201, "words": [{"word": "Frederick", "start": 235.577, "end": 235.858}, {"word": "Douglass", "start": 235.898, "end": 236.239}, {"word": "and", "start": 236.419, "end": 236.499}, {"word": "Abraham", "start": 236.58, "end": 236.86}, {"word": "Lincoln.", "start": 236.92, "end": 237.201}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "I definitely know those names, but can you remind me why they are so important together?", "start": 237.341, "end": 240.709, "words": [{"word": "I", "start": 237.341, "end": 237.381}, {"word": "definitely", "start": 237.421, "end": 237.722}, {"word": "know", "start": 237.742, "end": 237.862}, {"word": "those", "start": 237.882, "end": 238.043}, {"word": "names,", "start": 238.083, "end": 238.364}, {"word": "but", "start": 238.624, "end": 238.724}, {"word": "can", "start": 238.744, "end": 238.865}, {"word": "you", "start": 238.905, "end": 239.005}, {"word": "remind", "start": 239.045, "end": 239.286}, {"word": "me", "start": 239.346, "end": 239.426}, {"word": "why", "start": 239.506, "end": 239.626}, {"word": "they", "start": 239.666, "end": 239.787}, {"word": "are", "start": 239.827, "end": 239.907}, {"word": "so", "start": 239.927, "end": 240.047}, {"word": "important", "start": 240.107, "end": 240.388}, {"word": "together?", "start": 240.408, "end": 240.709}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Of course.", "start": 240.789, "end": 241.33, "words": [{"word": "Of", "start": 240.789, "end": 240.829}, {"word": "course.", "start": 240.889, "end": 241.33}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Frederick Douglass was a black man who escaped from slavery.", "start": 241.9, "end": 244.867, "words": [{"word": "Frederick", "start": 241.9, "end": 242.221}, {"word": "Douglass", "start": 242.261, "end": 242.642}, {"word": "was", "start": 242.722, "end": 243.003}, {"word": "a", "start": 243.023, "end": 243.043}, {"word": "black", "start": 243.223, "end": 243.504}, {"word": "man", "start": 243.544, "end": 243.724}, {"word": "who", "start": 243.764, "end": 243.865}, {"word": "escaped", "start": 243.925, "end": 244.266}, {"word": "from", "start": 244.306, "end": 244.406}, {"word": "slavery.", "start": 244.466, "end": 244.867}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "He became a famous writer and a powerful leader who fought to to abolish slavery.", "start": 245.208, "end": 250.48, "words": [{"word": "He", "start": 245.208, "end": 245.288}, {"word": "became", "start": 245.328, "end": 245.548}, {"word": "a", "start": 245.609, "end": 245.629}, {"word": "famous", "start": 245.689, "end": 245.99}, {"word": "writer", "start": 246.05, "end": 246.411}, {"word": "and", "start": 246.491, "end": 246.571}, {"word": "a", "start": 246.611, "end": 246.631}, {"word": "powerful", "start": 246.691, "end": 247.052}, {"word": "leader", "start": 247.112, "end": 247.373}, {"word": "who", "start": 247.413, "end": 247.553}, {"word": "fought", "start": 247.814, "end": 248.074}, {"word": "to", "start": 248.155, "end": 248.395}, {"word": "to", "start": 249.397, "end": 249.518}, {"word": "abolish", "start": 249.618, "end": 250.039}, {"word": "slavery.", "start": 250.059, "end": 250.48}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Abolish to end something by law.", "start": 250.66, "end": 252.505, "words": [{"word": "Abolish", "start": 250.66, "end": 251.081}, {"word": "to", "start": 251.222, "end": 251.302}, {"word": "end", "start": 251.522, "end": 251.663}, {"word": "something", "start": 251.703, "end": 251.983}, {"word": "by", "start": 252.044, "end": 252.144}, {"word": "law.", "start": 252.184, "end": 252.505}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Yes, exactly.", "start": 252.645, "end": 253.347, "words": [{"word": "Yes,", "start": 252.645, "end": 252.825}, {"word": "exactly.", "start": 252.906, "end": 253.347}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "To stop it completely.", "start": 253.387, "end": 254.269, "words": [{"word": "To", "start": 253.387, "end": 253.487}, {"word": "stop", "start": 253.547, "end": 253.788}, {"word": "it", "start": 253.848, "end": 253.888}, {"word": "completely.", "start": 253.948, "end": 254.269}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "He was a huge figure in the 19th century.", "start": 254.289, "end": 256.093, "words": [{"word": "He", "start": 254.289, "end": 254.329}, {"word": "was", "start": 254.349, "end": 254.429}, {"word": "a", "start": 254.469, "end": 254.489}, {"word": "huge", "start": 254.59, "end": 254.85}, {"word": "figure", "start": 254.93, "end": 255.191}, {"word": "in", "start": 255.251, "end": 255.291}, {"word": "the", "start": 255.311, "end": 255.391}, {"word": "19th", "start": 255.411, "end": 255.732}, {"word": "century.", "start": 255.752, "end": 256.093}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "OK, so that's Douglass.", "start": 256.213, "end": 257.196, "words": [{"word": "OK,", "start": 256.213, "end": 256.414}, {"word": "so", "start": 256.434, "end": 256.514}, {"word": "that's", "start": 256.554, "end": 256.694}, {"word": "Douglass.", "start": 256.735, "end": 257.196}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "And then Abraham Lincoln was the president.", "start": 257.556, "end": 259.521, "words": [{"word": "And", "start": 257.556, "end": 257.637}, {"word": "then", "start": 257.697, "end": 257.877}, {"word": "Abraham", "start": 257.897, "end": 258.459}, {"word": "Lincoln", "start": 258.499, "end": 258.719}, {"word": "was", "start": 258.739, "end": 258.86}, {"word": "the", "start": 258.88, "end": 258.96}, {"word": "president.", "start": 258.98, "end": 259.521}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "He was the president who signed the Emancipation Proclamation, the order that ended slavery.", "start": 259.501, "end": 264.61, "words": [{"word": "He", "start": 259.501, "end": 259.681}, {"word": "was", "start": 259.741, "end": 259.942}, {"word": "the", "start": 260.423, "end": 260.503}, {"word": "president", "start": 260.563, "end": 260.984}, {"word": "who", "start": 261.024, "end": 261.144}, {"word": "signed", "start": 261.204, "end": 261.464}, {"word": "the", "start": 261.484, "end": 261.565}, {"word": "Emancipation", "start": 261.645, "end": 262.266}, {"word": "Proclamation,", "start": 262.306, "end": 262.907}, {"word": "the", "start": 263.267, "end": 263.368}, {"word": "order", "start": 263.488, "end": 263.668}, {"word": "that", "start": 263.708, "end": 263.828}, {"word": "ended", "start": 263.909, "end": 264.089}, {"word": "slavery.", "start": 264.129, "end": 264.61}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "I see the connection now.", "start": 264.87, "end": 265.992, "words": [{"word": "I", "start": 264.87, "end": 264.95}, {"word": "see", "start": 264.99, "end": 265.131}, {"word": "the", "start": 265.191, "end": 265.291}, {"word": "connection", "start": 265.331, "end": 265.732}, {"word": "now.", "start": 265.792, "end": 265.992}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "And here is the really interesting part.", "start": 266.192, "end": 267.615, "words": [{"word": "And", "start": 266.192, "end": 266.273}, {"word": "here", "start": 266.333, "end": 266.493}, {"word": "is", "start": 266.553, "end": 266.613}, {"word": "the", "start": 266.653, "end": 266.733}, {"word": "really", "start": 266.773, "end": 266.994}, {"word": "interesting", "start": 267.034, "end": 267.375}, {"word": "part.", "start": 267.415, "end": 267.615}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Carter G.", "start": 268.436, "end": 268.937, "words": [{"word": "Carter", "start": 268.436, "end": 268.737}, {"word": "G.", "start": 268.757, "end": 268.937}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Woodson didn't just invent this idea.", "start": 268.957, "end": 270.82, "words": [{"word": "Woodson", "start": 268.957, "end": 269.278}, {"word": "didn't", "start": 269.358, "end": 269.558}, {"word": "just", "start": 269.598, "end": 269.779}, {"word": "invent", "start": 269.859, "end": 270.199}, {"word": "this", "start": 270.239, "end": 270.4}, {"word": "idea.", "start": 270.5, "end": 270.82}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "He chose February because black communities were already celebrating the birthdays of these two men.", "start": 271.582, "end": 276.43, "words": [{"word": "He", "start": 271.582, "end": 271.762}, {"word": "chose", "start": 271.822, "end": 272.063}, {"word": "February", "start": 272.103, "end": 272.684}, {"word": "because", "start": 273.004, "end": 273.225}, {"word": "black", "start": 273.265, "end": 273.465}, {"word": "communities", "start": 273.505, "end": 274.006}, {"word": "were", "start": 274.046, "end": 274.186}, {"word": "already", "start": 274.286, "end": 274.587}, {"word": "celebrating", "start": 274.647, "end": 275.128}, {"word": "the", "start": 275.148, "end": 275.228}, {"word": "birthdays", "start": 275.268, "end": 275.649}, {"word": "of", "start": 275.709, "end": 275.749}, {"word": "these", "start": 275.769, "end": 275.909}, {"word": "two", "start": 275.949, "end": 276.069}, {"word": "men.", "start": 276.13, "end": 276.43}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Oh, really?", "start": 276.41, "end": 277.232, "words": [{"word": "Oh,", "start": 276.41, "end": 276.691}, {"word": "really?", "start": 276.851, "end": 277.232}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "So he was building on something that already existed.", "start": 277.432, "end": 279.877, "words": [{"word": "So", "start": 277.432, "end": 277.612}, {"word": "he", "start": 277.733, "end": 277.813}, {"word": "was", "start": 277.833, "end": 277.953}, {"word": "building", "start": 278.033, "end": 278.354}, {"word": "on", "start": 278.414, "end": 278.474}, {"word": "something", "start": 278.534, "end": 278.775}, {"word": "that", "start": 278.815, "end": 278.915}, {"word": "already", "start": 279.115, "end": 279.416}, {"word": "existed.", "start": 279.476, "end": 279.877}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Exactly.", "start": 279.957, "end": 280.358, "words": [{"word": "Exactly.", "start": 279.957, "end": 280.358}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "He saw that people were already celebrating.", "start": 280.418, "end": 282.262, "words": [{"word": "He", "start": 280.418, "end": 280.498}, {"word": "saw", "start": 280.558, "end": 280.739}, {"word": "that", "start": 280.779, "end": 280.919}, {"word": "people", "start": 280.939, "end": 281.16}, {"word": "were", "start": 281.18, "end": 281.32}, {"word": "already", "start": 281.4, "end": 281.741}, {"word": "celebrating.", "start": 281.781, "end": 282.262}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "So he took that tradition and turned it into a week of education.", "start": 282.683, "end": 286.37, "words": [{"word": "So", "start": 282.683, "end": 282.803}, {"word": "he", "start": 282.903, "end": 283.063}, {"word": "took", "start": 283.083, "end": 283.324}, {"word": "that", "start": 283.384, "end": 283.524}, {"word": "tradition", "start": 283.564, "end": 284.045}, {"word": "and", "start": 284.086, "end": 284.627}, {"word": "turned", "start": 284.707, "end": 284.907}, {"word": "it", "start": 284.927, "end": 284.987}, {"word": "into", "start": 285.047, "end": 285.288}, {"word": "a", "start": 285.328, "end": 285.388}, {"word": "week", "start": 285.468, "end": 285.669}, {"word": "of", "start": 285.709, "end": 285.749}, {"word": "education.", "start": 285.829, "end": 286.37}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "He wanted people to study the history of everyone, not just two great men.", "start": 286.751, "end": 290.218, "words": [{"word": "He", "start": 286.751, "end": 286.811}, {"word": "wanted", "start": 286.851, "end": 287.052}, {"word": "people", "start": 287.092, "end": 287.272}, {"word": "to", "start": 287.312, "end": 287.392}, {"word": "study", "start": 287.432, "end": 287.693}, {"word": "the", "start": 287.733, "end": 287.793}, {"word": "history", "start": 287.853, "end": 288.214}, {"word": "of", "start": 288.274, "end": 288.314}, {"word": "everyone,", "start": 288.354, "end": 288.775}, {"word": "not", "start": 289.136, "end": 289.316}, {"word": "just", "start": 289.356, "end": 289.537}, {"word": "two", "start": 289.597, "end": 289.737}, {"word": "great", "start": 289.797, "end": 290.018}, {"word": "men.", "start": 290.058, "end": 290.218}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "That's really smart.", "start": 290.659, "end": 291.581, "words": [{"word": "That's", "start": 290.659, "end": 290.839}, {"word": "really", "start": 290.939, "end": 291.16}, {"word": "smart.", "start": 291.18, "end": 291.581}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "So how did it get from just one week to a whole month?", "start": 291.641, "end": 295.228, "words": [{"word": "So", "start": 291.641, "end": 291.781}, {"word": "how", "start": 292.503, "end": 292.623}, {"word": "did", "start": 292.663, "end": 292.763}, {"word": "it", "start": 292.823, "end": 292.863}, {"word": "get", "start": 292.923, "end": 293.084}, {"word": "from", "start": 293.124, "end": 293.284}, {"word": "just", "start": 293.384, "end": 293.525}, {"word": "one", "start": 293.685, "end": 293.765}, {"word": "week", "start": 293.825, "end": 294.026}, {"word": "to", "start": 294.066, "end": 294.246}, {"word": "a", "start": 294.366, "end": 294.386}, {"word": "whole", "start": 294.487, "end": 294.687}, {"word": "month?", "start": 294.747, "end": 295.228}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It was a slow process.", "start": 295.276, "end": 296.438, "words": [{"word": "It", "start": 295.276, "end": 295.396}, {"word": "was", "start": 295.436, "end": 295.516}, {"word": "a", "start": 295.577, "end": 295.597}, {"word": "slow", "start": 295.657, "end": 295.897}, {"word": "process.", "start": 295.957, "end": 296.438}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Over many years, more and more mayors and schools started to recognize it.", "start": 297.059, "end": 300.526, "words": [{"word": "Over", "start": 297.059, "end": 297.2}, {"word": "many", "start": 297.26, "end": 297.46}, {"word": "years,", "start": 297.5, "end": 297.801}, {"word": "more", "start": 297.901, "end": 298.121}, {"word": "and", "start": 298.181, "end": 298.242}, {"word": "more", "start": 298.302, "end": 298.442}, {"word": "mayors", "start": 298.482, "end": 298.863}, {"word": "and", "start": 298.943, "end": 299.023}, {"word": "schools", "start": 299.103, "end": 299.444}, {"word": "started", "start": 299.484, "end": 299.764}, {"word": "to", "start": 299.784, "end": 299.845}, {"word": "recognize", "start": 299.925, "end": 300.386}, {"word": "it.", "start": 300.466, "end": 300.526}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "But then in 1976, something major happened.", "start": 300.987, "end": 304.193, "words": [{"word": "But", "start": 300.987, "end": 301.087}, {"word": "then", "start": 301.127, "end": 301.327}, {"word": "in", "start": 301.387, "end": 301.428}, {"word": "1976,", "start": 301.448, "end": 301.808}, {"word": "something", "start": 301.868, "end": 303.351}, {"word": "major", "start": 303.451, "end": 303.812}, {"word": "happened.", "start": 303.852, "end": 304.193}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "1976?", "start": 304.353, "end": 305.114, "words": [{"word": "1976?", "start": 304.353, "end": 305.114}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "That was 50 years later.", "start": 305.435, "end": 306.637, "words": [{"word": "That", "start": 305.435, "end": 305.535}, {"word": "was", "start": 305.555, "end": 305.655}, {"word": "50", "start": 305.675, "end": 306.096}, {"word": "years", "start": 306.136, "end": 306.317}, {"word": "later.", "start": 306.377, "end": 306.637}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "And wasn't that a big year for America?", "start": 306.677, "end": 308.922, "words": [{"word": "And", "start": 306.677, "end": 307.138}, {"word": "wasn't", "start": 307.158, "end": 307.379}, {"word": "that", "start": 307.399, "end": 307.519}, {"word": "a", "start": 307.579, "end": 307.599}, {"word": "big", "start": 307.699, "end": 307.92}, {"word": "year", "start": 307.96, "end": 308.2}, {"word": "for", "start": 308.26, "end": 308.381}, {"word": "America?", "start": 308.421, "end": 308.922}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It was.", "start": 309.102, "end": 309.422, "words": [{"word": "It", "start": 309.102, "end": 309.162}, {"word": "was.", "start": 309.202, "end": 309.422}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It was the bicentennial, the country's 200th birthday.", "start": 309.643, "end": 312.368, "words": [{"word": "It", "start": 309.643, "end": 309.683}, {"word": "was", "start": 309.723, "end": 309.803}, {"word": "the", "start": 309.843, "end": 309.903}, {"word": "bicentennial,", "start": 309.943, "end": 310.745}, {"word": "the", "start": 310.865, "end": 310.965}, {"word": "country's", "start": 310.985, "end": 311.306}, {"word": "200th", "start": 311.326, "end": 311.867}, {"word": "birthday.", "start": 311.927, "end": 312.368}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "And the president at the time, Gerald Ford, he officially said the entire month of February should be Black History Month.", "start": 313.109, "end": 318.82, "words": [{"word": "And", "start": 313.109, "end": 313.169}, {"word": "the", "start": 313.21, "end": 313.27}, {"word": "president", "start": 313.31, "end": 313.731}, {"word": "at", "start": 313.771, "end": 313.811}, {"word": "the", "start": 313.851, "end": 313.931}, {"word": "time,", "start": 313.971, "end": 314.231}, {"word": "Gerald", "start": 314.292, "end": 314.572}, {"word": "Ford,", "start": 314.612, "end": 314.933}, {"word": "he", "start": 315.514, "end": 315.594}, {"word": "officially", "start": 315.654, "end": 316.055}, {"word": "said", "start": 316.115, "end": 316.275}, {"word": "the", "start": 316.315, "end": 316.416}, {"word": "entire", "start": 316.476, "end": 316.816}, {"word": "month", "start": 316.836, "end": 317.017}, {"word": "of", "start": 317.057, "end": 317.097}, {"word": "February", "start": 317.137, "end": 317.518}, {"word": "should", "start": 317.558, "end": 317.718}, {"word": "be", "start": 317.738, "end": 317.838}, {"word": "Black", "start": 317.878, "end": 318.139}, {"word": "History", "start": 318.179, "end": 318.519}, {"word": "Month.", "start": 318.56, "end": 318.82}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "So the president made it a month.", "start": 318.935, "end": 320.016, "words": [{"word": "So", "start": 318.935, "end": 319.035}, {"word": "the", "start": 319.055, "end": 319.115}, {"word": "president", "start": 319.155, "end": 319.416}, {"word": "made", "start": 319.456, "end": 319.616}, {"word": "it", "start": 319.636, "end": 319.676}, {"word": "a", "start": 319.716, "end": 319.736}, {"word": "month.", "start": 319.776, "end": 320.016}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Yes.", "start": 320.237, "end": 320.457, "words": [{"word": "Yes.", "start": 320.237, "end": 320.457}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "He told the country to seize the opportunity to honor the accomplishments of Black Americans.", "start": 320.577, "end": 325.764, "words": [{"word": "He", "start": 320.577, "end": 320.677}, {"word": "told", "start": 320.737, "end": 320.898}, {"word": "the", "start": 320.918, "end": 320.998}, {"word": "country", "start": 321.038, "end": 321.338}, {"word": "to", "start": 321.398, "end": 321.579}, {"word": "seize", "start": 321.619, "end": 322.4}, {"word": "the", "start": 322.44, "end": 322.54}, {"word": "opportunity", "start": 322.64, "end": 323.241}, {"word": "to", "start": 323.661, "end": 323.762}, {"word": "honor", "start": 323.862, "end": 324.142}, {"word": "the", "start": 324.162, "end": 324.282}, {"word": "accomplishments", "start": 324.322, "end": 324.903}, {"word": "of", "start": 324.943, "end": 324.983}, {"word": "Black", "start": 325.023, "end": 325.223}, {"word": "Americans.", "start": 325.284, "end": 325.764}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Seize the opportunity.", "start": 326.285, "end": 327.286, "words": [{"word": "Seize", "start": 326.285, "end": 326.545}, {"word": "the", "start": 326.585, "end": 326.665}, {"word": "opportunity.", "start": 326.725, "end": 327.286}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Grab the chance.", "start": 327.346, "end": 328.368, "words": [{"word": "Grab", "start": 327.346, "end": 327.867}, {"word": "the", "start": 327.907, "end": 327.967}, {"word": "chance.", "start": 328.027, "end": 328.368}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Right.", "start": 328.628, "end": 328.808, "words": [{"word": "Right.", "start": 328.628, "end": 328.808}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "And then 10 years later, in 1986, the U.S.", "start": 329.329, "end": 332.954, "words": [{"word": "And", "start": 329.329, "end": 329.409}, {"word": "then", "start": 329.469, "end": 329.669}, {"word": "10", "start": 329.689, "end": 329.73}, {"word": "years", "start": 330.21, "end": 330.41}, {"word": "later,", "start": 330.451, "end": 330.711}, {"word": "in", "start": 330.731, "end": 330.771}, {"word": "1986,", "start": 331.091, "end": 331.492}, {"word": "the", "start": 332.493, "end": 332.613}, {"word": "U.S.", "start": 332.734, "end": 332.954}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Congress made it an official law.", "start": 332.994, "end": 334.596, "words": [{"word": "Congress", "start": 332.994, "end": 333.354}, {"word": "made", "start": 333.415, "end": 333.575}, {"word": "it", "start": 333.615, "end": 333.655}, {"word": "an", "start": 333.695, "end": 333.855}, {"word": "official", "start": 333.915, "end": 334.276}, {"word": "law.", "start": 334.336, "end": 334.596}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "So it started with one man's idea, then a president's declaration and finally a national law.", "start": 334.957, "end": 339.863, "words": [{"word": "So", "start": 334.957, "end": 335.077}, {"word": "it", "start": 335.117, "end": 335.197}, {"word": "started", "start": 335.217, "end": 335.517}, {"word": "with", "start": 335.557, "end": 335.658}, {"word": "one", "start": 335.698, "end": 335.938}, {"word": "man's", "start": 335.958, "end": 336.198}, {"word": "idea,", "start": 336.298, "end": 336.599}, {"word": "then", "start": 336.659, "end": 336.919}, {"word": "a", "start": 336.979, "end": 336.999}, {"word": "president's", "start": 337.099, "end": 337.54}, {"word": "declaration", "start": 337.58, "end": 338.241}, {"word": "and", "start": 338.261, "end": 338.501}, {"word": "finally", "start": 338.561, "end": 338.942}, {"word": "a", "start": 338.982, "end": 339.002}, {"word": "national", "start": 339.182, "end": 339.563}, {"word": "law.", "start": 339.603, "end": 339.863}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It's quite a journey for an idea, isn't it?", "start": 340.244, "end": 341.966, "words": [{"word": "It's", "start": 340.244, "end": 340.364}, {"word": "quite", "start": 340.444, "end": 340.624}, {"word": "a", "start": 340.664, "end": 340.704}, {"word": "journey", "start": 340.744, "end": 341.005}, {"word": "for", "start": 341.045, "end": 341.165}, {"word": "an", "start": 341.225, "end": 341.265}, {"word": "idea,", "start": 341.345, "end": 341.666}, {"word": "isn't", "start": 341.686, "end": 341.886}, {"word": "it?", "start": 341.906, "end": 341.966}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It is.", "start": 342.106, "end": 342.467, "words": [{"word": "It", "start": 342.106, "end": 342.166}, {"word": "is.", "start": 342.327, "end": 342.467}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "But that brings me to today.", "start": 342.967, "end": 344.55, "words": [{"word": "But", "start": 342.967, "end": 343.047}, {"word": "that", "start": 343.088, "end": 343.208}, {"word": "brings", "start": 343.248, "end": 343.448}, {"word": "me", "start": 343.508, "end": 343.588}, {"word": "to", "start": 343.648, "end": 343.909}, {"word": "today.", "start": 343.949, "end": 344.55}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "How do people feel about it now?", "start": 344.59, "end": 347.153, "words": [{"word": "How", "start": 344.59, "end": 345.631}, {"word": "do", "start": 345.671, "end": 345.771}, {"word": "people", "start": 345.811, "end": 346.052}, {"word": "feel", "start": 346.172, "end": 346.432}, {"word": "about", "start": 346.512, "end": 346.712}, {"word": "it", "start": 346.773, "end": 346.813}, {"word": "now?", "start": 346.893, "end": 347.153}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Is it just about looking at old photos?", "start": 347.707, "end": 349.652, "words": [{"word": "Is", "start": 347.707, "end": 347.847}, {"word": "it", "start": 347.928, "end": 347.968}, {"word": "just", "start": 348.008, "end": 348.228}, {"word": "about", "start": 348.309, "end": 348.529}, {"word": "looking", "start": 348.569, "end": 348.83}, {"word": "at", "start": 348.89, "end": 348.93}, {"word": "old", "start": 348.97, "end": 349.131}, {"word": "photos?", "start": 349.191, "end": 349.652}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "That's the important question.", "start": 350.194, "end": 351.598, "words": [{"word": "That's", "start": 350.194, "end": 350.455}, {"word": "the", "start": 350.495, "end": 350.555}, {"word": "important", "start": 350.615, "end": 350.936}, {"word": "question.", "start": 350.976, "end": 351.598}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "And the answer is definitely no.", "start": 351.618, "end": 353.282, "words": [{"word": "And", "start": 351.618, "end": 351.678}, {"word": "the", "start": 351.718, "end": 351.778}, {"word": "answer", "start": 351.858, "end": 352.219}, {"word": "is", "start": 352.24, "end": 352.28}, {"word": "definitely", "start": 352.5, "end": 353.002}, {"word": "no.", "start": 353.082, "end": 353.282}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Leaders today see it as a vital part of understanding the country right now.", "start": 353.663, "end": 357.514, "words": [{"word": "Leaders", "start": 353.663, "end": 354.044}, {"word": "today", "start": 354.105, "end": 354.426}, {"word": "see", "start": 354.466, "end": 354.726}, {"word": "it", "start": 354.766, "end": 354.807}, {"word": "as", "start": 354.907, "end": 354.967}, {"word": "a", "start": 355.027, "end": 355.047}, {"word": "vital", "start": 355.148, "end": 355.428}, {"word": "part", "start": 355.468, "end": 355.669}, {"word": "of", "start": 355.709, "end": 355.749}, {"word": "understanding", "start": 355.769, "end": 356.311}, {"word": "the", "start": 356.491, "end": 356.571}, {"word": "country", "start": 356.612, "end": 356.912}, {"word": "right", "start": 356.953, "end": 357.093}, {"word": "now.", "start": 357.153, "end": 357.514}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "For example, Hakeem Jeffries, a leader in the House of Representatives, said black history is an indispensable part of the American story.", "start": 357.781, "end": 365.39, "words": [{"word": "For", "start": 357.781, "end": 357.981}, {"word": "example,", "start": 358.041, "end": 358.462}, {"word": "Hakeem", "start": 358.582, "end": 358.902}, {"word": "Jeffries,", "start": 358.962, "end": 359.363}, {"word": "a", "start": 359.844, "end": 359.884}, {"word": "leader", "start": 359.944, "end": 360.224}, {"word": "in", "start": 360.264, "end": 360.304}, {"word": "the", "start": 360.344, "end": 360.424}, {"word": "House", "start": 360.464, "end": 360.624}, {"word": "of", "start": 360.665, "end": 360.705}, {"word": "Representatives,", "start": 360.725, "end": 361.385}, {"word": "said", "start": 361.706, "end": 361.886}, {"word": "black", "start": 361.966, "end": 362.246}, {"word": "history", "start": 362.286, "end": 362.667}, {"word": "is", "start": 362.767, "end": 362.827}, {"word": "an", "start": 362.887, "end": 362.927}, {"word": "indispensable", "start": 363.168, "end": 364.009}, {"word": "part", "start": 364.089, "end": 364.309}, {"word": "of", "start": 364.369, "end": 364.409}, {"word": "the", "start": 364.429, "end": 364.509}, {"word": "American", "start": 364.569, "end": 364.97}, {"word": "story.", "start": 365.01, "end": 365.39}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Indispensable?", "start": 365.51, "end": 366.191, "words": [{"word": "Indispensable?", "start": 365.51, "end": 366.191}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "What does that mean?", "start": 366.231, "end": 366.652, "words": [{"word": "What", "start": 366.231, "end": 366.311}, {"word": "does", "start": 366.331, "end": 366.411}, {"word": "that", "start": 366.432, "end": 366.512}, {"word": "mean?", "start": 366.532, "end": 366.652}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It sounds very strong.", "start": 366.672, "end": 367.773, "words": [{"word": "It", "start": 366.672, "end": 366.772}, {"word": "sounds", "start": 366.812, "end": 366.992}, {"word": "very", "start": 367.052, "end": 367.413}, {"word": "strong.", "start": 367.453, "end": 367.773}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It is a very strong word.", "start": 367.913, "end": 368.995, "words": [{"word": "It", "start": 367.913, "end": 367.973}, {"word": "is", "start": 368.013, "end": 368.074}, {"word": "a", "start": 368.094, "end": 368.134}, {"word": "very", "start": 368.174, "end": 368.334}, {"word": "strong", "start": 368.394, "end": 368.694}, {"word": "word.", "start": 368.734, "end": 368.995}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It means something you absolutely cannot do without.", "start": 369.255, "end": 371.157, "words": [{"word": "It", "start": 369.255, "end": 369.315}, {"word": "means", "start": 369.355, "end": 369.515}, {"word": "something", "start": 369.555, "end": 369.776}, {"word": "you", "start": 369.796, "end": 369.876}, {"word": "absolutely", "start": 370.036, "end": 370.376}, {"word": "cannot", "start": 370.416, "end": 370.697}, {"word": "do", "start": 370.757, "end": 370.837}, {"word": "without.", "start": 370.877, "end": 371.157}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It's completely necessary.", "start": 371.197, "end": 372.319, "words": [{"word": "It's", "start": 371.197, "end": 371.277}, {"word": "completely", "start": 371.337, "end": 371.798}, {"word": "necessary.", "start": 371.858, "end": 372.319}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Oh, I see.", "start": 372.519, "end": 372.939, "words": [{"word": "Oh,", "start": 372.519, "end": 372.579}, {"word": "I", "start": 372.659, "end": 372.719}, {"word": "see.", "start": 372.779, "end": 372.939}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Like an engine is indispensable to a car.", "start": 372.979, "end": 375.222, "words": [{"word": "Like", "start": 372.979, "end": 373.12}, {"word": "an", "start": 373.16, "end": 373.2}, {"word": "engine", "start": 373.24, "end": 373.64}, {"word": "is", "start": 373.72, "end": 373.78}, {"word": "indispensable", "start": 373.821, "end": 374.581}, {"word": "to", "start": 374.641, "end": 374.742}, {"word": "a", "start": 374.782, "end": 374.822}, {"word": "car.", "start": 374.862, "end": 375.222}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "That is a perfect way to put it.", "start": 375.302, "end": 376.704, "words": [{"word": "That", "start": 375.302, "end": 375.422}, {"word": "is", "start": 375.503, "end": 375.563}, {"word": "a", "start": 375.623, "end": 375.643}, {"word": "perfect", "start": 375.763, "end": 376.123}, {"word": "way", "start": 376.183, "end": 376.283}, {"word": "to", "start": 376.324, "end": 376.384}, {"word": "put", "start": 376.444, "end": 376.604}, {"word": "it.", "start": 376.644, "end": 376.704}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "You can't understand the story of America without it.", "start": 377.024, "end": 380.008, "words": [{"word": "You", "start": 377.024, "end": 377.125}, {"word": "can't", "start": 377.245, "end": 377.485}, {"word": "understand", "start": 377.585, "end": 378.006}, {"word": "the", "start": 378.046, "end": 378.146}, {"word": "story", "start": 378.166, "end": 378.466}, {"word": "of", "start": 378.506, "end": 378.546}, {"word": "America", "start": 378.566, "end": 379.007}, {"word": "without", "start": 379.067, "end": 379.367}, {"word": "it.", "start": 379.427, "end": 380.008}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "And another leader, John B.", "start": 379.988, "end": 381.591, "words": [{"word": "And", "start": 379.988, "end": 380.228}, {"word": "another", "start": 380.309, "end": 380.629}, {"word": "leader,", "start": 380.689, "end": 380.93}, {"word": "John", "start": 381.19, "end": 381.41}, {"word": "B.", "start": 381.451, "end": 381.591}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "King Jr., he said the month is a time to reflect on the never-ending mission to achieve justice.", "start": 381.611, "end": 387.401, "words": [{"word": "King", "start": 381.611, "end": 381.791}, {"word": "Jr.,", "start": 381.831, "end": 382.512}, {"word": "he", "start": 382.532, "end": 382.673}, {"word": "said", "start": 382.713, "end": 382.873}, {"word": "the", "start": 382.913, "end": 383.013}, {"word": "month", "start": 383.093, "end": 383.334}, {"word": "is", "start": 383.454, "end": 383.534}, {"word": "a", "start": 383.594, "end": 383.614}, {"word": "time", "start": 383.674, "end": 383.895}, {"word": "to", "start": 383.935, "end": 384.015}, {"word": "reflect", "start": 384.075, "end": 384.456}, {"word": "on", "start": 384.556, "end": 384.596}, {"word": "the", "start": 384.636, "end": 384.756}, {"word": "never-ending", "start": 384.796, "end": 385.818}, {"word": "mission", "start": 385.878, "end": 386.199}, {"word": "to", "start": 386.259, "end": 386.359}, {"word": "achieve", "start": 386.419, "end": 386.68}, {"word": "justice.", "start": 386.74, "end": 387.401}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "A never-ending mission.", "start": 387.421, "end": 388.663, "words": [{"word": "A", "start": 387.421, "end": 387.501}, {"word": "never-ending", "start": 387.661, "end": 388.242}, {"word": "mission.", "start": 388.282, "end": 388.663}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "So it's not just about the past.", "start": 388.703, "end": 390.105, "words": [{"word": "So", "start": 388.703, "end": 388.783}, {"word": "it's", "start": 388.823, "end": 388.923}, {"word": "not", "start": 388.943, "end": 389.084}, {"word": "just", "start": 389.124, "end": 389.304}, {"word": "about", "start": 389.364, "end": 389.564}, {"word": "the", "start": 389.605, "end": 389.705}, {"word": "past.", "start": 389.745, "end": 390.105}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It's about today and the future.", "start": 390.326, "end": 391.788, "words": [{"word": "It's", "start": 390.326, "end": 390.426}, {"word": "about", "start": 390.466, "end": 390.626}, {"word": "today", "start": 390.686, "end": 391.047}, {"word": "and", "start": 391.087, "end": 391.267}, {"word": "the", "start": 391.307, "end": 391.368}, {"word": "future.", "start": 391.428, "end": 391.788}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Exactly that.", "start": 392.189, "end": 392.81, "words": [{"word": "Exactly", "start": 392.189, "end": 392.57}, {"word": "that.", "start": 392.61, "end": 392.81}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Learning the history helps us see the work that still needs to be done.", "start": 393.391, "end": 396.276, "words": [{"word": "Learning", "start": 393.391, "end": 393.672}, {"word": "the", "start": 393.692, "end": 393.792}, {"word": "history", "start": 393.872, "end": 394.233}, {"word": "helps", "start": 394.253, "end": 394.473}, {"word": "us", "start": 394.533, "end": 394.593}, {"word": "see", "start": 394.613, "end": 394.733}, {"word": "the", "start": 394.753, "end": 394.814}, {"word": "work", "start": 394.854, "end": 394.994}, {"word": "that", "start": 395.034, "end": 395.134}, {"word": "still", "start": 395.174, "end": 395.374}, {"word": "needs", "start": 395.415, "end": 395.575}, {"word": "to", "start": 395.615, "end": 395.675}, {"word": "be", "start": 395.715, "end": 395.795}, {"word": "done.", "start": 395.815, "end": 396.276}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "So with all that serious reflection, how are people celebrating this huge anniversary?", "start": 396.425, "end": 401.699, "words": [{"word": "So", "start": 396.425, "end": 396.626}, {"word": "with", "start": 397.087, "end": 397.227}, {"word": "all", "start": 397.367, "end": 397.488}, {"word": "that", "start": 397.548, "end": 397.668}, {"word": "serious", "start": 397.728, "end": 398.009}, {"word": "reflection,", "start": 398.049, "end": 398.53}, {"word": "how", "start": 398.571, "end": 399.052}, {"word": "are", "start": 399.112, "end": 399.172}, {"word": "people", "start": 399.212, "end": 399.473}, {"word": "celebrating", "start": 399.553, "end": 400.094}, {"word": "this", "start": 400.155, "end": 400.295}, {"word": "huge", "start": 400.556, "end": 400.957}, {"word": "anniversary?", "start": 401.057, "end": 401.699}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Well, there's a real mix of things happening.", "start": 401.899, "end": 404.145, "words": [{"word": "Well,", "start": 401.899, "end": 402.1}, {"word": "there's", "start": 402.16, "end": 402.34}, {"word": "a", "start": 402.38, "end": 402.4}, {"word": "real", "start": 402.44, "end": 402.621}, {"word": "mix", "start": 402.701, "end": 402.922}, {"word": "of", "start": 402.982, "end": 403.022}, {"word": "things", "start": 403.122, "end": 403.363}, {"word": "happening.", "start": 403.423, "end": 404.145}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Museums are playing a very big role this year.", "start": 404.165, "end": 406.27, "words": [{"word": "Museums", "start": 404.165, "end": 404.606}, {"word": "are", "start": 404.666, "end": 404.746}, {"word": "playing", "start": 404.787, "end": 404.987}, {"word": "a", "start": 405.027, "end": 405.047}, {"word": "very", "start": 405.167, "end": 405.428}, {"word": "big", "start": 405.488, "end": 405.669}, {"word": "role", "start": 405.709, "end": 405.889}, {"word": "this", "start": 405.949, "end": 406.09}, {"word": "year.", "start": 406.13, "end": 406.27}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Like which ones?", "start": 406.33, "end": 406.952, "words": [{"word": "Like", "start": 406.33, "end": 406.431}, {"word": "which", "start": 406.471, "end": 406.611}, {"word": "ones?", "start": 406.752, "end": 406.952}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "The Smithsonian Museum in Washington, D.C., for example, has a musical.", "start": 407.353, "end": 411.604, "words": [{"word": "The", "start": 407.353, "end": 407.473}, {"word": "Smithsonian", "start": 407.554, "end": 408.275}, {"word": "Museum", "start": 408.296, "end": 408.717}, {"word": "in", "start": 408.757, "end": 408.837}, {"word": "Washington,", "start": 408.897, "end": 409.338}, {"word": "D.C.,", "start": 409.358, "end": 409.739}, {"word": "for", "start": 409.759, "end": 409.839}, {"word": "example,", "start": 409.9, "end": 410.281}, {"word": "has", "start": 410.762, "end": 410.962}, {"word": "a", "start": 410.982, "end": 411.002}, {"word": "musical.", "start": 411.243, "end": 411.604}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "A musical about what?", "start": 411.764, "end": 413.168, "words": [{"word": "A", "start": 411.764, "end": 411.784}, {"word": "musical", "start": 411.865, "end": 412.326}, {"word": "about", "start": 412.366, "end": 412.727}, {"word": "what?", "start": 412.807, "end": 413.168}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It's about two famous athletes, the Olympians, Jesse Owens, and Wilma Rudolph.", "start": 413.485, "end": 418.452, "words": [{"word": "It's", "start": 413.485, "end": 413.645}, {"word": "about", "start": 413.665, "end": 413.866}, {"word": "two", "start": 413.966, "end": 414.186}, {"word": "famous", "start": 414.286, "end": 414.546}, {"word": "athletes,", "start": 414.647, "end": 415.047}, {"word": "the", "start": 415.468, "end": 415.528}, {"word": "Olympians,", "start": 415.568, "end": 416.008}, {"word": "Jesse", "start": 416.609, "end": 416.91}, {"word": "Owens,", "start": 416.99, "end": 417.29}, {"word": "and", "start": 417.39, "end": 417.47}, {"word": "Wilma", "start": 417.55, "end": 417.811}, {"word": "Rudolph.", "start": 417.831, "end": 418.452}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "A musical about athletes?", "start": 418.472, "end": 420.194, "words": [{"word": "A", "start": 418.472, "end": 418.532}, {"word": "musical", "start": 418.612, "end": 419.072}, {"word": "about", "start": 419.133, "end": 419.353}, {"word": "athletes?", "start": 419.373, "end": 420.194}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "That sounds way more fun than just reading a sign on a wall.", "start": 420.394, "end": 423.058, "words": [{"word": "That", "start": 420.394, "end": 420.534}, {"word": "sounds", "start": 420.575, "end": 420.815}, {"word": "way", "start": 420.835, "end": 421.135}, {"word": "more", "start": 421.155, "end": 421.295}, {"word": "fun", "start": 421.336, "end": 421.556}, {"word": "than", "start": 421.596, "end": 421.696}, {"word": "just", "start": 421.736, "end": 421.856}, {"word": "reading", "start": 421.896, "end": 422.117}, {"word": "a", "start": 422.177, "end": 422.197}, {"word": "sign", "start": 422.297, "end": 422.577}, {"word": "on", "start": 422.637, "end": 422.697}, {"word": "a", "start": 422.757, "end": 422.777}, {"word": "wall.", "start": 422.818, "end": 423.058}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It does, doesn't it?", "start": 423.338, "end": 424.099, "words": [{"word": "It", "start": 423.338, "end": 423.398}, {"word": "does,", "start": 423.438, "end": 423.699}, {"word": "doesn't", "start": 423.739, "end": 423.979}, {"word": "it?", "start": 424.039, "end": 424.099}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It shows history can be celebrated with art and energy.", "start": 424.48, "end": 427.023, "words": [{"word": "It", "start": 424.48, "end": 424.6}, {"word": "shows", "start": 424.62, "end": 424.84}, {"word": "history", "start": 424.9, "end": 425.241}, {"word": "can", "start": 425.301, "end": 425.401}, {"word": "be", "start": 425.441, "end": 425.521}, {"word": "celebrated", "start": 425.561, "end": 426.002}, {"word": "with", "start": 426.042, "end": 426.122}, {"word": "art", "start": 426.162, "end": 426.402}, {"word": "and", "start": 426.482, "end": 426.543}, {"word": "energy.", "start": 426.643, "end": 427.023}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "And in Detroit, the Henry Ford Museum is showing an actual house where civil rights leaders used to meet and plan.", "start": 427.644, "end": 434.093, "words": [{"word": "And", "start": 427.644, "end": 427.724}, {"word": "in", "start": 427.784, "end": 427.824}, {"word": "Detroit,", "start": 427.864, "end": 428.365}, {"word": "the", "start": 428.745, "end": 428.826}, {"word": "Henry", "start": 428.866, "end": 429.086}, {"word": "Ford", "start": 429.146, "end": 429.406}, {"word": "Museum", "start": 429.426, "end": 429.767}, {"word": "is", "start": 429.847, "end": 429.907}, {"word": "showing", "start": 429.947, "end": 430.187}, {"word": "an", "start": 430.227, "end": 430.268}, {"word": "actual", "start": 430.428, "end": 430.728}, {"word": "house", "start": 430.808, "end": 431.129}, {"word": "where", "start": 431.669, "end": 431.85}, {"word": "civil", "start": 431.95, "end": 432.21}, {"word": "rights", "start": 432.25, "end": 432.47}, {"word": "leaders", "start": 432.531, "end": 432.811}, {"word": "used", "start": 432.851, "end": 433.051}, {"word": "to", "start": 433.091, "end": 433.151}, {"word": "meet", "start": 433.232, "end": 433.452}, {"word": "and", "start": 433.592, "end": 433.672}, {"word": "plan.", "start": 433.752, "end": 434.093}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "That's so cool.", "start": 434.393, "end": 435.274, "words": [{"word": "That's", "start": 434.393, "end": 434.633}, {"word": "so", "start": 434.774, "end": 434.974}, {"word": "cool.", "start": 435.054, "end": 435.274}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "You can actually see the real place where it all happened.", "start": 435.294, "end": 437.417, "words": [{"word": "You", "start": 435.294, "end": 435.374}, {"word": "can", "start": 435.394, "end": 435.495}, {"word": "actually", "start": 435.515, "end": 435.755}, {"word": "see", "start": 435.815, "end": 435.955}, {"word": "the", "start": 435.995, "end": 436.075}, {"word": "real", "start": 436.115, "end": 436.296}, {"word": "place", "start": 436.356, "end": 436.596}, {"word": "where", "start": 436.616, "end": 436.776}, {"word": "it", "start": 436.796, "end": 436.836}, {"word": "all", "start": 436.896, "end": 436.997}, {"word": "happened.", "start": 437.057, "end": 437.417}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It makes it feel very real.", "start": 437.477, "end": 438.479, "words": [{"word": "It", "start": 437.477, "end": 437.537}, {"word": "makes", "start": 437.557, "end": 437.677}, {"word": "it", "start": 437.738, "end": 437.778}, {"word": "feel", "start": 437.798, "end": 437.958}, {"word": "very", "start": 438.018, "end": 438.218}, {"word": "real.", "start": 438.278, "end": 438.479}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "And there are also places like the Children's Museum of Atlanta with special activities for young people.", "start": 438.619, "end": 442.564, "words": [{"word": "And", "start": 438.619, "end": 438.699}, {"word": "there", "start": 438.739, "end": 438.859}, {"word": "are", "start": 438.879, "end": 438.939}, {"word": "also", "start": 438.999, "end": 439.2}, {"word": "places", "start": 439.24, "end": 439.5}, {"word": "like", "start": 439.54, "end": 439.64}, {"word": "the", "start": 439.68, "end": 439.74}, {"word": "Children's", "start": 439.78, "end": 440.121}, {"word": "Museum", "start": 440.161, "end": 440.481}, {"word": "of", "start": 440.521, "end": 440.561}, {"word": "Atlanta", "start": 440.682, "end": 440.962}, {"word": "with", "start": 441.002, "end": 441.102}, {"word": "special", "start": 441.142, "end": 441.443}, {"word": "activities", "start": 441.503, "end": 441.883}, {"word": "for", "start": 441.923, "end": 442.023}, {"word": "young", "start": 442.063, "end": 442.224}, {"word": "people.", "start": 442.264, "end": 442.564}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "I really like that.", "start": 442.679, "end": 443.541, "words": [{"word": "I", "start": 442.679, "end": 442.799}, {"word": "really", "start": 442.839, "end": 443.06}, {"word": "like", "start": 443.08, "end": 443.28}, {"word": "that.", "start": 443.32, "end": 443.541}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It shows that learning this history, this indispensable history, can be creative and engaging.", "start": 444.142, "end": 449.473, "words": [{"word": "It", "start": 444.142, "end": 444.202}, {"word": "shows", "start": 444.262, "end": 444.463}, {"word": "that", "start": 444.503, "end": 444.623}, {"word": "learning", "start": 444.663, "end": 445.004}, {"word": "this", "start": 445.044, "end": 445.224}, {"word": "history,", "start": 445.264, "end": 445.685}, {"word": "this", "start": 445.725, "end": 445.966}, {"word": "indispensable", "start": 446.066, "end": 446.727}, {"word": "history,", "start": 446.768, "end": 447.168}, {"word": "can", "start": 447.529, "end": 447.669}, {"word": "be", "start": 447.71, "end": 447.81}, {"word": "creative", "start": 447.93, "end": 448.511}, {"word": "and", "start": 448.672, "end": 448.752}, {"word": "engaging.", "start": 448.832, "end": 449.473}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "You are absolutely right.", "start": 449.513, "end": 450.936, "words": [{"word": "You", "start": 449.513, "end": 449.994}, {"word": "are", "start": 450.054, "end": 450.155}, {"word": "absolutely", "start": 450.295, "end": 450.696}, {"word": "right.", "start": 450.756, "end": 450.936}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It's really amazing to look back at Carter G.", "start": 451.097, "end": 453.762, "words": [{"word": "It's", "start": 451.097, "end": 451.217}, {"word": "really", "start": 451.337, "end": 451.578}, {"word": "amazing", "start": 451.618, "end": 451.898}, {"word": "to", "start": 451.918, "end": 451.978}, {"word": "look", "start": 451.999, "end": 452.179}, {"word": "back", "start": 452.239, "end": 452.5}, {"word": "at", "start": 453.101, "end": 453.161}, {"word": "Carter", "start": 453.321, "end": 453.642}, {"word": "G.", "start": 453.702, "end": 453.762}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Woodson's original vision, from just one week to a whole century of commemoration.", "start": 453.802, "end": 458.933, "words": [{"word": "Woodson's", "start": 453.802, "end": 454.183}, {"word": "original", "start": 454.263, "end": 454.644}, {"word": "vision,", "start": 454.704, "end": 454.985}, {"word": "from", "start": 455.386, "end": 455.526}, {"word": "just", "start": 455.606, "end": 455.766}, {"word": "one", "start": 456.047, "end": 456.147}, {"word": "week", "start": 456.187, "end": 456.508}, {"word": "to", "start": 456.889, "end": 457.009}, {"word": "a", "start": 457.069, "end": 457.089}, {"word": "whole", "start": 457.169, "end": 457.39}, {"word": "century", "start": 457.53, "end": 457.971}, {"word": "of", "start": 458.011, "end": 458.051}, {"word": "commemoration.", "start": 458.131, "end": 458.933}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It really has been a great deep dive.", "start": 459.014, "end": 460.819, "words": [{"word": "It", "start": 459.014, "end": 459.174}, {"word": "really", "start": 459.215, "end": 459.455}, {"word": "has", "start": 459.495, "end": 459.696}, {"word": "been", "start": 459.756, "end": 459.897}, {"word": "a", "start": 459.937, "end": 459.957}, {"word": "great", "start": 459.997, "end": 460.197}, {"word": "deep", "start": 460.258, "end": 460.438}, {"word": "dive.", "start": 460.498, "end": 460.819}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "I feel like I understand so much more now.", "start": 460.98, "end": 462.785, "words": [{"word": "I", "start": 460.98, "end": 461.02}, {"word": "feel", "start": 461.06, "end": 461.241}, {"word": "like", "start": 461.261, "end": 461.381}, {"word": "I", "start": 461.441, "end": 461.501}, {"word": "understand", "start": 461.541, "end": 461.983}, {"word": "so", "start": 462.043, "end": 462.163}, {"word": "much", "start": 462.183, "end": 462.324}, {"word": "more", "start": 462.384, "end": 462.544}, {"word": "now.", "start": 462.625, "end": 462.785}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "I'm glad.", "start": 462.925, "end": 463.367, "words": [{"word": "I'm", "start": 462.925, "end": 463.026}, {"word": "glad.", "start": 463.086, "end": 463.367}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "And before we go, I'd encourage everyone listening to look up the new words we use today.", "start": 463.928, "end": 468.281, "words": [{"word": "And", "start": 463.928, "end": 463.989}, {"word": "before", "start": 464.029, "end": 464.269}, {"word": "we", "start": 464.31, "end": 464.41}, {"word": "go,", "start": 464.45, "end": 464.61}, {"word": "I'd", "start": 464.651, "end": 464.811}, {"word": "encourage", "start": 464.851, "end": 465.252}, {"word": "everyone", "start": 465.292, "end": 465.674}, {"word": "listening", "start": 465.714, "end": 466.075}, {"word": "to", "start": 466.115, "end": 466.596}, {"word": "look", "start": 466.656, "end": 466.837}, {"word": "up", "start": 466.897, "end": 466.957}, {"word": "the", "start": 466.997, "end": 467.098}, {"word": "new", "start": 467.158, "end": 467.278}, {"word": "words", "start": 467.358, "end": 467.599}, {"word": "we", "start": 467.639, "end": 467.76}, {"word": "use", "start": 467.86, "end": 467.98}, {"word": "today.", "start": 468.02, "end": 468.281}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Words like commemoration and indispensable.", "start": 468.321, "end": 472.133, "words": [{"word": "Words", "start": 468.321, "end": 468.963}, {"word": "like", "start": 469.003, "end": 469.184}, {"word": "commemoration", "start": 469.324, "end": 470.107}, {"word": "and", "start": 470.127, "end": 470.568}, {"word": "indispensable.", "start": 470.588, "end": 472.133}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "See how they're used.", "start": 472.494, "end": 473.276, "words": [{"word": "See", "start": 472.494, "end": 472.654}, {"word": "how", "start": 472.694, "end": 472.774}, {"word": "they're", "start": 472.815, "end": 472.995}, {"word": "used.", "start": 473.095, "end": 473.276}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "I'll definitely do that.", "start": 473.396, "end": 474.279, "words": [{"word": "I'll", "start": 473.396, "end": 473.537}, {"word": "definitely", "start": 473.577, "end": 473.938}, {"word": "do", "start": 473.998, "end": 474.098}, {"word": "that.", "start": 474.138, "end": 474.279}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Thank you, teacher.", "start": 474.339, "end": 474.961, "words": [{"word": "Thank", "start": 474.339, "end": 474.52}, {"word": "you,", "start": 474.54, "end": 474.64}, {"word": "teacher.", "start": 474.66, "end": 474.961}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Keep reading and keep exploring the world.", "start": 475.202, "end": 477.428, "words": [{"word": "Keep", "start": 475.202, "end": 475.362}, {"word": "reading", "start": 475.422, "end": 475.723}, {"word": "and", "start": 475.944, "end": 476.024}, {"word": "keep", "start": 476.084, "end": 476.305}, {"word": "exploring", "start": 476.365, "end": 476.786}, {"word": "the", "start": 476.826, "end": 476.886}, {"word": "world.", "start": 476.947, "end": 477.428}]}];
+
+    const audio = document.getElementById('audioPlayer');
+    const container = document.getElementById('transcriptContainer');
+    const playModeBtn = document.getElementById('playModeBtn');
+    const recordVideoBtn = document.getElementById('recordVideoBtn');
+    const mobileRecordBtn = document.getElementById('mobileRecordBtn');
+    const stopRecBtn = document.getElementById('stopRecBtn');
+    const btnContainer = document.getElementById('btnContainer');
+    const uiControls = document.getElementById('uiControls');
+    const progressFill = document.getElementById('progressFill');
+    const progressBarContainer = document.getElementById('progressBarContainer');
+    const debugTime = document.getElementById('debugTime');
+    const recProgressBar = document.getElementById('recProgressBar');
+    const tips = document.getElementById('tips');
+
+    let isRecordingMode = false;
+    let processedData = []; 
+    let currentActiveBlockIndex = -1;
+    let currentActiveWordElement = null;
+    let animationFrameId;
+    let mediaRecorder;
+    let recordedChunks = [];
+    let recStream = null;
+
+    // --- 设备检测 ---
+    function checkDevice() {
+        if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+            // PC
+            recordVideoBtn.style.display = 'flex';
+            tips.textContent = '提示: 电脑录制请勾选 "分享音频"';
+        } else {
+            // Mobile
+            mobileRecordBtn.style.display = 'flex';
+            tips.textContent = '提示: 点击下方按钮进入全屏沉浸模式';
+        }
+    }
+    checkDevice();
+
+    function mergeTranscriptSegments(rawData) {
+        if (!rawData || rawData.length === 0) return [];
+        const merged = [];
+        let currentBlock = {
+            speaker: rawData[0].speaker, // 直接用 speaker 名称
+            start: rawData[0].start,
+            end: rawData[0].end,
+            words: [...(rawData[0].words || [])]
+        };
+        for (let i = 1; i < rawData.length; i++) {
+            const nextSegment = rawData[i];
+            const projectedDuration = nextSegment.end - currentBlock.start;
+            
+            // 依据 Speaker 名称合并
+            if (nextSegment.speaker === currentBlock.speaker && projectedDuration <= 10.0) {
+                currentBlock.end = nextSegment.end;
+                if (nextSegment.words) {
+                    currentBlock.words = currentBlock.words.concat(nextSegment.words);
+                }
+            } else {
+                merged.push(currentBlock);
+                currentBlock = {
+                    speaker: nextSegment.speaker, // 直接用 speaker 名称
+                    start: nextSegment.start,
+                    end: nextSegment.end,
+                    words: [...(nextSegment.words || [])]
+                };
+            }
+        }
+        merged.push(currentBlock);
+        return merged;
+    }
+
+    function initTranscript() {
+        if (!rawTranscriptData || rawTranscriptData.length === 0) {
+            container.innerHTML = '<div style="padding:20px; text-align:center; color:#666;">暂无数据</div>';
+            return;
+        }
+
+        processedData = mergeTranscriptSegments(rawTranscriptData);
+        container.innerHTML = '';
+        
+        processedData.forEach((block, index) => {
+            const div = document.createElement('div');
+            div.className = 'transcript-item';
+            div.dataset.start = block.start;
+            div.dataset.end = block.end;
+            div.dataset.index = index;
+
+            // --- Speaker 逻辑 (直接读取名称) ---
+            const speakerSpan = document.createElement('span');
+            // 获取 JSON 中的名字，例如 "Female", "Male", "John"
+            const speakerName = block.speaker || 'Unknown';
+            
+            // 转换为 CSS 安全类名 (小写，去除空格)
+            // Example: "Female" -> "speaker-female", "Mr. John" -> "speaker-mr-john"
+            const cssClassSuffix = speakerName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+            
+            speakerSpan.className = `speaker-tag speaker-${cssClassSuffix}`;
+            speakerSpan.textContent = speakerName;
+            
+            div.appendChild(speakerSpan);
+            // ----------------------------------
+
+            const p = document.createElement('p');
+            p.className = 'text-content';
+
+            if (block.words) {
+                block.words.forEach((wordObj, wIndex) => {
+                    const wordSpan = document.createElement('span');
+                    wordSpan.className = 'word-span';
+                    wordSpan.textContent = wordObj.word; 
+                    wordSpan.dataset.start = wordObj.start;
+                    wordSpan.dataset.end = wordObj.end;
+                    p.appendChild(wordSpan);
+                    if (wIndex < block.words.length - 1) {
+                        p.appendChild(document.createTextNode(" "));
+                    }
+                });
+            } else {
+                p.textContent = block.sentence;
+            }
+
+            div.appendChild(p);
+            container.appendChild(div);
+
+            div.addEventListener('click', (e) => {
+                if (e.target.classList.contains('word-span')) {
+                    audio.currentTime = parseFloat(e.target.dataset.start);
+                } else {
+                    audio.currentTime = block.start;
+                }
+                if (audio.paused) audio.play();
+            });
+        });
+    }
+
+    function renderLoop() {
+        if (!audio.paused) {
+            updateTranscript();
+            if (isRecordingMode && audio.duration) {
+                const pct = (audio.currentTime / audio.duration) * 100;
+                recProgressBar.style.width = pct + '%';
+            }
+        }
+        animationFrameId = requestAnimationFrame(renderLoop);
+    }
+
+    function updateTranscript() {
+        const t = audio.currentTime;
+        let activeBlockIndex = -1;
+        for (let i = 0; i < processedData.length; i++) {
+            if (t >= processedData[i].start && t < processedData[i].end) {
+                activeBlockIndex = i;
+                break;
+            }
+        }
+
+        if (activeBlockIndex !== -1 && activeBlockIndex !== currentActiveBlockIndex) {
+            const prev = document.querySelector('.transcript-item.active');
+            if (prev) prev.classList.remove('active');
+
+            const current = container.children[activeBlockIndex];
+            if (current) {
+                current.classList.add('active');
+                current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            currentActiveBlockIndex = activeBlockIndex;
+        }
+
+        if (currentActiveBlockIndex !== -1) {
+            const activeBlockElement = container.children[currentActiveBlockIndex];
+            const wordSpans = activeBlockElement.querySelectorAll('.word-span');
+            let foundWord = false;
+
+            for (let span of wordSpans) {
+                const start = parseFloat(span.dataset.start);
+                const end = parseFloat(span.dataset.end);
+                if (t >= start && t < end + 0.05) { 
+                    if (currentActiveWordElement !== span) {
+                        if (currentActiveWordElement) currentActiveWordElement.classList.remove('word-active');
+                        span.classList.add('word-active');
+                        currentActiveWordElement = span;
+                    }
+                    foundWord = true;
+                    break; 
+                }
+            }
+            if (!foundWord && currentActiveWordElement) {
+                currentActiveWordElement.classList.remove('word-active');
+                currentActiveWordElement = null;
+            }
+        }
+    }
+
+    // --- PC 内录 ---
+    async function startVideoRecording() {
+        try {
+            const stream = await navigator.mediaDevices.getDisplayMedia({
+                video: {
+                    width: { ideal: 1080 },  
+                    height: { ideal: 1920 }, 
+                    frameRate: { ideal: 60 } 
+                },
+                audio: {
+                    echoCancellation: false, 
+                    noiseSuppression: false, 
+                    autoGainControl: false,  
+                    sampleRate: 48000        
+                },
+                preferCurrentTab: true, 
+                selfBrowserSurface: "include", 
+                systemAudio: "include" 
+            });
+
+            recStream = stream;
+
+            const audioTrack = stream.getAudioTracks()[0];
+            if (!audioTrack) {
+                alert("❌ 错误：您未勾选【分享音频】。");
+                stopEverything();
+                return;
+            }
+
+            enterRecordingMode('pc');
+
+            const mimeType = MediaRecorder.isTypeSupported("video/webm; codecs=vp9,opus") 
+                           ? "video/webm; codecs=vp9,opus" 
+                           : "video/webm";
+            
+            mediaRecorder = new MediaRecorder(stream, { 
+                mimeType, 
+                videoBitsPerSecond: 15000000 
+            }); 
+            
+            recordedChunks = [];
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) recordedChunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = saveRecording;
+
+            mediaRecorder.start();
+            console.log("🎥 PC内录开始");
+            
+            setTimeout(() => {
+                audio.currentTime = 0;
+                audio.play();
+            }, 1000);
+
+            audio.onended = () => stopEverything();
+            stream.getVideoTracks()[0].onended = () => stopEverything();
+
+        } catch (err) {
+            console.error("Error:", err);
+            if (err.name !== 'NotAllowedError') alert("启动失败：" + err.message);
+        }
+    }
+
+    // --- 手机全屏沉浸 (无弹窗) ---
+    function startMobileRecordingPrep() {
+        // 尝试全屏
+        const docEl = document.documentElement;
+        if (docEl.requestFullscreen) {
+            docEl.requestFullscreen().catch(e => {});
+        } else if (docEl.webkitRequestFullscreen) {
+            docEl.webkitRequestFullscreen();
+        }
+
+        enterRecordingMode('mobile');
+        
+        console.log("📱 手机沉浸模式，静默倒计时5秒");
+        setTimeout(() => {
+            audio.currentTime = 0;
+            audio.play();
+        }, 5000);
+    }
+
+    function stopEverything() {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
+        }
+        audio.pause();
+        if (recStream) {
+            recStream.getTracks().forEach(track => track.stop());
+        }
+        exitRecordingMode();
+    }
+
+    function saveRecording() {
+        const blob = new Blob(recordedChunks, { type: "video/webm" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        document.body.appendChild(a);
+        a.style.display = "none";
+        a.href = url;
+        const filename = document.title.replace(/\s+/g, '_') + "_1080P.webm";
+        a.download = filename;
+        a.click();
+        window.URL.revokeObjectURL(url);
+    }
+
+    function enterRecordingMode(type) {
+        isRecordingMode = true;
+        document.body.classList.add('recording-mode');
+        
+        if (type === 'pc') {
+            document.body.classList.add('pc-mode');
+        } else if (type === 'mobile') {
+            document.body.classList.add('mobile-mode');
+        }
+
+        uiControls.classList.add('hidden-ui');
+        btnContainer.style.opacity = '0'; 
+        btnContainer.style.pointerEvents = 'none';
+        recProgressBar.style.width = '0%';
+    }
+
+    function exitRecordingMode() {
+        isRecordingMode = false;
+        document.body.classList.remove('recording-mode', 'pc-mode', 'mobile-mode');
+        uiControls.classList.remove('hidden-ui');
+        btnContainer.style.opacity = '1';
+        btnContainer.style.pointerEvents = 'auto';
+        
+        if (document.exitFullscreen) {
+            document.exitFullscreen().catch(e => {});
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        }
+    }
+
+    // Listeners
+    audio.addEventListener('play', () => {
+        cancelAnimationFrame(animationFrameId);
+        renderLoop();
+    });
+    audio.addEventListener('pause', () => cancelAnimationFrame(animationFrameId));
+    audio.addEventListener('timeupdate', () => {
+        if (!audio.duration) return;
+        const percent = (audio.currentTime / audio.duration) * 100;
+        progressFill.style.width = percent + '%';
+        if(!isRecordingMode) debugTime.textContent = audio.currentTime.toFixed(3);
+    });
+
+    playModeBtn.addEventListener('click', () => {
+        if (!isRecordingMode) {
+            // 复用手机模式，不显示 PC 控件
+            enterRecordingMode('mobile');
+            console.log("5秒后播放...");
+            setTimeout(() => { audio.play(); }, 5000);
+        }
+    });
+
+    recordVideoBtn.addEventListener('click', startVideoRecording);
+    mobileRecordBtn.addEventListener('click', startMobileRecordingPrep);
+    
+    stopRecBtn.addEventListener('click', stopEverything);
+
+    progressBarContainer.addEventListener('click', (e) => {
+        const rect = progressBarContainer.getBoundingClientRect();
+        const pos = (e.clientX - rect.left) / rect.width;
+        audio.currentTime = pos * audio.duration;
+        updateTranscript();
+    });
+
+    initTranscript();
+
+</script>
+
+</body>
+</html>
