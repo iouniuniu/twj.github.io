@@ -6,7 +6,7 @@
     <title>Shorts Generator</title>
     <style>
         :root {
-            /* 🎨 高亮颜色：回归明亮的荧光黄，但不使用背景色 */
+            /* 🎨 高亮颜色：荧光黄 */
             --word-active-color: #ccff00; 
             --normal-text: rgba(255, 255, 255, 0.95);
             
@@ -58,7 +58,7 @@
         /* === 1. 固定头部 (距离顶部 30px) === */
         .speaker-header {
             position: absolute;
-            top: 30px;  /* 📍 向上调整到 30px */
+            top: 30px; 
             left: 30px; 
             z-index: 3;
             display: flex;
@@ -105,7 +105,7 @@
         /* === 2. 文本块 (紧随其下) === */
         .text-block {
             position: absolute;
-            top: 80px; /* 30px + 25px + 25px 间距 */
+            top: 80px;
             left: 0;
             width: 100%;
             padding: 0 35px;
@@ -129,18 +129,16 @@
             transform: translateY(0);
         }
 
-        /* === 3. 单词高亮 (回归 Template 方式) === */
+        /* === 3. 单词高亮 (文字变色+发光) === */
         .word {
-            display: inline; /* 恢复自然行内排列，解决间距问题 */
+            display: inline;
             color: inherit;
             transition: color 0.15s ease, text-shadow 0.15s ease;
             position: relative;
         }
 
         .word.active {
-            /* 只改变文字颜色，不加背景 */
             color: var(--word-active-color) !important;
-            /* 增加发光感 */
             text-shadow: 0 0 12px rgba(204, 255, 0, 0.6), 0 0 20px rgba(204, 255, 0, 0.4);
         }
 
@@ -227,7 +225,8 @@
     const MAX_WORDS_PER_SCREEN = 30;
 
     function setInitialState() {
-        avatarEl.style.backgroundImage = "url('avatar.png')";
+        // 📍 修改：使用 png 图片
+        avatarEl.style.backgroundImage = "url('female.png')";
         nameEl.innerText = "周末英语剧场";
         headerContainer.className = 'speaker-header adaptive-mode';
         textContainer.innerHTML = "";
@@ -263,7 +262,14 @@
 
             if ((duration >= TARGET_DURATION || wordCount >= MAX_WORDS_PER_SCREEN || isLast) && currentBlock.words.length > 0) {
                 blocks.push(currentBlock);
-                if (!isLast) {
+                if (!isLast && data[index+1].speaker === currentBlock.speaker) {
+                    currentBlock = {
+                        speaker: currentBlock.speaker, 
+                        start: data[index+1].start, 
+                        end: 0,
+                        words: []
+                    };
+                } else if (!isLast) {
                     currentBlock = {
                         speaker: data[index+1].speaker,
                         start: data[index+1].start,
@@ -325,14 +331,15 @@
         headerContainer.className = 'speaker-header'; 
         const lowerName = spkName.toLowerCase();
         
+        // 📍 修改：使用 png 图片
         if (lowerName.includes('female')) {
             headerContainer.classList.add('speaker-state-female');
-            avatarEl.style.backgroundImage = "url('FEMALE.jpg')";
+            avatarEl.style.backgroundImage = "url('female.png')";
         } else if (lowerName.includes('male')) {
             headerContainer.classList.add('speaker-state-male');
-            avatarEl.style.backgroundImage = "url('male.jpg')";
+            avatarEl.style.backgroundImage = "url('male.png')";
         } else {
-            avatarEl.style.backgroundImage = "url('FEMALE.jpg')"; 
+            avatarEl.style.backgroundImage = "url('female.png')"; 
         }
 
         textContainer.innerHTML = ''; 
@@ -381,7 +388,7 @@
         }
     }
 
-    const colors = ['#ccff00', '#00ffcc', '#007aff', '#ffffff'];
+    const colors = ['#ccff00', '#00ffcc', '#007aff', '#ff00ff'];
     let cIdx = 0;
     window.toggleColor = function() {
         cIdx = (cIdx + 1) % colors.length;
