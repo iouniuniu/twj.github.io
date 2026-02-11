@@ -2,11 +2,11 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Shorts Generator</title>
     <style>
         :root {
-            /* 🎨 高亮颜色：荧光黄 */
+            /* 🎨 高亮颜色 */
             --word-active-color: #ccff00; 
             --normal-text: rgba(255, 255, 255, 0.95);
             
@@ -29,6 +29,8 @@
             min-height: 100vh;
             color: white;
             user-select: none;
+            overflow: hidden;
+            transition: background-color 0.5s;
         }
 
         /* === 舞台 (9:16) === */
@@ -39,6 +41,7 @@
             background-color: #000;
             overflow: hidden;
             box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            transition: all 0.5s ease;
         }
 
         .bg-layer {
@@ -55,7 +58,7 @@
             z-index: 1;
         }
 
-        /* === 1. 固定头部 (距离顶部 30px) === */
+        /* === 固定头部 (30px) === */
         .speaker-header {
             position: absolute;
             top: 30px; 
@@ -76,7 +79,6 @@
             background-position: center;
             border: 2px solid rgba(255,255,255,0.8);
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            transition: border-color 0.3s ease;
         }
 
         .speaker-name {
@@ -85,24 +87,20 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             color: white;
-            transition: all 0.3s ease;
         }
 
-        /* 自适应标题模式 */
+        /* 自适应模式 */
         .adaptive-mode .speaker-name {
             mix-blend-mode: exclusion; 
             color: #fff;
         }
 
-        /* 正常说话模式 */
         .speaker-state-female .speaker-name { color: var(--female-color); mix-blend-mode: normal; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
         .speaker-state-female .avatar { border-color: var(--female-color); }
-
         .speaker-state-male .speaker-name { color: var(--male-color); mix-blend-mode: normal; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
         .speaker-state-male .avatar { border-color: var(--male-color); }
 
-
-        /* === 2. 文本块 (紧随其下) === */
+        /* === 文本块 === */
         .text-block {
             position: absolute;
             top: 80px;
@@ -111,42 +109,49 @@
             padding: 0 35px;
             box-sizing: border-box;
             z-index: 2;
-
             font-size: 28px;
             line-height: 1.45;
             text-align: left;
             font-weight: 800;
             color: var(--normal-text);
             text-shadow: 0 2px 10px rgba(0,0,0,0.7);
-            
             opacity: 0;
             transform: translateY(10px);
             transition: opacity 0.3s ease, transform 0.3s ease;
         }
 
-        .text-block.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        .text-block.visible { opacity: 1; transform: translateY(0); }
 
-        /* === 3. 单词高亮 (文字变色+发光) === */
         .word {
             display: inline;
             color: inherit;
             transition: color 0.15s ease, text-shadow 0.15s ease;
-            position: relative;
         }
-
         .word.active {
             color: var(--word-active-color) !important;
             text-shadow: 0 0 12px rgba(204, 255, 0, 0.6), 0 0 20px rgba(204, 255, 0, 0.4);
         }
 
-        /* 录制清理 */
-        body.recording .controls-panel { display: none !important; }
-        body.recording #stageArea { cursor: none; }
+        /* === 沉浸模式：全屏逻辑 === */
+        body.recording-mode {
+            background-color: #000;
+        }
 
-        /* 控制面板 */
+        body.recording-mode #stageArea {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 9999;
+            box-shadow: none;
+            border-radius: 0;
+        }
+
+        body.recording-mode .controls-panel {
+            display: none !important;
+        }
+
+        /* === 控制面板 === */
         .controls-panel {
             margin-top: 25px;
             display: flex;
@@ -164,7 +169,6 @@
             cursor: pointer;
             font-size: 13px;
         }
-        .ctrl-btn:hover { background: #444; color: white; }
         .primary-btn { background: #a855f7; border: none; color: white; font-weight: bold; }
         .record-btn { background: #ef4444; border: none; color: white; font-weight: bold; }
         input[type="file"] { display: none; }
@@ -190,14 +194,13 @@
 <div class="controls-panel">
     <button class="ctrl-btn" onclick="document.getElementById('bgInput').click()">🖼️ 背景</button>
     <input type="file" id="bgInput" accept="image/*" onchange="changeBackground(this)">
-    
     <button class="ctrl-btn" onclick="toggleColor()">🎨 换颜色</button>
-    
     <button class="ctrl-btn" onclick="adjustFontSize(2)">A+</button>
     <button class="ctrl-btn" onclick="adjustFontSize(-2)">A-</button>
-
-    <button class="ctrl-btn primary-btn" id="playBtn">▶️ 预览</button>
-    <button class="ctrl-btn record-btn" id="recordBtn">🎥 录制 (9:16)</button>
+    <button class="ctrl-btn primary-btn" id="playBtn">▶️ 播放预览</button>
+    
+    <button class="ctrl-btn record-btn" id="recordVideoBtn" style="display:none;">🎥 电脑内录</button>
+    <button class="ctrl-btn record-btn" id="mobileRecordBtn" style="display:none;">📱 手机全屏</button>
 </div>
 
 <audio id="audioPlayer">
@@ -213,19 +216,28 @@
     const nameEl = document.getElementById('nameEl');
     const textContainer = document.getElementById('textContainer');
     const playBtn = document.getElementById('playBtn');
-    const recordBtn = document.getElementById('recordBtn');
+    const recordVideoBtn = document.getElementById('recordVideoBtn');
+    const mobileRecordBtn = document.getElementById('mobileRecordBtn');
     const bgImage = document.getElementById('bgImage');
 
     let processedBlocks = []; 
     let currentBlockIndex = -1;
-    let renderLoopId;
     let currentFontSize = 28; 
+    let isImmersive = false;
     
     const TARGET_DURATION = 10; 
     const MAX_WORDS_PER_SCREEN = 30;
 
+    // --- 设备检测 ---
+    function checkDevice() {
+        if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+            recordVideoBtn.style.display = 'flex';
+        } else {
+            mobileRecordBtn.style.display = 'flex';
+        }
+    }
+
     function setInitialState() {
-        // 📍 修改：使用 png 图片
         avatarEl.style.backgroundImage = "url('female.png')";
         nameEl.innerText = "周末英语剧场";
         headerContainer.className = 'speaker-header adaptive-mode';
@@ -235,48 +247,20 @@
     function segmentData(data) {
         if (!data || data.length === 0) return [];
         let blocks = [];
-        let currentBlock = {
-            speaker: data[0].speaker, 
-            start: data[0].start,
-            end: 0,
-            words: []
-        };
-
+        let currentBlock = { speaker: data[0].speaker, start: data[0].start, end: 0, words: [] };
         data.forEach((sentence, index) => {
             if (sentence.speaker !== currentBlock.speaker && currentBlock.words.length > 0) {
                 blocks.push(currentBlock);
-                currentBlock = {
-                    speaker: sentence.speaker,
-                    start: sentence.start,
-                    end: 0,
-                    words: []
-                };
+                currentBlock = { speaker: sentence.speaker, start: sentence.start, end: 0, words: [] };
             }
-
             if (sentence.words) currentBlock.words.push(...sentence.words);
             currentBlock.end = sentence.end;
-
             let duration = currentBlock.end - currentBlock.start;
             let wordCount = currentBlock.words.length;
             let isLast = index === data.length - 1;
-
             if ((duration >= TARGET_DURATION || wordCount >= MAX_WORDS_PER_SCREEN || isLast) && currentBlock.words.length > 0) {
                 blocks.push(currentBlock);
-                if (!isLast && data[index+1].speaker === currentBlock.speaker) {
-                    currentBlock = {
-                        speaker: currentBlock.speaker, 
-                        start: data[index+1].start, 
-                        end: 0,
-                        words: []
-                    };
-                } else if (!isLast) {
-                    currentBlock = {
-                        speaker: data[index+1].speaker,
-                        start: data[index+1].start,
-                        end: 0,
-                        words: []
-                    };
-                }
+                if (!isLast) currentBlock = { speaker: data[index+1].speaker, start: data[index+1].start, end: 0, words: [] };
             }
         });
         return blocks;
@@ -284,6 +268,7 @@
 
     function init() {
         processedBlocks = segmentData(rawTranscriptData);
+        checkDevice();
         setInitialState();
     }
 
@@ -299,20 +284,14 @@
         let activeIdx = -1;
         for (let i = 0; i < processedBlocks.length; i++) {
             if (t >= processedBlocks[i].start && t < processedBlocks[i].end + 0.1) {
-                activeIdx = i;
-                break;
+                activeIdx = i; break;
             }
         }
-
         if (activeIdx !== -1 && activeIdx !== currentBlockIndex) {
             currentBlockIndex = activeIdx;
             textContainer.classList.remove('visible');
-            setTimeout(() => {
-                renderBlock(activeIdx);
-                textContainer.classList.add('visible');
-            }, 50);
+            setTimeout(() => { renderBlock(activeIdx); textContainer.classList.add('visible'); }, 50);
         }
-
         if (currentBlockIndex !== -1) {
             const spans = textContainer.querySelectorAll('.word');
             spans.forEach(span => {
@@ -330,18 +309,13 @@
         nameEl.innerText = spkName;
         headerContainer.className = 'speaker-header'; 
         const lowerName = spkName.toLowerCase();
-        
-        // 📍 修改：使用 png 图片
         if (lowerName.includes('female')) {
             headerContainer.classList.add('speaker-state-female');
             avatarEl.style.backgroundImage = "url('female.png')";
         } else if (lowerName.includes('male')) {
             headerContainer.classList.add('speaker-state-male');
             avatarEl.style.backgroundImage = "url('male.png')";
-        } else {
-            avatarEl.style.backgroundImage = "url('female.png')"; 
         }
-
         textContainer.innerHTML = ''; 
         block.words.forEach(w => {
             const span = document.createElement('span');
@@ -354,28 +328,46 @@
         });
     }
 
-    window.adjustFontSize = function(delta) {
-        currentFontSize += delta;
-        textContainer.style.fontSize = currentFontSize + "px";
+    // --- 沉浸模式逻辑 ---
+    function enterImmersive() {
+        isImmersive = true;
+        document.body.classList.add('recording-mode');
+        // 尝试真全屏
+        const docEl = document.documentElement;
+        if (docEl.requestFullscreen) docEl.requestFullscreen().catch(() => {});
+        else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen();
     }
 
+    function exitImmersive() {
+        isImmersive = false;
+        document.body.classList.remove('recording-mode');
+        if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+    }
+
+    // --- 交互 ---
     playBtn.addEventListener('click', () => {
         if (audio.paused) {
-            document.body.classList.add('playing');
-            audio.play();
-            renderLoop();
-            playBtn.innerText = "⏸ 暂停预览";
+            audio.play(); renderLoop();
+            playBtn.innerText = "⏸ 暂停";
             textContainer.classList.add('visible');
         } else {
-            document.body.classList.remove('playing');
-            audio.pause();
-            playBtn.innerText = "▶️ 播放预览";
+            audio.pause(); playBtn.innerText = "▶️ 播放预览";
         }
     });
 
+    mobileRecordBtn.addEventListener('click', () => {
+        enterImmersive();
+        // 静默倒计时 5s
+        setTimeout(() => {
+            audio.currentTime = 0;
+            audio.play();
+            renderLoop();
+        }, 5000);
+    });
+
     audio.addEventListener('ended', () => {
-        document.body.classList.remove('playing', 'recording');
         playBtn.innerText = "▶️ 播放预览";
+        if (isImmersive) exitImmersive();
         setInitialState();
         currentBlockIndex = -1;
     });
@@ -388,52 +380,51 @@
         }
     }
 
-    const colors = ['#ccff00', '#00ffcc', '#007aff', '#ff00ff'];
-    let cIdx = 0;
-    window.toggleColor = function() {
-        cIdx = (cIdx + 1) % colors.length;
-        document.documentElement.style.setProperty('--word-active-color', colors[cIdx]);
+    window.adjustFontSize = function(delta) {
+        currentFontSize += delta;
+        textContainer.style.fontSize = currentFontSize + "px";
     }
 
-    recordBtn.addEventListener('click', async () => {
-        if (!navigator.mediaDevices.getDisplayMedia) {
-            alert("请使用电脑版 Chrome 录制");
-            return;
-        }
+    window.toggleColor = function() {
+        const colors = ['#ccff00', '#00ffcc', '#007aff', '#ff00ff'];
+        const current = getComputedStyle(document.documentElement).getPropertyValue('--word-active-color').trim();
+        let next = colors[(colors.indexOf(current) + 1) % colors.length];
+        document.documentElement.style.setProperty('--word-active-color', next);
+    }
+
+    // PC 录制
+    recordVideoBtn.addEventListener('click', async () => {
         try {
             const stream = await navigator.mediaDevices.getDisplayMedia({
                 video: { width: 1080, height: 1920, frameRate: 60 },
-                audio: { echoCancellation: false, noiseSuppression: false },
-                preferCurrentTab: true,
-                systemAudio: "include"
+                audio: { echoCancellation: false, systemAudio: "include" },
+                preferCurrentTab: true
             });
-
             if (stream.getAudioTracks().length === 0) {
                 alert("❌ 请勾选【分享音频】");
-                stream.getTracks().forEach(t => t.stop());
-                return;
+                stream.getTracks().forEach(t => t.stop()); return;
             }
-
-            document.body.classList.add('recording', 'playing');
-            const mimeType = MediaRecorder.isTypeSupported("video/webm; codecs=vp9") ? "video/webm; codecs=vp9" : "video/webm";
-            const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 15000000 });
+            enterImmersive();
+            const recorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9', videoBitsPerSecond: 15000000 });
             const chunks = [];
-
-            recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+            recorder.ondataavailable = e => chunks.push(e.data);
             recorder.onstop = () => {
                 const blob = new Blob(chunks, { type: "video/webm" });
-                const url = URL.createObjectURL(blob);
                 const a = document.createElement("a");
-                a.href = url;
-                a.download = (document.getElementById('hiddenTitle').innerText.trim() || "video") + ".webm";
+                a.href = URL.createObjectURL(blob);
+                a.download = document.getElementById('hiddenTitle').innerText.trim() + ".webm";
                 a.click();
-                document.body.classList.remove('recording', 'playing');
+                exitImmersive();
             };
-
             recorder.start();
             setTimeout(() => { audio.currentTime = 0; audio.play(); renderLoop(); }, 1000);
             audio.onended = () => { recorder.stop(); stream.getTracks().forEach(t => t.stop()); };
-        } catch (err) { console.error(err); }
+        } catch (err) {}
+    });
+
+    // 简单手势：录制模式下，双击屏幕任意位置退出沉浸
+    stageArea.addEventListener('dblclick', () => {
+        if (isImmersive) { audio.pause(); exitImmersive(); }
     });
 
     init();
