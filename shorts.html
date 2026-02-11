@@ -6,16 +6,16 @@
     <title>Shorts Generator</title>
     <style>
         :root {
-            /* 🎨 配色 */
-            --highlight-bg: #ccff00; 
-            --highlight-text: #000000;
+            /* 🎨 高亮颜色：回归明亮的荧光黄，但不使用背景色 */
+            --word-active-color: #ccff00; 
+            --normal-text: rgba(255, 255, 255, 0.95);
             
             /* 性别色 */
             --female-color: #ec4899; 
             --male-color: #2dd4bf;   
             --unknown-color: #9ca3af;
 
-            --font-stack: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+            --font-stack: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
         }
 
         body {
@@ -51,44 +51,34 @@
         .overlay-layer {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.3); /* 遮罩稍微调淡一点，展示自适应效果 */
+            background: rgba(0, 0, 0, 0.4);
             z-index: 1;
         }
 
-        /* === 1. 固定头部 (头像+名字) === 
-           📍 核心修改：绝对定位，距离顶部 80px
-        */
+        /* === 1. 固定头部 (距离顶部 30px) === */
         .speaker-header {
             position: absolute;
-            top: 80px;  /* 距离顶部 80px */
-            left: 30px; /* 左对齐 */
+            top: 30px;  /* 📍 向上调整到 30px */
+            left: 30px; 
             z-index: 3;
-            
             display: flex;
             align-items: center;
-            gap: 12px;
-            
-            /* 确保混合模式不影响头像 */
+            gap: 10px;
             isolation: isolate; 
         }
 
-        /* 头像 */
         .avatar {
-            width: 25px;  /* 一半大小 */
+            width: 25px;
             height: 25px;
             border-radius: 50%;
             background-color: #ddd;
             background-size: cover;
             background-position: center;
-            background-repeat: no-repeat;
-            
             border: 2px solid rgba(255,255,255,0.8);
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            
             transition: border-color 0.3s ease;
         }
 
-        /* 名字标签 */
         .speaker-name {
             font-size: 15px; 
             font-weight: 900;
@@ -98,52 +88,40 @@
             transition: all 0.3s ease;
         }
 
-        /* ✨ 魔法：自适应模式 (初始状态) */
+        /* 自适应标题模式 */
         .adaptive-mode .speaker-name {
-            /* 差值混合：白底变黑字，黑底变白字 */
             mix-blend-mode: exclusion; 
             color: #fff;
-            text-shadow: none; /* 自适应模式不需要阴影 */
         }
 
-        /* ✨ 正常模式 (播放状态：带颜色) */
-        .speaker-state-female .speaker-name { 
-            color: var(--female-color); 
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-            mix-blend-mode: normal;
-        }
+        /* 正常说话模式 */
+        .speaker-state-female .speaker-name { color: var(--female-color); mix-blend-mode: normal; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
         .speaker-state-female .avatar { border-color: var(--female-color); }
 
-        .speaker-state-male .speaker-name { 
-            color: var(--male-color); 
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-            mix-blend-mode: normal;
-        }
+        .speaker-state-male .speaker-name { color: var(--male-color); mix-blend-mode: normal; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
         .speaker-state-male .avatar { border-color: var(--male-color); }
 
 
-        /* === 2. 文本块 === 
-           位于头像下方，留出间距
-        */
+        /* === 2. 文本块 (紧随其下) === */
         .text-block {
             position: absolute;
-            top: 130px; /* 80px (Top) + 25px (Avatar) + 25px (Gap) */
+            top: 80px; /* 30px + 25px + 25px 间距 */
             left: 0;
             width: 100%;
-            padding: 0 30px 0 34px; /* 左边稍微多一点，对齐文字视觉 */
+            padding: 0 35px;
             box-sizing: border-box;
             z-index: 2;
 
             font-size: 28px;
-            line-height: 1.4;
+            line-height: 1.45;
             text-align: left;
             font-weight: 800;
-            color: rgba(255,255,255,0.95);
-            text-shadow: 0 2px 10px rgba(0,0,0,0.6);
+            color: var(--normal-text);
+            text-shadow: 0 2px 10px rgba(0,0,0,0.7);
             
             opacity: 0;
             transform: translateY(10px);
-            transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
 
         .text-block.visible {
@@ -151,22 +129,19 @@
             transform: translateY(0);
         }
 
-        /* 单词高亮 */
+        /* === 3. 单词高亮 (回归 Template 方式) === */
         .word {
-            display: inline-block;
+            display: inline; /* 恢复自然行内排列，解决间距问题 */
+            color: inherit;
+            transition: color 0.15s ease, text-shadow 0.15s ease;
             position: relative;
-            z-index: 1;
-            padding: 2px 4px; 
-            margin: 0 1px;
-            border-radius: 6px;
-            transition: background-color 0.1s;
         }
 
         .word.active {
-            background-color: var(--highlight-bg);
-            color: var(--highlight-text);
-            text-shadow: none;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            /* 只改变文字颜色，不加背景 */
+            color: var(--word-active-color) !important;
+            /* 增加发光感 */
+            text-shadow: 0 0 12px rgba(204, 255, 0, 0.6), 0 0 20px rgba(204, 255, 0, 0.4);
         }
 
         /* 录制清理 */
@@ -212,13 +187,13 @@
     <div id="textContainer" class="text-block"></div>
 </div>
 
-<div id="hiddenTitle" style="display:none;">The Sewing Mistake Behind the Sad Horse</div>
+<div id="hiddenTitle" style="display:none;">{{TRACK_TITLE}}</div>
 
 <div class="controls-panel">
-    <button class="ctrl-btn" onclick="document.getElementById('bgInput').click()">🖼️ 换背景</button>
+    <button class="ctrl-btn" onclick="document.getElementById('bgInput').click()">🖼️ 背景</button>
     <input type="file" id="bgInput" accept="image/*" onchange="changeBackground(this)">
     
-    <button class="ctrl-btn" onclick="toggleColor()">🎨 换高亮</button>
+    <button class="ctrl-btn" onclick="toggleColor()">🎨 换颜色</button>
     
     <button class="ctrl-btn" onclick="adjustFontSize(2)">A+</button>
     <button class="ctrl-btn" onclick="adjustFontSize(-2)">A-</button>
@@ -228,18 +203,17 @@
 </div>
 
 <audio id="audioPlayer">
-    <source src="The_Sewing_Mistake_Behind_the_Sad_Horse.m4a" type="audio/mp4">
+    <source src="{{AUDIO_SRC}}" type="audio/mp4">
 </audio>
 
 <script>
-    const rawTranscriptData = [{"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Wait, I'm looking this article, teacher, and I have to ask, did they really make a toy with a mistake on purpose?", "start": 0.031, "end": 6.98, "words": [{"word": "Wait,", "start": 0.031, "end": 0.311}, {"word": "I'm", "start": 0.432, "end": 0.492}, {"word": "looking", "start": 0.552, "end": 0.792}, {"word": "this", "start": 0.832, "end": 0.952}, {"word": "article,", "start": 1.052, "end": 1.353}, {"word": "teacher,", "start": 1.393, "end": 1.633}, {"word": "and", "start": 1.653, "end": 1.713}, {"word": "I", "start": 1.733, "end": 1.753}, {"word": "have", "start": 1.833, "end": 1.953}, {"word": "to", "start": 1.973, "end": 2.034}, {"word": "ask,", "start": 2.174, "end": 2.374}, {"word": "did", "start": 2.895, "end": 3.015}, {"word": "they", "start": 3.055, "end": 3.175}, {"word": "really", "start": 3.275, "end": 3.576}, {"word": "make", "start": 3.696, "end": 3.856}, {"word": "a", "start": 3.936, "end": 3.956}, {"word": "toy", "start": 4.036, "end": 4.316}, {"word": "with", "start": 4.357, "end": 4.457}, {"word": "a", "start": 4.537, "end": 4.557}, {"word": "mistake", "start": 4.597, "end": 4.997}, {"word": "on", "start": 6.299, "end": 6.359}, {"word": "purpose?", "start": 6.419, "end": 6.98}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "That is such a good question.", "start": 7.0, "end": 8.462, "words": [{"word": "That", "start": 7.0, "end": 7.16}, {"word": "is", "start": 7.22, "end": 7.28}, {"word": "such", "start": 7.521, "end": 7.701}, {"word": "a", "start": 7.741, "end": 7.781}, {"word": "good", "start": 7.821, "end": 7.941}, {"word": "question.", "start": 8.021, "end": 8.462}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It says here, a toy that was designed to be happy became famous because it looks so miserable.", "start": 8.702, "end": 13.148, "words": [{"word": "It", "start": 8.702, "end": 8.742}, {"word": "says", "start": 8.782, "end": 8.902}, {"word": "here,", "start": 8.942, "end": 9.123}, {"word": "a", "start": 9.143, "end": 9.163}, {"word": "toy", "start": 9.223, "end": 9.443}, {"word": "that", "start": 9.483, "end": 9.583}, {"word": "was", "start": 9.623, "end": 9.703}, {"word": "designed", "start": 9.763, "end": 10.084}, {"word": "to", "start": 10.124, "end": 10.164}, {"word": "be", "start": 10.204, "end": 10.284}, {"word": "happy", "start": 10.364, "end": 10.725}, {"word": "became", "start": 11.165, "end": 11.426}, {"word": "famous", "start": 11.506, "end": 11.826}, {"word": "because", "start": 11.866, "end": 12.046}, {"word": "it", "start": 12.106, "end": 12.146}, {"word": "looks", "start": 12.166, "end": 12.347}, {"word": "so", "start": 12.367, "end": 12.507}, {"word": "miserable.", "start": 12.607, "end": 13.148}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "And no, it was not on purpose.", "start": 13.168, "end": 14.79, "words": [{"word": "And", "start": 13.168, "end": 13.248}, {"word": "no,", "start": 13.308, "end": 13.508}, {"word": "it", "start": 13.528, "end": 13.588}, {"word": "was", "start": 13.628, "end": 13.728}, {"word": "not", "start": 13.769, "end": 13.929}, {"word": "on", "start": 13.989, "end": 14.049}, {"word": "purpose.", "start": 14.089, "end": 14.79}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "But it is a really fascinating story.", "start": 14.81, "end": 17.613, "words": [{"word": "But", "start": 14.81, "end": 14.93}, {"word": "it", "start": 14.99, "end": 15.05}, {"word": "is", "start": 15.19, "end": 15.311}, {"word": "a", "start": 15.331, "end": 15.351}, {"word": "really", "start": 16.212, "end": 16.532}, {"word": "fascinating", "start": 16.572, "end": 17.233}, {"word": "story.", "start": 17.293, "end": 17.613}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "So today, we are exploring an article from The Week Junior called Sad Horse Becomes Popular Toy.", "start": 17.994, "end": 23.541, "words": [{"word": "So", "start": 17.994, "end": 18.134}, {"word": "today,", "start": 18.154, "end": 18.475}, {"word": "we", "start": 18.535, "end": 18.615}, {"word": "are", "start": 18.675, "end": 18.735}, {"word": "exploring", "start": 18.795, "end": 19.216}, {"word": "an", "start": 19.256, "end": 19.296}, {"word": "article", "start": 19.396, "end": 19.716}, {"word": "from", "start": 19.756, "end": 19.936}, {"word": "The", "start": 19.956, "end": 20.017}, {"word": "Week", "start": 20.057, "end": 20.237}, {"word": "Junior", "start": 20.297, "end": 20.697}, {"word": "called", "start": 20.938, "end": 21.258}, {"word": "Sad", "start": 21.298, "end": 21.759}, {"word": "Horse", "start": 21.819, "end": 22.079}, {"word": "Becomes", "start": 22.159, "end": 22.52}, {"word": "Popular", "start": 22.56, "end": 23.06}, {"word": "Toy.", "start": 23.1, "end": 23.541}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "And our goal is to understand how a big mistake became, you know, a must-have item.", "start": 23.521, "end": 29.431, "words": [{"word": "And", "start": 23.521, "end": 24.583}, {"word": "our", "start": 24.623, "end": 24.803}, {"word": "goal", "start": 24.843, "end": 25.204}, {"word": "is", "start": 25.364, "end": 25.424}, {"word": "to", "start": 25.464, "end": 25.524}, {"word": "understand", "start": 25.585, "end": 26.065}, {"word": "how", "start": 26.085, "end": 26.246}, {"word": "a", "start": 26.326, "end": 26.346}, {"word": "big", "start": 26.506, "end": 26.686}, {"word": "mistake", "start": 26.746, "end": 27.167}, {"word": "became,", "start": 27.247, "end": 27.768}, {"word": "you", "start": 27.808, "end": 28.109}, {"word": "know,", "start": 28.149, "end": 28.289}, {"word": "a", "start": 28.489, "end": 28.55}, {"word": "must-have", "start": 28.65, "end": 29.07}, {"word": "item.", "start": 29.211, "end": 29.431}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Must-have item.", "start": 29.551, "end": 30.313, "words": [{"word": "Must-have", "start": 29.551, "end": 29.952}, {"word": "item.", "start": 29.972, "end": 30.313}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Yeah.", "start": 30.373, "end": 30.633, "words": [{"word": "Yeah.", "start": 30.373, "end": 30.633}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "So everyone is rushing out to buy a broken toy.", "start": 30.954, "end": 34.299, "words": [{"word": "So", "start": 30.954, "end": 31.114}, {"word": "everyone", "start": 31.134, "end": 32.296}, {"word": "is", "start": 32.376, "end": 32.436}, {"word": "rushing", "start": 32.516, "end": 32.817}, {"word": "out", "start": 32.897, "end": 32.997}, {"word": "to", "start": 33.017, "end": 33.077}, {"word": "buy", "start": 33.137, "end": 33.298}, {"word": "a", "start": 33.338, "end": 33.378}, {"word": "broken", "start": 33.458, "end": 33.859}, {"word": "toy.", "start": 33.939, "end": 34.299}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "That sounds a little crazy.", "start": 34.319, "end": 35.762, "words": [{"word": "That", "start": 34.319, "end": 34.88}, {"word": "sounds", "start": 34.92, "end": 35.081}, {"word": "a", "start": 35.121, "end": 35.141}, {"word": "little", "start": 35.161, "end": 35.341}, {"word": "crazy.", "start": 35.381, "end": 35.762}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It does sound crazy.", "start": 35.782, "end": 36.643, "words": [{"word": "It", "start": 35.782, "end": 35.842}, {"word": "does", "start": 35.882, "end": 36.042}, {"word": "sound", "start": 36.102, "end": 36.303}, {"word": "crazy.", "start": 36.323, "end": 36.643}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "So what is this toy even supposed to be?", "start": 36.723, "end": 38.847, "words": [{"word": "So", "start": 36.723, "end": 36.824}, {"word": "what", "start": 36.864, "end": 36.964}, {"word": "is", "start": 37.024, "end": 37.064}, {"word": "this", "start": 37.104, "end": 37.224}, {"word": "toy", "start": 37.264, "end": 37.485}, {"word": "even", "start": 37.565, "end": 37.805}, {"word": "supposed", "start": 38.066, "end": 38.406}, {"word": "to", "start": 38.426, "end": 38.486}, {"word": "be?", "start": 38.547, "end": 38.847}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Well, it's a red horse.", "start": 38.827, "end": 39.929, "words": [{"word": "Well,", "start": 38.827, "end": 39.107}, {"word": "it's", "start": 39.188, "end": 39.308}, {"word": "a", "start": 39.348, "end": 39.368}, {"word": "red", "start": 39.428, "end": 39.568}, {"word": "horse.", "start": 39.608, "end": 39.929}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "OK.", "start": 40.67, "end": 40.73, "words": [{"word": "OK.", "start": 40.67, "end": 40.73}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "And it was designed for a very specific celebration.", "start": 40.75, "end": 43.674, "words": [{"word": "And", "start": 40.75, "end": 40.83}, {"word": "it", "start": 40.85, "end": 40.89}, {"word": "was", "start": 40.95, "end": 41.03}, {"word": "designed", "start": 41.09, "end": 41.471}, {"word": "for", "start": 41.551, "end": 41.731}, {"word": "a", "start": 41.752, "end": 41.772}, {"word": "very", "start": 42.032, "end": 42.352}, {"word": "specific", "start": 42.453, "end": 42.973}, {"word": "celebration.", "start": 43.033, "end": 43.674}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "OK.", "start": 43.755, "end": 44.135, "words": [{"word": "OK.", "start": 43.755, "end": 44.135}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It was made for Chinese New Year, which is on February 7.", "start": 44.155, "end": 46.779, "words": [{"word": "It", "start": 44.155, "end": 44.215}, {"word": "was", "start": 44.235, "end": 44.336}, {"word": "made", "start": 44.376, "end": 44.536}, {"word": "for", "start": 44.596, "end": 44.696}, {"word": "Chinese", "start": 44.776, "end": 45.177}, {"word": "New", "start": 45.197, "end": 45.377}, {"word": "Year,", "start": 45.397, "end": 45.577}, {"word": "which", "start": 45.658, "end": 45.798}, {"word": "is", "start": 45.858, "end": 45.918}, {"word": "on", "start": 45.998, "end": 46.078}, {"word": "February", "start": 46.098, "end": 46.619}, {"word": "7.", "start": 46.639, "end": 46.779}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Oh, I know about that.", "start": 46.799, "end": 47.781, "words": [{"word": "Oh,", "start": 46.799, "end": 47.22}, {"word": "I", "start": 47.28, "end": 47.32}, {"word": "know", "start": 47.36, "end": 47.46}, {"word": "about", "start": 47.48, "end": 47.641}, {"word": "that.", "start": 47.661, "end": 47.781}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Each year has a different animal, right?", "start": 47.861, "end": 49.063, "words": [{"word": "Each", "start": 47.861, "end": 47.961}, {"word": "year", "start": 48.001, "end": 48.121}, {"word": "has", "start": 48.161, "end": 48.262}, {"word": "a", "start": 48.322, "end": 48.342}, {"word": "different", "start": 48.382, "end": 48.602}, {"word": "animal,", "start": 48.662, "end": 48.923}, {"word": "right?", "start": 48.943, "end": 49.063}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Exactly right.", "start": 49.083, "end": 49.664, "words": [{"word": "Exactly", "start": 49.083, "end": 49.443}, {"word": "right.", "start": 49.503, "end": 49.664}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "And in Chinese culture, the year 2026 is the year of the fire horse.", "start": 50.044, "end": 54.171, "words": [{"word": "And", "start": 50.044, "end": 50.144}, {"word": "in", "start": 50.245, "end": 50.305}, {"word": "Chinese", "start": 50.345, "end": 50.645}, {"word": "culture,", "start": 50.705, "end": 51.066}, {"word": "the", "start": 51.126, "end": 51.246}, {"word": "year", "start": 51.266, "end": 51.406}, {"word": "2026", "start": 51.426, "end": 51.507}, {"word": "is", "start": 51.907, "end": 52.388}, {"word": "the", "start": 52.728, "end": 52.829}, {"word": "year", "start": 52.849, "end": 53.049}, {"word": "of", "start": 53.109, "end": 53.149}, {"word": "the", "start": 53.229, "end": 53.41}, {"word": "fire", "start": 53.59, "end": 53.89}, {"word": "horse.", "start": 53.91, "end": 54.171}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "The fire horse.", "start": 54.231, "end": 54.812, "words": [{"word": "The", "start": 54.231, "end": 54.311}, {"word": "fire", "start": 54.351, "end": 54.591}, {"word": "horse.", "start": 54.611, "end": 54.812}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "OK.", "start": 55.232, "end": 55.292, "words": [{"word": "OK.", "start": 55.232, "end": 55.292}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "So this toy was meant to be a happy symbol for this big event.", "start": 55.312, "end": 58.437, "words": [{"word": "So", "start": 55.312, "end": 55.413}, {"word": "this", "start": 55.453, "end": 55.573}, {"word": "toy", "start": 55.673, "end": 55.933}, {"word": "was", "start": 55.994, "end": 56.094}, {"word": "meant", "start": 56.154, "end": 56.314}, {"word": "to", "start": 56.354, "end": 56.434}, {"word": "be", "start": 56.474, "end": 56.635}, {"word": "a", "start": 56.655, "end": 56.675}, {"word": "happy", "start": 56.835, "end": 57.115}, {"word": "symbol", "start": 57.175, "end": 57.476}, {"word": "for", "start": 57.536, "end": 57.636}, {"word": "this", "start": 57.676, "end": 57.796}, {"word": "big", "start": 57.876, "end": 58.057}, {"word": "event.", "start": 58.117, "end": 58.437}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It was supposed to bring joy and celebration.", "start": 58.598, "end": 60.46, "words": [{"word": "It", "start": 58.598, "end": 58.638}, {"word": "was", "start": 58.678, "end": 58.738}, {"word": "supposed", "start": 58.758, "end": 58.958}, {"word": "to", "start": 58.978, "end": 59.038}, {"word": "bring", "start": 59.058, "end": 59.218}, {"word": "joy", "start": 59.299, "end": 59.619}, {"word": "and", "start": 59.739, "end": 59.799}, {"word": "celebration.", "start": 59.839, "end": 60.46}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "So if it's supposed to be happy, how did this happen?", "start": 60.921, "end": 63.185, "words": [{"word": "So", "start": 60.921, "end": 61.081}, {"word": "if", "start": 61.222, "end": 61.282}, {"word": "it's", "start": 61.342, "end": 61.442}, {"word": "supposed", "start": 61.482, "end": 61.802}, {"word": "to", "start": 61.823, "end": 61.863}, {"word": "be", "start": 61.903, "end": 62.003}, {"word": "happy,", "start": 62.023, "end": 62.383}, {"word": "how", "start": 62.443, "end": 62.544}, {"word": "did", "start": 62.584, "end": 62.664}, {"word": "this", "start": 62.704, "end": 62.804}, {"word": "happen?", "start": 62.824, "end": 63.185}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "In the picture, the horse looks It looks miserable.", "start": 64.887, "end": 68.43, "words": [{"word": "In", "start": 64.887, "end": 64.947}, {"word": "the", "start": 64.987, "end": 65.068}, {"word": "picture,", "start": 65.128, "end": 65.508}, {"word": "the", "start": 65.849, "end": 65.929}, {"word": "horse", "start": 65.969, "end": 66.189}, {"word": "looks", "start": 66.229, "end": 66.69}, {"word": "It", "start": 67.328, "end": 67.649}, {"word": "looks", "start": 67.689, "end": 67.889}, {"word": "miserable.", "start": 67.969, "end": 68.43}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It does.", "start": 68.57, "end": 68.891, "words": [{"word": "It", "start": 68.57, "end": 68.63}, {"word": "does.", "start": 68.67, "end": 68.891}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "And the reason is actually quite funny.", "start": 68.991, "end": 70.433, "words": [{"word": "And", "start": 68.991, "end": 69.051}, {"word": "the", "start": 69.111, "end": 69.171}, {"word": "reason", "start": 69.231, "end": 69.532}, {"word": "is", "start": 69.592, "end": 69.672}, {"word": "actually", "start": 69.732, "end": 69.952}, {"word": "quite", "start": 69.972, "end": 70.113}, {"word": "funny.", "start": 70.173, "end": 70.433}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It was a production error.", "start": 70.794, "end": 71.835, "words": [{"word": "It", "start": 70.794, "end": 70.854}, {"word": "was", "start": 70.894, "end": 70.994}, {"word": "a", "start": 71.054, "end": 71.074}, {"word": "production", "start": 71.154, "end": 71.595}, {"word": "error.", "start": 71.615, "end": 71.835}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "An error.", "start": 72.136, "end": 72.637, "words": [{"word": "An", "start": 72.136, "end": 72.196}, {"word": "error.", "start": 72.256, "end": 72.637}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Yes.", "start": 72.777, "end": 72.997, "words": [{"word": "Yes.", "start": 72.777, "end": 72.997}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "The factory workers made a mistake when they were sewing the toy.", "start": 73.298, "end": 76.263, "words": [{"word": "The", "start": 73.298, "end": 73.378}, {"word": "factory", "start": 73.418, "end": 73.759}, {"word": "workers", "start": 73.799, "end": 74.099}, {"word": "made", "start": 74.139, "end": 74.28}, {"word": "a", "start": 74.32, "end": 74.34}, {"word": "mistake", "start": 74.38, "end": 74.961}, {"word": "when", "start": 75.021, "end": 75.161}, {"word": "they", "start": 75.181, "end": 75.281}, {"word": "were", "start": 75.321, "end": 75.441}, {"word": "sewing", "start": 75.502, "end": 75.782}, {"word": "the", "start": 75.842, "end": 75.902}, {"word": "toy.", "start": 75.962, "end": 76.263}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Sewing?", "start": 76.443, "end": 76.744, "words": [{"word": "Sewing?", "start": 76.443, "end": 76.744}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "You mean with a needle and thread?", "start": 76.964, "end": 78.266, "words": [{"word": "You", "start": 76.964, "end": 77.044}, {"word": "mean", "start": 77.084, "end": 77.244}, {"word": "with", "start": 77.425, "end": 77.525}, {"word": "a", "start": 77.585, "end": 77.605}, {"word": "needle", "start": 77.665, "end": 77.866}, {"word": "and", "start": 77.906, "end": 77.966}, {"word": "thread?", "start": 78.006, "end": 78.266}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "That's right.", "start": 78.386, "end": 78.867, "words": [{"word": "That's", "start": 78.386, "end": 78.547}, {"word": "right.", "start": 78.627, "end": 78.867}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "When they used the needle and thread to attach the mouth, they sewed it upside down.", "start": 79.148, "end": 83.615, "words": [{"word": "When", "start": 79.148, "end": 79.288}, {"word": "they", "start": 79.308, "end": 79.448}, {"word": "used", "start": 79.648, "end": 79.829}, {"word": "the", "start": 79.909, "end": 80.009}, {"word": "needle", "start": 80.049, "end": 80.31}, {"word": "and", "start": 80.37, "end": 80.43}, {"word": "thread", "start": 80.51, "end": 80.81}, {"word": "to", "start": 80.891, "end": 81.011}, {"word": "attach", "start": 81.071, "end": 81.371}, {"word": "the", "start": 81.411, "end": 81.532}, {"word": "mouth,", "start": 81.572, "end": 81.872}, {"word": "they", "start": 82.513, "end": 82.653}, {"word": "sewed", "start": 82.714, "end": 82.934}, {"word": "it", "start": 82.994, "end": 83.034}, {"word": "upside", "start": 83.094, "end": 83.375}, {"word": "down.", "start": 83.415, "end": 83.615}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "No way.", "start": 84.096, "end": 84.517, "words": [{"word": "No", "start": 84.096, "end": 84.236}, {"word": "way.", "start": 84.296, "end": 84.517}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Upside down?", "start": 84.837, "end": 85.358, "words": [{"word": "Upside", "start": 84.837, "end": 85.098}, {"word": "down?", "start": 85.138, "end": 85.358}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Yes.", "start": 85.478, "end": 85.739, "words": [{"word": "Yes.", "start": 85.478, "end": 85.739}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "So instead of a happy smile, the horse has a big...", "start": 86.099, "end": 89.305, "words": [{"word": "So", "start": 86.099, "end": 86.38}, {"word": "instead", "start": 86.42, "end": 86.921}, {"word": "of", "start": 86.961, "end": 87.001}, {"word": "a", "start": 87.061, "end": 87.081}, {"word": "happy", "start": 87.141, "end": 87.441}, {"word": "smile,", "start": 87.502, "end": 87.922}, {"word": "the", "start": 88.143, "end": 88.243}, {"word": "horse", "start": 88.283, "end": 88.503}, {"word": "has", "start": 88.543, "end": 88.684}, {"word": "a", "start": 88.744, "end": 88.764}, {"word": "big...", "start": 88.924, "end": 89.305}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "A big frown.", "start": 89.325, "end": 90.126, "words": [{"word": "A", "start": 89.325, "end": 89.345}, {"word": "big", "start": 89.405, "end": 89.565}, {"word": "frown.", "start": 89.645, "end": 90.126}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Exactly.", "start": 90.146, "end": 90.647, "words": [{"word": "Exactly.", "start": 90.146, "end": 90.647}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "A big frown.", "start": 90.727, "end": 91.288, "words": [{"word": "A", "start": 90.727, "end": 90.747}, {"word": "big", "start": 90.807, "end": 90.967}, {"word": "frown.", "start": 91.027, "end": 91.288}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Wow.", "start": 91.388, "end": 92.61, "words": [{"word": "Wow.", "start": 91.388, "end": 92.61}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "That's amazing.", "start": 92.793, "end": 93.374, "words": [{"word": "That's", "start": 92.793, "end": 92.993}, {"word": "amazing.", "start": 93.033, "end": 93.374}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "So just a simple mistake with the thread completely changed the toy's personality.", "start": 93.414, "end": 97.88, "words": [{"word": "So", "start": 93.414, "end": 93.594}, {"word": "just", "start": 93.774, "end": 93.935}, {"word": "a", "start": 93.995, "end": 94.015}, {"word": "simple", "start": 94.095, "end": 94.355}, {"word": "mistake", "start": 94.395, "end": 94.696}, {"word": "with", "start": 94.716, "end": 94.836}, {"word": "the", "start": 94.876, "end": 94.976}, {"word": "thread", "start": 95.016, "end": 95.316}, {"word": "completely", "start": 95.356, "end": 96.398}, {"word": "changed", "start": 96.458, "end": 96.778}, {"word": "the", "start": 96.838, "end": 96.918}, {"word": "toy's", "start": 96.958, "end": 97.219}, {"word": "personality.", "start": 97.279, "end": 97.88}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It really did.", "start": 97.96, "end": 98.501, "words": [{"word": "It", "start": 97.96, "end": 98.0}, {"word": "really", "start": 98.06, "end": 98.28}, {"word": "did.", "start": 98.32, "end": 98.501}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "So are people angry about this?", "start": 98.661, "end": 101.384, "words": [{"word": "So", "start": 98.661, "end": 98.841}, {"word": "are", "start": 98.881, "end": 100.163}, {"word": "people", "start": 100.203, "end": 100.503}, {"word": "angry", "start": 100.643, "end": 100.904}, {"word": "about", "start": 100.944, "end": 101.144}, {"word": "this?", "start": 101.184, "end": 101.384}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Yeah.", "start": 101.524, "end": 101.945, "words": [{"word": "Yeah.", "start": 101.524, "end": 101.945}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "About buying a broken toy?", "start": 101.965, "end": 103.127, "words": [{"word": "About", "start": 101.965, "end": 102.145}, {"word": "buying", "start": 102.205, "end": 102.446}, {"word": "a", "start": 102.486, "end": 102.506}, {"word": "broken", "start": 102.546, "end": 102.846}, {"word": "toy?", "start": 102.886, "end": 103.127}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Well, that's the big surprise.", "start": 103.227, "end": 104.308, "words": [{"word": "Well,", "start": 103.227, "end": 103.387}, {"word": "that's", "start": 103.407, "end": 103.587}, {"word": "the", "start": 103.607, "end": 103.687}, {"word": "big", "start": 103.707, "end": 103.868}, {"word": "surprise.", "start": 103.888, "end": 104.308}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "They are not angry at all.", "start": 104.368, "end": 105.95, "words": [{"word": "They", "start": 104.368, "end": 104.528}, {"word": "are", "start": 104.568, "end": 104.649}, {"word": "not", "start": 104.689, "end": 105.069}, {"word": "angry", "start": 105.209, "end": 105.47}, {"word": "at", "start": 105.53, "end": 105.57}, {"word": "all.", "start": 105.77, "end": 105.95}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "In fact, this mistake has made the toy a mascot for many office workers in China.", "start": 106.531, "end": 111.197, "words": [{"word": "In", "start": 106.531, "end": 106.611}, {"word": "fact,", "start": 106.671, "end": 106.932}, {"word": "this", "start": 107.012, "end": 107.152}, {"word": "mistake", "start": 107.232, "end": 107.552}, {"word": "has", "start": 107.613, "end": 107.733}, {"word": "made", "start": 107.793, "end": 107.953}, {"word": "the", "start": 107.993, "end": 108.093}, {"word": "toy", "start": 108.153, "end": 108.454}, {"word": "a", "start": 108.474, "end": 108.494}, {"word": "mascot", "start": 108.774, "end": 109.435}, {"word": "for", "start": 109.635, "end": 109.755}, {"word": "many", "start": 109.795, "end": 110.036}, {"word": "office", "start": 110.116, "end": 110.356}, {"word": "workers", "start": 110.396, "end": 110.697}, {"word": "in", "start": 110.757, "end": 110.817}, {"word": "China.", "start": 110.857, "end": 111.197}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "A mascot?", "start": 111.538, "end": 112.078, "words": [{"word": "A", "start": 111.538, "end": 111.578}, {"word": "mascot?", "start": 111.618, "end": 112.078}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "What's a mascot?", "start": 112.179, "end": 112.839, "words": [{"word": "What's", "start": 112.179, "end": 112.339}, {"word": "a", "start": 112.379, "end": 112.399}, {"word": "mascot?", "start": 112.439, "end": 112.839}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "A mascot is a character or a symbol that represents a group.", "start": 113.06, "end": 116.284, "words": [{"word": "A", "start": 113.06, "end": 113.08}, {"word": "mascot", "start": 113.12, "end": 113.54}, {"word": "is", "start": 113.6, "end": 113.68}, {"word": "a", "start": 113.741, "end": 113.761}, {"word": "character", "start": 113.821, "end": 114.341}, {"word": "or", "start": 114.381, "end": 114.602}, {"word": "a", "start": 114.662, "end": 114.702}, {"word": "symbol", "start": 114.822, "end": 115.182}, {"word": "that", "start": 115.223, "end": 115.343}, {"word": "represents", "start": 115.383, "end": 115.783}, {"word": "a", "start": 115.843, "end": 115.863}, {"word": "group.", "start": 115.943, "end": 116.284}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Like a sports team might have a mascot for luck.", "start": 116.965, "end": 119.408, "words": [{"word": "Like", "start": 116.965, "end": 117.125}, {"word": "a", "start": 117.165, "end": 117.185}, {"word": "sports", "start": 117.245, "end": 117.606}, {"word": "team", "start": 117.666, "end": 117.926}, {"word": "might", "start": 118.006, "end": 118.146}, {"word": "have", "start": 118.206, "end": 118.327}, {"word": "a", "start": 118.367, "end": 118.407}, {"word": "mascot", "start": 118.447, "end": 118.867}, {"word": "for", "start": 118.907, "end": 119.028}, {"word": "luck.", "start": 119.088, "end": 119.408}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Oh, I see.", "start": 119.793, "end": 120.354, "words": [{"word": "Oh,", "start": 119.793, "end": 120.013}, {"word": "I", "start": 120.093, "end": 120.133}, {"word": "see.", "start": 120.193, "end": 120.354}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "So the sad horse is a mascot for office workers.", "start": 120.574, "end": 122.916, "words": [{"word": "So", "start": 120.574, "end": 120.714}, {"word": "the", "start": 120.734, "end": 120.834}, {"word": "sad", "start": 120.874, "end": 121.134}, {"word": "horse", "start": 121.194, "end": 121.435}, {"word": "is", "start": 121.495, "end": 121.555}, {"word": "a", "start": 121.595, "end": 121.635}, {"word": "mascot", "start": 121.675, "end": 122.055}, {"word": "for", "start": 122.095, "end": 122.215}, {"word": "office", "start": 122.276, "end": 122.536}, {"word": "workers.", "start": 122.576, "end": 122.916}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Why?", "start": 123.096, "end": 123.317, "words": [{"word": "Why?", "start": 123.096, "end": 123.317}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Because many of them are tired from working very long hours.", "start": 123.557, "end": 126.5, "words": [{"word": "Because", "start": 123.557, "end": 123.997}, {"word": "many", "start": 124.238, "end": 124.458}, {"word": "of", "start": 124.498, "end": 124.538}, {"word": "them", "start": 124.598, "end": 124.698}, {"word": "are", "start": 124.738, "end": 124.818}, {"word": "tired", "start": 124.858, "end": 125.118}, {"word": "from", "start": 125.158, "end": 125.259}, {"word": "working", "start": 125.319, "end": 125.559}, {"word": "very", "start": 125.619, "end": 125.899}, {"word": "long", "start": 125.939, "end": 126.119}, {"word": "hours.", "start": 126.159, "end": 126.5}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "And when they look at this horse's sad face, they feel like it understands them.", "start": 127.02, "end": 130.824, "words": [{"word": "And", "start": 127.02, "end": 127.14}, {"word": "when", "start": 127.16, "end": 127.421}, {"word": "they", "start": 127.441, "end": 127.561}, {"word": "look", "start": 127.601, "end": 127.781}, {"word": "at", "start": 127.821, "end": 127.861}, {"word": "this", "start": 127.881, "end": 128.041}, {"word": "horse's", "start": 128.121, "end": 128.462}, {"word": "sad", "start": 128.522, "end": 128.802}, {"word": "face,", "start": 128.862, "end": 129.183}, {"word": "they", "start": 129.383, "end": 129.503}, {"word": "feel", "start": 129.543, "end": 129.703}, {"word": "like", "start": 129.723, "end": 129.823}, {"word": "it", "start": 129.883, "end": 129.923}, {"word": "understands", "start": 130.003, "end": 130.564}, {"word": "them.", "start": 130.644, "end": 130.824}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "That actually makes a lot of sense.", "start": 131.525, "end": 132.586, "words": [{"word": "That", "start": 131.525, "end": 131.645}, {"word": "actually", "start": 131.685, "end": 131.845}, {"word": "makes", "start": 131.865, "end": 131.985}, {"word": "a", "start": 132.025, "end": 132.045}, {"word": "lot", "start": 132.085, "end": 132.186}, {"word": "of", "start": 132.226, "end": 132.266}, {"word": "sense.", "start": 132.306, "end": 132.586}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "The horse is supposed to be a fire horse full of energy.", "start": 132.866, "end": 135.469, "words": [{"word": "The", "start": 132.866, "end": 132.946}, {"word": "horse", "start": 132.986, "end": 133.167}, {"word": "is", "start": 133.227, "end": 133.267}, {"word": "supposed", "start": 133.287, "end": 133.487}, {"word": "to", "start": 133.507, "end": 133.567}, {"word": "be", "start": 133.587, "end": 133.667}, {"word": "a", "start": 133.707, "end": 133.727}, {"word": "fire", "start": 133.827, "end": 134.108}, {"word": "horse", "start": 134.148, "end": 134.408}, {"word": "full", "start": 134.748, "end": 134.908}, {"word": "of", "start": 134.948, "end": 135.008}, {"word": "energy.", "start": 135.028, "end": 135.469}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Right.", "start": 135.609, "end": 135.909, "words": [{"word": "Right.", "start": 135.609, "end": 135.909}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "But it just looks exhausted, just like them.", "start": 136.17, "end": 138.292, "words": [{"word": "But", "start": 136.17, "end": 136.27}, {"word": "it", "start": 136.33, "end": 136.37}, {"word": "just", "start": 136.43, "end": 136.59}, {"word": "looks", "start": 136.61, "end": 136.77}, {"word": "exhausted,", "start": 136.83, "end": 137.431}, {"word": "just", "start": 137.731, "end": 137.871}, {"word": "like", "start": 137.931, "end": 138.052}, {"word": "them.", "start": 138.092, "end": 138.292}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Exactly.", "start": 138.312, "end": 138.912, "words": [{"word": "Exactly.", "start": 138.312, "end": 138.912}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It connects with how they feel.", "start": 138.952, "end": 140.114, "words": [{"word": "It", "start": 138.952, "end": 138.992}, {"word": "connects", "start": 139.033, "end": 139.293}, {"word": "with", "start": 139.333, "end": 139.413}, {"word": "how", "start": 139.473, "end": 139.553}, {"word": "they", "start": 139.593, "end": 139.713}, {"word": "feel.", "start": 139.833, "end": 140.114}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "In a year where everyone is expected to be energetic and on fire, this little horse is honest.", "start": 140.334, "end": 146.06, "words": [{"word": "In", "start": 140.334, "end": 140.394}, {"word": "a", "start": 140.454, "end": 140.474}, {"word": "year", "start": 140.554, "end": 140.794}, {"word": "where", "start": 140.874, "end": 141.055}, {"word": "everyone", "start": 141.235, "end": 141.595}, {"word": "is", "start": 141.655, "end": 141.715}, {"word": "expected", "start": 141.795, "end": 142.176}, {"word": "to", "start": 142.216, "end": 142.276}, {"word": "be", "start": 142.316, "end": 142.396}, {"word": "energetic", "start": 142.416, "end": 142.957}, {"word": "and", "start": 143.017, "end": 143.097}, {"word": "on", "start": 143.257, "end": 143.337}, {"word": "fire,", "start": 143.437, "end": 143.777}, {"word": "this", "start": 143.817, "end": 144.698}, {"word": "little", "start": 144.758, "end": 144.979}, {"word": "horse", "start": 145.039, "end": 145.279}, {"word": "is", "start": 145.339, "end": 145.399}, {"word": "honest.", "start": 145.559, "end": 146.06}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It admits, I am tired.", "start": 146.42, "end": 148.382, "words": [{"word": "It", "start": 146.42, "end": 146.48}, {"word": "admits,", "start": 146.54, "end": 146.961}, {"word": "I", "start": 147.501, "end": 147.561}, {"word": "am", "start": 147.661, "end": 147.721}, {"word": "tired.", "start": 147.861, "end": 148.382}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "And the office workers love that honesty.", "start": 148.598, "end": 150.621, "words": [{"word": "And", "start": 148.598, "end": 148.758}, {"word": "the", "start": 148.778, "end": 148.838}, {"word": "office", "start": 148.938, "end": 149.159}, {"word": "workers", "start": 149.199, "end": 149.459}, {"word": "love", "start": 149.499, "end": 149.86}, {"word": "that", "start": 149.92, "end": 150.06}, {"word": "honesty.", "start": 150.12, "end": 150.621}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "That is so funny.", "start": 150.661, "end": 151.822, "words": [{"word": "That", "start": 150.661, "end": 150.961}, {"word": "is", "start": 151.041, "end": 151.101}, {"word": "so", "start": 151.241, "end": 151.442}, {"word": "funny.", "start": 151.562, "end": 151.822}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Adults like the sad toy because they understand how it feels.", "start": 152.022, "end": 155.046, "words": [{"word": "Adults", "start": 152.022, "end": 152.363}, {"word": "like", "start": 152.463, "end": 152.623}, {"word": "the", "start": 152.683, "end": 152.763}, {"word": "sad", "start": 152.803, "end": 153.044}, {"word": "toy", "start": 153.084, "end": 153.364}, {"word": "because", "start": 153.484, "end": 153.765}, {"word": "they", "start": 153.805, "end": 153.925}, {"word": "understand", "start": 153.965, "end": 154.425}, {"word": "how", "start": 154.486, "end": 154.586}, {"word": "it", "start": 154.646, "end": 154.686}, {"word": "feels.", "start": 154.746, "end": 155.046}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "They're tired and the horse is tired too.", "start": 155.607, "end": 157.85, "words": [{"word": "They're", "start": 155.607, "end": 155.907}, {"word": "tired", "start": 155.967, "end": 156.328}, {"word": "and", "start": 156.708, "end": 156.788}, {"word": "the", "start": 156.829, "end": 156.909}, {"word": "horse", "start": 156.949, "end": 157.169}, {"word": "is", "start": 157.209, "end": 157.289}, {"word": "tired", "start": 157.349, "end": 157.61}, {"word": "too.", "start": 157.67, "end": 157.85}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It's a great lesson isn't it.", "start": 158.09, "end": 159.292, "words": [{"word": "It's", "start": 158.09, "end": 158.21}, {"word": "a", "start": 158.25, "end": 158.27}, {"word": "great", "start": 158.33, "end": 158.571}, {"word": "lesson", "start": 158.611, "end": 158.891}, {"word": "isn't", "start": 158.951, "end": 159.152}, {"word": "it.", "start": 159.232, "end": 159.292}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Sometimes mistakes can turn into something very popular.", "start": 159.872, "end": 163.978, "words": [{"word": "Sometimes", "start": 159.872, "end": 160.533}, {"word": "mistakes", "start": 161.134, "end": 162.235}, {"word": "can", "start": 162.296, "end": 162.416}, {"word": "turn", "start": 162.456, "end": 162.656}, {"word": "into", "start": 162.696, "end": 162.836}, {"word": "something", "start": 162.896, "end": 163.157}, {"word": "very", "start": 163.237, "end": 163.457}, {"word": "popular.", "start": 163.517, "end": 163.978}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "The horse is supposed to be happy but being sad is what made it famous.", "start": 164.038, "end": 168.143, "words": [{"word": "The", "start": 164.038, "end": 164.679}, {"word": "horse", "start": 164.719, "end": 164.859}, {"word": "is", "start": 164.919, "end": 164.959}, {"word": "supposed", "start": 164.999, "end": 165.259}, {"word": "to", "start": 165.299, "end": 165.339}, {"word": "be", "start": 165.379, "end": 165.46}, {"word": "happy", "start": 165.54, "end": 165.88}, {"word": "but", "start": 165.96, "end": 166.06}, {"word": "being", "start": 166.12, "end": 166.341}, {"word": "sad", "start": 166.461, "end": 166.881}, {"word": "is", "start": 166.962, "end": 167.002}, {"word": "what", "start": 167.062, "end": 167.162}, {"word": "made", "start": 167.202, "end": 167.362}, {"word": "it", "start": 167.422, "end": 167.462}, {"word": "famous.", "start": 167.582, "end": 168.143}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "I'm gonna look at the picture again.", "start": 168.68, "end": 169.863, "words": [{"word": "I'm", "start": 168.68, "end": 168.84}, {"word": "gonna", "start": 168.86, "end": 168.981}, {"word": "look", "start": 169.001, "end": 169.141}, {"word": "at", "start": 169.161, "end": 169.201}, {"word": "the", "start": 169.241, "end": 169.302}, {"word": "picture", "start": 169.342, "end": 169.622}, {"word": "again.", "start": 169.662, "end": 169.863}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "It really does look so miserable.", "start": 169.943, "end": 171.788, "words": [{"word": "It", "start": 169.943, "end": 169.983}, {"word": "really", "start": 170.063, "end": 170.324}, {"word": "does", "start": 170.384, "end": 170.585}, {"word": "look", "start": 170.625, "end": 170.805}, {"word": "so", "start": 171.186, "end": 171.346}, {"word": "miserable.", "start": 171.387, "end": 171.788}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It certainly does.", "start": 171.808, "end": 172.509, "words": [{"word": "It", "start": 171.808, "end": 171.868}, {"word": "certainly", "start": 171.928, "end": 172.269}, {"word": "does.", "start": 172.309, "end": 172.509}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "And I encourage our listeners to read the text again to find those new vocabulary words like mascot or sown.", "start": 172.65, "end": 178.965, "words": [{"word": "And", "start": 172.65, "end": 172.73}, {"word": "I", "start": 172.79, "end": 172.85}, {"word": "encourage", "start": 172.91, "end": 173.311}, {"word": "our", "start": 173.371, "end": 173.452}, {"word": "listeners", "start": 173.492, "end": 173.853}, {"word": "to", "start": 173.913, "end": 173.993}, {"word": "read", "start": 174.033, "end": 174.153}, {"word": "the", "start": 174.173, "end": 174.253}, {"word": "text", "start": 174.294, "end": 174.514}, {"word": "again", "start": 174.554, "end": 174.755}, {"word": "to", "start": 174.815, "end": 174.915}, {"word": "find", "start": 175.015, "end": 175.336}, {"word": "those", "start": 175.376, "end": 175.637}, {"word": "new", "start": 175.677, "end": 176.058}, {"word": "vocabulary", "start": 176.258, "end": 176.86}, {"word": "words", "start": 176.92, "end": 177.161}, {"word": "like", "start": 177.221, "end": 177.361}, {"word": "mascot", "start": 177.401, "end": 178.163}, {"word": "or", "start": 178.223, "end": 178.303}, {"word": "sown.", "start": 178.444, "end": 178.965}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Right.", "start": 179.005, "end": 179.286, "words": [{"word": "Right.", "start": 179.005, "end": 179.286}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "It is a good reminder for all of us.", "start": 179.727, "end": 181.291, "words": [{"word": "It", "start": 179.727, "end": 179.787}, {"word": "is", "start": 179.847, "end": 179.927}, {"word": "a", "start": 179.967, "end": 179.987}, {"word": "good", "start": 180.108, "end": 180.268}, {"word": "reminder", "start": 180.308, "end": 180.689}, {"word": "for", "start": 180.729, "end": 180.829}, {"word": "all", "start": 180.91, "end": 181.01}, {"word": "of", "start": 181.05, "end": 181.11}, {"word": "us.", "start": 181.21, "end": 181.291}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Sometimes it is okay not to be perfect.", "start": 181.471, "end": 184.398, "words": [{"word": "Sometimes", "start": 181.471, "end": 181.972}, {"word": "it", "start": 182.173, "end": 182.233}, {"word": "is", "start": 182.293, "end": 182.353}, {"word": "okay", "start": 182.373, "end": 183.075}, {"word": "not", "start": 183.295, "end": 183.516}, {"word": "to", "start": 183.536, "end": 183.636}, {"word": "be", "start": 183.676, "end": 183.777}, {"word": "perfect.", "start": 183.857, "end": 184.398}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Keep reading and keep exploring the world.", "start": 184.418, "end": 186.864, "words": [{"word": "Keep", "start": 184.418, "end": 184.659}, {"word": "reading", "start": 184.739, "end": 185.12}, {"word": "and", "start": 185.16, "end": 185.581}, {"word": "keep", "start": 185.641, "end": 185.821}, {"word": "exploring", "start": 185.882, "end": 186.423}, {"word": "the", "start": 186.443, "end": 186.543}, {"word": "world.", "start": 186.583, "end": 186.864}]}, {"speaker": "Female", "speaker_id": "SPEAKER_01", "sentence": "Keep reading and keep exploring the world.", "start": 187.024, "end": 189.45, "words": [{"word": "Keep", "start": 187.024, "end": 187.245}, {"word": "reading", "start": 187.345, "end": 187.786}, {"word": "and", "start": 187.846, "end": 187.927}, {"word": "keep", "start": 187.987, "end": 188.207}, {"word": "exploring", "start": 188.227, "end": 188.789}, {"word": "the", "start": 188.829, "end": 188.949}, {"word": "world.", "start": 188.989, "end": 189.45}]}, {"speaker": "Male", "speaker_id": "SPEAKER_00", "sentence": "Keep reading and keep exploring the world.", "start": 189.731, "end": 192.257, "words": [{"word": "Keep", "start": 189.731, "end": 189.992}, {"word": "reading", "start": 190.072, "end": 190.413}, {"word": "and", "start": 190.493, "end": 190.553}, {"word": "keep", "start": 190.613, "end": 190.854}, {"word": "exploring", "start": 190.874, "end": 191.455}, {"word": "the", "start": 191.495, "end": 191.575}, {"word": "world.", "start": 191.636, "end": 192.257}]}];
+    const rawTranscriptData = {{JSON_DATA}};
 
     const audio = document.getElementById('audioPlayer');
     const headerContainer = document.getElementById('headerContainer');
     const avatarEl = document.getElementById('avatarEl');
     const nameEl = document.getElementById('nameEl');
     const textContainer = document.getElementById('textContainer');
-    
     const playBtn = document.getElementById('playBtn');
     const recordBtn = document.getElementById('recordBtn');
     const bgImage = document.getElementById('bgImage');
@@ -252,21 +226,13 @@
     const TARGET_DURATION = 10; 
     const MAX_WORDS_PER_SCREEN = 30;
 
-    // --- 初始状态设置 ---
     function setInitialState() {
-        // 默认显示 FEMALE.jpg
         avatarEl.style.backgroundImage = "url('FEMALE.jpg')";
-        // 默认文字
         nameEl.innerText = "周末英语剧场";
-        
-        // 开启自适应模式 (mix-blend-mode)
         headerContainer.className = 'speaker-header adaptive-mode';
-        
-        // 清空文本区
         textContainer.innerHTML = "";
     }
 
-    // --- 1. 数据处理 ---
     function segmentData(data) {
         if (!data || data.length === 0) return [];
         let blocks = [];
@@ -297,14 +263,7 @@
 
             if ((duration >= TARGET_DURATION || wordCount >= MAX_WORDS_PER_SCREEN || isLast) && currentBlock.words.length > 0) {
                 blocks.push(currentBlock);
-                if (!isLast && data[index+1].speaker === currentBlock.speaker) {
-                    currentBlock = {
-                        speaker: currentBlock.speaker, 
-                        start: data[index+1].start, 
-                        end: 0,
-                        words: []
-                    };
-                } else if (!isLast) {
+                if (!isLast) {
                     currentBlock = {
                         speaker: data[index+1].speaker,
                         start: data[index+1].start,
@@ -319,10 +278,9 @@
 
     function init() {
         processedBlocks = segmentData(rawTranscriptData);
-        setInitialState(); // 应用初始样式
+        setInitialState();
     }
 
-    // --- 2. 渲染循环 ---
     function renderLoop() {
         if (!audio.paused) {
             updateTimeline();
@@ -332,10 +290,9 @@
 
     function updateTimeline() {
         const t = audio.currentTime;
-
         let activeIdx = -1;
         for (let i = 0; i < processedBlocks.length; i++) {
-            if (t >= processedBlocks[i].start && t < processedBlocks[i].end + 0.2) {
+            if (t >= processedBlocks[i].start && t < processedBlocks[i].end + 0.1) {
                 activeIdx = i;
                 break;
             }
@@ -343,9 +300,7 @@
 
         if (activeIdx !== -1 && activeIdx !== currentBlockIndex) {
             currentBlockIndex = activeIdx;
-            
             textContainer.classList.remove('visible');
-            
             setTimeout(() => {
                 renderBlock(activeIdx);
                 textContainer.classList.add('visible');
@@ -365,17 +320,11 @@
 
     function renderBlock(index) {
         const block = processedBlocks[index];
-        
-        // --- 切换 Speaker (取消自适应，应用颜色) ---
         const spkName = block.speaker || "Unknown";
         nameEl.innerText = spkName;
-        
-        // 移除 adaptive-mode，移除旧颜色
         headerContainer.className = 'speaker-header'; 
-        
         const lowerName = spkName.toLowerCase();
         
-        // 切换头像和颜色
         if (lowerName.includes('female')) {
             headerContainer.classList.add('speaker-state-female');
             avatarEl.style.backgroundImage = "url('FEMALE.jpg')";
@@ -386,7 +335,6 @@
             avatarEl.style.backgroundImage = "url('FEMALE.jpg')"; 
         }
 
-        // --- 渲染文字 ---
         textContainer.innerHTML = ''; 
         block.words.forEach(w => {
             const span = document.createElement('span');
@@ -399,7 +347,6 @@
         });
     }
 
-    // --- 3. 交互 ---
     window.adjustFontSize = function(delta) {
         currentFontSize += delta;
         textContainer.style.fontSize = currentFontSize + "px";
@@ -410,20 +357,18 @@
             document.body.classList.add('playing');
             audio.play();
             renderLoop();
-            playBtn.innerText = "⏸ 暂停";
+            playBtn.innerText = "⏸ 暂停预览";
             textContainer.classList.add('visible');
         } else {
             document.body.classList.remove('playing');
             audio.pause();
-            playBtn.innerText = "▶️ 预览";
+            playBtn.innerText = "▶️ 播放预览";
         }
     });
 
     audio.addEventListener('ended', () => {
-        document.body.classList.remove('playing');
-        document.body.classList.remove('recording');
-        playBtn.innerText = "▶️ 预览";
-        // 播放结束，恢复初始 "周末英语剧场" 状态
+        document.body.classList.remove('playing', 'recording');
+        playBtn.innerText = "▶️ 播放预览";
         setInitialState();
         currentBlockIndex = -1;
     });
@@ -436,20 +381,13 @@
         }
     }
 
-    const colors = [
-        {bg:'#ccff00', text:'#000'}, 
-        {bg:'#00ffcc', text:'#000'}, 
-        {bg:'#ff00ff', text:'#fff'}, 
-        {bg:'#ffffff', text:'#000'}  
-    ];
+    const colors = ['#ccff00', '#00ffcc', '#007aff', '#ffffff'];
     let cIdx = 0;
     window.toggleColor = function() {
         cIdx = (cIdx + 1) % colors.length;
-        document.documentElement.style.setProperty('--highlight-bg', colors[cIdx].bg);
-        document.documentElement.style.setProperty('--highlight-text', colors[cIdx].text);
+        document.documentElement.style.setProperty('--word-active-color', colors[cIdx]);
     }
 
-    // --- 4. 录制 ---
     recordBtn.addEventListener('click', async () => {
         if (!navigator.mediaDevices.getDisplayMedia) {
             alert("请使用电脑版 Chrome 录制");
@@ -457,23 +395,21 @@
         }
         try {
             const stream = await navigator.mediaDevices.getDisplayMedia({
-                video: { width: 720, height: 1280, frameRate: 60 },
+                video: { width: 1080, height: 1920, frameRate: 60 },
                 audio: { echoCancellation: false, noiseSuppression: false },
                 preferCurrentTab: true,
                 systemAudio: "include"
             });
 
             if (stream.getAudioTracks().length === 0) {
-                alert("❌ 必须勾选【分享音频】");
+                alert("❌ 请勾选【分享音频】");
                 stream.getTracks().forEach(t => t.stop());
                 return;
             }
 
-            document.body.classList.add('recording');
-            document.body.classList.add('playing');
-            
+            document.body.classList.add('recording', 'playing');
             const mimeType = MediaRecorder.isTypeSupported("video/webm; codecs=vp9") ? "video/webm; codecs=vp9" : "video/webm";
-            const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 10000000 });
+            const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 15000000 });
             const chunks = [];
 
             recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
@@ -481,28 +417,15 @@
                 const blob = new Blob(chunks, { type: "video/webm" });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement("a");
-                a.style.display = "none";
                 a.href = url;
-                const fileTitle = document.getElementById('hiddenTitle').innerText.trim() || "shorts_video";
-                a.download = fileTitle + ".webm";
-                document.body.appendChild(a);
+                a.download = (document.getElementById('hiddenTitle').innerText.trim() || "video") + ".webm";
                 a.click();
-                
-                document.body.classList.remove('recording');
-                document.body.classList.remove('playing');
+                document.body.classList.remove('recording', 'playing');
             };
 
             recorder.start();
-            setTimeout(() => {
-                audio.currentTime = 0;
-                audio.play();
-                renderLoop();
-            }, 1000);
-
-            audio.onended = () => {
-                recorder.stop();
-                stream.getTracks().forEach(t => t.stop());
-            };
+            setTimeout(() => { audio.currentTime = 0; audio.play(); renderLoop(); }, 1000);
+            audio.onended = () => { recorder.stop(); stream.getTracks().forEach(t => t.stop()); };
         } catch (err) { console.error(err); }
     });
 
