@@ -13,7 +13,6 @@
             --font-stack: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
         }
 
-        /* 允许滚动，方便手机操作按钮 */
         body {
             margin: 0;
             padding: 0;
@@ -32,7 +31,6 @@
         /* === 舞台缩放容器 === */
         #stageScaler {
             margin-top: 20px;
-            /* 这里的宽高比必须是 9:16 */
             width: 90vw; 
             max-width: 450px; 
             aspect-ratio: 9 / 16;
@@ -51,14 +49,12 @@
             background-color: #000;
             overflow: hidden;
             box-shadow: 0 10px 50px rgba(0,0,0,0.8);
-            /* 初始缩放由 JS 动态计算，使其适应 stageScaler */
             transform-origin: center center;
         }
 
-        /* 背景图片填满，不留死角 */
         .bg-layer {
             position: absolute;
-            inset: 0; /* 填满四周 */
+            inset: 0;
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -72,8 +68,7 @@
             z-index: 1;
         }
 
-        /* === 1. 固定头部 (距离顶部 30px -> 换算比例约 90px) === */
-        /* 因为是在 1920 高度下，所以 30px 可能太小，我们按比例放大到 90px */
+        /* === 1. 固定头部 (距离顶部 90px) === */
         .speaker-header {
             position: absolute;
             top: 90px; 
@@ -86,7 +81,7 @@
         }
 
         .avatar {
-            width: 75px; /* 1080宽度下的大小 */
+            width: 75px; 
             height: 75px;
             border-radius: 50%;
             background-color: #ddd;
@@ -104,7 +99,6 @@
             color: white;
         }
 
-        /* 自适应标题模式 */
         .adaptive-mode .speaker-name {
             mix-blend-mode: exclusion; 
             color: #fff;
@@ -115,7 +109,7 @@
         .speaker-state-male .speaker-name { color: var(--male-color); mix-blend-mode: normal; text-shadow: 0 4px 10px rgba(0,0,0,0.8); }
         .speaker-state-male .avatar { border-color: var(--male-color); }
 
-        /* === 2. 文本块 (紧随其下) === */
+        /* === 2. 文本块 === */
         .text-block {
             position: absolute;
             top: 240px; 
@@ -125,8 +119,9 @@
             box-sizing: border-box;
             z-index: 2;
 
-            font-size: 84px; /* 1080P 下的高清字号 */
-            line-height: 1.4;
+            /* 📍 默认字体缩小两号：从 84px -> 64px */
+            font-size: 64px; 
+            line-height: 1.45;
             text-align: left;
             font-weight: 800;
             color: rgba(255,255,255,0.95);
@@ -139,7 +134,6 @@
 
         .text-block.visible { opacity: 1; transform: translateY(0); }
 
-        /* 单词高亮 */
         .word {
             display: inline;
             color: inherit;
@@ -150,7 +144,7 @@
             text-shadow: 0 0 30px rgba(204, 255, 0, 0.8);
         }
 
-        /* === 沉浸录制模式：强制覆盖浏览器 UI === */
+        /* === 沉浸模式样式 === */
         body.recording-mode {
             overflow: hidden !important;
             background-color: #000;
@@ -171,7 +165,7 @@
             display: none !important;
         }
 
-        /* === 控制面板：在手机上可见可点击 === */
+        /* === 控制面板 === */
         .controls-panel {
             padding: 30px;
             display: flex;
@@ -221,12 +215,12 @@
 <div id="hiddenTitle" style="display:none;">Traces of da Vinci’s DNA may have been found</div>
 
 <div class="controls-panel">
-    <button class="ctrl-btn" onclick="document.getElementById('bgInput').click()">🖼️ 更换背景图</button>
+    <button class="ctrl-btn" onclick="document.getElementById('bgInput').click()">🖼️ 换背景</button>
     <input type="file" id="bgInput" accept="image/*" onchange="changeBackground(this)">
-    <button class="ctrl-btn" onclick="toggleColor()">🎨 切换高亮色</button>
+    <button class="ctrl-btn" onclick="toggleColor()">🎨 换颜色</button>
     <button class="ctrl-btn" onclick="adjustFontSize(5)">A+</button>
     <button class="ctrl-btn" onclick="adjustFontSize(-5)">A-</button>
-    <button class="ctrl-btn primary-btn" id="playBtn">▶️ 播放预览</button>
+    <button class="ctrl-btn primary-btn" id="playBtn">▶️ 预览</button>
     <button class="ctrl-btn record-btn" id="recordVideoBtn" style="display:none;">🎥 电脑内录</button>
     <button class="ctrl-btn record-btn" id="mobileRecordBtn" style="display:none;">📱 手机全屏</button>
 </div>
@@ -245,7 +239,6 @@
     const avatarEl = document.getElementById('avatarEl');
     const nameEl = document.getElementById('nameEl');
     const textContainer = document.getElementById('textContainer');
-    
     const playBtn = document.getElementById('playBtn');
     const recordVideoBtn = document.getElementById('recordVideoBtn');
     const mobileRecordBtn = document.getElementById('mobileRecordBtn');
@@ -253,10 +246,10 @@
 
     let processedBlocks = []; 
     let currentBlockIndex = -1;
-    let currentFontSize = 84; 
+    /* 📍 同步 JS 默认字号 */
+    let currentFontSize = 64; 
     let isImmersive = false;
 
-    // --- 动态缩放逻辑：让 1080 宽度完美适应 90vw 容器 ---
     function updateScale() {
         const containerWidth = stageScaler.offsetWidth;
         const scale = containerWidth / 1080;
@@ -265,7 +258,6 @@
     window.addEventListener('resize', updateScale);
     updateScale();
 
-    // --- 设备检测 ---
     function checkDevice() {
         if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
             recordVideoBtn.style.display = 'flex';
@@ -293,7 +285,7 @@
             if (sentence.words) currentBlock.words.push(...sentence.words);
             currentBlock.end = sentence.end;
             let duration = currentBlock.end - currentBlock.start;
-            if ((duration >= 10 || currentBlock.words.length >= 35) && currentBlock.words.length > 0) {
+            if ((duration >= 10 || currentBlock.words.length >= 40) && currentBlock.words.length > 0) {
                 blocks.push(currentBlock);
                 if (index < data.length - 1) {
                     currentBlock = { speaker: data[index+1].speaker, start: data[index+1].start, end: 0, words: [] };
@@ -370,10 +362,8 @@
     function enterImmersive() {
         isImmersive = true;
         document.body.classList.add('recording-mode');
-        // 在全屏模式下重新计算缩放，铺满全屏
         const scale = window.innerWidth / 1080;
         stageArea.style.transform = `scale(${scale})`;
-        
         const docEl = document.documentElement;
         if (docEl.requestFullscreen) docEl.requestFullscreen().catch(() => {});
     }
@@ -391,7 +381,7 @@
             playBtn.innerText = "⏸ 暂停";
             textContainer.classList.add('visible');
         } else {
-            audio.pause(); playBtn.innerText = "▶️ 播放预览";
+            audio.pause(); playBtn.innerText = "▶️ 播放";
         }
     });
 
@@ -401,7 +391,7 @@
     });
 
     audio.addEventListener('ended', () => {
-        playBtn.innerText = "▶️ 播放预览";
+        playBtn.innerText = "▶️ 播放";
         if (isImmersive) exitImmersive();
         setInitialState();
         currentBlockIndex = -1;
