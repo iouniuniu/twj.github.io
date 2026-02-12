@@ -119,8 +119,8 @@
             box-sizing: border-box;
             z-index: 2;
 
-            /* 📍 默认字体缩小两号：从 84px -> 64px */
-            font-size: 64px; 
+            /* 📍 调整：默认字号大一号 (74px) */
+            font-size: 74px; 
             line-height: 1.45;
             text-align: left;
             font-weight: 800;
@@ -158,12 +158,8 @@
             margin: 0;
             z-index: 9999;
         }
-        body.recording-mode #stageArea {
-            box-shadow: none;
-        }
-        body.recording-mode .controls-panel {
-            display: none !important;
-        }
+        body.recording-mode #stageArea { box-shadow: none; }
+        body.recording-mode .controls-panel { display: none !important; }
 
         /* === 控制面板 === */
         .controls-panel {
@@ -218,8 +214,8 @@
     <button class="ctrl-btn" onclick="document.getElementById('bgInput').click()">🖼️ 换背景</button>
     <input type="file" id="bgInput" accept="image/*" onchange="changeBackground(this)">
     <button class="ctrl-btn" onclick="toggleColor()">🎨 换颜色</button>
-    <button class="ctrl-btn" onclick="adjustFontSize(5)">A+</button>
-    <button class="ctrl-btn" onclick="adjustFontSize(-5)">A-</button>
+    <button class="ctrl-btn" onclick="adjustFontSize(10)">A+</button>
+    <button class="ctrl-btn" onclick="adjustFontSize(-10)">A-</button>
     <button class="ctrl-btn primary-btn" id="playBtn">▶️ 预览</button>
     <button class="ctrl-btn record-btn" id="recordVideoBtn" style="display:none;">🎥 电脑内录</button>
     <button class="ctrl-btn record-btn" id="mobileRecordBtn" style="display:none;">📱 手机全屏</button>
@@ -246,9 +242,12 @@
 
     let processedBlocks = []; 
     let currentBlockIndex = -1;
-    /* 📍 同步 JS 默认字号 */
-    let currentFontSize = 64; 
+    /* 📍 同步 JS 默认字号 (74px) */
+    let currentFontSize = 74; 
     let isImmersive = false;
+
+    // 分段配置
+    const WORD_LIMIT = 30; 
 
     function updateScale() {
         const containerWidth = stageScaler.offsetWidth;
@@ -273,26 +272,45 @@
         textContainer.innerHTML = "";
     }
 
+    /* 📍 核心重构：基于“句子结束”和“字数限制”的分段算法 */
     function segmentData(data) {
         if (!data || data.length === 0) return [];
         let blocks = [];
         let currentBlock = { speaker: data[0].speaker, start: data[0].start, end: 0, words: [] };
+
         data.forEach((sentence, index) => {
-            if (sentence.speaker !== currentBlock.speaker && currentBlock.words.length > 0) {
+            const speakerChanged = sentence.speaker !== currentBlock.speaker;
+
+            // 1. 如果说话人变了，立即封存当前块，开新块
+            if (speakerChanged && currentBlock.words.length > 0) {
                 blocks.push(currentBlock);
                 currentBlock = { speaker: sentence.speaker, start: sentence.start, end: 0, words: [] };
             }
-            if (sentence.words) currentBlock.words.push(...sentence.words);
+
+            // 2. 将当前句子的所有单词加入当前块
+            if (sentence.words) {
+                currentBlock.words.push(...sentence.words);
+            }
             currentBlock.end = sentence.end;
-            let duration = currentBlock.end - currentBlock.start;
-            if ((duration >= 10 || currentBlock.words.length >= 40) && currentBlock.words.length > 0) {
+
+            // 3. 检查熔断条件：字数是否已达到或超过 30 个
+            const isLast = index === data.length - 1;
+            const wordCount = currentBlock.words.length;
+
+            if (wordCount >= WORD_LIMIT || isLast) {
                 blocks.push(currentBlock);
-                if (index < data.length - 1) {
-                    currentBlock = { speaker: data[index+1].speaker, start: data[index+1].start, end: 0, words: [] };
+                // 如果不是最后一句，开新块
+                if (!isLast) {
+                    currentBlock = { 
+                        speaker: data[index+1].speaker, 
+                        start: data[index+1].start, 
+                        end: 0, 
+                        words: [] 
+                    };
                 }
             }
         });
-        if (currentBlock.words.length > 0) blocks.push(currentBlock);
+
         return blocks;
     }
 
@@ -381,7 +399,7 @@
             playBtn.innerText = "⏸ 暂停";
             textContainer.classList.add('visible');
         } else {
-            audio.pause(); playBtn.innerText = "▶️ 播放";
+            audio.pause(); playBtn.innerText = "▶️ 预览";
         }
     });
 
@@ -391,7 +409,7 @@
     });
 
     audio.addEventListener('ended', () => {
-        playBtn.innerText = "▶️ 播放";
+        playBtn.innerText = "▶️ 预览";
         if (isImmersive) exitImmersive();
         setInitialState();
         currentBlockIndex = -1;
