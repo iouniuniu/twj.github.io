@@ -1,257 +1,215 @@
 <svg viewBox="0 0 750 1334" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <!-- 清晰线条风格 (Ligne Claire) 的核心：统一的黑色粗描边与硬阴影 -->
-    <style>
-      @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&amp;family=Noto+Sans+SC:wght@700;900&amp;display=swap');
-      
-      /* 字体：欧美漫画手写体 + 无衬线黑体 */
-      .comic-en { font-family: 'Comic Neue', cursive, sans-serif; font-weight: 700; }
-      .comic-cn { font-family: 'Noto Sans SC', sans-serif; font-weight: 900; }
-      .comic-cn-reg { font-family: 'Noto Sans SC', sans-serif; font-weight: 700; }
-      
-      /* Ligne Claire 核心类：所有元素共用此描边 */
-      .ligne-claire { 
-        stroke: #1a1a1a; 
-        stroke-width: 4; 
-        stroke-linejoin: round; 
-        stroke-linecap: round; 
-      }
-      .ligne-claire-thin {
-        stroke: #1a1a1a; 
-        stroke-width: 2.5; 
-        stroke-linejoin: round; 
-      }
+    <!-- 极简治愈系柔和阴影与发光 -->
+    <filter id="soft-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <filter id="gentle-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="10" stdDeviation="15" flood-color="#5c6b73" flood-opacity="0.08"/>
+    </filter>
 
-      /* 动画：保留极其轻微的漫画式弹跳，去除所有发光和渐变 */
-      @keyframes popIn {
-        0% { opacity: 0; transform: scale(0.9) translateY(10px); }
-        100% { opacity: 1; transform: scale(1) translateY(0); }
-      }
-      @keyframes floatAction {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-8px); }
-      }
+    <!-- 莫兰迪渐变色 -->
+    <linearGradient id="warm-light" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#e2c2a4" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#f9f6f0" stop-opacity="0" />
+    </linearGradient>
+
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600&amp;family=Playfair+Display:ital,wght@0,400;0,600;1,400&amp;display=swap');
+      
+      /* 字体设置 */
+      .serif-en { font-family: 'Playfair Display', serif; }
+      .serif-cn { font-family: 'Noto Serif SC', serif; }
+      
+      /* 动画定义 */
+      @keyframes fadeInSoft { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+      @keyframes floatSlow { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
+      @keyframes floatSlower { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-12px) rotate(3deg); } }
+      @keyframes pulseGlow { 0%, 100% { opacity: 0.3; transform: scale(0.98); } 50% { opacity: 0.7; transform: scale(1.02); } }
+      @keyframes steamRise { 0% { opacity: 0; transform: translateY(0) scale(0.8); } 50% { opacity: 0.6; } 100% { opacity: 0; transform: translateY(-20px) scale(1.2); } }
 
       /* 面板入场 */
-      .panel-1 { animation: popIn 0.6s ease-out forwards; opacity: 0; }
-      .panel-2 { animation: popIn 0.6s ease-out 0.8s forwards; opacity: 0; }
-      .panel-3 { animation: popIn 0.6s ease-out 1.6s forwards; opacity: 0; }
-      .panel-4 { animation: popIn 0.6s ease-out 2.4s forwards; opacity: 0; }
+      .panel-1 { animation: fadeInSoft 1.5s ease-out forwards; opacity: 0; }
+      .panel-2 { animation: fadeInSoft 1.5s ease-out 0.8s forwards; opacity: 0; }
+      .panel-3 { animation: fadeInSoft 1.5s ease-out 1.6s forwards; opacity: 0; }
+      .panel-4 { animation: fadeInSoft 1.5s ease-out 2.4s forwards; opacity: 0; }
 
-      .float-anim { animation: floatAction 3s ease-in-out infinite; }
-      .float-anim-delay { animation: floatAction 3.5s ease-in-out infinite 1s; }
+      /* 元素动画 */
+      .anim-glow { animation: pulseGlow 5s ease-in-out infinite; transform-origin: center; }
+      .anim-float-1 { animation: floatSlow 6s ease-in-out infinite; }
+      .anim-float-2 { animation: floatSlower 7s ease-in-out infinite; }
+      .anim-steam { animation: steamRise 3s ease-in-out infinite; }
       
-      /* 丁丁历险记经典调色板 */
-      .tintin-blue { fill: #3498db; }
-      .tintin-red { fill: #e74c3c; }
-      .tintin-yellow { fill: #fde047; }
-      .tintin-green { fill: #2ecc71; }
-      .tintin-skin { fill: #ffccbc; }
-      .paper-bg { fill: #fcf8e8; } /* 复古漫画纸张底色 */
-      .text-black { fill: #1a1a1a; }
+      /* 调色板 */
+      .text-dark { fill: #5c6b73; }
+      .text-muted { fill: #8ba09c; }
+      .text-accent { fill: #b88a6d; }
+      .text-poem { fill: #a3b1ab; } /* 诗句专属淡青灰色 */
     </style>
   </defs>
 
-  <!-- 复古漫画纸张底色 -->
-  <rect width="100%" height="100%" class="paper-bg" />
+  <!-- 燕麦色背景 -->
+  <rect width="100%" height="100%" fill="#f9f6f0" />
 
   <!-- ========================================== -->
-  <!-- Panel 1: 引入 - 宁静 (窗边夜读) -->
+  <!-- Panel 1: 引入 - 宁静与足迹 -->
   <!-- ========================================== -->
   <g transform="translate(30, 30)">
     <g class="panel-1">
-      <!-- 漫画框硬阴影 (黑色偏移) -->
-      <rect x="8" y="8" width="690" height="270" fill="#1a1a1a" rx="8" />
-      <!-- 漫画主框 -->
-      <rect width="690" height="270" fill="#ffffff" rx="8" class="ligne-claire" />
+      <rect width="690" height="270" rx="16" fill="#ffffff" filter="url(#gentle-shadow)" />
       
-      <!-- 经典的 Ligne Claire 窗户与夜空 (无渐变平涂) -->
-      <g transform="translate(480, 0)">
-        <rect x="0" y="0" width="160" height="270" fill="#1e3a8a" class="ligne-claire" />
-        <circle cx="100" cy="80" r="35" class="tintin-yellow ligne-claire" /> <!-- 明锐的月亮 -->
-        <!-- 窗棂 -->
-        <line x1="0" y1="135" x2="160" y2="135" class="ligne-claire" />
-        <line x1="80" y1="0" x2="80" y2="270" class="ligne-claire" />
+      <!-- 极简窗户与月光 (置于右侧) -->
+      <g transform="translate(510, 30)">
+        <rect x="0" y="0" width="140" height="170" rx="8" fill="#eef2f3" />
+        <circle cx="100" cy="40" r="20" fill="#e2c2a4" filter="url(#soft-glow)" />
       </g>
 
-      <!-- 丁丁风格的角色 (侧影、平涂、黑色轮廓) -->
-      <g transform="translate(350, 150)">
-        <!-- 身体 -->
-        <path d="M -60 120 C -40 -10, 40 -10, 60 120 Z" class="tintin-blue ligne-claire" />
-        <!-- 头部 -->
-        <circle cx="0" cy="10" r="40" class="tintin-skin ligne-claire" />
-        <path d="M -30 -15 Q -10 -45 10 -35 Q 20 -40 30 -15" fill="#f59e0b" class="ligne-claire" /> <!-- 经典的一撮小卷发 -->
-        <!-- 手机发出的平涂硬光 (代替柔和发光) -->
-        <polygon points="35,60 15,80 -100,20 -70,-30" fill="#bae6fd" opacity="0.4" class="ligne-claire-thin" />
-        <rect x="20" y="50" width="25" height="40" rx="4" fill="#ffffff" class="ligne-claire" /> <!-- 手机 -->
+      <!-- 光影投射 -->
+      <polygon points="510,200 650,200 550,270 350,270" fill="url(#warm-light)" />
+
+      <!-- 无脸极简人像 (置于右侧) -->
+      <g transform="translate(430, 150)">
+        <path d="M -50 120 C -40 20, 40 20, 50 120 Z" fill="#daddd8" />
+        <circle cx="0" cy="20" r="35" fill="#f4ebd9" />
+        <rect x="25" y="60" width="20" height="35" rx="3" fill="#ffffff" filter="url(#soft-glow)" />
+        <line x1="10" y1="80" x2="25" y2="70" stroke="#c1c8b6" stroke-width="4" stroke-linecap="round" />
       </g>
 
-      <!-- 冒热气的咖啡杯 -->
-      <g transform="translate(260, 240)">
-        <rect x="-20" y="-10" width="40" height="30" rx="4" class="tintin-red ligne-claire" />
-        <path d="M 20 0 C 35 0, 35 20, 20 20" fill="none" class="ligne-claire" />
-        <!-- 实线画出的蒸汽 -->
-        <path d="M -5 -20 Q 5 -30 -5 -40" fill="none" class="ligne-claire" />
-        <path d="M 10 -20 Q 0 -30 10 -40" fill="none" class="ligne-claire" />
+      <!-- 冒热气的咖啡杯 (置于右侧) -->
+      <g transform="translate(560, 240)">
+        <path d="M -15 0 L 15 0 C 15 20, -15 20, -15 0 Z" fill="#c1c8b6" />
+        <path d="M 15 5 C 22 5, 22 15, 15 15" fill="none" stroke="#c1c8b6" stroke-width="3" />
+        <path d="M -5 -5 Q 0 -15 -5 -25" fill="none" stroke="#e2c2a4" stroke-width="2" class="anim-steam" />
+        <path d="M 5 -5 Q 0 -15 5 -25" fill="none" stroke="#e2c2a4" stroke-width="2" class="anim-steam" style="animation-delay: 1.5s;" />
       </g>
 
-      <!-- 完美解决阅读性的：经典漫画旁白框 (Narration Box) -->
-      <!-- 带有淡黄色底色和黑色描边，彻底隔绝背景 -->
-      <g transform="translate(0, 0)">
-        <rect x="25" y="25" width="380" height="135" fill="#fffbe6" class="ligne-claire" />
-        <text x="45" y="65" font-size="22" class="comic-cn text-black">岁末的深夜，屏幕微微亮起...</text>
-        <text x="45" y="105" font-size="22" class="comic-cn text-black">各大 App 悄然推送了</text>
-        <text x="45" y="145" font-size="22" class="comic-cn text-black">这一年的数据报告。</text>
+      <!-- 诗意旁白 (左侧留白区，行距讲究) -->
+      <g transform="translate(40, 70)">
+        <text x="0" y="0" font-size="18" class="serif-cn text-poem">“世界上的一队小小的流浪者呀，</text>
+        <text x="0" y="30" font-size="18" class="serif-cn text-poem">请留下你们的足印在我的文字里。”</text>
+        <text x="0" y="60" font-size="14" class="serif-cn text-poem">—— 泰戈尔《飞鸟集》</text>
+        
+        <text x="0" y="120" font-size="18" class="serif-cn text-dark">岁末的深夜，屏幕微微亮起，</text>
+        <text x="0" y="150" font-size="18" class="serif-cn text-dark">各大 App 已悄然留下了</text>
+        <text x="0" y="180" font-size="18" class="serif-cn text-dark">我们这一年的数据足迹...</text>
       </g>
     </g>
   </g>
 
   <!-- ========================================== -->
-  <!-- Panel 2: 呈现 - 绽放 (冲击力排版) -->
+  <!-- Panel 2: 呈现 - 影子与无处不在 -->
   <!-- ========================================== -->
   <g transform="translate(30, 320)">
     <g class="panel-2">
-      <rect x="8" y="8" width="690" height="270" fill="#1a1a1a" rx="8" />
-      <rect width="690" height="270" fill="#ffffff" rx="8" class="ligne-claire" />
+      <rect width="690" height="270" rx="16" fill="#f4f6f3" filter="url(#gentle-shadow)" />
       
-      <!-- 欧美漫画经典的同心圆背景，代替水波纹 -->
-      <g transform="translate(345, 135)">
-        <circle cx="0" cy="0" r="130" fill="#fef08a" class="ligne-claire" />
-        <circle cx="0" cy="0" r="90" fill="#fca5a5" class="ligne-claire" />
-        <circle cx="0" cy="0" r="50" class="tintin-blue ligne-claire" />
+      <!-- 飞鸟集引言 -->
+      <text x="345" y="50" text-anchor="middle" font-size="16" class="serif-cn text-poem">“你看不见你自己，你所看见的只是你的影子。”</text>
+      <text x="345" y="75" text-anchor="middle" font-size="12" class="serif-cn text-poem">——《飞鸟集》</text>
+
+      <g transform="translate(345, 155)">
+        <!-- 柔和的水波纹 -->
+        <g class="anim-glow">
+          <circle cx="0" cy="-10" r="90" fill="none" stroke="#e2c2a4" stroke-width="2" opacity="0.3" />
+          <circle cx="0" cy="-10" r="65" fill="#e2c2a4" opacity="0.1" filter="url(#soft-glow)" />
+          <circle cx="0" cy="-10" r="40" fill="#c1c8b6" opacity="0.15" filter="url(#soft-glow)" />
+        </g>
         
-        <!-- 极具张力的带描边大字 -->
-        <text x="0" y="15" text-anchor="middle" font-size="58" fill="#ffffff" class="comic-en ligne-claire" letter-spacing="4">UBIQUITOUS</text>
-        <!-- 覆盖一层纯白，去掉内描边以保持清晰 -->
-        <text x="0" y="15" text-anchor="middle" font-size="58" fill="#ffffff" class="comic-en" letter-spacing="4">UBIQUITOUS</text>
-        
-        <!-- 下方的中文释义 -->
-        <rect x="-80" y="45" width="160" height="35" rx="17.5" fill="#1a1a1a" />
-        <text x="0" y="68" text-anchor="middle" font-size="18" fill="#ffffff" class="comic-cn-reg" letter-spacing="2">无处不在的</text>
+        <!-- 核心单词 -->
+        <text x="0" y="0" text-anchor="middle" font-size="48" class="serif-en text-dark" letter-spacing="4">UBIQUITOUS</text>
       </g>
       
-      <!-- 底部旁白框 -->
-      <rect x="125" y="245" width="440" height="50" fill="#fffbe6" class="ligne-claire" />
-      <text x="345" y="278" text-anchor="middle" font-size="20" class="comic-cn text-black">关于个人的数据印记，如此清晰可见。</text>
+      <!-- 剧情陈述 -->
+      <text x="345" y="240" text-anchor="middle" font-size="18" class="serif-cn text-accent">关于个人的数据印记，正如影子般无处不在</text>
     </g>
   </g>
 
   <!-- ========================================== -->
-  <!-- Panel 3: 意境 - 隐喻 (单线平涂的符号) -->
+  <!-- Panel 3: 意境 - 包裹与缝隙 -->
   <!-- ========================================== -->
   <g transform="translate(30, 610)">
     <g class="panel-3">
-      <rect x="8" y="8" width="690" height="270" fill="#1a1a1a" rx="8" />
-      <rect width="690" height="270" fill="#ffffff" rx="8" class="ligne-claire" />
+      <rect width="690" height="270" rx="16" fill="#ffffff" filter="url(#gentle-shadow)" />
       
-      <g transform="translate(345, 100)">
-        <!-- 中心的用户 (小红点) -->
-        <circle cx="0" cy="0" r="15" class="tintin-red ligne-claire" />
+      <g transform="translate(345, 135)">
+        <!-- 中间的发光小圆点代表“自我” -->
+        <circle cx="0" cy="0" r="10" fill="#e2c2a4" filter="url(#soft-glow)" />
         
-        <!-- 环绕的符号 (采用明确的色块和粗黑线) -->
-        <g class="float-anim">
-          <!-- 音乐 (蓝色音符) -->
-          <g transform="translate(-130, -50)">
-            <circle cx="-10" cy="10" r="8" class="tintin-blue ligne-claire" />
-            <circle cx="10" cy="5" r="8" class="tintin-blue ligne-claire" />
-            <path d="M -2 10 L -2 -15 L 18 -20 L 18 5" fill="none" class="ligne-claire" />
-            <line x1="-2" y1="-10" x2="18" y2="-15" class="ligne-claire" />
-            <text x="0" y="35" text-anchor="middle" font-size="16" class="comic-cn-reg text-black">听过的歌</text>
-          </g>
+        <!-- 环绕的抽象元素 -->
+        <g class="anim-float-1">
+          <path d="M -130 -50 Q -110 -70 -90 -50" fill="none" stroke="#c1c8b6" stroke-width="3" stroke-linecap="round" />
+          <circle cx="-130" cy="-50" r="4" fill="#c1c8b6" />
+          <text x="-110" y="-20" text-anchor="middle" font-size="14" class="serif-cn text-muted">听过的歌</text>
         </g>
         
-        <g class="float-anim-delay">
-          <!-- 学习 (绿色书本) -->
-          <g transform="translate(130, -50)">
-            <rect x="-15" y="-15" width="30" height="20" rx="2" class="tintin-green ligne-claire" />
-            <line x1="-15" y1="-5" x2="15" y2="-5" class="ligne-claire" />
-            <text x="0" y="30" text-anchor="middle" font-size="16" class="comic-cn-reg text-black">学过的词</text>
-          </g>
+        <g class="anim-float-2">
+          <path d="M 100 -40 C 120 -70, 150 -40, 130 -20 C 110 10, 80 -20, 100 -40 Z" fill="#eef2f3" stroke="#daddd8" stroke-width="2" />
+          <text x="120" y="0" text-anchor="middle" font-size="14" class="serif-cn text-muted">学过的词</text>
         </g>
 
-        <g class="float-anim" style="animation-delay: -1s;">
-          <!-- 饮食 (黄色汉堡) -->
-          <g transform="translate(-100, 60)">
-            <path d="M -15 0 C -15 -15, 15 -15, 15 0 Z" class="tintin-yellow ligne-claire" />
-            <rect x="-15" y="0" width="30" height="8" rx="4" fill="#8b4513" class="ligne-claire" />
-            <path d="M -15 8 C -15 15, 15 15, 15 8 Z" class="tintin-yellow ligne-claire" />
-            <text x="0" y="35" text-anchor="middle" font-size="16" class="comic-cn-reg text-black">尝过的食物</text>
-          </g>
+        <g class="anim-float-1" style="animation-delay: -2s;">
+          <circle cx="-90" cy="60" r="15" fill="none" stroke="#e2c2a4" stroke-width="3" />
+          <line x1="-90" y1="60" x2="-80" y2="50" stroke="#e2c2a4" stroke-width="3" stroke-linecap="round" />
+          <text x="-90" y="95" text-anchor="middle" font-size="14" class="serif-cn text-muted">尝过的食物</text>
         </g>
 
-        <g class="float-anim-delay" style="animation-delay: -2.5s;">
-          <!-- 游戏 (红色手柄) -->
-          <g transform="translate(100, 60)">
-            <rect x="-20" y="-10" width="40" height="20" rx="10" class="tintin-red ligne-claire" />
-            <circle cx="-8" cy="0" r="3" fill="#1a1a1a" />
-            <circle cx="8" cy="0" r="3" class="tintin-yellow ligne-claire-thin" />
-            <text x="0" y="35" text-anchor="middle" font-size="16" class="comic-cn-reg text-black">游戏的片刻</text>
-          </g>
+        <g class="anim-float-2" style="animation-delay: -3s;">
+          <path d="M 120 40 Q 120 60 100 60 Q 120 60 120 80 Q 120 60 140 60 Q 120 60 120 40 Z" fill="#daddd8" />
+          <text x="120" y="105" text-anchor="middle" font-size="14" class="serif-cn text-muted">游戏的片刻</text>
         </g>
       </g>
 
-      <!-- 底部旁白框 -->
-      <rect x="70" y="210" width="550" height="40" fill="#fffbe6" class="ligne-claire" />
-      <text x="345" y="238" text-anchor="middle" font-size="18" class="comic-cn text-black">它渗透并包裹着，生活里的每一个缝隙。</text>
+      <!-- 飞鸟集引言与剧情 -->
+      <g transform="translate(345, 45)">
+        <text x="0" y="0" text-anchor="middle" font-size="16" class="serif-cn text-poem">“影子戴上面幕，秘密地，温顺地，跟在光的后边。”</text>
+      </g>
+      <text x="345" y="245" text-anchor="middle" font-size="18" class="serif-cn text-dark">它静静地渗透并包裹着，生活里的每一个缝隙。</text>
     </g>
   </g>
 
   <!-- ========================================== -->
-  <!-- Panel 4: 沉淀 - 词典卡片 (经典漫画说明框) -->
+  <!-- Panel 4: 沉淀 - 手帐笔记 (完美留白) -->
   <!-- ========================================== -->
   <g transform="translate(30, 900)">
     <g class="panel-4">
-      <rect x="8" y="8" width="690" height="400" fill="#1a1a1a" rx="8" />
-      <!-- 使用浅米色作为知识卡片的底色 -->
-      <rect width="690" height="400" fill="#fdfbf7" rx="8" class="ligne-claire" />
+      <rect width="690" height="400" rx="16" fill="#faf9f7" stroke="#eef2f3" stroke-width="2" filter="url(#gentle-shadow)" />
       
-      <!-- 左侧装饰条纹 (复古文档感) -->
-      <rect x="0" y="0" width="40" height="400" fill="#e2e8f0" rx="8" class="ligne-claire" />
-      <line x1="40" y1="0" x2="40" y2="400" class="ligne-claire" />
-      
-      <g fill="#1a1a1a">
-        <circle cx="20" cy="50" r="5" /> <circle cx="20" cy="100" r="5" />
-        <circle cx="20" cy="150" r="5" /> <circle cx="20" cy="200" r="5" />
-        <circle cx="20" cy="250" r="5" /> <circle cx="20" cy="300" r="5" />
-        <circle cx="20" cy="350" r="5" />
+      <!-- 手帐的左侧装订线孔 -->
+      <g fill="#daddd8">
+        <circle cx="40" cy="40" r="4" /> <circle cx="40" cy="80" r="4" />
+        <circle cx="40" cy="120" r="4" /> <circle cx="40" cy="160" r="4" />
+        <circle cx="40" cy="200" r="4" /> <circle cx="40" cy="240" r="4" />
+        <circle cx="40" cy="280" r="4" /> <circle cx="40" cy="320" r="4" />
+        <circle cx="40" cy="360" r="4" />
+      </g>
+      <line x1="60" y1="0" x2="60" y2="400" stroke="#eef2f3" stroke-width="2" />
+
+      <!-- 右下角安静趴着的极简猫咪 -->
+      <g transform="translate(600, 360)">
+        <ellipse cx="0" cy="0" rx="25" ry="18" fill="#daddd8" />
+        <path d="M -20 0 C -35 0, -35 -20, -15 -10" fill="none" stroke="#daddd8" stroke-width="6" stroke-linecap="round" />
+        <polygon points="10,-15 15,-25 20,-15" fill="#daddd8" /> 
+        <polygon points="20,-10 28,-18 28,-5" fill="#daddd8" />
       </g>
 
-      <!-- 经典的白雪狗 / 或者是复古小猫 -->
-      <g transform="translate(580, 330)">
-        <path d="M -30 40 C -30 -10, 30 -10, 30 40 Z" fill="#ffffff" class="ligne-claire" />
-        <circle cx="0" cy="0" r="25" fill="#ffffff" class="ligne-claire" />
-        <!-- 尖尖的耳朵 -->
-        <polygon points="-20,-10 -25,-35 -5,-20" fill="#ffffff" class="ligne-claire" /> 
-        <polygon points="20,-10 25,-35 5,-20" fill="#ffffff" class="ligne-claire" />
-        <!-- 眼睛与鼻子 -->
-        <circle cx="-10" cy="0" r="3" fill="#1a1a1a" />
-        <circle cx="10" cy="0" r="3" fill="#1a1a1a" />
-        <ellipse cx="0" cy="10" rx="4" ry="2" fill="#1a1a1a" />
-        <path d="M -5 15 Q 0 20 5 15" fill="none" class="ligne-claire-thin" />
-      </g>
-
-      <!-- 笔记内容排版 (规整、清晰、对比强烈) -->
-      <g transform="translate(75, 50)">
-        <!-- 单词栏 -->
-        <rect x="0" y="0" width="560" height="60" fill="#1a1a1a" rx="8" />
-        <text x="20" y="42" font-size="36" fill="#ffffff" class="comic-en" letter-spacing="2">UBIQUITOUS</text>
-        <text x="540" y="38" text-anchor="end" font-size="22" fill="#fde047" class="comic-en">[ juːˈbɪkwɪtəs ]</text>
+      <!-- 优雅的笔记内容 -->
+      <g transform="translate(100, 60)">
+        <text x="0" y="10" font-size="34" class="serif-en text-dark" letter-spacing="2">Ubiquitous</text>
+        <text x="210" y="10" font-size="18" class="serif-en text-muted">[ juːˈbɪkwɪtəs ]</text>
         
-        <!-- 词源栏 -->
-        <rect x="0" y="90" width="130" height="30" class="tintin-red ligne-claire" />
-        <text x="65" y="112" text-anchor="middle" font-size="18" fill="#ffffff" class="comic-en">ETYMOLOGY</text>
+        <line x1="0" y1="45" x2="520" y2="45" stroke="#eef2f3" stroke-width="1.5" />
         
-        <text x="0" y="150" font-size="20" class="comic-en text-black">UBI <tspan class="comic-cn-reg">(何处)</tspan> + QUE <tspan class="comic-cn-reg">(皆是)</tspan></text>
-        <text x="0" y="185" font-size="18" class="comic-cn-reg text-black">所及之处，皆有它的身影 = 无处不在的</text>
+        <!-- 散文般的词源解析 -->
+        <text x="0" y="85" font-size="18" class="serif-cn text-accent">Etymology · 词源微光</text>
+        <text x="0" y="120" font-size="16" class="serif-cn text-dark">UBI (何处) + QUE (皆是)</text>
+        <text x="0" y="150" font-size="16" class="serif-cn text-muted">如同倾洒的月光，所及之处，皆有它的身影 = 无处不在</text>
 
-        <line x1="0" y1="215" x2="560" y2="215" class="ligne-claire" stroke-dasharray="8 6" />
+        <line x1="0" y1="195" x2="520" y2="195" stroke="#eef2f3" stroke-width="1.5" stroke-dasharray="4 4" />
 
-        <!-- 例句栏 -->
-        <text x="0" y="260" font-size="20" class="comic-en text-black">"Packaging user data into graphics has</text>
-        <text x="0" y="295" font-size="20" class="comic-en text-black">become ubiquitous."</text>
-        
-        <rect x="0" y="320" width="370" height="30" fill="#fffbe6" class="ligne-claire" />
-        <text x="10" y="342" font-size="16" class="comic-cn-reg text-black">（将用户数据打包成图表的做法已无处不在。）</text>
+        <!-- 极简例句 -->
+        <text x="0" y="240" font-size="16" class="serif-en text-dark" letter-spacing="0.5">"Packaging user data into graphics has become ubiquitous."</text>
+        <text x="0" y="270" font-size="15" class="serif-cn text-muted">（将用户数据打包成图表的做法已无处不在。）</text>
       </g>
     </g>
   </g>
