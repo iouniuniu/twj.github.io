@@ -45,7 +45,6 @@
       .text-dark { fill: #5c6b73; }
       .text-muted { fill: #8ba09c; }
       .text-accent { fill: #b88a6d; }
-      .text-poem { fill: #a3b1ab; } /* 诗句专属淡青灰色 */
     </style>
   </defs>
 
@@ -68,7 +67,7 @@
       <!-- 光影投射 -->
       <polygon points="510,200 650,200 550,270 350,270" fill="url(#warm-light)" />
 
-      <!-- 无脸极简人像 (置于右侧) -->
+      <!-- 无脸极简人像 (置于右侧，彻底让出左侧文字空间) -->
       <g transform="translate(430, 150)">
         <path d="M -50 120 C -40 20, 40 20, 50 120 Z" fill="#daddd8" />
         <circle cx="0" cy="20" r="35" fill="#f4ebd9" />
@@ -76,7 +75,7 @@
         <line x1="10" y1="80" x2="25" y2="70" stroke="#c1c8b6" stroke-width="4" stroke-linecap="round" />
       </g>
 
-      <!-- 冒热气的咖啡杯 (置于右侧) -->
+      <!-- 冒热气的咖啡杯 (置于更右侧) -->
       <g transform="translate(560, 240)">
         <path d="M -15 0 L 15 0 C 15 20, -15 20, -15 0 Z" fill="#c1c8b6" />
         <path d="M 15 5 C 22 5, 22 15, 15 15" fill="none" stroke="#c1c8b6" stroke-width="3" />
@@ -84,16 +83,10 @@
         <path d="M 5 -5 Q 0 -15 5 -25" fill="none" stroke="#e2c2a4" stroke-width="2" class="anim-steam" style="animation-delay: 1.5s;" />
       </g>
 
-      <!-- 诗意旁白 (左侧留白区，行距讲究) -->
-      <g transform="translate(40, 70)">
-        <text x="0" y="0" font-size="18" class="serif-cn text-poem">“世界上的一队小小的流浪者呀，</text>
-        <text x="0" y="30" font-size="18" class="serif-cn text-poem">请留下你们的足印在我的文字里。”</text>
-        <text x="0" y="60" font-size="14" class="serif-cn text-poem">—— 泰戈尔《飞鸟集》</text>
-        
-        <text x="0" y="120" font-size="18" class="serif-cn text-dark">岁末的深夜，屏幕微微亮起，</text>
-        <text x="0" y="150" font-size="18" class="serif-cn text-dark">各大 App 已悄然留下了</text>
-        <text x="0" y="180" font-size="18" class="serif-cn text-dark">我们这一年的数据足迹...</text>
-      </g>
+      <!-- 诗意与剧情的融合排版 (拉大行距，确保呼吸感) -->
+      <text x="40" y="100" font-size="18" class="serif-cn text-dark">岁末的深夜，屏幕微微亮起，</text>
+      <text x="40" y="140" font-size="18" class="serif-cn text-dark">那些名为 App 的小小流浪者，</text>
+      <text x="40" y="180" font-size="18" class="serif-cn text-dark">悄然留下了我们一年的数据足迹。</text>
     </g>
   </g>
 
@@ -103,25 +96,19 @@
   <g transform="translate(30, 320)">
     <g class="panel-2">
       <rect width="690" height="270" rx="16" fill="#f4f6f3" filter="url(#gentle-shadow)" />
-      
-      <!-- 飞鸟集引言 -->
-      <text x="345" y="50" text-anchor="middle" font-size="16" class="serif-cn text-poem">“你看不见你自己，你所看见的只是你的影子。”</text>
-      <text x="345" y="75" text-anchor="middle" font-size="12" class="serif-cn text-poem">——《飞鸟集》</text>
 
-      <g transform="translate(345, 155)">
-        <!-- 柔和的水波纹 -->
+      <g transform="translate(345, 125)">
         <g class="anim-glow">
           <circle cx="0" cy="-10" r="90" fill="none" stroke="#e2c2a4" stroke-width="2" opacity="0.3" />
           <circle cx="0" cy="-10" r="65" fill="#e2c2a4" opacity="0.1" filter="url(#soft-glow)" />
           <circle cx="0" cy="-10" r="40" fill="#c1c8b6" opacity="0.15" filter="url(#soft-glow)" />
         </g>
-        
         <!-- 核心单词 -->
         <text x="0" y="0" text-anchor="middle" font-size="48" class="serif-en text-dark" letter-spacing="4">UBIQUITOUS</text>
       </g>
       
-      <!-- 剧情陈述 -->
-      <text x="345" y="240" text-anchor="middle" font-size="18" class="serif-cn text-accent">关于个人的数据印记，正如影子般无处不在</text>
+      <!-- 诗意与剧情融合 (单行极致留白) -->
+      <text x="345" y="240" text-anchor="middle" font-size="18" class="serif-cn text-dark">这些数据正如你看不见的影子，早已无处不在。</text>
     </g>
   </g>
 
@@ -131,40 +118,36 @@
   <g transform="translate(30, 610)">
     <g class="panel-3">
       <rect width="690" height="270" rx="16" fill="#ffffff" filter="url(#gentle-shadow)" />
-      
-      <g transform="translate(345, 135)">
-        <!-- 中间的发光小圆点代表“自我” -->
+
+      <!-- 视觉元素整体上移 -->
+      <g transform="translate(345, 115)">
         <circle cx="0" cy="0" r="10" fill="#e2c2a4" filter="url(#soft-glow)" />
         
-        <!-- 环绕的抽象元素 -->
         <g class="anim-float-1">
-          <path d="M -130 -50 Q -110 -70 -90 -50" fill="none" stroke="#c1c8b6" stroke-width="3" stroke-linecap="round" />
-          <circle cx="-130" cy="-50" r="4" fill="#c1c8b6" />
-          <text x="-110" y="-20" text-anchor="middle" font-size="14" class="serif-cn text-muted">听过的歌</text>
+          <path d="M -130 -40 Q -110 -60 -90 -40" fill="none" stroke="#c1c8b6" stroke-width="3" stroke-linecap="round" />
+          <circle cx="-130" cy="-40" r="4" fill="#c1c8b6" />
+          <text x="-110" y="-10" text-anchor="middle" font-size="14" class="serif-cn text-muted">听过的歌</text>
         </g>
         
         <g class="anim-float-2">
-          <path d="M 100 -40 C 120 -70, 150 -40, 130 -20 C 110 10, 80 -20, 100 -40 Z" fill="#eef2f3" stroke="#daddd8" stroke-width="2" />
-          <text x="120" y="0" text-anchor="middle" font-size="14" class="serif-cn text-muted">学过的词</text>
+          <path d="M 100 -30 C 120 -60, 150 -30, 130 -10 C 110 20, 80 -10, 100 -30 Z" fill="#eef2f3" stroke="#daddd8" stroke-width="2" />
+          <text x="120" y="10" text-anchor="middle" font-size="14" class="serif-cn text-muted">学过的词</text>
         </g>
 
         <g class="anim-float-1" style="animation-delay: -2s;">
-          <circle cx="-90" cy="60" r="15" fill="none" stroke="#e2c2a4" stroke-width="3" />
-          <line x1="-90" y1="60" x2="-80" y2="50" stroke="#e2c2a4" stroke-width="3" stroke-linecap="round" />
-          <text x="-90" y="95" text-anchor="middle" font-size="14" class="serif-cn text-muted">尝过的食物</text>
+          <circle cx="-90" cy="50" r="15" fill="none" stroke="#e2c2a4" stroke-width="3" />
+          <line x1="-90" y1="50" x2="-80" y2="40" stroke="#e2c2a4" stroke-width="3" stroke-linecap="round" />
+          <text x="-90" y="85" text-anchor="middle" font-size="14" class="serif-cn text-muted">尝过的食物</text>
         </g>
 
         <g class="anim-float-2" style="animation-delay: -3s;">
-          <path d="M 120 40 Q 120 60 100 60 Q 120 60 120 80 Q 120 60 140 60 Q 120 60 120 40 Z" fill="#daddd8" />
-          <text x="120" y="105" text-anchor="middle" font-size="14" class="serif-cn text-muted">游戏的片刻</text>
+          <path d="M 120 30 Q 120 50 100 50 Q 120 50 120 70 Q 120 50 140 50 Q 120 50 120 30 Z" fill="#daddd8" />
+          <text x="120" y="95" text-anchor="middle" font-size="14" class="serif-cn text-muted">游戏的片刻</text>
         </g>
       </g>
 
-      <!-- 飞鸟集引言与剧情 -->
-      <g transform="translate(345, 45)">
-        <text x="0" y="0" text-anchor="middle" font-size="16" class="serif-cn text-poem">“影子戴上面幕，秘密地，温顺地，跟在光的后边。”</text>
-      </g>
-      <text x="345" y="245" text-anchor="middle" font-size="18" class="serif-cn text-dark">它静静地渗透并包裹着，生活里的每一个缝隙。</text>
+      <!-- 优化后的行间距排版，消除拥挤感 -->
+      <text x="345" y="250" text-anchor="middle" font-size="17" class="serif-cn text-dark">它们秘密而温顺地，渗透并包裹着生活里的每一个缝隙。</text>
     </g>
   </g>
 
@@ -175,7 +158,7 @@
     <g class="panel-4">
       <rect width="690" height="400" rx="16" fill="#faf9f7" stroke="#eef2f3" stroke-width="2" filter="url(#gentle-shadow)" />
       
-      <!-- 手帐的左侧装订线孔 -->
+      <!-- 手帐装订线孔 -->
       <g fill="#daddd8">
         <circle cx="40" cy="40" r="4" /> <circle cx="40" cy="80" r="4" />
         <circle cx="40" cy="120" r="4" /> <circle cx="40" cy="160" r="4" />
