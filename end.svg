@@ -1,0 +1,142 @@
+<svg viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- 极简治愈系柔和阴影与发光 -->
+    <filter id="soft-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="12" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <filter id="gentle-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="15" stdDeviation="20" flood-color="#5c6b73" flood-opacity="0.08"/>
+    </filter>
+
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600&amp;family=Playfair+Display:ital,wght@0,400;0,600;1,400&amp;display=swap');
+      
+      /* 字体设置 */
+      .serif-en { font-family: 'Playfair Display', serif; }
+      .serif-cn { font-family: 'Noto Serif SC', serif; }
+      
+      /* 动画定义 (舒缓节奏) */
+      @keyframes fadeInSoft { 
+        from { opacity: 0; transform: translateY(20px); } 
+        to { opacity: 1; transform: translateY(0); } 
+      }
+      @keyframes floatSlow { 
+        0%, 100% { transform: translateY(0px); } 
+        50% { transform: translateY(-15px); } 
+      }
+      @keyframes floatSlower { 
+        0%, 100% { transform: translateY(0px) rotate(0deg); } 
+        50% { transform: translateY(-10px) rotate(2deg); } 
+      }
+      @keyframes pulseGlow { 
+        0%, 100% { opacity: 0.4; transform: scale(0.98); } 
+        50% { opacity: 0.8; transform: scale(1.02); } 
+      }
+      @keyframes dashMove { to { stroke-dashoffset: -40; } }
+
+      /* 面板入场：纯透明度与相对位移，不干扰绝对定位 */
+      .card-reveal { animation: fadeInSoft 1.5s ease-out 0.5s forwards; opacity: 0; }
+      .text-reveal-1 { animation: fadeInSoft 1.5s ease-out 1.2s forwards; opacity: 0; }
+      .text-reveal-2 { animation: fadeInSoft 1.5s ease-out 2.0s forwards; opacity: 0; }
+      .input-reveal { animation: fadeInSoft 1.5s ease-out 2.8s forwards; opacity: 0; }
+
+      /* 元素动画 */
+      .anim-float { animation: floatSlow 5s ease-in-out infinite; }
+      .anim-paper-plane { animation: floatSlower 6s ease-in-out infinite; transform-origin: center; }
+      .anim-glow { animation: pulseGlow 4s ease-in-out infinite; transform-origin: center; }
+      .anim-path { animation: dashMove 2s linear infinite; }
+      
+      /* 调色板 */
+      .text-dark { fill: #475569; }
+      .text-muted { fill: #94a3b8; }
+      .text-accent { fill: #b88a6d; }
+    </style>
+  </defs>
+
+  <!-- 燕麦色背景 -->
+  <rect width="100%" height="100%" fill="#f9f6f0" />
+
+  <!-- 外层 <g> 只负责动画，不负责定位，避免 CSS 覆盖问题 -->
+  <g class="card-reveal">
+    <!-- 中央留白的高级卡片 -->
+    <rect x="80" y="100" width="920" height="1720" rx="30" fill="#ffffff" filter="url(#gentle-shadow)" />
+  </g>
+
+  <!-- ========================================== -->
+  <!-- 视觉区：寄出你的造句 (纸飞机意象)          -->
+  <!-- ========================================== -->
+  <!-- 外层 <g> 锁定绝对坐标，内层 <g> 执行动画 -->
+  <g transform="translate(540, 450)">
+    <g class="card-reveal">
+      <!-- 柔和的背光 -->
+      <circle cx="0" cy="0" r="140" fill="#e2c2a4" filter="url(#soft-glow)" opacity="0.15" class="anim-glow" />
+      <circle cx="0" cy="0" r="90" fill="#e2c2a4" filter="url(#soft-glow)" opacity="0.2" />
+
+      <!-- 飞行轨迹虚线 -->
+      <path d="M -200 120 Q -100 150 -40 40 Q 20 -50 150 -100" fill="none" stroke="#c1c8b6" stroke-width="4" stroke-dasharray="12 12" stroke-linecap="round" class="anim-path" opacity="0.6" />
+
+      <!-- 纸飞机与星光 -->
+      <g class="anim-paper-plane">
+        <path d="M -60 40 L 80 -60 L 0 60 Z" fill="#ffffff" stroke="#c1c8b6" stroke-width="5" stroke-linejoin="round" />
+        <path d="M -60 40 L 20 10 L 80 -60" fill="none" stroke="#c1c8b6" stroke-width="4" stroke-linejoin="round" />
+        <path d="M 20 10 L 0 60" fill="none" stroke="#c1c8b6" stroke-width="4" stroke-linejoin="round" />
+        <polygon points="-60,40 20,10 -10,30" fill="#eef2f3" />
+        
+        <!-- 伴随的微光星点 -->
+        <circle cx="90" cy="-80" r="6" fill="#e2c2a4" class="anim-glow" />
+        <circle cx="110" cy="-30" r="4" fill="#e2c2a4" class="anim-glow" style="animation-delay: 1s;" />
+        <circle cx="-80" cy="60" r="5" fill="#e2c2a4" class="anim-glow" style="animation-delay: 2s;" />
+      </g>
+    </g>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- 英文排版区：杂志卷首语风格                 -->
+  <!-- ========================================== -->
+  <g transform="translate(540, 800)">
+    <g class="text-reveal-1">
+      <!-- 优雅的小标题 -->
+      <text x="0" y="0" text-anchor="middle" font-size="24" class="serif-en text-accent" letter-spacing="4">YOUR TURN</text>
+      <line x1="-40" y1="40" x2="40" y2="40" stroke="#b88a6d" stroke-width="2" />
+
+      <!-- 精简后的核心英文要求 (加大字号，间距舒展) -->
+      <text x="0" y="140" text-anchor="middle" font-size="34" class="serif-en text-dark">"Write a sentence using</text>
+      <text x="0" y="200" text-anchor="middle" font-size="34" class="serif-en text-dark">today’s Word of the Day</text>
+      <text x="0" y="260" text-anchor="middle" font-size="34" class="serif-en text-dark">and share it as a comment."</text>
+    </g>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- 关注提示与中文区 (Call to Action)          -->
+  <!-- ========================================== -->
+  <g transform="translate(540, 1260)">
+    <g class="text-reveal-2">
+      <!-- 引导造句 -->
+      <text x="0" y="0" text-anchor="middle" font-size="22" class="serif-cn text-muted">发挥创意，在评论区写下你的专属造句 ✨</text>
+      
+      <!-- 关注提醒 (加粗/异色强调) -->
+      <text x="0" y="80" text-anchor="middle" font-size="26" class="serif-cn text-dark">欢迎关注 <tspan fill="#b88a6d">@周末英语剧场</tspan></text>
+      <text x="0" y="125" text-anchor="middle" font-size="20" class="serif-cn text-muted">每日沉浸，感受语言的优雅与力量</text>
+    </g>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- 模拟输入框互动区                           -->
+  <!-- ========================================== -->
+  <g transform="translate(540, 1550)">
+    <g class="input-reveal">
+      <!-- 发光的输入框 -->
+      <rect x="-350" y="-45" width="700" height="90" rx="45" fill="#f9f6f0" stroke="#e2e8f0" stroke-width="3" filter="url(#soft-glow)" class="anim-glow" opacity="0.6" />
+      <rect x="-350" y="-45" width="700" height="90" rx="45" fill="#ffffff" stroke="#c1c8b6" stroke-width="2" />
+      
+      <text x="-280" y="10" font-size="26" class="serif-cn text-muted" opacity="0.7">在这里写下你的造句...</text>
+      
+      <!-- 寄出按钮 (圆形) -->
+      <circle cx="280" cy="0" r="32" fill="#5c6b73" />
+      <path d="M 272 -12 L 295 0 L 272 12 Z" fill="#ffffff" stroke="#ffffff" stroke-width="2" stroke-linejoin="round" />
+      <line x1="274" y1="0" x2="292" y2="0" stroke="#ffffff" stroke-width="3" stroke-linecap="round" />
+    </g>
+  </g>
+
+</svg>
