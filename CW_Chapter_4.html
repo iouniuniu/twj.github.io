@@ -228,7 +228,7 @@
 
             const isSameSpeaker = (currentGroup.speaker === speaker) || (currentGroup.speaker === null);
             const newDuration = sEnd - currentGroup.start;
-            const isShortEnough = newDuration < 10.0;
+            const isShortEnough = newDuration < 7.0;
 
             if (isSameSpeaker && isShortEnough) {
                 if (currentGroup.words.length === 0) { currentGroup.start = sStart; currentGroup.speaker = speaker; }
