@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>夏洛的网 - 播客封面设计 (排版修复版)</title>
+    <title>夏洛的网 - 播客封面设计 (现代平面修正版)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
@@ -98,56 +98,39 @@
         .retro-footer { position: absolute; bottom: 30px; left: 30px; display: flex; align-items: center; gap: 12px; }
 
         /* ============================================================
-           方案二：简约治愈 (Karlotta - Minimalist Healing) - 修复版
+           方案二：简约治愈 (Karlotta - Minimalist Healing)
         ============================================================ */
         .style-k-min { background-color: var(--km-bg); color: var(--km-text); font-family: serif; }
         
         .k-min-blob1 {
             position: absolute; top: -10%; left: -20%; width: 280px; height: 260px;
-            background-color: var(--km-blob1);
-            border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+            background-color: var(--km-blob1); border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
             transform: rotate(15deg); z-index: 0; opacity: 0.9;
         }
         .k-min-blob2 {
             position: absolute; bottom: -5%; right: -15%; width: 250px; height: 280px;
-            background-color: var(--km-blob2);
-            border-radius: 60% 40% 30% 70% / 50% 60% 30% 60%;
+            background-color: var(--km-blob2); border-radius: 60% 40% 30% 70% / 50% 60% 30% 60%;
             transform: rotate(-10deg); z-index: 0; opacity: 0.8;
         }
 
         .k-min-header { position: absolute; top: 35px; width: 100%; text-align: center; z-index: 5; }
         .k-min-tag {
             display: inline-block; background: var(--km-text); color: var(--km-bg);
-            padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; margin-bottom: 10px;
-            font-family: sans-serif;
+            padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; margin-bottom: 10px; font-family: sans-serif;
         }
         .k-min-h1 { font-size: 28px; font-weight: 600; margin: 0; letter-spacing: 0.5px; }
-        
-        /* 【修改点】副标题上移并精致化 */
-        .k-min-sub-header {
-            font-family: sans-serif; font-size: 12px; letter-spacing: 1px; 
-            text-transform: uppercase; margin-top: 8px; opacity: 0.7; font-weight: 500;
-        }
+        .k-min-sub-header { font-family: sans-serif; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; margin-top: 8px; opacity: 0.7; font-weight: 500; }
 
-        .k-min-cover-wrapper {
-            position: absolute; top: 135px; left: 50%; transform: translateX(-50%);
-            width: 190px; z-index: 5;
-        }
-        .k-min-cover-img {
-            width: 100%; height: auto; display: block;
-            border-radius: 6px; box-shadow: 0 15px 35px rgba(74, 69, 63, 0.15);
-        }
+        .k-min-cover-wrapper { position: absolute; top: 135px; left: 50%; transform: translateX(-50%); width: 190px; z-index: 5; }
+        .k-min-cover-img { width: 100%; height: auto; display: block; border-radius: 6px; box-shadow: 0 15px 35px rgba(74, 69, 63, 0.15); }
         
-        /* 【修改点】底部只保留控件，更简洁 */
-        .k-min-player {
-            position: absolute; bottom: 45px; left: 30px; right: 30px; z-index: 5;
-        }
+        .k-min-player { position: absolute; bottom: 45px; left: 30px; right: 30px; z-index: 5; }
         .k-min-controls { display: flex; align-items: center; justify-content: space-between; }
         .k-min-user { display: flex; align-items: center; gap: 8px; }
         .k-min-ep { font-family: sans-serif; font-size: 14px; font-weight: 700; background: var(--km-blob1); padding: 4px 10px; border-radius: 12px; color: #333;}
         
         /* ============================================================
-           方案三：现代平面 (Karlotta - Modern Flat & Bold) - 修复版
+           方案三：现代平面 (Karlotta - Modern Flat & Bold) - 防拥挤修正版
         ============================================================ */
         .style-k-mod { background-color: var(--kf-bg); color: var(--kf-text); font-family: sans-serif; }
         
@@ -170,48 +153,50 @@
             font-size: 38px; font-weight: 900; margin: 0; line-height: 1.05; letter-spacing: -1px;
             text-shadow: 3px 3px 0px rgba(0,0,0,0.2);
         }
-        /* 【修改点】副标题上移，增加设计感 */
         .k-mod-sub-header {
             margin-top: 12px; font-size: 14px; font-weight: 500; opacity: 0.9; letter-spacing: 0.5px;
             display: inline-block; border-bottom: 2px solid var(--kf-shape2); padding-bottom: 2px;
         }
 
+        /* 【核心修改点】封面区域上提、缩窄，防止挤压底部 */
         .k-mod-cover-wrapper {
-            position: absolute; top: 180px; left: 50%; transform: translateX(-50%);
-            width: 180px; z-index: 5;
+            position: absolute; 
+            top: 150px; /* 从 180px 上移到 150px */
+            left: 50%; transform: translateX(-50%);
+            width: 160px; /* 从 180px 收缩到 160px，整体变秀气 */
+            z-index: 5;
         }
         .k-mod-cover-img {
             width: 100%; height: auto; display: block;
+            max-height: 230px; object-fit: cover; /* 限制极端长图的高度，防溢出 */
             border: 3px solid var(--kf-text); box-shadow: 12px 12px 0px var(--kf-shape2); background: #fff;
         }
 
-        /* 【修改点】底部布局调整，增加呼吸感 */
+        /* 【核心修改点】底部区域彻底解压 */
         .k-mod-footer {
-            position: absolute; bottom: 40px; /* 增加底部边距 */
+            position: absolute; 
+            bottom: 30px; /* 从 40px 微降到 30px，给中间留空 */
             left: 30px; right: 30px; z-index: 5;
-            display: flex; justify-content: space-between; align-items: center;
+            display: flex; justify-content: space-between; 
+            align-items: flex-end; /* 底部对齐，让超大字体不突兀 */
         }
         .k-mod-user-box { 
             display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.2); 
             padding: 6px 12px 6px 6px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.2);
+            margin-bottom: 6px; /* 微调与大字体的垂直平衡 */
         }
         .k-mod-ep {
-            font-size: 48px; font-weight: 900; line-height: 0.8; opacity: 0.9;
+            font-size: 42px; /* 稍微从 48px 收敛到 42px，更加协调 */
+            font-weight: 900; line-height: 0.8; opacity: 0.9;
             text-shadow: 3px 3px 0px rgba(0,0,0,0.2);
         }
-
-        /* 通用：头像和文字 */
-        .avatar-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.8);}
-        .footer-text { text-align: left; }
-        .footer-text h3 { margin: 0; font-size: 14px; font-weight: 700; }
-        .footer-text p { margin: 0; font-size: 10px; opacity: 0.7; margin-top: 2px;}
 
     </style>
 </head>
 <body>
 
     <div class="controls">
-        <h2>🎨 播客封面设计实验室 (修复版)</h2>
+        <h2>🎨 播客封面设计实验室 (V7.1)</h2>
         
         <div class="style-grid">
             <button class="btn-style active" onclick="switchStyle('retro')">📜 经典复古绘本 (方案一)</button>
@@ -268,9 +253,9 @@
             </div>
             <div class="retro-footer">
                 <img src="" class="avatar-img avatar-target" alt="Avatar" style="border-color:white;">
-                <div class="footer-text">
-                    <h3 class="owner-text" style="color:#333;">周末英语剧场</h3>
-                    <p style="color:#888;">© 版权所有 · 侵权必究</p>
+                <div style="text-align: left;">
+                    <h3 class="owner-text" style="color:#333; margin:0; font-size:14px; font-weight:700;">周末英语剧场</h3>
+                    <p style="color:#888; margin:2px 0 0 0; font-size:10px;">© 版权所有 · 侵权必究</p>
                 </div>
             </div>
         </div>
