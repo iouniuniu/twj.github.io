@@ -3,85 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>夏洛的网 - Karlotta Freier 特别版 (V6.0)</title>
+    <title>夏洛的网 - 播客封面设计 (Karlotta风格版)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
+            /* 基础预览尺寸 -> 输出超清 1242x1660 */
             --ratio-w: 375px; 
-            --ratio-h: 501.2px;
-            /* Karlotta 风格常用色板 */
-            --k-pink: #ff5eb7;
-            --k-blue: #2b4eff;
-            --k-yellow: #ffea00;
-            --k-green: #00d68f;
-            --k-dark: #1a0f2e;
-            --k-cream: #f7f3e8;
+            --ratio-h: 501.2px; 
+            
+            /* Karlotta - 治愈色板 */
+            --km-bg: #F7F4EB;
+            --km-blob1: #E4C5AF;
+            --km-blob2: #BAC7BE;
+            --km-text: #4A453F;
+            
+            /* Karlotta - 现代平面色板 */
+            --kf-bg: #1D2D44;
+            --kf-shape1: #D96C53;
+            --kf-shape2: #E9B872;
+            --kf-text: #FFF5E1;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #222;
-            display: flex;
-            flex-direction: row;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 40px;
-            gap: 40px;
-            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Roboto, sans-serif;
+            background-color: #222; display: flex; flex-direction: row;
+            justify-content: center; align-items: flex-start; padding: 40px; gap: 40px; min-height: 100vh;
         }
 
-        /* === 左侧控制面板 === */
+        /* === 噪点纹理滤镜 (所有Karlotta风格通用，增加插画纸张质感) === */
+        .grain-overlay {
+            position: absolute; inset: 0; pointer-events: none; z-index: 50; opacity: 0.35; mix-blend-mode: multiply;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48ZmlsdGVyIGlkPSJuIj48ZmVUdXJYdWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMC44IiBudW1PY3RhdmVzPSI0IiBzdGl0Y2hUaWxlcz0ic3RGl0Y2giLz48L2ZpbHRlcj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsdGVyPSJ1cmwoI24pIiBvcGFjaXR5PSIwLjI1Ii8+PC9zdmc+');
+        }
+
+        /* === 控制面板 === */
         .controls {
-            background: white;
-            padding: 25px;
-            border-radius: 16px;
-            width: 320px;
-            flex-shrink: 0;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            background: white; padding: 25px; border-radius: 16px; width: 320px; flex-shrink: 0; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
         .controls h2 { margin-top: 0; color: #333; font-size: 18px; margin-bottom: 20px;}
         .control-group { margin-bottom: 12px; }
         .control-group label { display: block; font-size: 12px; color: #666; margin-bottom: 4px; font-weight: 600;}
-        .control-group input[type="text"] {
-            width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 14px;
-        }
-        .style-grid { display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 15px; }
+        .control-group input[type="text"] { width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 14px;}
+        
+        .style-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
         .btn-style { 
             padding: 12px; border: 2px solid #eee; background: #f9f9f9; width: 100%;
-            border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600;
-            display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+            border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; text-align: left; transition: all 0.2s;
         }
         .btn-style:hover { border-color: #ccc; }
         .btn-style.active { background: #333; color: white; border-color: #333; }
         
-        /* Karlotta 风格按钮特别色 */
-        .btn-k1.active { background: var(--k-dark); border-color: var(--k-pink); color: var(--k-pink); }
-        .btn-k2.active { background: var(--k-cream); border-color: var(--k-blue); color: var(--k-blue); }
-
         .btn-download { 
             background: #ff2442; color: white; width: 100%; margin-top: 15px; border: none; padding: 12px;
-            border-radius: 30px; font-weight: bold; cursor: pointer; font-size: 15px;
-            box-shadow: 0 4px 12px rgba(255, 36, 66, 0.3);
+            border-radius: 30px; font-weight: bold; cursor: pointer; font-size: 15px; box-shadow: 0 4px 12px rgba(255, 36, 66, 0.3);
         }
 
-        /* === 右侧预览框 === */
+        /* === 预览框 === */
         .preview-wrapper {
-            position: relative;
-            border: 1px solid #333; 
-            background: #000;
-            width: var(--ratio-w);
-            height: var(--ratio-h);
-            overflow: hidden;
-            user-select: none;
+            position: relative; border: 1px solid #333; background: #000;
+            width: var(--ratio-w); height: var(--ratio-h); overflow: hidden; user-select: none;
         }
 
-        .poster {
-            width: 100%; height: 100%; position: relative; overflow: hidden; display: none; 
-        }
+        .poster { width: 100%; height: 100%; position: relative; overflow: hidden; display: none; }
         .poster.active { display: block; }
 
         /* ============================================================
-           方案一：复古绘本风 (Retro Book) - 保持 V5.0 原样
+           方案一：复古绘本风 (V5.0 保留版)
         ============================================================ */
         .style-retro {
             background-color: #FDF5E6;
@@ -89,10 +76,8 @@
             color: #333;
         }
         .retro-tag {
-            position: absolute; top: 20px; left: 0;
-            background: #c0392b; color: white;
-            padding: 6px 15px; font-weight: bold; font-size: 14px;
-            border-top-right-radius: 4px; border-bottom-right-radius: 4px;
+            position: absolute; top: 20px; left: 0; background: #c0392b; color: white;
+            padding: 6px 15px; font-weight: bold; font-size: 14px; border-radius: 0 4px 4px 0;
             box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
         }
         .retro-title-group { position: absolute; top: 50px; left: 30px; right: 30px; font-family: serif; }
@@ -100,171 +85,123 @@
         .retro-sub { font-size: 14px; color: #556B2F; font-weight: 600; letter-spacing: 1px; }
         
         .retro-book-container {
-            position: absolute; top: 130px;
-            left: 50%; transform: translateX(-50%);
-            width: 180px; max-height: 260px;
-            display: flex; justify-content: center;
+            position: absolute; top: 130px; left: 50%; transform: translateX(-50%);
+            width: 180px; max-height: 260px; display: flex; justify-content: center;
         }
-        .retro-book-img { 
-            width: 100%; height: auto; 
-            box-shadow: 12px 12px 25px rgba(0,0,0,0.25);
-            border-left: 1px solid rgba(255,255,255,0.4); display: block;
-        }
+        .retro-book-img { width: 100%; height: auto; box-shadow: 12px 12px 25px rgba(0,0,0,0.25); display: block; }
         .retro-ep-sticker {
             position: absolute; bottom: -20px; right: -25px;
-            width: 65px; height: 65px; background: #e74c3c;
-            border-radius: 50%; border: 3px solid #fff;
-            display: flex; justify-content: center; align-items: center;
-            color: white; font-weight: bold; font-size: 16px;
+            width: 65px; height: 65px; background: #e74c3c; border-radius: 50%; border: 3px solid #fff;
+            display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; font-size: 16px;
             transform: rotate(-10deg); box-shadow: 2px 2px 8px rgba(0,0,0,0.2); z-index: 10;
         }
-        .retro-footer {
-            position: absolute; bottom: 30px; left: 30px; display: flex; align-items: center; gap: 12px;
-        }
+        .retro-footer { position: absolute; bottom: 30px; left: 30px; display: flex; align-items: center; gap: 12px; }
 
         /* ============================================================
-           Karlotta 风格通用设置 (手绘感字体 & 纹理)
+           方案二：简约治愈 (Karlotta - Minimalist Healing)
         ============================================================ */
-        .k-font {
-            font-family: "Comic Sans MS", "Marker Felt", cursive; /* 模拟手绘字体 */
-            font-weight: 900;
-            letter-spacing: 1px;
+        .style-k-min { background-color: var(--km-bg); color: var(--km-text); font-family: serif; }
+        
+        /* 有机流体色块 - 构成柔软的视觉包围感 */
+        .k-min-blob1 {
+            position: absolute; top: -10%; left: -20%; width: 280px; height: 260px;
+            background-color: var(--km-blob1);
+            border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+            transform: rotate(15deg); z-index: 0; opacity: 0.9;
         }
-        /* 噪点纹理层 */
-        .k-texture {
-            position: absolute; inset: 0; pointer-events: none; z-index: 10; opacity: 0.4;
-            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48ZmlsdGVyIGlkPSJuIj48ZmVUdXJYdWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMC43IiBudW1PY3RhdmVzPSI0IiBzdGl0Y2hUaWxlcz0ic3RGl0Y2giLz48L2ZpbHRlcj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsdGVyPSJ1cmwoI24pIiBvcGFjaXR5PSIwLjUiLz48L3N2Zz4=');
+        .k-min-blob2 {
+            position: absolute; bottom: -5%; right: -15%; width: 250px; height: 280px;
+            background-color: var(--km-blob2);
+            border-radius: 60% 40% 30% 70% / 50% 60% 30% 60%;
+            transform: rotate(-10deg); z-index: 0; opacity: 0.8;
         }
 
-        /* ============================================================
-           方案二：Karlotta 风格 A - 霓虹梦境 (Neon Dream)
-        ============================================================ */
-        .style-k1 {
-            background-color: var(--k-dark);
-            color: var(--k-cream);
-            overflow: hidden;
+        .k-min-header { position: absolute; top: 35px; width: 100%; text-align: center; z-index: 5; }
+        .k-min-tag {
+            display: inline-block; background: var(--km-text); color: var(--km-bg);
+            padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; margin-bottom: 10px;
+            font-family: sans-serif;
+        }
+        .k-min-h1 { font-size: 28px; font-weight: 600; margin: 0; letter-spacing: 0.5px; }
+
+        .k-min-cover-wrapper {
+            position: absolute; top: 125px; left: 50%; transform: translateX(-50%);
+            width: 190px; z-index: 5;
+        }
+        .k-min-cover-img {
+            width: 100%; height: auto; display: block;
+            border-radius: 6px; /* 微小的圆角显得温润 */
+            box-shadow: 0 15px 35px rgba(74, 69, 63, 0.15); /* 柔和的暖色阴影 */
         }
         
-        /* 背景装饰：流动的有机形状 */
-        .k1-blob {
-            position: absolute; border-radius: 50%; filter: blur(40px); opacity: 0.5; z-index: 0;
+        /* 播客播放UI融入 */
+        .k-min-player {
+            position: absolute; bottom: 40px; left: 30px; right: 30px; z-index: 5;
+            display: flex; flex-direction: column; gap: 15px;
         }
-        .k1-blob-1 { top: -10%; left: -10%; width: 300px; height: 300px; background: var(--k-blue); }
-        .k1-blob-2 { bottom: -20%; right: -20%; width: 400px; height: 400px; background: var(--k-pink); }
-        .k1-blob-3 { top: 40%; left: 60%; width: 200px; height: 200px; background: var(--k-yellow); }
-
-        /* 手绘感标题区 */
-        .k1-title-area {
-            position: absolute; top: 40px; width: 100%; text-align: center; z-index: 5;
-            text-shadow: 3px 3px 0px var(--k-blue), -2px -2px 0px var(--k-pink); /* 错位描边效果 */
-        }
-        .k1-h1 { font-size: 36px; margin: 0; transform: rotate(-2deg); }
-        .k1-sub { font-size: 16px; color: var(--k-yellow); margin-top: 5px; transform: rotate(1deg); }
-
-        /* 封面容器：发光的手绘边框 */
-        .k1-cover-box {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -45%);
-            z-index: 5;
-            padding: 15px;
-            /* 模拟手绘不规则边框 */
-            border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
-            border: 4px dashed var(--k-yellow);
-            box-shadow: 0 0 20px var(--k-pink), inset 0 0 20px var(--k-blue);
-            background: rgba(0,0,0,0.3);
-            animation: wobble 6s ease-in-out infinite;
-        }
-        @keyframes wobble {
-            0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
-            50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
-        }
-
-        .k1-cover-img {
-            width: 200px; height: auto; display: block;
-            border-radius: 12px; border: 3px solid var(--k-pink);
-            transform: rotate(2deg);
-        }
-
-        .k1-tag {
-            position: absolute; top: 20px; left: 20px;
-            background: var(--k-pink); color: var(--k-dark);
-            padding: 8px 15px; border-radius: 30px; font-weight: 900; font-size: 12px;
-            border: 3px solid var(--k-yellow); transform: rotate(-5deg); z-index: 10;
-        }
-        .k1-ep {
-            position: absolute; bottom: 120px; right: 30px;
-            font-size: 24px; color: var(--k-yellow);
-            text-shadow: 2px 2px var(--k-blue); transform: rotate(10deg); z-index: 10;
-        }
-
-        .k1-footer {
-            position: absolute; bottom: 30px; width: 100%; text-align: center; color: var(--k-pink); z-index: 5;
-        }
-
+        .k-min-sub { font-size: 14px; text-align: center; font-style: italic; opacity: 0.8; }
+        
+        .k-min-controls { display: flex; align-items: center; justify-content: space-between; }
+        .k-min-user { display: flex; align-items: center; gap: 8px; }
+        .k-min-ep { font-family: sans-serif; font-size: 14px; font-weight: 700; background: var(--km-blob1); padding: 4px 10px; border-radius: 12px; color: #333;}
+        
         /* ============================================================
-           方案三：Karlotta 风格 B - 复古 Riso 印刷 (Riso Folk)
+           方案三：现代平面 (Karlotta - Modern Flat & Bold)
         ============================================================ */
-        .style-k2 {
-            background-color: var(--k-cream); color: var(--k-dark);
-            /* 纸张纹理背景 */
-            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAElBMVEUAAAD8/Pz///+cnJz8/Pz///9YK2sUAAAABnRSTlMABQYNDg+G/M8vAAAAV0lEQVQ4y2NgGFrg/4EBDD78/8AAhQ//PzCA4cP/Dwxw+PD/AwNYPvz/wACXD/8/MIDp8/8/GMr//2eA8f//GWD6/58Bpv//GWD8/58Bpv//GWAe2gAA2G1c54zG/2QAAAAASUVORK5CYII=');
+        .style-k-mod { background-color: var(--kf-bg); color: var(--kf-text); font-family: sans-serif; }
+        
+        /* 大胆的几何切割 */
+        .k-mod-shape1 {
+            position: absolute; top: 0; right: 0; width: 65%; height: 55%;
+            background-color: var(--kf-shape1);
+            border-radius: 0 0 0 40px; z-index: 0;
+        }
+        .k-mod-shape2 {
+            position: absolute; bottom: -40px; left: -30px; width: 200px; height: 200px;
+            background-color: var(--kf-shape2);
+            border-radius: 50%; z-index: 0;
+        }
+
+        .k-mod-header { position: absolute; top: 40px; left: 30px; z-index: 5; width: 80%; }
+        .k-mod-tag {
+            display: inline-block; background: var(--kf-text); color: var(--kf-bg);
+            padding: 5px 12px; font-size: 12px; font-weight: 800; text-transform: uppercase;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.2); margin-bottom: 12px;
+        }
+        .k-mod-h1 { 
+            font-size: 38px; font-weight: 900; margin: 0; line-height: 1.05; letter-spacing: -1px;
+            text-shadow: 3px 3px 0px rgba(0,0,0,0.2);
+        }
+
+        /* 强烈的实色错位阴影 (Editorial Style) */
+        .k-mod-cover-wrapper {
+            position: absolute; top: 160px; left: 50%; transform: translateX(-50%);
+            width: 180px; z-index: 5;
+        }
+        .k-mod-cover-img {
+            width: 100%; height: auto; display: block;
+            border: 3px solid var(--kf-text);
+            box-shadow: 12px 12px 0px var(--kf-shape2); /* 标志性的实色阴影 */
+            background: #fff;
+        }
+
+        .k-mod-footer {
+            position: absolute; bottom: 30px; left: 30px; right: 30px; z-index: 5;
+            display: flex; justify-content: space-between; align-items: flex-end;
+        }
+        .k-mod-info { display: flex; flex-direction: column; gap: 6px; }
+        .k-mod-sub { font-size: 13px; font-weight: 600; opacity: 0.9; letter-spacing: 0.5px;}
+        .k-mod-user-box { 
+            display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.2); 
+            padding: 6px 12px 6px 6px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.2);
         }
         
-        /* 装饰边框：用重复的文字模拟图案 */
-        .k2-border-pattern {
-            position: absolute; inset: 15px;
-            border: 4px dotted var(--k-blue);
-            display: flex; justify-content: center; align-items: center;
-            opacity: 0.3; font-size: 10px; overflow: hidden; line-height: 1;
-            color: var(--k-green); pointer-events: none;
-            mix-blend-mode: multiply; /* Riso 叠印效果 */
+        .k-mod-ep {
+            font-size: 48px; font-weight: 900; line-height: 0.8; opacity: 0.9;
+            text-shadow: 3px 3px 0px rgba(0,0,0,0.2);
         }
 
-        .k2-title-area {
-            position: absolute; top: 50px; left: 40px; z-index: 5;
-        }
-        .k2-h1 {
-            font-size: 40px; color: var(--k-blue); margin: 0;
-            text-shadow: 4px 4px 0px rgba(43, 78, 255, 0.3); /* Riso 错位阴影 */
-        }
-        .k2-sub {
-            display: inline-block; background: var(--k-yellow); color: var(--k-dark);
-            padding: 2px 8px; font-size: 14px; margin-top: 10px; border: 2px solid var(--k-dark);
-        }
-
-        /* 封面容器：密集的民间图案环绕 */
-        .k2-cover-box {
-            position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%);
-            padding: 25px;
-            /* 模拟复杂的图案边框 */
-            background-image: radial-gradient(circle at 10px 10px, var(--k-pink) 5px, transparent 0),
-                              radial-gradient(circle at 30px 30px, var(--k-green) 8px, transparent 0);
-            background-size: 40px 40px;
-            border-radius: 20px;
-            border: 4px solid var(--k-dark);
-            box-shadow: 10px 10px 0px rgba(255, 94, 183, 0.5);
-        }
-        .k2-cover-img {
-            width: 180px; height: auto; display: block;
-            border: 3px solid var(--k-dark);
-            /* Riso 图片效果：高对比，单色化倾向 */
-            filter: contrast(1.2) sepia(0.3) drop-shadow(5px 5px 0px var(--k-yellow));
-            background: white;
-        }
-
-        .k2-tag {
-            position: absolute; top: 0; right: 0;
-            background: var(--k-blue); color: var(--k-cream);
-            padding: 8px 15px; font-size: 12px; border-bottom-left-radius: 15px;
-            border-left: 3px solid var(--k-dark); border-bottom: 3px solid var(--k-dark);
-        }
-
-        .k2-footer {
-            position: absolute; bottom: 35px; left: 40px; display: flex; align-items: center; gap: 10px;
-            background: var(--k-pink); padding: 5px 15px 5px 5px; border-radius: 30px;
-            border: 3px solid var(--k-dark); box-shadow: 5px 5px 0px rgba(0,0,0,0.2);
-        }
-
-        /* 通用：头像和底部文字 */
+        /* 通用：头像和文字 */
         .avatar-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.8);}
         .footer-text { text-align: left; }
         .footer-text h3 { margin: 0; font-size: 14px; font-weight: 700; }
@@ -275,47 +212,47 @@
 <body>
 
     <div class="controls">
-        <h2>🎨 Karlotta Freier 特别版</h2>
+        <h2>🎨 播客封面设计实验室</h2>
         
         <div class="style-grid">
-            <button class="btn-style active" onclick="switchStyle('retro')">📜 经典复古绘本 (V5.0)</button>
-            <button class="btn-style btn-k1" onclick="switchStyle('k1')">✨ Karlotta A: 霓虹梦境</button>
-            <button class="btn-style btn-k2" onclick="switchStyle('k2')">🌿 Karlotta B: 复古Riso印刷</button>
+            <button class="btn-style active" onclick="switchStyle('retro')">📜 经典复古绘本 (方案一)</button>
+            <button class="btn-style" onclick="switchStyle('k-min')">🌿 简约治愈 (Karlotta风格)</button>
+            <button class="btn-style" onclick="switchStyle('k-mod')">🔶 现代平面 (Karlotta风格)</button>
         </div>
 
         <div class="control-group">
-            <label>主标题</label>
+            <label>主标题 (Podcast Title)</label>
             <input type="text" id="inputTitle" value="Charlotte's Web" oninput="updateText()">
         </div>
         <div class="control-group">
-            <label>副标题</label>
+            <label>副标题 (Subtitle)</label>
             <input type="text" id="inputSub" value="英文原版广播剧" oninput="updateText()">
         </div>
         <div class="control-group">
-            <label>标签内容</label>
+            <label>醒目标签 (Tag)</label>
             <input type="text" id="inputTag" value="全网首发 🔥" oninput="updateText()">
         </div>
         <div class="control-group">
-            <label>集数</label>
+            <label>集数 (Episode)</label>
             <input type="text" id="inputEp" value="EP.01" oninput="updateText()">
         </div>
         <div class="control-group">
-            <label>所有者名称</label>
+            <label>创作者 (Creator)</label>
             <input type="text" id="inputOwner" value="周末英语剧场" oninput="updateText()">
         </div>
         
         <div style="height:1px; background:#eee; margin:15px 0;"></div>
 
         <div class="control-group">
-            <label>🖼️ 封面图 (视觉中心)</label>
+            <label>🖼️ 封面插图 (视觉中心)</label>
             <input type="file" accept="image/*" onchange="loadImage(this, 'cover')">
         </div>
         <div class="control-group">
-            <label>👤 头像</label>
+            <label>👤 创作者头像</label>
             <input type="file" accept="image/*" onchange="loadImage(this, 'avatar')">
         </div>
 
-        <button class="btn-download" id="downloadBtn" onclick="downloadPoster()">⬇️ 下载 1242x1660 超清图</button>
+        <button class="btn-download" id="downloadBtn" onclick="downloadPoster()">⬇️ 下载 1242x1660 超清封面</button>
     </div>
 
     <div class="preview-wrapper">
@@ -339,68 +276,62 @@
             </div>
         </div>
 
-        <div id="style-k1" class="poster style-k1 k-font">
-            <div class="k-texture"></div>
-            <div class="k1-blob k1-blob-1"></div>
-            <div class="k1-blob k1-blob-2"></div>
-            <div class="k1-blob k1-blob-3"></div>
+        <div id="style-k-min" class="poster style-k-min">
+            <div class="grain-overlay"></div>
+            <div class="k-min-blob1"></div>
+            <div class="k-min-blob2"></div>
 
-            <div class="k1-tag tag-text">全网首发 🔥</div>
-
-            <div class="k1-title-area">
-                <h1 class="k1-h1 title-text">Charlotte's Web</h1>
-                <div class="k1-sub sub-text">英文原版广播剧</div>
+            <div class="k-min-header">
+                <div class="k-min-tag tag-text">全网首发 🔥</div>
+                <h1 class="k-min-h1 title-text">Charlotte's Web</h1>
             </div>
 
-            <div class="k1-cover-box">
-                <img src="" class="k1-cover-img cover-target" alt="Cover">
+            <div class="k-min-cover-wrapper">
+                <img src="" class="k-min-cover-img cover-target" alt="Cover">
             </div>
             
-            <div class="k1-ep ep-text">EP.01</div>
-
-            <div class="k1-footer">
-                <div style="display: inline-flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 30px; border: 2px solid var(--k-pink);">
-                    <img src="" class="avatar-img avatar-target" style="border-color:var(--k-yellow); width: 30px; height: 30px;">
-                    <span class="owner-text">周末英语剧场</span>
+            <div class="k-min-player">
+                <div class="k-min-sub sub-text">英文原版广播剧</div>
+                <div class="k-min-controls">
+                    <div class="k-min-user">
+                        <img src="" class="avatar-img avatar-target" style="width:32px; height:32px; border:none;">
+                        <span class="owner-text" style="font-weight: 600; font-size: 14px; font-family: sans-serif;">周末英语剧场</span>
+                    </div>
+                    <div class="k-min-ep ep-text">EP.01</div>
                 </div>
             </div>
         </div>
 
-        <div id="style-k2" class="poster style-k2 k-font">
-            <div class="k-texture" style="opacity: 0.2;"></div>
-            <div class="k2-border-pattern">
-                RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT
-                RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT
-                RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT
-                RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT
-                RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT
-                RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT
-                RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT
-            </div>
-            <div class="k2-tag tag-text">全网首发 🔥</div>
+        <div id="style-k-mod" class="poster style-k-mod">
+            <div class="grain-overlay" style="opacity: 0.5;"></div>
+            <div class="k-mod-shape1"></div>
+            <div class="k-mod-shape2"></div>
 
-            <div class="k2-title-area">
-                <h1 class="k2-h1 title-text">Charlotte's Web</h1>
-                <span class="k2-sub sub-text">英文原版广播剧 · <span class="ep-text">EP.01</span></span>
+            <div class="k-mod-header">
+                <div class="k-mod-tag tag-text">全网首发 🔥</div>
+                <h1 class="k-mod-h1 title-text">Charlotte's Web</h1>
             </div>
 
-            <div class="k2-cover-box">
-                <img src="" class="k2-cover-img cover-target" alt="Cover">
+            <div class="k-mod-cover-wrapper">
+                <img src="" class="k-mod-cover-img cover-target" alt="Cover">
             </div>
 
-            <div class="k2-footer">
-                <img src="" class="avatar-img avatar-target" style="border-color:var(--k-dark);">
-                <div class="footer-text">
-                    <h3 class="owner-text" style="color:var(--k-dark);">周末英语剧场</h3>
-                    <p style="color:var(--k-dark); opacity: 0.7;">© Riso Art Studio</p>
+            <div class="k-mod-footer">
+                <div class="k-mod-info">
+                    <div class="k-mod-sub sub-text">英文原版广播剧</div>
+                    <div class="k-mod-user-box">
+                        <img src="" class="avatar-img avatar-target" style="width:28px; height:28px; border:none;">
+                        <span class="owner-text" style="font-size: 13px; font-weight: 700;">周末英语剧场</span>
+                    </div>
                 </div>
+                <div class="k-mod-ep ep-text">EP.01</div>
             </div>
         </div>
 
     </div>
 
     <script>
-        const defaultCover = "https://via.placeholder.com/300x400?text=Cover"; 
+        const defaultCover = "https://via.placeholder.com/300x400?text=Cover+Art"; 
         const defaultAvatar = "https://via.placeholder.com/100?text=Avatar";
 
         document.querySelectorAll('.cover-target').forEach(img => img.src = defaultCover);
@@ -421,8 +352,9 @@
             const owner = document.getElementById('inputOwner').value;
 
             document.querySelectorAll('.title-text').forEach(el => el.innerText = title);
-            document.querySelectorAll('.sub-text').forEach(el => el.innerHTML = sub.replace(' ', '<br>')); 
+            document.querySelectorAll('.sub-text').forEach(el => el.innerText = sub);
             document.querySelectorAll('.tag-text').forEach(el => el.innerText = tag);
+            // 现代平面风的集数只提取数字部分效果更好，这里为了通用保留原文字
             document.querySelectorAll('.ep-text').forEach(el => el.innerText = ep); 
             document.querySelectorAll('.owner-text').forEach(el => el.innerText = owner);
         }
@@ -444,7 +376,7 @@
         function downloadPoster() {
             const btn = document.getElementById('downloadBtn');
             const originalText = btn.innerText;
-            btn.innerText = "⚡️ 渲染中...";
+            btn.innerText = "⚡️ 高清渲染中...";
             btn.disabled = true;
 
             const activePoster = document.querySelector('.poster.active');
@@ -457,7 +389,7 @@
 
             html2canvas(clone, { scale: 3.312, useCORS: true, backgroundColor: null }).then(canvas => {
                 const link = document.createElement('a');
-                link.download = 'xiaohongshu-HD.png';
+                link.download = 'podcast-cover-HD.png';
                 link.href = canvas.toDataURL("image/png");
                 link.click();
                 document.body.removeChild(container);
