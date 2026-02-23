@@ -3,16 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>夏洛的网 - 重心上移修复版 (V5.0)</title>
+    <title>夏洛的网 - Karlotta Freier 特别版 (V6.0)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
             --ratio-w: 375px; 
-            --ratio-h: 501.2px; 
+            --ratio-h: 501.2px;
+            /* Karlotta 风格常用色板 */
+            --k-pink: #ff5eb7;
+            --k-blue: #2b4eff;
+            --k-yellow: #ffea00;
+            --k-green: #00d68f;
+            --k-dark: #1a0f2e;
+            --k-cream: #f7f3e8;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: #222;
             display: flex;
             flex-direction: row;
@@ -38,11 +45,19 @@
         .control-group input[type="text"] {
             width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 14px;
         }
+        .style-grid { display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 15px; }
         .btn-style { 
-            padding: 10px; border: 1px solid #eee; background: #f5f5f5; width: 48%;
-            border-radius: 8px; cursor: pointer; font-size: 13px; margin-bottom: 8px; font-weight: 500;
+            padding: 12px; border: 2px solid #eee; background: #f9f9f9; width: 100%;
+            border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600;
+            display: flex; align-items: center; justify-content: center; transition: all 0.2s;
         }
+        .btn-style:hover { border-color: #ccc; }
         .btn-style.active { background: #333; color: white; border-color: #333; }
+        
+        /* Karlotta 风格按钮特别色 */
+        .btn-k1.active { background: var(--k-dark); border-color: var(--k-pink); color: var(--k-pink); }
+        .btn-k2.active { background: var(--k-cream); border-color: var(--k-blue); color: var(--k-blue); }
+
         .btn-download { 
             background: #ff2442; color: white; width: 100%; margin-top: 15px; border: none; padding: 12px;
             border-radius: 30px; font-weight: bold; cursor: pointer; font-size: 15px;
@@ -66,7 +81,7 @@
         .poster.active { display: block; }
 
         /* ============================================================
-           方案一：复古绘本风 (上移版)
+           方案一：复古绘本风 (Retro Book) - 保持 V5.0 原样
         ============================================================ */
         .style-retro {
             background-color: #FDF5E6;
@@ -74,18 +89,18 @@
             color: #333;
         }
         .retro-tag {
-            position: absolute; top: 20px; left: 0; /* 上移 */
+            position: absolute; top: 20px; left: 0;
             background: #c0392b; color: white;
             padding: 6px 15px; font-weight: bold; font-size: 14px;
             border-top-right-radius: 4px; border-bottom-right-radius: 4px;
             box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
         }
-        .retro-title-group { position: absolute; top: 50px; left: 30px; right: 30px; font-family: serif; } /* 大幅上移 */
+        .retro-title-group { position: absolute; top: 50px; left: 30px; right: 30px; font-family: serif; }
         .retro-h1 { font-size: 34px; font-weight: 800; color: #2c3e50; line-height: 1.1; margin-bottom: 5px; }
         .retro-sub { font-size: 14px; color: #556B2F; font-weight: 600; letter-spacing: 1px; }
         
         .retro-book-container {
-            position: absolute; top: 130px; /* 大幅上移 (原160) */
+            position: absolute; top: 130px;
             left: 50%; transform: translateX(-50%);
             width: 180px; max-height: 260px;
             display: flex; justify-content: center;
@@ -108,197 +123,164 @@
         }
 
         /* ============================================================
-           方案二：深邃播放器 (上移 + 紧凑)
+           Karlotta 风格通用设置 (手绘感字体 & 纹理)
         ============================================================ */
-        .style-modern { background: #050505; color: white; }
-        .modern-bg {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-size: cover; background-position: center;
-            filter: blur(50px) brightness(0.4); transform: scale(1.2); z-index: 0;
+        .k-font {
+            font-family: "Comic Sans MS", "Marker Felt", cursive; /* 模拟手绘字体 */
+            font-weight: 900;
+            letter-spacing: 1px;
         }
-        .modern-overlay { 
-            position: absolute; inset: 0; 
-            background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.95) 100%);
-            z-index: 1; pointer-events: none;
+        /* 噪点纹理层 */
+        .k-texture {
+            position: absolute; inset: 0; pointer-events: none; z-index: 10; opacity: 0.4;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48ZmlsdGVyIGlkPSJuIj48ZmVUdXJYdWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMC43IiBudW1PY3RhdmVzPSI0IiBzdGl0Y2hUaWxlcz0ic3RGl0Y2giLz48L2ZpbHRlcj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsdGVyPSJ1cmwoI24pIiBvcGFjaXR5PSIwLjUiLz48L3N2Zz4=');
         }
 
-        .modern-content { 
-            position: relative; z-index: 2; height: 100%; 
-            padding: 20px 30px; /* 减少顶部Padding，内容上移 */
-            display: flex; flex-direction: column; box-sizing: border-box;
+        /* ============================================================
+           方案二：Karlotta 风格 A - 霓虹梦境 (Neon Dream)
+        ============================================================ */
+        .style-k1 {
+            background-color: var(--k-dark);
+            color: var(--k-cream);
+            overflow: hidden;
         }
         
-        .modern-tag {
-            align-self: flex-start; background: rgba(255,255,255,0.15); 
-            color: #fff; border: 1px solid rgba(255,255,255,0.2);
-            padding: 6px 12px; border-radius: 100px; font-size: 11px; font-weight: 600;
-            backdrop-filter: blur(10px); display: flex; align-items: center; gap: 4px;
-            margin-bottom: 15px; /* 减少间距 */
-            flex-shrink: 0;
+        /* 背景装饰：流动的有机形状 */
+        .k1-blob {
+            position: absolute; border-radius: 50%; filter: blur(40px); opacity: 0.5; z-index: 0;
+        }
+        .k1-blob-1 { top: -10%; left: -10%; width: 300px; height: 300px; background: var(--k-blue); }
+        .k1-blob-2 { bottom: -20%; right: -20%; width: 400px; height: 400px; background: var(--k-pink); }
+        .k1-blob-3 { top: 40%; left: 60%; width: 200px; height: 200px; background: var(--k-yellow); }
+
+        /* 手绘感标题区 */
+        .k1-title-area {
+            position: absolute; top: 40px; width: 100%; text-align: center; z-index: 5;
+            text-shadow: 3px 3px 0px var(--k-blue), -2px -2px 0px var(--k-pink); /* 错位描边效果 */
+        }
+        .k1-h1 { font-size: 36px; margin: 0; transform: rotate(-2deg); }
+        .k1-sub { font-size: 16px; color: var(--k-yellow); margin-top: 5px; transform: rotate(1deg); }
+
+        /* 封面容器：发光的手绘边框 */
+        .k1-cover-box {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -45%);
+            z-index: 5;
+            padding: 15px;
+            /* 模拟手绘不规则边框 */
+            border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+            border: 4px dashed var(--k-yellow);
+            box-shadow: 0 0 20px var(--k-pink), inset 0 0 20px var(--k-blue);
+            background: rgba(0,0,0,0.3);
+            animation: wobble 6s ease-in-out infinite;
+        }
+        @keyframes wobble {
+            0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+            50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
         }
 
-        .modern-cover {
-            width: 200px; /* 再次调窄，给高度留空间 */
-            max-height: 250px; /* 限制高度，防止挤压底部 */
-            margin: 0 auto 15px auto; /* 减少底部间距 */
-            border-radius: 10px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); 
-            border: 1px solid rgba(255,255,255,0.1);
+        .k1-cover-img {
+            width: 200px; height: auto; display: block;
+            border-radius: 12px; border: 3px solid var(--k-pink);
+            transform: rotate(2deg);
+        }
+
+        .k1-tag {
+            position: absolute; top: 20px; left: 20px;
+            background: var(--k-pink); color: var(--k-dark);
+            padding: 8px 15px; border-radius: 30px; font-weight: 900; font-size: 12px;
+            border: 3px solid var(--k-yellow); transform: rotate(-5deg); z-index: 10;
+        }
+        .k1-ep {
+            position: absolute; bottom: 120px; right: 30px;
+            font-size: 24px; color: var(--k-yellow);
+            text-shadow: 2px 2px var(--k-blue); transform: rotate(10deg); z-index: 10;
+        }
+
+        .k1-footer {
+            position: absolute; bottom: 30px; width: 100%; text-align: center; color: var(--k-pink); z-index: 5;
+        }
+
+        /* ============================================================
+           方案三：Karlotta 风格 B - 复古 Riso 印刷 (Riso Folk)
+        ============================================================ */
+        .style-k2 {
+            background-color: var(--k-cream); color: var(--k-dark);
+            /* 纸张纹理背景 */
+            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAElBMVEUAAAD8/Pz///+cnJz8/Pz///9YK2sUAAAABnRSTlMABQYNDg+G/M8vAAAAV0lEQVQ4y2NgGFrg/4EBDD78/8AAhQ//PzCA4cP/Dwxw+PD/AwNYPvz/wACXD/8/MIDp8/8/GMr//2eA8f//GWD6/58Bpv//GWD8/58Bpv//GWAe2gAA2G1c54zG/2QAAAAASUVORK5CYII=');
+        }
+        
+        /* 装饰边框：用重复的文字模拟图案 */
+        .k2-border-pattern {
+            position: absolute; inset: 15px;
+            border: 4px dotted var(--k-blue);
             display: flex; justify-content: center; align-items: center;
-            overflow: hidden; flex-shrink: 1;
-        }
-        .modern-cover img { width: 100%; height: auto; display: block; }
-
-        .modern-info-area { flex-shrink: 0; margin-top: 5px; } /* 确保紧凑 */
-        .modern-title { 
-            font-size: 24px; font-weight: 700; margin-bottom: 4px; 
-            text-shadow: 0 2px 10px rgba(0,0,0,0.5); line-height: 1.2;
-        }
-        .modern-sub { font-size: 14px; opacity: 0.7; font-weight: 400; }
-        
-        .progress-bar {
-            margin-top: 15px; /* 减少间距 */
-            height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; flex-shrink: 0;
-        }
-        .progress-fill { width: 30%; height: 100%; background: #fff; border-radius: 2px; position: relative; box-shadow: 0 0 10px rgba(255,255,255,0.5);}
-        .time-text {
-            display: flex; justify-content: space-between; font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 6px; flex-shrink: 0;
-        }
-        .modern-footer {
-            margin-top: auto; display: flex; align-items: center; gap: 10px; padding-top: 10px; flex-shrink: 0;
-            padding-bottom: 10px; /* 确保底部有空隙 */
+            opacity: 0.3; font-size: 10px; overflow: hidden; line-height: 1;
+            color: var(--k-green); pointer-events: none;
+            mix-blend-mode: multiply; /* Riso 叠印效果 */
         }
 
-        /* ============================================================
-           方案三：通透白玻风 (重心上移)
-        ============================================================ */
-        .style-apple { background: #f0f0f0; color: #333; overflow: hidden; }
-        .apple-bg {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-size: cover; background-position: center;
-            filter: blur(40px) brightness(1.1) saturate(1.5); transform: scale(1.2);
-            opacity: 0.8; z-index: 0;
+        .k2-title-area {
+            position: absolute; top: 50px; left: 40px; z-index: 5;
         }
-        
-        .apple-card {
-            position: absolute; 
-            top: 42%; /* 【关键】重心上移 (原50%) */
-            left: 50%; transform: translate(-50%, -50%);
-            width: 315px; height: auto; max-height: 85%; /* 限制卡片高度 */
-            z-index: 2;
-            background: rgba(255, 255, 255, 0.7); 
-            backdrop-filter: blur(30px) saturate(1.8); -webkit-backdrop-filter: blur(30px);
-            border-radius: 32px; border: 1px solid rgba(255, 255, 255, 0.6);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.15), inset 0 0 0 1px rgba(255,255,255,0.2);
-            display: flex; flex-direction: column; padding: 25px; box-sizing: border-box; text-align: center;
+        .k2-h1 {
+            font-size: 40px; color: var(--k-blue); margin: 0;
+            text-shadow: 4px 4px 0px rgba(43, 78, 255, 0.3); /* Riso 错位阴影 */
         }
-        
-        .apple-tag {
-            position: absolute; top: 20px; right: 20px;
-            background: #000; color: white; padding: 5px 12px; border-radius: 20px;
-            font-size: 10px; font-weight: 700;
-        }
-        .apple-cover-shadow {
-            width: 140px; /* 稍微缩小 */
-            margin: 20px auto 15px auto; /* 减少间距 */
-            position: relative; box-shadow: 0 15px 30px rgba(0,0,0,0.2); border-radius: 8px;
-        }
-        .apple-cover-img { width: 100%; height: auto; border-radius: 8px; display: block; }
-        .apple-h1 { font-size: 22px; font-weight: 800; margin-bottom: 5px; color: #000; letter-spacing: -0.5px; }
-        .apple-sub { font-size: 13px; color: #666; margin-bottom: 20px; font-weight: 500; }
-        
-        .apple-controls {
-            background: rgba(255,255,255,0.5); padding: 12px 15px; border-radius: 20px;
-            display: flex; justify-content: space-between; align-items: center;
-            margin-top: auto; border: 1px solid rgba(255,255,255,0.6);
-        }
-        .btn-play-circle {
-            width: 32px; height: 32px; background: #000; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .icon-play {
-            width: 0; height: 0; border-top: 5px solid transparent; border-bottom: 5px solid transparent;
-            border-left: 8px solid white; margin-left: 3px;
-        }
-        .apple-footer-info { display: flex; align-items: center; gap: 8px; text-align: left;}
-        .apple-owner-text { font-size: 12px; font-weight: 700; color: #333; }
-
-        /* ============================================================
-           方案四：手账拼贴风 (大幅上移)
-        ============================================================ */
-        .style-scrap {
-            background-color: #f8f9fa; color: #333;
-            background-image: linear-gradient(#e9ecef 1px, transparent 1px), linear-gradient(90deg, #e9ecef 1px, transparent 1px);
-            background-size: 25px 25px;
-        }
-        
-        .scrap-title-area { position: absolute; top: 30px; left: 30px; } /* 原50 */
-        .scrap-tag {
-            background: #ff6b6b; color: white; padding: 4px 10px; display: inline-block;
-            font-size: 12px; font-weight: 700; transform: rotate(-2deg);
-            border-radius: 20px; border: 2px solid white; box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
-        }
-        .scrap-h1 {
-            background: #2d3436; color: white; padding: 6px 15px; display: inline-block;
-            font-size: 24px; font-weight: 800; transform: rotate(1deg); margin-top: 12px;
-            box-shadow: 3px 3px 0px rgba(0,0,0,0.1);
+        .k2-sub {
+            display: inline-block; background: var(--k-yellow); color: var(--k-dark);
+            padding: 2px 8px; font-size: 14px; margin-top: 10px; border: 2px solid var(--k-dark);
         }
 
-        .scrap-tape {
-            position: absolute; width: 110px; height: 32px; background: rgba(255, 248, 220, 0.9);
-            border-left: 3px dotted rgba(0,0,0,0.15); border-right: 3px dotted rgba(0,0,0,0.15);
-            transform: rotate(-4deg); 
-            top: 90px; /* 大幅上移 (原140) */
-            left: 50%; margin-left: -55px; z-index: 20; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        /* 封面容器：密集的民间图案环绕 */
+        .k2-cover-box {
+            position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%);
+            padding: 25px;
+            /* 模拟复杂的图案边框 */
+            background-image: radial-gradient(circle at 10px 10px, var(--k-pink) 5px, transparent 0),
+                              radial-gradient(circle at 30px 30px, var(--k-green) 8px, transparent 0);
+            background-size: 40px 40px;
+            border-radius: 20px;
+            border: 4px solid var(--k-dark);
+            box-shadow: 10px 10px 0px rgba(255, 94, 183, 0.5);
         }
-        
-        .scrap-polaroid {
-            position: absolute; 
-            top: 105px; /* 大幅上移 (原155) */
-            left: 50%; transform: translateX(-50%) rotate(2.5deg);
-            width: 220px; background: white; padding: 12px 12px 50px 12px;
-            box-shadow: 5px 8px 20px rgba(0,0,0,0.15); display: flex; flex-direction: column;
-        }
-        .scrap-img { width: 100%; height: auto; filter: contrast(1.05) sepia(0.1); display: block; }
-        .scrap-handwriting {
-            position: absolute; bottom: 15px; left: 0; width: 100%; text-align: center;
-            font-family: 'Comic Sans MS', cursive; 
-            color: #555; font-size: 15px; transform: rotate(-1deg); font-weight: 600;
+        .k2-cover-img {
+            width: 180px; height: auto; display: block;
+            border: 3px solid var(--k-dark);
+            /* Riso 图片效果：高对比，单色化倾向 */
+            filter: contrast(1.2) sepia(0.3) drop-shadow(5px 5px 0px var(--k-yellow));
+            background: white;
         }
 
-        .scrap-sticker-new {
-            position: absolute; 
-            bottom: 130px; /* 上移 (原110) */
-            right: 35px;
-            width: 85px; height: 85px; background: #ffeaa7; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; text-align: center;
-            font-family: 'Comic Sans MS', cursive; font-weight: 700; color: #d35400; font-size: 13px; line-height: 1.3;
-            transform: rotate(12deg); border: 2px dashed #d35400; box-shadow: 3px 3px 8px rgba(0,0,0,0.1);
+        .k2-tag {
+            position: absolute; top: 0; right: 0;
+            background: var(--k-blue); color: var(--k-cream);
+            padding: 8px 15px; font-size: 12px; border-bottom-left-radius: 15px;
+            border-left: 3px solid var(--k-dark); border-bottom: 3px solid var(--k-dark);
         }
 
-        .scrap-footer {
-            position: absolute; bottom: 30px; left: 0; width: 100%;
-            display: flex; justify-content: center; align-items: center; gap: 10px;
+        .k2-footer {
+            position: absolute; bottom: 35px; left: 40px; display: flex; align-items: center; gap: 10px;
+            background: var(--k-pink); padding: 5px 15px 5px 5px; border-radius: 30px;
+            border: 3px solid var(--k-dark); box-shadow: 5px 5px 0px rgba(0,0,0,0.2);
         }
-        .scrap-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #2d3436; }
-        .scrap-owner-box { font-weight: 700; font-size: 13px; background: white; padding: 4px 10px; border: 2px solid #2d3436; color: #2d3436; }
 
         /* 通用：头像和底部文字 */
         .avatar-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.8);}
         .footer-text { text-align: left; }
         .footer-text h3 { margin: 0; font-size: 14px; font-weight: 700; }
         .footer-text p { margin: 0; font-size: 10px; opacity: 0.7; margin-top: 2px;}
+
     </style>
 </head>
 <body>
 
     <div class="controls">
-        <h2>🔥 小红书海报 (V5.0 重心上移)</h2>
+        <h2>🎨 Karlotta Freier 特别版</h2>
         
-        <div style="display:flex; flex-wrap:wrap; justify-content:space-between;">
-            <button class="btn-style active" onclick="switchStyle('retro')">📜 复古绘本</button>
-            <button class="btn-style" onclick="switchStyle('modern')">🎵 沉浸暗黑</button>
-            <button class="btn-style" onclick="switchStyle('apple')">🍎 通透白玻</button>
-            <button class="btn-style" onclick="switchStyle('scrap')">✂️ 手账拼贴</button>
+        <div class="style-grid">
+            <button class="btn-style active" onclick="switchStyle('retro')">📜 经典复古绘本 (V5.0)</button>
+            <button class="btn-style btn-k1" onclick="switchStyle('k1')">✨ Karlotta A: 霓虹梦境</button>
+            <button class="btn-style btn-k2" onclick="switchStyle('k2')">🌿 Karlotta B: 复古Riso印刷</button>
         </div>
 
         <div class="control-group">
@@ -325,7 +307,7 @@
         <div style="height:1px; background:#eee; margin:15px 0;"></div>
 
         <div class="control-group">
-            <label>🖼️ 封面图 (支持竖图/长图)</label>
+            <label>🖼️ 封面图 (视觉中心)</label>
             <input type="file" accept="image/*" onchange="loadImage(this, 'cover')">
         </div>
         <div class="control-group">
@@ -357,90 +339,61 @@
             </div>
         </div>
 
-        <div id="style-modern" class="poster style-modern">
-            <div class="modern-bg cover-bg-target" style="background-color: #222;"></div>
-            <div class="modern-overlay"></div>
-            
-            <div class="modern-content">
-                <div class="modern-tag">
-                    <span class="tag-text">全网首发 🔥</span>
-                </div>
-                
-                <div class="modern-cover">
-                    <img src="" class="cover-target" alt="Cover">
-                </div>
-                
-                <div class="modern-info-area">
-                    <div class="modern-title title-text">Charlotte's Web</div>
-                    <div class="modern-sub"><span class="sub-text">英文原版广播剧</span> · <span class="ep-text">EP.01</span></div>
-                </div>
-                
-                <div class="progress-bar">
-                    <div class="progress-fill"></div>
-                </div>
-                <div class="time-text">
-                    <span>02:14</span>
-                    <span>15:30</span>
-                </div>
+        <div id="style-k1" class="poster style-k1 k-font">
+            <div class="k-texture"></div>
+            <div class="k1-blob k1-blob-1"></div>
+            <div class="k1-blob k1-blob-2"></div>
+            <div class="k1-blob k1-blob-3"></div>
 
-                <div class="modern-footer">
-                    <img src="" class="avatar-img avatar-target" style="border-color:rgba(255,255,255,0.3);">
-                    <div class="footer-text">
-                        <h3 class="owner-text" style="color:white;">周末英语剧场</h3>
-                        <p style="color:rgba(255,255,255,0.5);">© All Rights Reserved</p>
-                    </div>
+            <div class="k1-tag tag-text">全网首发 🔥</div>
+
+            <div class="k1-title-area">
+                <h1 class="k1-h1 title-text">Charlotte's Web</h1>
+                <div class="k1-sub sub-text">英文原版广播剧</div>
+            </div>
+
+            <div class="k1-cover-box">
+                <img src="" class="k1-cover-img cover-target" alt="Cover">
+            </div>
+            
+            <div class="k1-ep ep-text">EP.01</div>
+
+            <div class="k1-footer">
+                <div style="display: inline-flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 30px; border: 2px solid var(--k-pink);">
+                    <img src="" class="avatar-img avatar-target" style="border-color:var(--k-yellow); width: 30px; height: 30px;">
+                    <span class="owner-text">周末英语剧场</span>
                 </div>
             </div>
         </div>
 
-        <div id="style-apple" class="poster style-apple">
-            <div class="apple-bg cover-bg-target" style="background-color: #ccc;"></div>
-            
-            <div class="apple-card">
-                <div class="apple-tag tag-text">全网首发 🔥</div>
-                
-                <div class="apple-cover-shadow">
-                    <img src="" class="apple-cover-img cover-target" alt="Cover">
+        <div id="style-k2" class="poster style-k2 k-font">
+            <div class="k-texture" style="opacity: 0.2;"></div>
+            <div class="k2-border-pattern">
+                RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT
+                RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT
+                RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT
+                RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT
+                RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT
+                RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT
+                RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT RISO PRINT
+            </div>
+            <div class="k2-tag tag-text">全网首发 🔥</div>
+
+            <div class="k2-title-area">
+                <h1 class="k2-h1 title-text">Charlotte's Web</h1>
+                <span class="k2-sub sub-text">英文原版广播剧 · <span class="ep-text">EP.01</span></span>
+            </div>
+
+            <div class="k2-cover-box">
+                <img src="" class="k2-cover-img cover-target" alt="Cover">
+            </div>
+
+            <div class="k2-footer">
+                <img src="" class="avatar-img avatar-target" style="border-color:var(--k-dark);">
+                <div class="footer-text">
+                    <h3 class="owner-text" style="color:var(--k-dark);">周末英语剧场</h3>
+                    <p style="color:var(--k-dark); opacity: 0.7;">© Riso Art Studio</p>
                 </div>
-
-                <div class="apple-h1 title-text">Charlotte's Web</div>
-                <div class="apple-sub sub-text">英文原版广播剧</div>
-
-                <div class="apple-controls">
-                    <div class="apple-footer-info">
-                        <img src="" class="avatar-target" style="width:28px; height:28px; border-radius:50%;">
-                        <span class="apple-owner-text owner-text">周末英语剧场</span>
-                    </div>
-                    
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span class="ep-text" style="font-size:12px; font-weight:700; color:#555;">EP.01</span>
-                        <div class="btn-play-circle"><div class="icon-play"></div></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="style-scrap" class="poster style-scrap">
-            <div class="scrap-title-area">
-                <div class="scrap-tag tag-text">全网首发 🔥</div><br>
-                <div class="scrap-h1 title-text">Charlotte's Web</div>
-            </div>
-
-            <div class="scrap-tape"></div>
-            
-            <div class="scrap-polaroid">
-                <img src="" class="scrap-img cover-target" alt="Cover">
-                <div class="scrap-handwriting ep-text">EP.01 - Must Listen!</div>
-            </div>
-
-            <div class="scrap-sticker-new">
-                <span class="sub-text" style="display: block; padding: 0 5px;">英文原版<br>广播剧</span>
-            </div>
-
-            <div class="scrap-footer">
-                <img src="" class="scrap-avatar avatar-target">
-                <span class="scrap-owner-box owner-text">周末英语剧场</span>
-                <span style="font-size: 10px; color: #999;">© Copyright</span>
             </div>
         </div>
 
@@ -452,7 +405,6 @@
 
         document.querySelectorAll('.cover-target').forEach(img => img.src = defaultCover);
         document.querySelectorAll('.avatar-target').forEach(img => img.src = defaultAvatar);
-        document.querySelectorAll('.cover-bg-target').forEach(div => div.style.backgroundImage = `url(${defaultCover})`);
 
         function switchStyle(styleName) {
             document.querySelectorAll('.btn-style').forEach(btn => btn.classList.remove('active'));
@@ -481,7 +433,6 @@
                 reader.onload = function(e) {
                     if (type === 'cover') {
                         document.querySelectorAll('.cover-target').forEach(img => img.src = e.target.result);
-                        document.querySelectorAll('.cover-bg-target').forEach(div => div.style.backgroundImage = `url(${e.target.result})`);
                     } else if (type === 'avatar') {
                         document.querySelectorAll('.avatar-target').forEach(img => img.src = e.target.result);
                     }
