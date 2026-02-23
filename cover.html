@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>夏洛的网 - 播客封面设计 (Karlotta风格版)</title>
+    <title>夏洛的网 - 播客封面设计 (排版修复版)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
@@ -30,7 +30,7 @@
             justify-content: center; align-items: flex-start; padding: 40px; gap: 40px; min-height: 100vh;
         }
 
-        /* === 噪点纹理滤镜 (所有Karlotta风格通用，增加插画纸张质感) === */
+        /* === 噪点纹理滤镜 (通用) === */
         .grain-overlay {
             position: absolute; inset: 0; pointer-events: none; z-index: 50; opacity: 0.35; mix-blend-mode: multiply;
             background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48ZmlsdGVyIGlkPSJuIj48ZmVUdXJYdWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMC44IiBudW1PY3RhdmVzPSI0IiBzdGl0Y2hUaWxlcz0ic3RGl0Y2giLz48L2ZpbHRlcj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsdGVyPSJ1cmwoI24pIiBvcGFjaXR5PSIwLjI1Ii8+PC9zdmc+');
@@ -68,7 +68,7 @@
         .poster.active { display: block; }
 
         /* ============================================================
-           方案一：复古绘本风 (V5.0 保留版)
+           方案一：复古绘本风 (保留不变)
         ============================================================ */
         .style-retro {
             background-color: #FDF5E6;
@@ -98,11 +98,10 @@
         .retro-footer { position: absolute; bottom: 30px; left: 30px; display: flex; align-items: center; gap: 12px; }
 
         /* ============================================================
-           方案二：简约治愈 (Karlotta - Minimalist Healing)
+           方案二：简约治愈 (Karlotta - Minimalist Healing) - 修复版
         ============================================================ */
         .style-k-min { background-color: var(--km-bg); color: var(--km-text); font-family: serif; }
         
-        /* 有机流体色块 - 构成柔软的视觉包围感 */
         .k-min-blob1 {
             position: absolute; top: -10%; left: -20%; width: 280px; height: 260px;
             background-color: var(--km-blob1);
@@ -123,46 +122,45 @@
             font-family: sans-serif;
         }
         .k-min-h1 { font-size: 28px; font-weight: 600; margin: 0; letter-spacing: 0.5px; }
+        
+        /* 【修改点】副标题上移并精致化 */
+        .k-min-sub-header {
+            font-family: sans-serif; font-size: 12px; letter-spacing: 1px; 
+            text-transform: uppercase; margin-top: 8px; opacity: 0.7; font-weight: 500;
+        }
 
         .k-min-cover-wrapper {
-            position: absolute; top: 125px; left: 50%; transform: translateX(-50%);
+            position: absolute; top: 135px; left: 50%; transform: translateX(-50%);
             width: 190px; z-index: 5;
         }
         .k-min-cover-img {
             width: 100%; height: auto; display: block;
-            border-radius: 6px; /* 微小的圆角显得温润 */
-            box-shadow: 0 15px 35px rgba(74, 69, 63, 0.15); /* 柔和的暖色阴影 */
+            border-radius: 6px; box-shadow: 0 15px 35px rgba(74, 69, 63, 0.15);
         }
         
-        /* 播客播放UI融入 */
+        /* 【修改点】底部只保留控件，更简洁 */
         .k-min-player {
-            position: absolute; bottom: 40px; left: 30px; right: 30px; z-index: 5;
-            display: flex; flex-direction: column; gap: 15px;
+            position: absolute; bottom: 45px; left: 30px; right: 30px; z-index: 5;
         }
-        .k-min-sub { font-size: 14px; text-align: center; font-style: italic; opacity: 0.8; }
-        
         .k-min-controls { display: flex; align-items: center; justify-content: space-between; }
         .k-min-user { display: flex; align-items: center; gap: 8px; }
         .k-min-ep { font-family: sans-serif; font-size: 14px; font-weight: 700; background: var(--km-blob1); padding: 4px 10px; border-radius: 12px; color: #333;}
         
         /* ============================================================
-           方案三：现代平面 (Karlotta - Modern Flat & Bold)
+           方案三：现代平面 (Karlotta - Modern Flat & Bold) - 修复版
         ============================================================ */
         .style-k-mod { background-color: var(--kf-bg); color: var(--kf-text); font-family: sans-serif; }
         
-        /* 大胆的几何切割 */
         .k-mod-shape1 {
             position: absolute; top: 0; right: 0; width: 65%; height: 55%;
-            background-color: var(--kf-shape1);
-            border-radius: 0 0 0 40px; z-index: 0;
+            background-color: var(--kf-shape1); border-radius: 0 0 0 40px; z-index: 0;
         }
         .k-mod-shape2 {
             position: absolute; bottom: -40px; left: -30px; width: 200px; height: 200px;
-            background-color: var(--kf-shape2);
-            border-radius: 50%; z-index: 0;
+            background-color: var(--kf-shape2); border-radius: 50%; z-index: 0;
         }
 
-        .k-mod-header { position: absolute; top: 40px; left: 30px; z-index: 5; width: 80%; }
+        .k-mod-header { position: absolute; top: 40px; left: 30px; z-index: 5; width: 85%; }
         .k-mod-tag {
             display: inline-block; background: var(--kf-text); color: var(--kf-bg);
             padding: 5px 12px; font-size: 12px; font-weight: 800; text-transform: uppercase;
@@ -172,30 +170,31 @@
             font-size: 38px; font-weight: 900; margin: 0; line-height: 1.05; letter-spacing: -1px;
             text-shadow: 3px 3px 0px rgba(0,0,0,0.2);
         }
+        /* 【修改点】副标题上移，增加设计感 */
+        .k-mod-sub-header {
+            margin-top: 12px; font-size: 14px; font-weight: 500; opacity: 0.9; letter-spacing: 0.5px;
+            display: inline-block; border-bottom: 2px solid var(--kf-shape2); padding-bottom: 2px;
+        }
 
-        /* 强烈的实色错位阴影 (Editorial Style) */
         .k-mod-cover-wrapper {
-            position: absolute; top: 160px; left: 50%; transform: translateX(-50%);
+            position: absolute; top: 180px; left: 50%; transform: translateX(-50%);
             width: 180px; z-index: 5;
         }
         .k-mod-cover-img {
             width: 100%; height: auto; display: block;
-            border: 3px solid var(--kf-text);
-            box-shadow: 12px 12px 0px var(--kf-shape2); /* 标志性的实色阴影 */
-            background: #fff;
+            border: 3px solid var(--kf-text); box-shadow: 12px 12px 0px var(--kf-shape2); background: #fff;
         }
 
+        /* 【修改点】底部布局调整，增加呼吸感 */
         .k-mod-footer {
-            position: absolute; bottom: 30px; left: 30px; right: 30px; z-index: 5;
-            display: flex; justify-content: space-between; align-items: flex-end;
+            position: absolute; bottom: 40px; /* 增加底部边距 */
+            left: 30px; right: 30px; z-index: 5;
+            display: flex; justify-content: space-between; align-items: center;
         }
-        .k-mod-info { display: flex; flex-direction: column; gap: 6px; }
-        .k-mod-sub { font-size: 13px; font-weight: 600; opacity: 0.9; letter-spacing: 0.5px;}
         .k-mod-user-box { 
             display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.2); 
             padding: 6px 12px 6px 6px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.2);
         }
-        
         .k-mod-ep {
             font-size: 48px; font-weight: 900; line-height: 0.8; opacity: 0.9;
             text-shadow: 3px 3px 0px rgba(0,0,0,0.2);
@@ -212,7 +211,7 @@
 <body>
 
     <div class="controls">
-        <h2>🎨 播客封面设计实验室</h2>
+        <h2>🎨 播客封面设计实验室 (修复版)</h2>
         
         <div class="style-grid">
             <button class="btn-style active" onclick="switchStyle('retro')">📜 经典复古绘本 (方案一)</button>
@@ -284,6 +283,7 @@
             <div class="k-min-header">
                 <div class="k-min-tag tag-text">全网首发 🔥</div>
                 <h1 class="k-min-h1 title-text">Charlotte's Web</h1>
+                <div class="k-min-sub-header sub-text">英文原版广播剧</div>
             </div>
 
             <div class="k-min-cover-wrapper">
@@ -291,7 +291,6 @@
             </div>
             
             <div class="k-min-player">
-                <div class="k-min-sub sub-text">英文原版广播剧</div>
                 <div class="k-min-controls">
                     <div class="k-min-user">
                         <img src="" class="avatar-img avatar-target" style="width:32px; height:32px; border:none;">
@@ -310,6 +309,7 @@
             <div class="k-mod-header">
                 <div class="k-mod-tag tag-text">全网首发 🔥</div>
                 <h1 class="k-mod-h1 title-text">Charlotte's Web</h1>
+                <div class="k-mod-sub-header sub-text">英文原版广播剧</div>
             </div>
 
             <div class="k-mod-cover-wrapper">
@@ -317,12 +317,9 @@
             </div>
 
             <div class="k-mod-footer">
-                <div class="k-mod-info">
-                    <div class="k-mod-sub sub-text">英文原版广播剧</div>
-                    <div class="k-mod-user-box">
-                        <img src="" class="avatar-img avatar-target" style="width:28px; height:28px; border:none;">
-                        <span class="owner-text" style="font-size: 13px; font-weight: 700;">周末英语剧场</span>
-                    </div>
+                <div class="k-mod-user-box">
+                    <img src="" class="avatar-img avatar-target" style="width:28px; height:28px; border:none;">
+                    <span class="owner-text" style="font-size: 13px; font-weight: 700;">周末英语剧场</span>
                 </div>
                 <div class="k-mod-ep ep-text">EP.01</div>
             </div>
@@ -354,7 +351,6 @@
             document.querySelectorAll('.title-text').forEach(el => el.innerText = title);
             document.querySelectorAll('.sub-text').forEach(el => el.innerText = sub);
             document.querySelectorAll('.tag-text').forEach(el => el.innerText = tag);
-            // 现代平面风的集数只提取数字部分效果更好，这里为了通用保留原文字
             document.querySelectorAll('.ep-text').forEach(el => el.innerText = ep); 
             document.querySelectorAll('.owner-text').forEach(el => el.innerText = owner);
         }
