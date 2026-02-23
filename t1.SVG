@@ -1,6 +1,6 @@
 <svg viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <!-- 卡洛塔风格：水粉厚涂阴影 -->
+    <!-- 卡洛塔风格：水粉厚涂质感与超现实阴影 -->
     <filter id="art-shadow" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="15" stdDeviation="25" flood-color="#172554" flood-opacity="0.15"/>
     </filter>
@@ -15,30 +15,30 @@
       .serif-en { font-family: 'Playfair Display', serif; }
       .serif-cn { font-family: 'Noto Serif SC', serif; }
       
-      /* 总时长 65s (5 scenes * 13s) */
-      /* 每一个场景分配 13s，包含淡入淡出和较长的停留时间 */
-      @keyframes sceneFade {
-        0%, 1.5% { opacity: 0; transform: scale(1.02); }
-        4%, 18% { opacity: 1; transform: scale(1); }
-        20%, 100% { opacity: 0; transform: scale(0.98); }
-      }
+      /* 总时长 51s 循环动画逻辑 */
+      /* 基于结束时间点计算的百分比：4s(7.8%), 13s(25.5%), 23s(45.1%), 36s(70.6%), 51s(100%) */
+      
+      @keyframes anim-sc0 { 0%, 7.8% { opacity: 1; } 8.8%, 100% { opacity: 0; } }
+      @keyframes anim-sc1 { 0%, 7.8% { opacity: 0; } 8.8%, 25.5% { opacity: 1; } 26.5%, 100% { opacity: 0; } }
+      @keyframes anim-sc2 { 0%, 25.5% { opacity: 0; } 26.5%, 45.1% { opacity: 1; } 46.1%, 100% { opacity: 0; } }
+      @keyframes anim-sc3 { 0%, 45.1% { opacity: 0; } 46.1%, 70.6% { opacity: 1; } 71.6%, 100% { opacity: 0; } }
+      @keyframes anim-sc4 { 0%, 70.6% { opacity: 0; } 71.6%, 100% { opacity: 1; } }
 
-      @keyframes elementFloat { 
+      @keyframes slowFloat { 
         0%, 100% { transform: translateY(0); } 
         50% { transform: translateY(-15px); } 
       }
 
-      /* 动画类：使用双层嵌套法，外层控制透明度，不影响 transform 坐标 */
       .scene-group { opacity: 0; transform-origin: center; }
-      .scene-0 { animation: sceneFade 65s ease-in-out 0s infinite; }
-      .scene-1 { animation: sceneFade 65s ease-in-out 13s infinite; }
-      .scene-2 { animation: sceneFade 65s ease-in-out 26s infinite; }
-      .scene-3 { animation: sceneFade 65s ease-in-out 39s infinite; }
-      .scene-4 { animation: sceneFade 65s ease-in-out 52s infinite; }
+      .scene-0 { animation: anim-sc0 51s linear infinite; }
+      .scene-1 { animation: anim-sc1 51s linear infinite; }
+      .scene-2 { animation: anim-sc2 51s linear infinite; }
+      .scene-3 { animation: anim-sc3 51s linear infinite; }
+      .scene-4 { animation: anim-sc4 51s linear infinite; }
 
-      .floating { animation: elementFloat 8s ease-in-out infinite; }
+      .floating { animation: slowFloat 8s ease-in-out infinite; }
 
-      /* 卡洛塔调色板 */
+      /* 卡洛塔配色方案 */
       .color-midnight { fill: #172554; }
       .color-terracotta { fill: #c2410c; }
       .color-mustard { fill: #fbbf24; }
@@ -52,148 +52,148 @@
   <rect width="100%" height="100%" fill="#fcfaf5" />
 
   <!-- ========================================== -->
-  <!-- Scene 0: 封面 (Phrases with thing) -->
+  <!-- Scene 0: 封面 (0s - 4s) -->
   <!-- ========================================== -->
   <g transform="translate(540, 960)">
     <g class="scene-group scene-0">
       <rect x="-480" y="-860" width="960" height="1720" rx="60" class="color-midnight" filter="url(#art-shadow)" />
-      
-      <!-- 视觉中心：巨大的芥末黄太阳与托举的手 -->
       <circle r="380" class="color-mustard" opacity="0.8" filter="url(#soft-edge)" />
       <g transform="translate(0, 400)">
         <path d="M 0 0 C -150 -200, -350 -250, -500 -250 C -550 -250, -580 -200, -550 -150 C -500 -50, -200 50, 0 100" fill="#c2410c" filter="url(#soft-edge)" />
       </g>
-
-      <!-- 封面文字：thing 粗体字 -->
       <g transform="translate(0, -150)" text-anchor="middle">
         <text font-size="120" class="serif-en color-cream" font-weight="700" letter-spacing="4">Phrases with</text>
-        <!-- 重点：thing 为粗体字 -->
         <text y="140" font-size="180" class="serif-en color-cream" font-weight="900" letter-spacing="-2">thing</text>
-        
         <rect y="220" x="-180" width="360" height="4" fill="#fbbf24" opacity="0.5" />
-        <!-- 已修改：卡洛塔艺术剧场 -> English in a minute -->
-        <text y="280" font-size="42" class="serif-en color-mustard" font-weight="700" letter-spacing="1">English in a minute</text>
+        <text y="280" font-size="42" class="serif-en color-mustard" font-weight="700">English in a minute</text>
       </g>
     </g>
   </g>
 
   <!-- ========================================== -->
-  <!-- Scene 1: a thing of the past (过时的事物) -->
+  <!-- Scene 1: a thing of the past (4s - 13s) -->
   <!-- ========================================== -->
   <g transform="translate(540, 960)">
     <g class="scene-group scene-1">
       <rect x="-480" y="-860" width="960" height="1720" rx="60" class="color-cream" filter="url(#art-shadow)" />
       
-      <!-- 顶部短语标题 -->
-      <text y="-620" text-anchor="middle" font-size="105" class="serif-en color-terracotta" font-weight="900">a thing</text>
-      <text y="-510" text-anchor="middle" font-size="105" class="serif-en color-terracotta" font-weight="900">of the past</text>
+      <!-- 顶部标题区：3行 -->
+      <g transform="translate(0, -660)" text-anchor="middle">
+        <text font-size="80" class="serif-en color-terracotta" font-weight="900">a thing of the past</text>
+        <text y="70" font-size="28" class="serif-en color-rust" font-style="italic">something that just doesn't happen any more</text>
+        <text y="130" font-size="32" class="serif-cn color-midnight" font-weight="700">过时的事物 / 陈年往事</text>
+      </g>
 
-      <!-- 中部插画：流沙怀表 -->
-      <g transform="translate(0, -80)">
+      <!-- 中部插画 -->
+      <g transform="translate(0, -60)">
         <g class="floating">
-          <path d="M -150 -180 L 150 -180 L 20 20 L 150 220 L -150 220 L -20 20 Z" fill="#fbbf24" opacity="0.8" filter="url(#soft-edge)" />
-          <circle cy="-120" r="80" fill="#c2410c" />
-          <path d="M 0 0 L 0 100" stroke="#9a3412" stroke-width="4" stroke-dasharray="8 8" />
+          <rect x="-250" y="0" width="400" height="150" rx="10" class="color-terracotta" transform="rotate(-15)" />
+          <rect x="-150" y="-120" width="400" height="150" rx="10" class="color-rust" transform="rotate(10)" />
+          <path d="M 0 150 L -300 350 L 300 350 Z" class="color-midnight" opacity="0.1" />
+          <g transform="translate(150, 180)">
+             <circle r="12" class="color-midnight" />
+             <rect x="5" y="-10" width="6" height="10" fill="#fbbf24" />
+          </g>
         </g>
       </g>
 
       <!-- 底部例句区 -->
-      <g transform="translate(0, 480)">
-        <rect x="-440" y="-140" width="880" height="320" rx="40" class="color-terracotta" />
-        <text y="-50" text-anchor="middle" font-size="38" class="serif-cn color-cream" font-weight="900">过时的事物 / 陈年往事</text>
-        <text y="40" text-anchor="middle" font-size="28" class="serif-en color-cream" font-weight="700">"Getting lost is a thing of the past"</text>
-        <text y="80" text-anchor="middle" font-size="28" class="serif-en color-cream" font-weight="700">"now we've all got phones."</text>
-        <text y="145" text-anchor="middle" font-size="22" class="serif-cn color-cream" opacity="0.8">（如今有了手机，迷路已成往事。）</text>
+      <g transform="translate(0, 520)" text-anchor="middle">
+        <rect x="-440" y="-100" width="880" height="260" rx="40" class="color-terracotta" opacity="0.9" />
+        <text y="10" font-size="26" class="serif-en color-cream" font-weight="700">"Now that we have the internet, people don't often buy</text>
+        <text y="50" font-size="26" class="serif-en color-cream" font-weight="700">encyclopedias – they are a bit of a thing of the past."</text>
+        <text y="110" font-size="22" class="serif-cn color-cream" opacity="0.8">（既然有了互联网，人们不再常买百科全书——它们已有些过时了。）</text>
       </g>
     </g>
   </g>
 
   <!-- ========================================== -->
-  <!-- Scene 2: no such thing (子虚乌有) -->
+  <!-- Scene 2: no such thing (13s - 23s) -->
   <!-- ========================================== -->
   <g transform="translate(540, 960)">
     <g class="scene-group scene-2">
       <rect x="-480" y="-860" width="960" height="1720" rx="60" class="color-midnight" filter="url(#art-shadow)" />
       
-      <text y="-620" text-anchor="middle" font-size="105" class="serif-en color-mustard" font-weight="900">no such</text>
-      <text y="-510" text-anchor="middle" font-size="105" class="serif-en color-mustard" font-weight="900">thing</text>
+      <g transform="translate(0, -660)" text-anchor="middle">
+        <text font-size="80" class="serif-en color-mustard" font-weight="900">no such thing</text>
+        <text y="70" font-size="28" class="serif-en color-cream" font-style="italic" opacity="0.8">it doesn't exist</text>
+        <text y="130" font-size="32" class="serif-cn color-cream" font-weight="700">子虚乌有 / 根本没有这回事</text>
+      </g>
 
-      <!-- 中部插画：通往月亮的空云梯 -->
       <g transform="translate(0, -80)">
         <g class="floating">
-          <circle r="280" class="color-mustard" opacity="0.3" filter="url(#soft-edge)" />
-          <path d="M -100 150 L -30 0 M 30 0 L 100 150" stroke="#fefce8" stroke-width="15" stroke-linecap="round" />
-          <path d="M -80 120 L 80 120 M -60 70 L 60 70" stroke="#fefce8" stroke-width="10" />
-          <path d="M -20 -30 Q 0 -80 20 -30" stroke="#fefce8" stroke-width="10" stroke-dasharray="10 10" />
+          <circle r="320" class="color-mustard" opacity="0.2" filter="url(#soft-edge)" />
+          <path d="M -80 150 C -120 50, 120 50, 80 150 Z" fill="#ef4444" filter="url(#soft-edge)" />
+          <circle cy="80" r="25" fill="#fefce8" />
+          <path d="M -150 -100 L -140 -80 M 100 -150 L 110 -130" stroke="#fefce8" stroke-width="4" opacity="0.5" />
         </g>
       </g>
 
-      <g transform="translate(0, 480)">
-        <rect x="-440" y="-140" width="880" height="320" rx="40" class="color-mustard" />
-        <text y="-50" text-anchor="middle" font-size="38" class="serif-cn color-midnight" font-weight="900">子虚乌有 / 根本没有这回事</text>
-        <text y="40" text-anchor="middle" font-size="28" class="serif-en color-midnight" font-weight="700">"A way to learn English instantly?"</text>
-        <text y="80" text-anchor="middle" font-size="28" class="serif-en color-midnight" font-weight="700">"I'm afraid there's no such thing!"</text>
-        <text y="145" text-anchor="middle" font-size="22" class="serif-cn color-midnight" opacity="0.8">（瞬间学好英语？恐怕根本没这回事！）</text>
+      <g transform="translate(0, 520)" text-anchor="middle">
+        <rect x="-440" y="-100" width="880" height="260" rx="40" class="color-mustard" opacity="0.9" />
+        <text y="10" font-size="26" class="serif-en color-midnight" font-weight="700">"My uncle always used to say, 'There's no such thing as</text>
+        <text y="50" font-size="26" class="serif-en color-midnight" font-weight="700">bad weather – just the wrong choice of clothes!'"</text>
+        <text y="110" font-size="22" class="serif-cn color-midnight" opacity="0.8">（我叔叔常说：世上没坏天气，只有穿错衣服。）</text>
       </g>
     </g>
   </g>
 
   <!-- ========================================== -->
-  <!-- Scene 3: the next big thing (下一个大热门) -->
+  <!-- Scene 3: the next big thing (23s - 36s) -->
   <!-- ========================================== -->
   <g transform="translate(540, 960)">
     <g class="scene-group scene-3">
       <rect x="-480" y="-860" width="960" height="1720" rx="60" class="color-cream" filter="url(#art-shadow)" />
       
-      <text y="-620" text-anchor="middle" font-size="105" class="serif-en color-rust" font-weight="900">the next</text>
-      <text y="-510" text-anchor="middle" font-size="105" class="serif-en color-rust" font-weight="900">big thing</text>
+      <g transform="translate(0, -660)" text-anchor="middle">
+        <text font-size="80" class="serif-en color-olive" font-weight="900">the next big thing</text>
+        <text y="70" font-size="28" class="serif-en color-rust" font-style="italic">someone or something that will be popular in future</text>
+        <text y="130" font-size="32" class="serif-cn color-midnight" font-weight="700">下一个大热门 / 未来趋势</text>
+      </g>
 
-      <!-- 中部插画：黑胶唱片上长出的萌芽 -->
       <g transform="translate(0, -80)">
         <g class="floating">
-          <circle r="300" class="color-midnight" />
-          <circle r="270" fill="none" stroke="#fefce8" stroke-width="1" opacity="0.3" />
-          <path d="M 0 0 Q 80 -150 150 -250 Q 200 -300 150 -280 Q 80 -250 0 0" fill="#14532d" />
-          <circle r="25" class="color-mustard" />
+          <rect x="-300" y="50" width="600" height="300" rx="20" class="color-midnight" opacity="0.9" />
+          <path d="M 0 50 Q 80 -150 180 -250" fill="none" stroke="#10b981" stroke-width="15" stroke-linecap="round" />
+          <circle cx="180" cy="-250" r="30" fill="#fbbf24" filter="url(#soft-edge)" />
         </g>
       </g>
 
-      <g transform="translate(0, 480)">
-        <rect x="-440" y="-140" width="880" height="320" rx="40" fill="#14532d" />
-        <text y="-50" text-anchor="middle" font-size="38" class="serif-cn color-cream" font-weight="900">下一个大热门 / 成功的新事物</text>
-        <text y="40" text-anchor="middle" font-size="28" class="serif-en color-cream" font-weight="700">"You've got to hear this band. I think"</text>
-        <text y="80" text-anchor="middle" font-size="28" class="serif-en color-cream" font-weight="700">"they might be the next big thing!"</text>
-        <text y="145" text-anchor="middle" font-size="22" class="serif-cn color-cream" opacity="0.8">（你得听听这个乐队，我觉得他们会大火！）</text>
+      <g transform="translate(0, 520)" text-anchor="middle">
+        <rect x="-440" y="-100" width="880" height="260" rx="40" fill="#14532d" opacity="0.9" />
+        <text y="30" font-size="28" class="serif-en color-cream" font-weight="700">"I think quantum computing will be</text>
+        <text y="70" font-size="28" class="serif-en color-cream" font-weight="700">the next big thing in technology."</text>
+        <text y="130" font-size="22" class="serif-cn color-cream" opacity="0.8">（我认为量子计算将成为科技界的下一个大热门。）</text>
       </g>
     </g>
   </g>
 
   <!-- ========================================== -->
-  <!-- Scene 4: in the thick of things (最忙碌的状态) -->
+  <!-- Scene 4: the thick of things (36s - 51s) -->
   <!-- ========================================== -->
   <g transform="translate(540, 960)">
     <g class="scene-group scene-4">
       <rect x="-480" y="-860" width="960" height="1720" rx="60" class="color-rust" filter="url(#art-shadow)" />
       
-      <text y="-620" text-anchor="middle" font-size="105" class="serif-en color-cream" font-weight="900">in the thick</text>
-      <text y="-510" text-anchor="middle" font-size="105" class="serif-en color-cream" font-weight="900">of things</text>
+      <g transform="translate(0, -660)" text-anchor="middle">
+        <text font-size="80" class="serif-en color-cream" font-weight="900">the thick of things</text>
+        <text y="70" font-size="28" class="serif-en color-mustard" font-style="italic">the middle of all the action</text>
+        <text y="130" font-size="32" class="serif-cn color-cream" font-weight="700">在最忙碌 / 最核心的状态中</text>
+      </g>
 
-      <!-- 中部插画：旋涡中心的平静 -->
-      <g transform="translate(0, -80)">
+      <g transform="translate(0, -100)">
         <g class="floating">
-          <path d="M -300 0 A 300 150 0 1 0 300 0 A 300 150 0 1 0 -350 0" fill="none" stroke="#fefce8" stroke-width="30" opacity="0.2" />
-          <path d="M -200 0 A 220 100 0 1 1 200 0 A 220 100 0 1 1 -200 0" fill="none" stroke="#fbbf24" stroke-width="20" opacity="0.3" />
+          <path d="M -350 0 A 350 180 0 1 0 350 0 A 350 180 0 1 0 -350 0" fill="none" stroke="#fefce8" stroke-width="30" opacity="0.3" />
           <circle r="15" class="color-midnight" />
-          <path d="M -10 12 L -20 40 M 10 12 L 20 40" stroke="#fefce8" stroke-width="5" stroke-linecap="round" />
+          <rect x="-10" y="-30" width="20" height="25" rx="2" fill="#fefce8" /> <!-- 厨师帽 -->
         </g>
       </g>
 
-      <g transform="translate(0, 480)">
-        <rect x="-440" y="-140" width="880" height="320" rx="40" class="color-midnight" />
-        <text y="-50" text-anchor="middle" font-size="38" class="serif-cn color-cream" font-weight="900">处于最忙碌/最核心的状态</text>
-        <text y="40" text-anchor="middle" font-size="28" class="serif-en color-cream" font-weight="700">"If you want to work in a hospital, you need"</text>
-        <text y="80" text-anchor="middle" font-size="28" class="serif-en color-cream" font-weight="700">"to like being in the thick of things."</text>
-        <text y="145" text-anchor="middle" font-size="22" class="serif-cn color-cream" opacity="0.8">（如果你想在医院工作，就得热爱这种忙碌感。）</text>
+      <g transform="translate(0, 520)" text-anchor="middle">
+        <rect x="-440" y="-100" width="880" height="260" rx="40" class="color-midnight" opacity="0.9" />
+        <text y="20" font-size="26" class="serif-en color-cream" font-weight="700">"Jamie's a natural chef – she likes to be in the kitchen,"</text>
+        <text y="60" font-size="26" class="serif-en color-cream" font-weight="700">"right in the thick of things!"</text>
+        <text y="120" font-size="22" class="serif-cn color-cream" opacity="0.8">（杰米是个天生的厨师——她喜欢待在厨房忙碌的核心地带。）</text>
       </g>
     </g>
   </g>
