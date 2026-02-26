@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Dynamic Shorts Pro - Adjusted Typography</title>
+    <title>Dynamic Shorts Pro - Natural Spacing</title>
     <style>
         :root {
             --word-active-color: #ccff00; 
@@ -33,7 +33,7 @@
             transform-origin: center center;
         }
 
-        /* 动态背景层 */
+        /* 动态背景层 A/B */
         .bg-layer {
             position: absolute; inset: 0;
             width: 100%; height: 100%;
@@ -48,7 +48,7 @@
             z-index: 1;
         }
 
-        /* 头部信息同步 */
+        /* 头部 Header */
         .speaker-header {
             position: absolute; top: 90px; left: 90px; right: 90px;
             z-index: 5; display: flex; align-items: center;
@@ -73,7 +73,7 @@
         .speaker-state-female .avatar { border-color: var(--female-color); box-shadow: 0 0 20px var(--female-color); }
         .speaker-state-male .avatar { border-color: var(--male-color); box-shadow: 0 0 20px var(--male-color); }
 
-        /* 进度条 */
+        /* 波浪条进度 */
         .progress-indicator { display: flex; align-items: center; justify-content: flex-end; width: 520px; }
         #timerText { font-size: 32px; font-weight: 700; color: #fff; mix-blend-mode: exclusion; font-family: monospace; }
         
@@ -81,13 +81,16 @@
             display: flex; gap: 6px; height: 60px; margin-left: 25px; 
             align-items: center; mix-blend-mode: exclusion;
         }
-        .wave-bar { width: 5px; background: rgba(255,255,255,0.4); border-radius: 3px; transition: background-color 0.2s; }
+        .wave-bar { 
+            width: 5px; background: rgba(255,255,255,0.4); border-radius: 3px;
+            transition: background-color 0.2s;
+        }
         .wave-bar.active { background: #fff; }
 
         /* === 📍 文字区域：底部 600px 垂直居中 === */
         .subtitle-area {
             position: absolute; 
-            top: 1320px; /* 1920 - 600 = 1320 */
+            top: 1320px; /* 1920 - 600 */
             left: 0; right: 0; bottom: 0;
             z-index: 3; display: flex; flex-direction: column;
             justify-content: center;
@@ -96,33 +99,34 @@
         }
 
         .text-block {
-            display: flex; flex-direction: column; gap: 20px;
+            display: flex; flex-direction: column; gap: 25px;
             opacity: 0; transform: translateY(10px);
             transition: all 0.4s ease;
         }
         .text-block.visible { opacity: 1; transform: translateY(0); }
 
-        /* 📍 英文样式：默认 60px */
+        /* 英文：60px，柔和阴影 */
         .english-content {
             font-size: 60px; line-height: 1.4; font-weight: 800;
             text-align: center; color: #ffffff;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.8), 1px 1px 2px rgba(0,0,0,1);
+            text-shadow: 0 2px 6px rgba(0,0,0,0.8), 1px 1px 2px rgba(0,0,0,0.6);
         }
 
-        /* 📍 中文样式：默认 30px */
+        /* 中文：30px */
         .chinese-content {
             font-size: 30px; line-height: 1.4; font-weight: 500;
             text-align: center; color: rgba(255, 255, 255, 0.7);
-            text-shadow: 0 1px 5px rgba(0,0,0,0.8);
+            text-shadow: 0 1px 4px rgba(0,0,0,0.8);
         }
 
-        .word { display: inline-block; padding: 0 2px; transition: color 0.15s ease; }
-        .word.active { 
-            color: var(--word-active-color) !important; 
-            text-shadow: 0 0 10px var(--word-active-color), 0 2px 4px rgba(0,0,0,0.8); 
+        /* 📍 核心：单词恢复为 inline，保持自然间距 */
+        .word { 
+            display: inline; 
+            transition: color 0.15s ease; 
         }
+        .word.active { color: var(--word-active-color) !important; text-shadow: 0 0 10px var(--word-active-color); }
 
-        /* 沉浸模式 */
+        /* 界面交互 */
         body.recording-mode .controls-panel { display: none !important; }
         body.recording-mode #stageScaler { position: fixed; inset: 0; width: 100vw; height: 100vh; max-width: none; margin: 0; }
         
@@ -168,11 +172,11 @@
 </div>
 
 <div class="controls-panel">
-    <button class="ctrl-btn" onclick="toggleColor()">🎨 换高亮</button>
+    <button class="ctrl-btn" onclick="toggleColor()">🎨 换颜色</button>
     <button class="ctrl-btn" onclick="adjustFontSize(5)">A+</button>
     <button class="ctrl-btn" onclick="adjustFontSize(-5)">A-</button>
     <button class="ctrl-btn" id="playBtn">▶️ 播放预览</button>
-    <button class="ctrl-btn record-btn" id="mobileRecordBtn">📱 全屏录制</button>
+    <button class="ctrl-btn record-btn" id="mobileRecordBtn">📱 全屏模式</button>
 </div>
 
 <audio id="audioPlayer">
@@ -195,13 +199,49 @@
     const headerContainer = document.getElementById('headerContainer');
     const nameEl = document.getElementById('nameEl');
 
+    let processedBlocks = []; 
     let currentBlockIndex = -1;
     let currentBgPath = "";
     let isUsingA = true;
-    let currentFontSize = 60; // 📍 初始同步 60px
+    let currentFontSize = 60; 
     const WAVE_BAR_COUNT = 30;
 
+    // 智能分段算法 (拆分 >20 词的长句)
+    function segmentData(data) {
+        const WORD_LIMIT = 20;
+        let blocks = [];
+        data.forEach(item => {
+            let words = item.words || [];
+            if (words.length <= WORD_LIMIT) {
+                blocks.push({...item});
+            } else {
+                let startIdx = 0;
+                while (startIdx < words.length) {
+                    let remaining = words.length - startIdx;
+                    let takeCount = Math.min(WORD_LIMIT, remaining);
+                    if (remaining > WORD_LIMIT) {
+                        let searchEnd = startIdx + WORD_LIMIT;
+                        for (let j = searchEnd - 1; j > startIdx + 5; j--) {
+                            if (/[.,!?;]/.test(words[j].word)) { takeCount = j - startIdx + 1; break; }
+                        }
+                    }
+                    let chunk = words.slice(startIdx, startIdx + takeCount);
+                    blocks.push({
+                        speaker: item.speaker,
+                        start: chunk[0].start,
+                        end: chunk[chunk.length - 1].end,
+                        words: chunk,
+                        sentence_zh: item.sentence_zh
+                    });
+                    startIdx += takeCount;
+                }
+            }
+        });
+        return blocks;
+    }
+
     function init() {
+        processedBlocks = segmentData(transcriptData);
         waveContainer.innerHTML = '';
         const heights = [30, 50, 80, 60, 40, 70, 90, 100, 80, 50, 40, 60, 80, 90, 70, 50, 30, 40, 60, 80, 100, 90, 70, 50, 40, 60, 80, 60, 40, 30];
         for(let i=0; i<WAVE_BAR_COUNT; i++) {
@@ -210,12 +250,7 @@
             bar.style.height = heights[i % heights.length] + '%';
             waveContainer.appendChild(bar);
         }
-        
-        if (bgTimeline && bgTimeline.length > 0) {
-            currentBgPath = bgTimeline[0].bg;
-            bgA.src = currentBgPath;
-        }
-        
+        if (bgTimeline && bgTimeline.length > 0) { currentBgPath = bgTimeline[0].bg; bgA.src = currentBgPath; }
         updateScale();
         audio.addEventListener('loadedmetadata', () => { timerText.innerText = formatTime(audio.duration); });
     }
@@ -235,10 +270,8 @@
         }
         if (targetBg !== currentBgPath) {
             currentBgPath = targetBg;
-            const nextLayer = isUsingA ? bgB : bgA;
-            const currentLayer = isUsingA ? bgA : bgB;
-            nextLayer.src = targetBg;
-            nextLayer.onload = () => { nextLayer.classList.add('active'); currentLayer.classList.remove('active'); isUsingA = !isUsingA; };
+            const next = isUsingA ? bgB : bgA; const curr = isUsingA ? bgA : bgB;
+            next.src = targetBg; next.onload = () => { next.classList.add('active'); curr.classList.remove('active'); isUsingA = !isUsingA; };
         }
     }
 
@@ -248,8 +281,8 @@
             handleBackground(t);
             updateSubtitles(t);
             const pct = t / audio.duration;
-            const activeBarIndex = Math.floor(pct * WAVE_BAR_COUNT);
-            document.querySelectorAll('.wave-bar').forEach((b, i) => i <= activeBarIndex ? b.classList.add('active') : b.classList.remove('active'));
+            const activeIdx = Math.floor(pct * WAVE_BAR_COUNT);
+            document.querySelectorAll('.wave-bar').forEach((b, i) => i <= activeIdx ? b.classList.add('active') : b.classList.remove('active'));
             timerText.innerText = "-" + formatTime(audio.duration - t);
             requestAnimationFrame(renderLoop);
         }
@@ -257,14 +290,14 @@
 
     function updateSubtitles(t) {
         let activeIdx = -1;
-        for (let i = 0; i < transcriptData.length; i++) {
-            if (t >= transcriptData[i].start && t < transcriptData[i].end) { activeIdx = i; break; }
+        for (let i = 0; i < processedBlocks.length; i++) {
+            if (t >= processedBlocks[i].start && t < processedBlocks[i].end) { activeIdx = i; break; }
         }
         if (activeIdx !== -1 && activeIdx !== currentBlockIndex) {
             currentBlockIndex = activeIdx;
             textBlock.classList.remove('visible');
             setTimeout(() => {
-                const item = transcriptData[activeIdx];
+                const item = processedBlocks[activeIdx];
                 englishArea.innerHTML = '';
                 item.words.forEach(w => {
                     const span = document.createElement('span');
@@ -274,18 +307,10 @@
                     englishArea.appendChild(document.createTextNode(" "));
                 });
                 chineseArea.innerText = item.sentence_zh || "";
-                
-                const spkName = item.speaker || "Unknown";
-                nameEl.innerText = spkName;
-                const lowerName = spkName.toLowerCase();
-                headerContainer.classList.remove('speaker-state-female', 'speaker-state-male');
-                if (lowerName.includes('female')) {
-                    headerContainer.classList.add('speaker-state-female');
-                    avatarEl.style.backgroundImage = "url('female.png')";
-                } else {
-                    headerContainer.classList.add('speaker-state-male');
-                    avatarEl.style.backgroundImage = "url('male.png')";
-                }
+                nameEl.innerText = item.speaker || "Unknown";
+                const lower = nameEl.innerText.toLowerCase();
+                headerContainer.className = 'speaker-header ' + (lower.includes('female') ? 'speaker-state-female' : 'speaker-state-male');
+                avatarEl.style.backgroundImage = `url('${lower.includes('female') ? 'female.png' : 'male.png'}')`;
                 textBlock.classList.add('visible');
             }, 50);
         }
@@ -293,16 +318,12 @@
             const words = englishArea.querySelectorAll('.word');
             words.forEach(span => {
                 const s = parseFloat(span.dataset.start), e = parseFloat(span.dataset.end);
-                if (t >= s && t < e) span.classList.add('active');
-                else span.classList.remove('active');
+                if (t >= s && t < e) span.classList.add('active'); else span.classList.remove('active');
             });
         }
     }
 
-    function formatTime(s) {
-        const m = Math.floor(s/60); const sec = Math.floor(s%60);
-        return `${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
-    }
+    function formatTime(s) { const m = Math.floor(s/60); const sec = Math.floor(s%60); return `${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`; }
 
     document.getElementById('playBtn').addEventListener('click', () => { if(audio.paused) { audio.play(); renderLoop(); } else { audio.pause(); } });
     document.getElementById('mobileRecordBtn').addEventListener('click', () => {
@@ -315,7 +336,6 @@
     window.adjustFontSize = function(delta) { 
         currentFontSize += delta; 
         englishArea.style.fontSize = currentFontSize + "px"; 
-        /* 📍 保持 30px 的差值 */
         chineseArea.style.fontSize = (currentFontSize - 30) + "px"; 
     }
     
