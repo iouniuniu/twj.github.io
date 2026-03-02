@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Dynamic Shorts Pro - Female Default</title>
+    <title>Dynamic Shorts Pro - Precise Speaker Logic</title>
     <style>
         :root {
             --word-active-color: #ccff00; 
@@ -63,8 +63,7 @@
             border: 6px solid rgba(255,255,255,0.8);
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             transition: all 0.3s ease;
-            /* 📍 初始头像设为 Female */
-            background-image: url('female.png');
+            background-image: url('female.png'); /* 默认 Female */
         }
 
         .speaker-name {
@@ -86,7 +85,7 @@
         .wave-bar { width: 5px; background: rgba(255,255,255,0.4); border-radius: 3px; transition: background-color 0.2s; }
         .wave-bar.active { background: #fff; }
 
-        /* 文字区域：顶部 240px */
+        /* 文字区域：顶部 240px 位置 */
         .text-block {
             position: absolute;
             top: 240px; 
@@ -100,14 +99,14 @@
         .text-block.visible { opacity: 1; transform: translateY(0); }
 
         .english-content {
-            font-size: 70px; 
+            font-size: 70px; /* 大一号 */
             line-height: 1.4; font-weight: 800;
             text-align: left; color: #ffffff;
             text-shadow: 0 4px 15px rgba(0,0,0,0.8), 1px 1px 2px rgba(0,0,0,0.5);
         }
 
         .chinese-content {
-            font-size: 40px; 
+            font-size: 40px; /* 大一号 */
             line-height: 1.5; font-weight: 500;
             text-align: left; color: rgba(255, 255, 255, 0.6);
             mix-blend-mode: exclusion;
@@ -133,13 +132,16 @@
         .record-btn { background: #ef4444; border: none; }
     </style>
 </head>
-<body class="speaker-state-female"> <div id="stageScaler">
+<body class="speaker-state-female">
+
+<div id="stageScaler">
     <div id="stageArea">
         <img id="bgA" class="bg-layer active" src="" alt="bg">
         <img id="bgB" class="bg-layer" src="" alt="bg">
         <div class="overlay-layer"></div>
 
-        <div id="headerContainer" class="speaker-header speaker-state-female"> <div class="speaker-info">
+        <div id="headerContainer" class="speaker-header speaker-state-female">
+            <div class="speaker-info">
                 <div id="avatarEl" class="avatar"></div>
                 <div id="nameEl" class="speaker-name">周末英语剧场</div>
             </div>
@@ -300,13 +302,16 @@
         });
         chineseArea.innerText = block.sentence_zh || "";
         
-        // 📍 默认 Female 逻辑：除非明确包含 male，否则显示 female
+        // 📍 修正后的 Speaker 切换逻辑
         const lower = (block.speaker || "").toLowerCase();
         headerContainer.classList.remove('speaker-state-female', 'speaker-state-male');
-        if (lower.includes('male')) {
+        
+        // 排除包含关系：如果是 male 且不包含 female，则切换为 male 形象
+        if (lower.includes('male') && !lower.includes('female')) {
             headerContainer.classList.add('speaker-state-male');
             avatarEl.style.backgroundImage = "url('male.png')";
         } else {
+            // 其余所有情况（包含 female 或 tim 等默认）均显示为 female 形象
             headerContainer.classList.add('speaker-state-female');
             avatarEl.style.backgroundImage = "url('female.png')";
         }
