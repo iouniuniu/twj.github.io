@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Dynamic Shorts Pro - Precise Speaker Logic</title>
+    <style>
+        :root {
+            --word-active-color: #ccff00; 
+            --female-color: #ec4899; 
+            --male-color: #2dd4bf;   
+            --font-stack: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            margin: 0; padding: 0; background-color: #000;
+            font-family: var(--font-stack);
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; color: white; user-select: none;
+            overflow-x: hidden; overflow-y: auto; 
+        }
+
+        #stageScaler {
+            margin-top: 20px; width: 90vw; max-width: 450px; 
+            aspect-ratio: 9 / 16; display: flex; align-items: center;
+            justify-content: center; position: relative; z-index: 10;
+        }
+
+        #stageArea {
+            width: 1080px; height: 1920px;
+            position: absolute; background-color: #000;
+            overflow: hidden; box-shadow: 0 10px 50px rgba(0,0,0,0.8);
+            transform-origin: center center;
+        }
+
+        /* 动态背景层 A/B */
+        .bg-layer {
+            position: absolute; inset: 0;
+            width: 100%; height: 100%;
+            object-fit: cover; transition: opacity 0.8s ease-in-out;
+            z-index: 0; opacity: 0;
+        }
+        .bg-layer.active { opacity: 1; }
+
+        .overlay-layer {
+            position: absolute; inset: 0;
+            background: rgba(0, 0, 0, 0.3); 
+            z-index: 1;
+        }
+
+        /* 顶部 Header */
+        .speaker-header {
+            position: absolute; top: 90px; left: 90px; right: 90px;
+            z-index: 5; display: flex; align-items: center;
+            justify-content: space-between; isolation: isolate;
+        }
+
+        .speaker-info { display: flex; align-items: center; gap: 25px; flex-shrink: 0; }
+        
+        .avatar {
+            width: 75px; height: 75px; border-radius: 50%;
+            background-size: cover; background-position: center;
+            border: 6px solid rgba(255,255,255,0.8);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            background-image: url('female.png'); /* 默认 Female */
+        }
+
+        .speaker-name {
+            font-size: 45px; font-weight: 900; text-transform: uppercase;
+            letter-spacing: 2px; color: #fff; mix-blend-mode: exclusion;
+        }
+
+        /* 状态颜色 */
+        .speaker-state-female .avatar { border-color: var(--female-color); box-shadow: 0 0 20px var(--female-color); }
+        .speaker-state-male .avatar { border-color: var(--male-color); box-shadow: 0 0 20px var(--male-color); }
+
+        .progress-indicator { display: flex; align-items: center; justify-content: flex-end; width: 520px; }
+        #timerText { font-size: 32px; font-weight: 700; color: #fff; mix-blend-mode: exclusion; font-family: monospace; }
+        
+        .wave-container { 
+            display: flex; gap: 6px; height: 60px; margin-left: 25px; 
+            align-items: center; mix-blend-mode: exclusion;
+        }
+        .wave-bar { width: 5px; background: rgba(255,255,255,0.4); border-radius: 3px; transition: background-color 0.2s; }
+        .wave-bar.active { background: #fff; }
+
+        /* 文字区域：顶部 240px 位置 */
+        .text-block {
+            position: absolute;
+            top: 240px; 
+            left: 0; width: 100%;
+            padding: 0 100px; box-sizing: border-box;
+            z-index: 2;
+            display: flex; flex-direction: column; gap: 30px;
+            opacity: 0; transform: translateY(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .text-block.visible { opacity: 1; transform: translateY(0); }
+
+        .english-content {
+            font-size: 70px; /* 大一号 */
+            line-height: 1.4; font-weight: 800;
+            text-align: left; color: #ffffff;
+            text-shadow: 0 4px 15px rgba(0,0,0,0.8), 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .chinese-content {
+            font-size: 40px; /* 大一号 */
+            line-height: 1.5; font-weight: 500;
+            text-align: left; color: rgba(255, 255, 255, 0.6);
+            mix-blend-mode: exclusion;
+        }
+
+        .word { display: inline; transition: color 0.15s ease; }
+        .word.active { color: var(--word-active-color) !important; text-shadow: 0 0 15px rgba(204,255,0,0.6); }
+
+        /* 面板控制 */
+        body.recording-mode .controls-panel { display: none !important; }
+        body.recording-mode #stageScaler { position: fixed; inset: 0; width: 100vw; height: 100vh; max-width: none; margin: 0; }
+        
+        .controls-panel {
+            padding: 30px; display: flex; gap: 12px; flex-wrap: wrap;
+            justify-content: center; max-width: 500px; z-index: 20;
+            background: #121212; width: 100%; box-sizing: border-box;
+        }
+        .ctrl-btn {
+            padding: 12px 24px; background: #222; color: #fff;
+            border: 1px solid #444; border-radius: 12px; cursor: pointer;
+            font-size: 14px; font-weight: 600;
+        }
+        .record-btn { background: #ef4444; border: none; }
+    </style>
+</head>
+<body class="speaker-state-female">
+
+<div id="stageScaler">
+    <div id="stageArea">
+        <img id="bgA" class="bg-layer active" src="" alt="bg">
+        <img id="bgB" class="bg-layer" src="" alt="bg">
+        <div class="overlay-layer"></div>
+
+        <div id="headerContainer" class="speaker-header speaker-state-female">
+            <div class="speaker-info">
+                <div id="avatarEl" class="avatar"></div>
+                <div id="nameEl" class="speaker-name">周末英语剧场</div>
+            </div>
+            <div class="progress-indicator">
+                <span id="timerText">00:00</span>
+                <div id="waveContainer" class="wave-container"></div>
+            </div>
+        </div>
+
+        <div id="textContainer" class="text-block">
+            <div id="englishArea" class="english-content"></div>
+            <div id="chineseArea" class="chinese-content"></div>
+        </div>
+    </div>
+</div>
+
+<div class="controls-panel">
+    <button class="ctrl-btn" onclick="toggleColor()">🎨 换颜色</button>
+    <button class="ctrl-btn" onclick="adjustFontSize(5)">A+</button>
+    <button class="ctrl-btn" onclick="adjustFontSize(-5)">A-</button>
+    <button class="ctrl-btn" id="playBtn">▶️ 播放预览</button>
+    <button class="ctrl-btn record-btn" id="mobileRecordBtn">📱 全屏模式</button>
+</div>
+
+<audio id="audioPlayer">
+    <source src="story-3.m4a" type="audio/mp4">
+</audio>
+
+<script>
+    const transcriptData = [{"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Hello, my name's Tim.", "sentence_zh": "大家好，我是蒂姆。", "start": 9.245, "end": 11.529, "words": [{"word": "Hello,", "start": 9.245, "end": 10.507}, {"word": "my", "start": 10.728, "end": 10.868}, {"word": "name's", "start": 10.908, "end": 11.148}, {"word": "Tim.", "start": 11.249, "end": 11.529}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Have you ever heard about someone making a deal with the devil?", "sentence_zh": "你有没有听说过有人和魔鬼做交易？", "start": 12.29, "end": 16.197, "words": [{"word": "Have", "start": 12.29, "end": 12.491}, {"word": "you", "start": 12.531, "end": 12.671}, {"word": "ever", "start": 12.771, "end": 12.911}, {"word": "heard", "start": 12.972, "end": 13.272}, {"word": "about", "start": 13.292, "end": 13.613}, {"word": "someone", "start": 13.713, "end": 14.033}, {"word": "making", "start": 14.093, "end": 14.434}, {"word": "a", "start": 14.454, "end": 14.474}, {"word": "deal", "start": 14.795, "end": 15.135}, {"word": "with", "start": 15.195, "end": 15.556}, {"word": "the", "start": 15.656, "end": 15.756}, {"word": "devil?", "start": 15.877, "end": 16.197}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "These kinds of stories don't have happy endings and this is no exception.", "sentence_zh": "这类故事往往没有好结局，这个故事也不例外。", "start": 17.239, "end": 22.047, "words": [{"word": "These", "start": 17.239, "end": 17.459}, {"word": "kinds", "start": 17.54, "end": 17.82}, {"word": "of", "start": 17.9, "end": 17.94}, {"word": "stories", "start": 17.96, "end": 18.461}, {"word": "don't", "start": 18.581, "end": 18.822}, {"word": "have", "start": 18.902, "end": 19.082}, {"word": "happy", "start": 19.142, "end": 19.443}, {"word": "endings", "start": 19.563, "end": 19.924}, {"word": "and", "start": 20.144, "end": 20.224}, {"word": "this", "start": 20.324, "end": 20.605}, {"word": "is", "start": 20.625, "end": 21.046}, {"word": "no", "start": 21.086, "end": 21.466}, {"word": "exception.", "start": 21.526, "end": 22.047}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It's about a handsome young man who swaps his soul for everlasting youth and eventually pays the price.", "sentence_zh": "这是一个关于一位英俊的年轻人用灵魂换取青春永驻，并最终付出代价的故事。", "start": 22.949, "end": 30.983, "words": [{"word": "It's", "start": 22.949, "end": 23.049}, {"word": "about", "start": 23.089, "end": 23.29}, {"word": "a", "start": 23.33, "end": 23.35}, {"word": "handsome", "start": 23.45, "end": 23.911}, {"word": "young", "start": 23.991, "end": 24.191}, {"word": "man", "start": 24.271, "end": 24.572}, {"word": "who", "start": 24.592, "end": 24.872}, {"word": "swaps", "start": 25.073, "end": 25.473}, {"word": "his", "start": 25.574, "end": 25.754}, {"word": "soul", "start": 25.994, "end": 26.315}, {"word": "for", "start": 26.355, "end": 27.036}, {"word": "everlasting", "start": 27.277, "end": 28.018}, {"word": "youth", "start": 28.058, "end": 28.419}, {"word": "and", "start": 29.16, "end": 29.24}, {"word": "eventually", "start": 29.32, "end": 29.821}, {"word": "pays", "start": 29.921, "end": 30.162}, {"word": "the", "start": 30.202, "end": 30.342}, {"word": "price.", "start": 30.422, "end": 30.983}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Picture this.", "sentence_zh": "在脑海中想象一下这幅画面。", "start": 32.228, "end": 33.009, "words": [{"word": "Picture", "start": 32.228, "end": 32.649}, {"word": "this.", "start": 32.689, "end": 33.009}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "In a large Victorian house, a painter, Basil Hallward, entertains his aristocratic patron, Lord Henry Wotton.", "sentence_zh": "在一栋宽敞的维多利亚时代宅邸里，画家巴兹尔·霍尔沃德正在招待他的贵族赞助人，亨利·沃顿勋爵。", "start": 33.911, "end": 42.346, "words": [{"word": "In", "start": 33.911, "end": 33.971}, {"word": "a", "start": 34.031, "end": 34.051}, {"word": "large", "start": 34.131, "end": 34.532}, {"word": "Victorian", "start": 34.632, "end": 35.253}, {"word": "house,", "start": 35.353, "end": 35.674}, {"word": "a", "start": 36.055, "end": 36.095}, {"word": "painter,", "start": 36.195, "end": 36.676}, {"word": "Basil", "start": 37.177, "end": 37.537}, {"word": "Hallward,", "start": 37.597, "end": 38.058}, {"word": "entertains", "start": 38.439, "end": 39.04}, {"word": "his", "start": 39.1, "end": 39.22}, {"word": "aristocratic", "start": 39.441, "end": 40.162}, {"word": "patron,", "start": 40.242, "end": 40.683}, {"word": "Lord", "start": 41.164, "end": 41.464}, {"word": "Henry", "start": 41.544, "end": 41.865}, {"word": "Wotton.", "start": 41.925, "end": 42.346}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Lord Henry is notorious throughout London for his immoral lifestyle, his love of youth and beauty, and his selfish pursuit of pleasure.", "sentence_zh": "亨利勋爵因其不道德的生活方式、对青春与美的狂热，以及自私地追求享乐而在整个伦敦臭名昭著。", "start": 43.408, "end": 54.507, "words": [{"word": "Lord", "start": 43.408, "end": 43.648}, {"word": "Henry", "start": 43.708, "end": 44.109}, {"word": "is", "start": 44.149, "end": 44.429}, {"word": "notorious", "start": 44.65, "end": 45.411}, {"word": "throughout", "start": 45.491, "end": 45.852}, {"word": "London", "start": 45.932, "end": 46.313}, {"word": "for", "start": 46.393, "end": 46.533}, {"word": "his", "start": 46.593, "end": 46.733}, {"word": "immoral", "start": 46.753, "end": 47.515}, {"word": "lifestyle,", "start": 47.595, "end": 48.196}, {"word": "his", "start": 48.557, "end": 48.697}, {"word": "love", "start": 48.897, "end": 49.218}, {"word": "of", "start": 49.398, "end": 49.458}, {"word": "youth", "start": 49.498, "end": 49.879}, {"word": "and", "start": 50.099, "end": 50.199}, {"word": "beauty,", "start": 50.32, "end": 50.7}, {"word": "and", "start": 51.281, "end": 51.382}, {"word": "his", "start": 51.462, "end": 51.582}, {"word": "selfish", "start": 51.722, "end": 52.203}, {"word": "pursuit", "start": 52.383, "end": 52.884}, {"word": "of", "start": 53.105, "end": 53.185}, {"word": "pleasure.", "start": 53.365, "end": 54.507}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Henry notices Basil's painting of an extremely beautiful young man, as pretty as a picture, named Dorian Gray.", "sentence_zh": "亨利注意到了巴兹尔画的一幅画，画中是一位极其俊美的年轻人，漂亮得就像画里走出来的一样，名叫道林·格雷。", "start": 54.487, "end": 63.106, "words": [{"word": "Henry", "start": 54.487, "end": 55.088}, {"word": "notices", "start": 55.128, "end": 55.83}, {"word": "Basil's", "start": 55.95, "end": 56.351}, {"word": "painting", "start": 56.431, "end": 56.912}, {"word": "of", "start": 57.093, "end": 57.153}, {"word": "an", "start": 57.193, "end": 57.233}, {"word": "extremely", "start": 57.313, "end": 58.095}, {"word": "beautiful", "start": 58.115, "end": 58.716}, {"word": "young", "start": 58.756, "end": 59.017}, {"word": "man,", "start": 59.097, "end": 59.398}, {"word": "as", "start": 59.799, "end": 59.879}, {"word": "pretty", "start": 60.139, "end": 60.5}, {"word": "as", "start": 60.54, "end": 60.801}, {"word": "a", "start": 60.821, "end": 60.841}, {"word": "picture,", "start": 60.981, "end": 61.362}, {"word": "named", "start": 61.863, "end": 62.104}, {"word": "Dorian", "start": 62.224, "end": 62.725}, {"word": "Gray.", "start": 62.765, "end": 63.106}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "He demands to meet this charming youth, but Basil refuses, worried that the aristocrat's wickedness will corrupt Dorian's innocence.", "sentence_zh": "他强烈要求见见这位迷人的年轻人，但巴兹尔拒绝了，担心这位贵族的邪恶会腐蚀道林的纯真。", "start": 64.208, "end": 73.609, "words": [{"word": "He", "start": 64.208, "end": 64.309}, {"word": "demands", "start": 64.349, "end": 64.97}, {"word": "to", "start": 65.01, "end": 65.13}, {"word": "meet", "start": 65.191, "end": 65.371}, {"word": "this", "start": 65.411, "end": 65.551}, {"word": "charming", "start": 65.632, "end": 66.032}, {"word": "youth,", "start": 66.072, "end": 66.313}, {"word": "but", "start": 66.694, "end": 66.834}, {"word": "Basil", "start": 66.934, "end": 67.415}, {"word": "refuses,", "start": 67.576, "end": 68.237}, {"word": "worried", "start": 69.019, "end": 69.36}, {"word": "that", "start": 69.4, "end": 69.5}, {"word": "the", "start": 69.54, "end": 69.62}, {"word": "aristocrat's", "start": 69.781, "end": 70.402}, {"word": "wickedness", "start": 70.522, "end": 71.104}, {"word": "will", "start": 71.264, "end": 71.444}, {"word": "corrupt", "start": 71.504, "end": 71.985}, {"word": "Dorian's", "start": 72.166, "end": 72.727}, {"word": "innocence.", "start": 72.887, "end": 73.609}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Suddenly a visitor arrives unexpectedly.", "sentence_zh": "突然，一位访客不期而至。", "start": 74.399, "end": 77.367, "words": [{"word": "Suddenly", "start": 74.399, "end": 74.92}, {"word": "a", "start": 74.941, "end": 74.961}, {"word": "visitor", "start": 75.402, "end": 75.843}, {"word": "arrives", "start": 76.003, "end": 76.425}, {"word": "unexpectedly.", "start": 76.545, "end": 77.367}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It's none other than Dorian Gray, and Lord Henry is enthralled by his charm and good looks.", "sentence_zh": "来者不是别人，正是道林·格雷，亨利勋爵立刻被他的魅力和美貌迷住了。", "start": 77.387, "end": 84.527, "words": [{"word": "It's", "start": 77.387, "end": 78.25}, {"word": "none", "start": 78.39, "end": 78.611}, {"word": "other", "start": 78.691, "end": 78.932}, {"word": "than", "start": 79.012, "end": 79.192}, {"word": "Dorian", "start": 79.273, "end": 79.774}, {"word": "Gray,", "start": 79.854, "end": 80.235}, {"word": "and", "start": 80.576, "end": 80.656}, {"word": "Lord", "start": 80.716, "end": 80.937}, {"word": "Henry", "start": 80.997, "end": 81.318}, {"word": "is", "start": 81.358, "end": 81.559}, {"word": "enthralled", "start": 81.639, "end": 82.501}, {"word": "by", "start": 82.542, "end": 82.722}, {"word": "his", "start": 82.762, "end": 82.883}, {"word": "charm", "start": 83.023, "end": 83.484}, {"word": "and", "start": 83.584, "end": 83.685}, {"word": "good", "start": 83.785, "end": 83.966}, {"word": "looks.", "start": 84.006, "end": 84.527}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Basil reveals the finished painting of Dorian looking the very picture of youth and Lord Henry remarks, 'How sad that such beauty must", "sentence_zh": "巴兹尔揭开了那幅完成的画作，画上的道林看起来简直是青春最完美的画卷。而亨利勋爵却感叹道：‘如此美貌必将", "start": 85.756, "end": 95.788, "words": [{"word": "Basil", "start": 85.756, "end": 86.197}, {"word": "reveals", "start": 86.337, "end": 86.857}, {"word": "the", "start": 86.917, "end": 87.018}, {"word": "finished", "start": 87.058, "end": 87.338}, {"word": "painting", "start": 87.398, "end": 87.778}, {"word": "of", "start": 87.819, "end": 87.859}, {"word": "Dorian", "start": 87.939, "end": 88.379}, {"word": "looking", "start": 88.459, "end": 88.76}, {"word": "the", "start": 88.8, "end": 88.98}, {"word": "very", "start": 89.1, "end": 89.38}, {"word": "picture", "start": 89.601, "end": 90.081}, {"word": "of", "start": 90.261, "end": 90.342}, {"word": "youth", "start": 90.362, "end": 90.782}, {"word": "and", "start": 91.463, "end": 91.563}, {"word": "Lord", "start": 91.643, "end": 91.863}, {"word": "Henry", "start": 91.924, "end": 92.264}, {"word": "remarks,", "start": 92.284, "end": 92.785}, {"word": "'How", "start": 93.926, "end": 94.106}, {"word": "sad", "start": 94.226, "end": 94.567}, {"word": "that", "start": 94.627, "end": 94.787}, {"word": "such", "start": 94.847, "end": 95.067}, {"word": "beauty", "start": 95.147, "end": 95.488}, {"word": "must", "start": 95.588, "end": 95.788}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "one day grow old.'", "sentence_zh": "在某一天老去，这多么令人悲哀。’", "start": 95.988, "end": 96.99, "words": [{"word": "one", "start": 95.988, "end": 96.089}, {"word": "day", "start": 96.149, "end": 96.329}, {"word": "grow", "start": 96.369, "end": 96.689}, {"word": "old.'", "start": 96.829, "end": 96.99}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "At this, Dorian becomes horrified by the idea that he will never again be so young and handsome and curses the painting, declaring, 'I would give my", "sentence_zh": "听到这话，道林一想到自己再也不会像现在这般年轻英俊，便感到万分恐惧。他诅咒这幅画，并宣称：‘我宁愿献出我的", "start": 98.371, "end": 108.544, "words": [{"word": "At", "start": 98.371, "end": 98.431}, {"word": "this,", "start": 98.512, "end": 98.772}, {"word": "Dorian", "start": 99.353, "end": 99.773}, {"word": "becomes", "start": 99.813, "end": 100.154}, {"word": "horrified", "start": 100.314, "end": 100.894}, {"word": "by", "start": 100.975, "end": 101.075}, {"word": "the", "start": 101.115, "end": 101.215}, {"word": "idea", "start": 101.335, "end": 101.635}, {"word": "that", "start": 101.675, "end": 101.796}, {"word": "he", "start": 101.856, "end": 101.936}, {"word": "will", "start": 101.976, "end": 102.136}, {"word": "never", "start": 102.236, "end": 102.476}, {"word": "again", "start": 102.556, "end": 102.817}, {"word": "be", "start": 102.857, "end": 103.037}, {"word": "so", "start": 103.097, "end": 103.297}, {"word": "young", "start": 103.377, "end": 103.658}, {"word": "and", "start": 103.898, "end": 103.978}, {"word": "handsome", "start": 104.038, "end": 104.499}, {"word": "and", "start": 105.059, "end": 105.14}, {"word": "curses", "start": 105.26, "end": 105.76}, {"word": "the", "start": 105.78, "end": 105.921}, {"word": "painting,", "start": 105.961, "end": 106.361}, {"word": "declaring,", "start": 106.722, "end": 107.242}, {"word": "'I", "start": 107.983, "end": 108.023}, {"word": "would", "start": 108.063, "end": 108.203}, {"word": "give", "start": 108.223, "end": 108.364}, {"word": "my", "start": 108.404, "end": 108.544}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "soul to stay young while this picture grows old in my place.'", "sentence_zh": "灵魂来永葆青春，让这幅画代替我老去。’", "start": 108.664, "end": 112.328, "words": [{"word": "soul", "start": 108.664, "end": 108.924}, {"word": "to", "start": 109.004, "end": 109.084}, {"word": "stay", "start": 109.144, "end": 109.325}, {"word": "young", "start": 109.385, "end": 109.585}, {"word": "while", "start": 110.086, "end": 110.266}, {"word": "this", "start": 110.326, "end": 110.486}, {"word": "picture", "start": 110.646, "end": 110.987}, {"word": "grows", "start": 111.047, "end": 111.327}, {"word": "old", "start": 111.367, "end": 111.648}, {"word": "in", "start": 111.708, "end": 111.768}, {"word": "my", "start": 111.808, "end": 111.948}, {"word": "place.'", "start": 112.028, "end": 112.328}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Big mistake.", "sentence_zh": "大错特错。", "start": 113.57, "end": 114.531, "words": [{"word": "Big", "start": 113.57, "end": 113.75}, {"word": "mistake.", "start": 113.81, "end": 114.531}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Time passes and Dorian falls further under Lord Henry's influence.", "sentence_zh": "时光流逝，道林越陷越深，完全受到了亨利勋爵的影响。", "start": 123.252, "end": 128.719, "words": [{"word": "Time", "start": 123.252, "end": 124.714}, {"word": "passes", "start": 124.794, "end": 125.194}, {"word": "and", "start": 125.234, "end": 125.475}, {"word": "Dorian", "start": 125.535, "end": 125.995}, {"word": "falls", "start": 126.115, "end": 126.456}, {"word": "further", "start": 126.596, "end": 127.037}, {"word": "under", "start": 127.197, "end": 127.397}, {"word": "Lord", "start": 127.457, "end": 127.697}, {"word": "Henry's", "start": 127.757, "end": 128.118}, {"word": "influence.", "start": 128.258, "end": 128.719}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Leading an extravagant lifestyle, he grows distant from his former friends.", "sentence_zh": "他过着奢靡的生活，与从前的朋友们日渐疏远。", "start": 129.72, "end": 134.125, "words": [{"word": "Leading", "start": 129.72, "end": 130.1}, {"word": "an", "start": 130.12, "end": 130.26}, {"word": "extravagant", "start": 130.32, "end": 131.081}, {"word": "lifestyle,", "start": 131.141, "end": 131.682}, {"word": "he", "start": 131.982, "end": 132.103}, {"word": "grows", "start": 132.163, "end": 132.423}, {"word": "distant", "start": 132.523, "end": 132.944}, {"word": "from", "start": 133.064, "end": 133.204}, {"word": "his", "start": 133.244, "end": 133.344}, {"word": "former", "start": 133.404, "end": 133.704}, {"word": "friends.", "start": 133.765, "end": 134.125}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "With Basil out of the picture, Dorian falls in love with a low-class actress named Sybil who performs in plays at the local drinking tavern, a rowdy", "sentence_zh": "随着巴兹尔淡出他的生活，道林爱上了一个名叫西比尔的底层女演员，她在当地一家喧闹的、", "start": 134.906, "end": 145.298, "words": [{"word": "With", "start": 134.906, "end": 135.026}, {"word": "Basil", "start": 135.146, "end": 135.547}, {"word": "out", "start": 135.747, "end": 135.847}, {"word": "of", "start": 135.907, "end": 135.947}, {"word": "the", "start": 135.967, "end": 136.067}, {"word": "picture,", "start": 136.107, "end": 136.488}, {"word": "Dorian", "start": 137.109, "end": 137.549}, {"word": "falls", "start": 137.669, "end": 137.97}, {"word": "in", "start": 138.05, "end": 138.11}, {"word": "love", "start": 138.17, "end": 138.37}, {"word": "with", "start": 138.43, "end": 138.55}, {"word": "a", "start": 138.61, "end": 138.63}, {"word": "low-class", "start": 138.71, "end": 139.371}, {"word": "actress", "start": 139.592, "end": 140.052}, {"word": "named", "start": 140.152, "end": 140.392}, {"word": "Sybil", "start": 140.513, "end": 140.853}, {"word": "who", "start": 141.294, "end": 141.394}, {"word": "performs", "start": 141.454, "end": 141.934}, {"word": "in", "start": 142.014, "end": 142.094}, {"word": "plays", "start": 142.215, "end": 142.615}, {"word": "at", "start": 142.635, "end": 142.735}, {"word": "the", "start": 142.775, "end": 142.855}, {"word": "local", "start": 142.915, "end": 143.256}, {"word": "drinking", "start": 143.336, "end": 143.756}, {"word": "tavern,", "start": 143.817, "end": 144.137}, {"word": "a", "start": 144.738, "end": 144.778}, {"word": "rowdy", "start": 144.898, "end": 145.298}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "place of drunkenness and fighting.", "sentence_zh": "充斥着酗酒和打斗的酒馆里演戏。", "start": 145.358, "end": 147.441, "words": [{"word": "place", "start": 145.358, "end": 145.659}, {"word": "of", "start": 145.719, "end": 145.759}, {"word": "drunkenness", "start": 145.879, "end": 146.58}, {"word": "and", "start": 146.8, "end": 146.88}, {"word": "fighting.", "start": 147.0, "end": 147.441}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "You get the picture.", "sentence_zh": "你能脑补出那幅画面了。", "start": 147.901, "end": 149.243, "words": [{"word": "You", "start": 147.901, "end": 148.042}, {"word": "get", "start": 148.062, "end": 148.182}, {"word": "the", "start": 148.222, "end": 148.302}, {"word": "picture.", "start": 148.342, "end": 149.243}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Dorian proposes to Sybil, who happily accepts, but her brother, James, is suspicious of Dorian's reputation.", "sentence_zh": "道林向西比尔求婚，西比尔高兴地答应了，但她的哥哥詹姆斯对道林的名声感到怀疑。", "start": 149.56, "end": 157.716, "words": [{"word": "Dorian", "start": 149.56, "end": 150.101}, {"word": "proposes", "start": 150.402, "end": 151.043}, {"word": "to", "start": 151.123, "end": 151.203}, {"word": "Sybil,", "start": 151.283, "end": 151.584}, {"word": "who", "start": 151.824, "end": 151.945}, {"word": "happily", "start": 152.045, "end": 152.466}, {"word": "accepts,", "start": 152.546, "end": 153.027}, {"word": "but", "start": 153.568, "end": 153.708}, {"word": "her", "start": 153.768, "end": 153.908}, {"word": "brother,", "start": 153.988, "end": 154.389}, {"word": "James,", "start": 154.55, "end": 155.01}, {"word": "is", "start": 155.291, "end": 155.371}, {"word": "suspicious", "start": 155.531, "end": 156.233}, {"word": "of", "start": 156.373, "end": 156.433}, {"word": "Dorian's", "start": 156.513, "end": 156.994}, {"word": "reputation.", "start": 157.054, "end": 157.716}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Henry and Basil go to watch Sybil's play, but the performance is terrible.", "sentence_zh": "亨利和巴兹尔去观看西比尔的演出，但她的表演糟糕透顶。", "start": 158.497, "end": 163.547, "words": [{"word": "Henry", "start": 158.497, "end": 158.838}, {"word": "and", "start": 158.898, "end": 158.978}, {"word": "Basil", "start": 159.018, "end": 159.379}, {"word": "go", "start": 159.459, "end": 159.619}, {"word": "to", "start": 159.679, "end": 159.76}, {"word": "watch", "start": 159.82, "end": 160.06}, {"word": "Sybil's", "start": 160.1, "end": 160.441}, {"word": "play,", "start": 160.521, "end": 160.842}, {"word": "but", "start": 161.262, "end": 161.383}, {"word": "the", "start": 161.443, "end": 161.563}, {"word": "performance", "start": 161.623, "end": 162.485}, {"word": "is", "start": 162.705, "end": 162.785}, {"word": "terrible.", "start": 162.946, "end": 163.547}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Sybil explains that after meeting Dorian, her life is so happy she can no longer act.", "sentence_zh": "西比尔解释说，在遇到道林之后，她的生活太幸福了，以至于她再也无法入戏了。", "start": 164.729, "end": 170.961, "words": [{"word": "Sybil", "start": 164.729, "end": 165.05}, {"word": "explains", "start": 165.11, "end": 165.591}, {"word": "that", "start": 165.651, "end": 165.771}, {"word": "after", "start": 165.951, "end": 166.152}, {"word": "meeting", "start": 166.212, "end": 166.513}, {"word": "Dorian,", "start": 166.593, "end": 167.054}, {"word": "her", "start": 167.474, "end": 167.615}, {"word": "life", "start": 167.715, "end": 167.995}, {"word": "is", "start": 168.156, "end": 168.216}, {"word": "so", "start": 168.316, "end": 168.496}, {"word": "happy", "start": 168.597, "end": 168.977}, {"word": "she", "start": 169.458, "end": 169.598}, {"word": "can", "start": 169.639, "end": 169.799}, {"word": "no", "start": 169.859, "end": 169.999}, {"word": "longer", "start": 170.059, "end": 170.34}, {"word": "act.", "start": 170.58, "end": 170.961}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Picture yourself in Dorian's place.", "sentence_zh": "在脑海中描绘一下，如果你处在道林的位置会怎样。", "start": 171.768, "end": 173.591, "words": [{"word": "Picture", "start": 171.768, "end": 172.169}, {"word": "yourself", "start": 172.189, "end": 172.569}, {"word": "in", "start": 172.649, "end": 172.709}, {"word": "Dorian's", "start": 172.769, "end": 173.23}, {"word": "place.", "start": 173.29, "end": 173.591}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Wouldn't you love Sybil even more?", "sentence_zh": "你难道不会更加爱西比尔吗？", "start": 174.332, "end": 176.295, "words": [{"word": "Wouldn't", "start": 174.332, "end": 174.592}, {"word": "you", "start": 174.632, "end": 174.712}, {"word": "love", "start": 174.812, "end": 175.073}, {"word": "Sybil", "start": 175.293, "end": 175.654}, {"word": "even", "start": 175.774, "end": 175.934}, {"word": "more?", "start": 176.034, "end": 176.295}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Not Dorian Gray.", "sentence_zh": "但道林·格雷没有。", "start": 176.335, "end": 178.478, "words": [{"word": "Not", "start": 176.335, "end": 177.557}, {"word": "Dorian", "start": 177.657, "end": 178.077}, {"word": "Gray.", "start": 178.137, "end": 178.478}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "He reacts cruelly and brutally breaks off their engagement.", "sentence_zh": "他反应十分冷酷，残忍地解除了他们的婚约。", "start": 179.239, "end": 183.005, "words": [{"word": "He", "start": 179.239, "end": 179.379}, {"word": "reacts", "start": 179.479, "end": 179.9}, {"word": "cruelly", "start": 180.1, "end": 180.541}, {"word": "and", "start": 180.841, "end": 180.921}, {"word": "brutally", "start": 181.062, "end": 181.562}, {"word": "breaks", "start": 181.663, "end": 181.963}, {"word": "off", "start": 182.063, "end": 182.183}, {"word": "their", "start": 182.223, "end": 182.384}, {"word": "engagement.", "start": 182.444, "end": 183.005}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Returning home, Dorian is surprised to find that Basil's painting of him is now lined, showing a touch of cruelty in the mouth.", "sentence_zh": "回到家后，道林惊讶地发现巴兹尔为他画的画像上出现了纹路，嘴角竟然流露出一丝残忍。", "start": 183.986, "end": 192.739, "words": [{"word": "Returning", "start": 183.986, "end": 184.427}, {"word": "home,", "start": 184.487, "end": 184.707}, {"word": "Dorian", "start": 184.767, "end": 185.368}, {"word": "is", "start": 185.588, "end": 185.648}, {"word": "surprised", "start": 185.729, "end": 186.309}, {"word": "to", "start": 186.37, "end": 186.45}, {"word": "find", "start": 186.53, "end": 186.77}, {"word": "that", "start": 186.81, "end": 186.91}, {"word": "Basil's", "start": 187.01, "end": 187.451}, {"word": "painting", "start": 187.551, "end": 187.952}, {"word": "of", "start": 188.012, "end": 188.052}, {"word": "him", "start": 188.112, "end": 188.272}, {"word": "is", "start": 188.312, "end": 188.953}, {"word": "now", "start": 189.053, "end": 189.214}, {"word": "lined,", "start": 189.254, "end": 189.855}, {"word": "showing", "start": 190.496, "end": 190.796}, {"word": "a", "start": 190.856, "end": 190.876}, {"word": "touch", "start": 190.976, "end": 191.257}, {"word": "of", "start": 191.337, "end": 191.377}, {"word": "cruelty", "start": 191.577, "end": 192.138}, {"word": "in", "start": 192.178, "end": 192.278}, {"word": "the", "start": 192.338, "end": 192.418}, {"word": "mouth.", "start": 192.458, "end": 192.739}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "He hides the painting away in the attic.", "sentence_zh": "他把这幅画藏到了阁楼里。", "start": 193.74, "end": 195.783, "words": [{"word": "He", "start": 193.74, "end": 193.841}, {"word": "hides", "start": 193.941, "end": 194.321}, {"word": "the", "start": 194.381, "end": 194.461}, {"word": "painting", "start": 194.501, "end": 194.842}, {"word": "away", "start": 194.922, "end": 195.142}, {"word": "in", "start": 195.203, "end": 195.243}, {"word": "the", "start": 195.283, "end": 195.363}, {"word": "attic.", "start": 195.463, "end": 195.783}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "That same night, the distraught Sybil kills herself.", "sentence_zh": "就在那天夜里，心烦意乱的西比尔自杀了。", "start": 196.765, "end": 200.29, "words": [{"word": "That", "start": 196.765, "end": 196.905}, {"word": "same", "start": 197.065, "end": 197.326}, {"word": "night,", "start": 197.406, "end": 197.666}, {"word": "the", "start": 198.147, "end": 198.247}, {"word": "distraught", "start": 198.287, "end": 198.848}, {"word": "Sybil", "start": 198.948, "end": 199.289}, {"word": "kills", "start": 199.429, "end": 199.729}, {"word": "herself.", "start": 199.789, "end": 200.29}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "The next day, Lord Henry puts Dorian in the picture, telling him to hide from the police after Sybil's death.", "sentence_zh": "第二天，亨利勋爵向道林说明了当前的状况，让他在西比尔死后躲避警察的追查。", "start": 201.434, "end": 207.182, "words": [{"word": "The", "start": 201.434, "end": 201.554}, {"word": "next", "start": 201.594, "end": 201.815}, {"word": "day,", "start": 201.875, "end": 202.055}, {"word": "Lord", "start": 202.115, "end": 202.395}, {"word": "Henry", "start": 202.435, "end": 202.736}, {"word": "puts", "start": 202.836, "end": 203.076}, {"word": "Dorian", "start": 203.136, "end": 203.537}, {"word": "in", "start": 203.577, "end": 203.617}, {"word": "the", "start": 203.657, "end": 203.717}, {"word": "picture,", "start": 203.777, "end": 204.158}, {"word": "telling", "start": 204.618, "end": 204.859}, {"word": "him", "start": 204.879, "end": 204.959}, {"word": "to", "start": 204.999, "end": 205.079}, {"word": "hide", "start": 205.179, "end": 205.48}, {"word": "from", "start": 205.54, "end": 205.68}, {"word": "the", "start": 205.7, "end": 205.76}, {"word": "police", "start": 205.82, "end": 206.181}, {"word": "after", "start": 206.321, "end": 206.481}, {"word": "Sybil's", "start": 206.541, "end": 206.902}, {"word": "death.", "start": 206.942, "end": 207.182}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "But when Basil visits, he is shocked to see how unconcerned Dorian appears about Sybil's suicide.", "sentence_zh": "但当巴兹尔来访时，他震惊地发现道林对西比尔的自杀竟然表现得如此漠不关心。", "start": 208.043, "end": 214.612, "words": [{"word": "But", "start": 208.043, "end": 208.143}, {"word": "when", "start": 208.203, "end": 208.344}, {"word": "Basil", "start": 208.424, "end": 208.824}, {"word": "visits,", "start": 208.864, "end": 209.245}, {"word": "he", "start": 209.886, "end": 210.046}, {"word": "is", "start": 210.126, "end": 210.206}, {"word": "shocked", "start": 210.306, "end": 210.607}, {"word": "to", "start": 210.647, "end": 210.727}, {"word": "see", "start": 210.787, "end": 210.967}, {"word": "how", "start": 211.007, "end": 211.187}, {"word": "unconcerned", "start": 211.408, "end": 212.229}, {"word": "Dorian", "start": 212.329, "end": 212.71}, {"word": "appears", "start": 212.77, "end": 213.17}, {"word": "about", "start": 213.27, "end": 213.511}, {"word": "Sybil's", "start": 213.611, "end": 213.951}, {"word": "suicide.", "start": 214.011, "end": 214.612}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "His old friend has totally changed.", "sentence_zh": "他的这位老朋友已经完全变了个人。", "start": 215.573, "end": 217.957, "words": [{"word": "His", "start": 215.573, "end": 215.694}, {"word": "old", "start": 215.814, "end": 215.954}, {"word": "friend", "start": 216.034, "end": 216.355}, {"word": "has", "start": 216.455, "end": 216.635}, {"word": "totally", "start": 216.915, "end": 217.396}, {"word": "changed.", "start": 217.496, "end": 217.957}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "18 years pass.", "sentence_zh": "十八年过去了。", "start": 217.977, "end": 221.001, "words": [{"word": "18", "start": 217.977, "end": 220.04}, {"word": "years", "start": 220.16, "end": 220.5}, {"word": "pass.", "start": 220.6, "end": 221.001}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "By now, Dorian's infamy has scandalised London society, and newspaper reports paint a shocking picture of his wicked exploits.", "sentence_zh": "到如今，道林的恶名已经震惊了伦敦的上流社会，报纸上的报道更是将他邪恶的行径描绘成了一幅令人震惊的画面。", "start": 222.122, "end": 231.255, "words": [{"word": "By", "start": 222.122, "end": 222.303}, {"word": "now,", "start": 222.423, "end": 222.643}, {"word": "Dorian's", "start": 222.703, "end": 223.364}, {"word": "infamy", "start": 223.484, "end": 223.905}, {"word": "has", "start": 223.965, "end": 224.125}, {"word": "scandalised", "start": 224.265, "end": 225.207}, {"word": "London", "start": 225.307, "end": 225.647}, {"word": "society,", "start": 225.687, "end": 226.248}, {"word": "and", "start": 226.609, "end": 226.689}, {"word": "newspaper", "start": 226.729, "end": 227.37}, {"word": "reports", "start": 227.41, "end": 227.83}, {"word": "paint", "start": 227.95, "end": 228.191}, {"word": "a", "start": 228.231, "end": 228.391}, {"word": "shocking", "start": 228.591, "end": 229.052}, {"word": "picture", "start": 229.132, "end": 229.513}, {"word": "of", "start": 229.633, "end": 229.693}, {"word": "his", "start": 229.753, "end": 229.853}, {"word": "wicked", "start": 229.893, "end": 230.374}, {"word": "exploits.", "start": 230.514, "end": 231.255}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "One day, after many years, Dorian chances to meet his old friend Basil and invites him home to view the painting.", "sentence_zh": "许多年后的某一天，道林偶然遇见了老朋友巴兹尔，并邀请他回家观看那幅画。", "start": 232.231, "end": 239.683, "words": [{"word": "One", "start": 232.231, "end": 232.471}, {"word": "day,", "start": 232.531, "end": 232.712}, {"word": "after", "start": 232.752, "end": 233.353}, {"word": "many", "start": 233.393, "end": 233.653}, {"word": "years,", "start": 233.733, "end": 234.054}, {"word": "Dorian", "start": 234.555, "end": 234.955}, {"word": "chances", "start": 235.035, "end": 235.476}, {"word": "to", "start": 235.536, "end": 235.636}, {"word": "meet", "start": 235.697, "end": 235.937}, {"word": "his", "start": 235.997, "end": 236.117}, {"word": "old", "start": 236.217, "end": 236.338}, {"word": "friend", "start": 236.418, "end": 236.658}, {"word": "Basil", "start": 236.758, "end": 237.099}, {"word": "and", "start": 237.66, "end": 237.76}, {"word": "invites", "start": 237.82, "end": 238.14}, {"word": "him", "start": 238.18, "end": 238.281}, {"word": "home", "start": 238.361, "end": 238.641}, {"word": "to", "start": 238.761, "end": 238.862}, {"word": "view", "start": 238.922, "end": 239.082}, {"word": "the", "start": 239.142, "end": 239.222}, {"word": "painting.", "start": 239.262, "end": 239.683}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "When he sees it, Basil's face is a picture.", "sentence_zh": "当巴兹尔看到画时，他脸上的表情简直精彩极了（像定格的画一样充满了惊骇）。", "start": 240.785, "end": 243.97, "words": [{"word": "When", "start": 240.785, "end": 240.905}, {"word": "he", "start": 240.965, "end": 241.065}, {"word": "sees", "start": 241.185, "end": 241.466}, {"word": "it,", "start": 241.566, "end": 241.646}, {"word": "Basil's", "start": 242.567, "end": 242.968}, {"word": "face", "start": 243.028, "end": 243.309}, {"word": "is", "start": 243.369, "end": 243.429}, {"word": "a", "start": 243.489, "end": 243.509}, {"word": "picture.", "start": 243.569, "end": 243.97}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "He's horrified.", "sentence_zh": "他吓坏了。", "start": 244.871, "end": 245.813, "words": [{"word": "He's", "start": 244.871, "end": 245.051}, {"word": "horrified.", "start": 245.192, "end": 245.813}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "The portrait is unrecognisable, the painted face and body grown old and disgusting.", "sentence_zh": "那幅肖像已经面目全非，画中的面容和身体变得苍老而令人作呕。", "start": 246.414, "end": 253.665, "words": [{"word": "The", "start": 246.414, "end": 246.514}, {"word": "portrait", "start": 246.574, "end": 247.135}, {"word": "is", "start": 247.295, "end": 247.355}, {"word": "unrecognisable,", "start": 247.575, "end": 248.597}, {"word": "the", "start": 249.198, "end": 249.298}, {"word": "painted", "start": 249.358, "end": 249.759}, {"word": "face", "start": 249.859, "end": 250.2}, {"word": "and", "start": 250.32, "end": 250.4}, {"word": "body", "start": 250.66, "end": 251.001}, {"word": "grown", "start": 251.141, "end": 251.462}, {"word": "old", "start": 251.502, "end": 252.062}, {"word": "and", "start": 252.483, "end": 252.563}, {"word": "disgusting.", "start": 252.623, "end": 253.665}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "In a rage, Dorian kills Basil with a knife and gets his friend Campbell to dispose of the body.", "sentence_zh": "在狂怒中，道林用刀杀死了巴兹尔，并找来他的朋友坎贝尔处理尸体。", "start": 263.45, "end": 269.837, "words": [{"word": "In", "start": 263.45, "end": 263.61}, {"word": "a", "start": 263.65, "end": 263.69}, {"word": "rage,", "start": 263.81, "end": 264.211}, {"word": "Dorian", "start": 264.431, "end": 264.892}, {"word": "kills", "start": 265.012, "end": 265.452}, {"word": "Basil", "start": 265.532, "end": 265.853}, {"word": "with", "start": 265.893, "end": 266.013}, {"word": "a", "start": 266.073, "end": 266.093}, {"word": "knife", "start": 266.153, "end": 266.453}, {"word": "and", "start": 266.854, "end": 266.954}, {"word": "gets", "start": 266.994, "end": 267.194}, {"word": "his", "start": 267.234, "end": 267.354}, {"word": "friend", "start": 267.474, "end": 267.815}, {"word": "Campbell", "start": 267.935, "end": 268.415}, {"word": "to", "start": 268.555, "end": 268.656}, {"word": "dispose", "start": 268.696, "end": 269.316}, {"word": "of", "start": 269.356, "end": 269.396}, {"word": "the", "start": 269.456, "end": 269.517}, {"word": "body.", "start": 269.577, "end": 269.837}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Later, the hands in the painting turn red with blood.", "sentence_zh": "后来，画中的双手被鲜血染红了。", "start": 270.778, "end": 274.702, "words": [{"word": "Later,", "start": 270.778, "end": 271.118}, {"word": "the", "start": 271.499, "end": 271.619}, {"word": "hands", "start": 271.719, "end": 272.239}, {"word": "in", "start": 272.34, "end": 272.38}, {"word": "the", "start": 272.44, "end": 272.5}, {"word": "painting", "start": 272.56, "end": 273.0}, {"word": "turn", "start": 273.1, "end": 273.441}, {"word": "red", "start": 273.661, "end": 273.941}, {"word": "with", "start": 274.101, "end": 274.242}, {"word": "blood.", "start": 274.362, "end": 274.702}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "As for Campbell, soon after he too kills himself, and Sybil's brother James also dies mysteriously.", "sentence_zh": "至于坎贝尔，不久之后他也自杀了，而西比尔的哥哥詹姆斯也离奇死亡。", "start": 275.683, "end": 283.051, "words": [{"word": "As", "start": 275.683, "end": 275.763}, {"word": "for", "start": 275.823, "end": 275.943}, {"word": "Campbell,", "start": 276.003, "end": 276.504}, {"word": "soon", "start": 277.105, "end": 277.325}, {"word": "after", "start": 277.445, "end": 277.685}, {"word": "he", "start": 277.725, "end": 277.946}, {"word": "too", "start": 278.046, "end": 278.306}, {"word": "kills", "start": 278.446, "end": 278.706}, {"word": "himself,", "start": 278.746, "end": 279.187}, {"word": "and", "start": 279.727, "end": 279.808}, {"word": "Sybil's", "start": 279.888, "end": 280.248}, {"word": "brother", "start": 280.328, "end": 280.648}, {"word": "James", "start": 280.749, "end": 281.129}, {"word": "also", "start": 281.309, "end": 281.649}, {"word": "dies", "start": 281.67, "end": 282.15}, {"word": "mysteriously.", "start": 282.25, "end": 283.051}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Dorian, meanwhile, looks as young and beautiful as ever.", "sentence_zh": "与此同时，道林依然像从前一样年轻俊美。", "start": 284.052, "end": 287.736, "words": [{"word": "Dorian,", "start": 284.052, "end": 284.573}, {"word": "meanwhile,", "start": 284.633, "end": 285.093}, {"word": "looks", "start": 285.253, "end": 285.594}, {"word": "as", "start": 285.694, "end": 285.754}, {"word": "young", "start": 285.834, "end": 286.154}, {"word": "and", "start": 286.274, "end": 286.355}, {"word": "beautiful", "start": 286.455, "end": 286.915}, {"word": "as", "start": 286.975, "end": 287.055}, {"word": "ever.", "start": 287.155, "end": 287.736}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "But looking back over his life, he reflects on all the people who died because of him.", "sentence_zh": "但回首自己的一生，他想起了所有因他而死的人。", "start": 288.374, "end": 293.607, "words": [{"word": "But", "start": 288.374, "end": 288.534}, {"word": "looking", "start": 288.595, "end": 288.895}, {"word": "back", "start": 288.955, "end": 289.196}, {"word": "over", "start": 289.276, "end": 289.417}, {"word": "his", "start": 289.477, "end": 289.597}, {"word": "life,", "start": 289.677, "end": 289.978}, {"word": "he", "start": 290.539, "end": 290.64}, {"word": "reflects", "start": 290.7, "end": 291.241}, {"word": "on", "start": 291.261, "end": 291.402}, {"word": "all", "start": 291.582, "end": 291.702}, {"word": "the", "start": 291.742, "end": 291.823}, {"word": "people", "start": 291.883, "end": 292.204}, {"word": "who", "start": 292.264, "end": 292.384}, {"word": "died", "start": 292.464, "end": 292.845}, {"word": "because", "start": 292.885, "end": 293.286}, {"word": "of", "start": 293.326, "end": 293.386}, {"word": "him.", "start": 293.447, "end": 293.607}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Sybil, Basil, Campbell, James.", "sentence_zh": "西比尔、巴兹尔、坎贝尔、詹姆斯。", "start": 294.489, "end": 297.677, "words": [{"word": "Sybil,", "start": 294.489, "end": 294.85}, {"word": "Basil,", "start": 295.271, "end": 295.712}, {"word": "Campbell,", "start": 296.173, "end": 296.735}, {"word": "James.", "start": 297.196, "end": 297.677}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Filled with remorse, he vows to change, and hopes his newfound goodness is reflected in the painting.", "sentence_zh": "他充满悔恨，发誓要改过自新，并希望自己新展现出的善良能反映在画作中。", "start": 298.92, "end": 305.657, "words": [{"word": "Filled", "start": 298.92, "end": 299.281}, {"word": "with", "start": 299.341, "end": 299.462}, {"word": "remorse,", "start": 299.482, "end": 300.003}, {"word": "he", "start": 300.183, "end": 300.304}, {"word": "vows", "start": 300.484, "end": 300.885}, {"word": "to", "start": 300.905, "end": 301.046}, {"word": "change,", "start": 301.126, "end": 301.527}, {"word": "and", "start": 302.088, "end": 302.168}, {"word": "hopes", "start": 302.269, "end": 302.609}, {"word": "his", "start": 302.69, "end": 302.83}, {"word": "newfound", "start": 302.91, "end": 303.371}, {"word": "goodness", "start": 303.452, "end": 303.873}, {"word": "is", "start": 304.033, "end": 304.093}, {"word": "reflected", "start": 304.173, "end": 304.795}, {"word": "in", "start": 304.875, "end": 304.915}, {"word": "the", "start": 304.955, "end": 305.015}, {"word": "painting.", "start": 305.076, "end": 305.657}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "But the portrait appears more grotesque than ever.", "sentence_zh": "但那幅肖像看起来却比以往任何时候都要怪异可憎。", "start": 306.515, "end": 309.44, "words": [{"word": "But", "start": 306.515, "end": 306.615}, {"word": "the", "start": 306.655, "end": 306.735}, {"word": "portrait", "start": 306.795, "end": 307.236}, {"word": "appears", "start": 307.356, "end": 307.697}, {"word": "more", "start": 307.737, "end": 308.058}, {"word": "grotesque", "start": 308.138, "end": 308.819}, {"word": "than", "start": 308.879, "end": 309.039}, {"word": "ever.", "start": 309.059, "end": 309.44}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Haunted, Dorian takes a knife and stabs the painting.", "sentence_zh": "饱受折磨的道林拿起一把刀，刺向了那幅画。", "start": 310.402, "end": 314.108, "words": [{"word": "Haunted,", "start": 310.402, "end": 310.943}, {"word": "Dorian", "start": 311.363, "end": 311.784}, {"word": "takes", "start": 311.864, "end": 312.165}, {"word": "a", "start": 312.245, "end": 312.265}, {"word": "knife", "start": 312.325, "end": 312.586}, {"word": "and", "start": 312.766, "end": 312.866}, {"word": "stabs", "start": 313.066, "end": 313.527}, {"word": "the", "start": 313.547, "end": 313.667}, {"word": "painting.", "start": 313.707, "end": 314.108}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "He falls to the floor dead, the knife piercing his own heart, his face and body now grown old and ugly.", "sentence_zh": "他倒在地上死去了，刀子刺穿了他自己的心脏，而他的脸庞和身体此刻已经变得苍老而丑陋。", "start": 315.11, "end": 323.464, "words": [{"word": "He", "start": 315.11, "end": 315.23}, {"word": "falls", "start": 315.37, "end": 315.731}, {"word": "to", "start": 315.811, "end": 315.851}, {"word": "the", "start": 315.911, "end": 315.991}, {"word": "floor", "start": 316.052, "end": 316.332}, {"word": "dead,", "start": 316.432, "end": 316.713}, {"word": "the", "start": 317.033, "end": 317.133}, {"word": "knife", "start": 317.193, "end": 317.514}, {"word": "piercing", "start": 317.754, "end": 318.235}, {"word": "his", "start": 318.255, "end": 318.436}, {"word": "own", "start": 318.736, "end": 318.896}, {"word": "heart,", "start": 319.037, "end": 319.397}, {"word": "his", "start": 319.998, "end": 320.139}, {"word": "face", "start": 320.259, "end": 320.579}, {"word": "and", "start": 320.9, "end": 320.98}, {"word": "body", "start": 321.02, "end": 321.401}, {"word": "now", "start": 321.521, "end": 321.721}, {"word": "grown", "start": 321.801, "end": 322.142}, {"word": "old", "start": 322.182, "end": 322.723}, {"word": "and", "start": 322.763, "end": 322.963}, {"word": "ugly.", "start": 323.184, "end": 323.464}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "The painting, however, shows the picture of a handsome man, young and beautiful once again.", "sentence_zh": "然而，那幅画却变回了一个英俊男子的画像，再一次变得年轻而美丽。", "start": 324.586, "end": 331.358, "words": [{"word": "The", "start": 324.586, "end": 324.707}, {"word": "painting,", "start": 324.767, "end": 325.288}, {"word": "however,", "start": 325.448, "end": 325.828}, {"word": "shows", "start": 326.409, "end": 326.69}, {"word": "the", "start": 326.71, "end": 326.83}, {"word": "picture", "start": 326.87, "end": 327.271}, {"word": "of", "start": 327.531, "end": 327.592}, {"word": "a", "start": 327.672, "end": 327.692}, {"word": "handsome", "start": 327.752, "end": 328.173}, {"word": "man,", "start": 328.233, "end": 328.513}, {"word": "young", "start": 329.214, "end": 329.555}, {"word": "and", "start": 329.896, "end": 329.976}, {"word": "beautiful", "start": 330.016, "end": 330.557}, {"word": "once", "start": 330.737, "end": 330.897}, {"word": "again.", "start": 330.977, "end": 331.358}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "I hope you enjoyed this story despite the unhappy ending, and you'll join me again for another story very soon.", "sentence_zh": "希望你能喜欢这个故事，尽管它的结局并不完美。也期待你很快能再来听我讲下一个故事。", "start": 332.772, "end": 349.11, "words": [{"word": "I", "start": 332.772, "end": 332.952}, {"word": "hope", "start": 332.972, "end": 333.093}, {"word": "you", "start": 333.133, "end": 333.253}, {"word": "enjoyed", "start": 333.293, "end": 333.594}, {"word": "this", "start": 333.654, "end": 333.774}, {"word": "story", "start": 333.814, "end": 334.135}, {"word": "despite", "start": 334.155, "end": 334.757}, {"word": "the", "start": 334.797, "end": 334.917}, {"word": "unhappy", "start": 335.117, "end": 335.619}, {"word": "ending,", "start": 335.779, "end": 336.08}, {"word": "and", "start": 336.621, "end": 336.721}, {"word": "you'll", "start": 336.761, "end": 337.002}, {"word": "join", "start": 337.062, "end": 337.283}, {"word": "me", "start": 337.343, "end": 337.403}, {"word": "again", "start": 337.443, "end": 337.724}, {"word": "for", "start": 337.764, "end": 337.944}, {"word": "another", "start": 338.004, "end": 338.265}, {"word": "story", "start": 338.325, "end": 338.646}, {"word": "very", "start": 338.686, "end": 339.167}, {"word": "soon.", "start": 339.267, "end": 349.11}]}];
+    const bgTimeline = [{"end": 32.228, "bg": "story3-1.png"}, {"end": 54.487, "bg": "story3-2.png"}, {"end": 74.399, "bg": "story3-3.png"}, {"end": 123.252, "bg": "story3-4.png"}, {"end": 158.497, "bg": "story3-5.png"}, {"end": 183.986, "bg": "story3-6.png"}, {"end": 217.97, "bg": "story3-7.png"}, {"end": 232.231, "bg": "story3-8.png"}, {"end": 270.77, "bg": "story3-9.png"}, {"end": 288.374, "bg": "story3-10.png"}, {"end": 310.402, "bg": "story3-11.png"}, {"end": 349.11, "bg": "story3-12.png"}];
+
+    const audio = document.getElementById('audioPlayer');
+    const bgA = document.getElementById('bgA');
+    const bgB = document.getElementById('bgB');
+    const textContainer = document.getElementById('textContainer');
+    const englishArea = document.getElementById('englishArea');
+    const chineseArea = document.getElementById('chineseArea');
+    const timerText = document.getElementById('timerText');
+    const avatarEl = document.getElementById('avatarEl');
+    const waveContainer = document.getElementById('waveContainer');
+    const headerContainer = document.getElementById('headerContainer');
+
+    let processedBlocks = []; 
+    let currentBlockIndex = -1;
+    let currentBgPath = "";
+    let isUsingA = true;
+    let currentFontSize = 70; 
+    const WAVE_BAR_COUNT = 30;
+
+    function segmentData(data) {
+        const WORD_LIMIT = 20;
+        let blocks = [];
+        data.forEach(item => {
+            let words = item.words || [];
+            if (words.length <= WORD_LIMIT) {
+                blocks.push({...item});
+            } else {
+                let startIdx = 0;
+                while (startIdx < words.length) {
+                    let takeCount = Math.min(WORD_LIMIT, words.length - startIdx);
+                    if (startIdx + takeCount < words.length) {
+                        for (let j = startIdx + takeCount - 1; j > startIdx + 5; j--) {
+                            if (/[.,!?;]/.test(words[j].word)) { takeCount = j - startIdx + 1; break; }
+                        }
+                    }
+                    let chunk = words.slice(startIdx, startIdx + takeCount);
+                    blocks.push({
+                        speaker: item.speaker,
+                        start: chunk[0].start,
+                        end: chunk[chunk.length - 1].end,
+                        words: chunk,
+                        sentence_zh: item.sentence_zh
+                    });
+                    startIdx += takeCount;
+                }
+            }
+        });
+        return blocks;
+    }
+
+    function init() {
+        processedBlocks = segmentData(transcriptData);
+        waveContainer.innerHTML = '';
+        const h = [30, 50, 80, 60, 40, 70, 90, 100, 80, 50, 40, 60, 80, 90, 70, 50, 30, 40, 60, 80, 100, 90, 70, 50, 40, 60, 80, 60, 40, 30];
+        for(let i=0; i<WAVE_BAR_COUNT; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'wave-bar';
+            bar.style.height = h[i % h.length] + '%';
+            waveContainer.appendChild(bar);
+        }
+        if (bgTimeline && bgTimeline.length > 0) { currentBgPath = bgTimeline[0].bg; bgA.src = currentBgPath; }
+        updateScale();
+        audio.addEventListener('loadedmetadata', () => { timerText.innerText = formatTime(audio.duration); });
+    }
+
+    function updateScale() {
+        const scale = document.getElementById('stageScaler').offsetWidth / 1080;
+        document.getElementById('stageArea').style.transform = `scale(${scale})`;
+    }
+    window.addEventListener('resize', updateScale);
+
+    function handleBackground(t) {
+        if (!bgTimeline || bgTimeline.length === 0) return;
+        let targetBg = bgTimeline[0].bg;
+        for (let i = 0; i < bgTimeline.length; i++) {
+            if (t < bgTimeline[i].end) { targetBg = bgTimeline[i].bg; break; }
+            if (i === bgTimeline.length - 1) targetBg = bgTimeline[i].bg;
+        }
+        if (targetBg !== currentBgPath) {
+            currentBgPath = targetBg;
+            const next = isUsingA ? bgB : bgA; const curr = isUsingA ? bgA : bgB;
+            next.src = targetBg; next.onload = () => { next.classList.add('active'); curr.classList.remove('active'); isUsingA = !isUsingA; };
+        }
+    }
+
+    function renderLoop() {
+        if (!audio.paused) {
+            const t = audio.currentTime;
+            handleBackground(t);
+            updateTimeline(t);
+            const pct = t / audio.duration;
+            const activeIdx = Math.floor(pct * WAVE_BAR_COUNT);
+            document.querySelectorAll('.wave-bar').forEach((b, i) => i <= activeIdx ? b.classList.add('active') : b.classList.remove('active'));
+            timerText.innerText = "-" + formatTime(audio.duration - t);
+            requestAnimationFrame(renderLoop);
+        }
+    }
+
+    function updateTimeline(t) {
+        let activeIdx = -1;
+        for (let i = 0; i < processedBlocks.length; i++) {
+            if (t >= processedBlocks[i].start && t < processedBlocks[i].end + 0.1) { activeIdx = i; break; }
+        }
+        if (activeIdx !== -1 && activeIdx !== currentBlockIndex) {
+            currentBlockIndex = activeIdx;
+            textContainer.classList.remove('visible');
+            setTimeout(() => { renderBlock(activeIdx); textContainer.classList.add('visible'); }, 50);
+        }
+        if (currentBlockIndex !== -1) {
+            const spans = englishArea.querySelectorAll('.word');
+            spans.forEach(span => {
+                const s = parseFloat(span.dataset.start), e = parseFloat(span.dataset.end);
+                if (t >= s && t < e) span.classList.add('active'); else span.classList.remove('active');
+            });
+        }
+    }
+
+    function renderBlock(index) {
+        const block = processedBlocks[index];
+        englishArea.innerHTML = '';
+        block.words.forEach(w => {
+            const span = document.createElement('span');
+            span.className = 'word'; span.innerText = w.word;
+            span.dataset.start = w.start; span.dataset.end = w.end;
+            englishArea.appendChild(span);
+            englishArea.appendChild(document.createTextNode(" "));
+        });
+        chineseArea.innerText = block.sentence_zh || "";
+        
+        // 📍 修正后的 Speaker 切换逻辑
+        const lower = (block.speaker || "").toLowerCase();
+        headerContainer.classList.remove('speaker-state-female', 'speaker-state-male');
+        
+        // 排除包含关系：如果是 male 且不包含 female，则切换为 male 形象
+        if (lower.includes('male') && !lower.includes('female')) {
+            headerContainer.classList.add('speaker-state-male');
+            avatarEl.style.backgroundImage = "url('male.png')";
+        } else {
+            // 其余所有情况（包含 female 或 tim 等默认）均显示为 female 形象
+            headerContainer.classList.add('speaker-state-female');
+            avatarEl.style.backgroundImage = "url('female.png')";
+        }
+    }
+
+    function formatTime(s) { const m = Math.floor(s/60); const sec = Math.floor(s%60); return `${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`; }
+
+    document.getElementById('playBtn').addEventListener('click', () => { if(audio.paused) { audio.play(); renderLoop(); } else { audio.pause(); } });
+    document.getElementById('mobileRecordBtn').addEventListener('click', () => {
+        document.body.classList.add('recording-mode');
+        const scale = window.innerWidth / 1080;
+        document.getElementById('stageArea').style.transform = `scale(${scale})`;
+        setTimeout(() => { audio.currentTime = 0; audio.play(); renderLoop(); }, 5000);
+    });
+
+    window.adjustFontSize = function(delta) { 
+        currentFontSize += delta; 
+        englishArea.style.fontSize = currentFontSize + "px"; 
+        chineseArea.style.fontSize = (currentFontSize - 30) + "px"; 
+    }
+    
+    init();
+</script>
+</body>
+</html>
