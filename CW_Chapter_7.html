@@ -1,0 +1,361 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>CW_Chapter_7</title>
+<style>
+    :root {
+        --highlight-gold: #FFD700;
+        --silver-wave: rgba(255, 255, 255, 0.85);
+        --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Helvetica, sans-serif;
+        --font-content: "New York", "Times New Roman", "Songti SC", serif;
+        --header-height: 180px; 
+        
+        --text-faint: rgba(255, 255, 255, 0.15);
+        --text-active: rgba(255, 255, 255, 0.95);
+    }
+    
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+
+    html, body {
+        margin: 0; padding: 0; width: 100%; height: 100%;
+        background-color: #000; overflow: hidden;
+        font-family: var(--font-ui); color: white;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* 背景层 */
+    .bg-container { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+    #bg-layer {
+        position: absolute; inset: 0;
+        background-image: url('bg.png');
+        background-size: cover; background-position: center;
+        filter: blur(35px); transform: scale(1.1);
+    }
+    .mask-dimmer { position: absolute; inset: 0; background: rgba(0,0,0,0.5); z-index: 1; mix-blend-mode: multiply; }
+    .mask-vignette {
+        position: absolute; inset: 0; z-index: 2;
+        background: radial-gradient(circle at 50% 40%, transparent 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0.95) 100%);
+    }
+    .mask-anchor {
+        position: absolute; bottom: 0; left: 0; right: 0; height: 60%; z-index: 3;
+        background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 30%, transparent 100%);
+    }
+
+    /* 布局 */
+    .app-viewport { position: absolute; inset: 0; z-index: 10; display: flex; flex-direction: column; }
+
+    /* 头部区域 */
+    .header-section {
+        position: absolute; top: 0; left: 0; right: 0;
+        padding-top: max(20px, env(safe-area-inset-top));
+        padding-left: 24px; padding-right: 24px;
+        height: var(--header-height);
+        display: flex; gap: 20px; align-items: flex-start;
+        z-index: 20;
+        background: linear-gradient(to bottom, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 60%, transparent 100%);
+    }
+
+    #book-cover {
+        width: 86px; aspect-ratio: 2/3; border-radius: 6px; flex-shrink: 0;
+        background-image: url('CW.jpg');
+        background-size: cover; background-position: center;
+        box-shadow: 0 12px 24px rgba(0,0,0,0.6);
+        border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .meta-info { flex: 1; display: flex; flex-direction: column; padding-top: 2px; }
+    
+    .creator-pill {
+        display: inline-flex; align-items: center; align-self: flex-start;
+        background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(12px);
+        padding: 4px 12px 4px 4px; border-radius: 20px;
+        border: 1px solid rgba(255,255,255,0.2); margin-bottom: 8px;
+    }
+    .creator-avatar { 
+        width: 22px; height: 22px; border-radius: 50%; 
+        background-image: url('avatar.png'); 
+        background-size: cover; margin-right: 8px; 
+    }
+    .creator-name { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.9); }
+    
+    .main-title { 
+        font-size: 22px; font-weight: 700; line-height: 1.15; 
+        text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .sub-title { 
+        font-size: 13px; color: rgba(255,255,255,0.8); margin-top: 4px; 
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500;
+    }
+    .intro-text {
+        font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 6px;
+        font-family: var(--font-content); font-style: italic; letter-spacing: 0.5px;
+    }
+
+    /* --- 歌词区域 --- */
+    #lyrics-scroll-container {
+        position: absolute; inset: 0; z-index: 15;
+        overflow-y: auto; scrollbar-width: none; scroll-behavior: smooth;
+        padding-top: 50vh; padding-bottom: 50vh;
+        display: flex; flex-direction: column; align-items: center;
+        mask-image: linear-gradient(to bottom, transparent 0%, transparent 22%, black 35%, black 80%, transparent 100%);
+        -webkit-mask-image: linear-gradient(to bottom, transparent 0%, transparent 22%, black 35%, black 80%, transparent 100%);
+    }
+
+    .lyric-line {
+        width: 100%; max-width: 90%; text-align: left; padding: 12px 20px;
+        font-family: var(--font-content); 
+        font-size: 20px; line-height: 1.6; transform-origin: left center; 
+        color: var(--text-faint);
+        transition: color 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+                    transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+                    opacity 0.6s ease; 
+    }
+
+    /* 英文激活状态 */
+    .lyric-line.active {
+        font-size: 28px; font-weight: 600; 
+        color: var(--text-active);
+        text-shadow: 0 4px 15px rgba(0,0,0,0.8); 
+        margin: 24px 0; opacity: 1;
+    }
+
+    .word { position: relative; color: inherit; transition: color 0.6s ease; }
+    .word.highlight { 
+        color: var(--highlight-gold); font-style: normal; 
+        text-shadow: 0 0 20px rgba(255, 215, 0, 0.6); 
+        transition: color 0.05s linear; 
+    }
+
+    /* [新增功能] 中文翻译排版 */
+    .lyric-translation {
+        display: none; /* 默认完全隐藏 */
+    }
+    .lyric-line.active .lyric-translation {
+        display: block; /* 仅激活时显示 */
+        font-size: 18px; /* 比英文 28px 小 2 号左右 */
+        color: rgba(255, 255, 255, 0.6); /* 稍微淡一点，退居辅助位 */
+        margin-top: 10px; /* 和英文拉开一点间距 */
+        font-family: var(--font-ui); /* 中文使用无衬线系统字体最清晰 */
+        font-weight: 400;
+        line-height: 1.5;
+        text-shadow: none; /* 去掉阴影保持干净 */
+        animation: fadeInZh 0.5s ease forwards;
+    }
+    @keyframes fadeInZh {
+        from { opacity: 0; transform: translateY(-5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 底部功能区 */
+    .footer-section {
+        position: absolute; bottom: 0; left: 0; right: 0; height: 100px;
+        padding-bottom: max(20px, env(safe-area-inset-bottom));
+        padding-left: 24px; padding-right: 24px;
+        display: flex; align-items: center; justify-content: space-between;
+        z-index: 20; transition: opacity 0.5s;
+    }
+    .waveform-box { flex: 1; height: 32px; display: flex; align-items: center; gap: 4px; opacity: 0.8; }
+    .wave-bar { flex: 1; background: rgba(255,255,255,0.15); border-radius: 2px; height: 10%; transition: height 0.4s ease-in-out; min-width: 2px; }
+    .wave-bar.active { background: var(--silver-wave); box-shadow: 0 0 8px rgba(255,255,255,0.4); }
+
+    /* 全屏按钮 & 头像 Morph */
+    #btn-immersive {
+        flex-shrink: 0; width: 52px; height: 52px; border-radius: 50%;
+        background: rgba(255,255,255,0.1); backdrop-filter: blur(12px);
+        border: 1px solid rgba(255,255,255,0.25);
+        display: flex; justify-content: center; align-items: center;
+        margin-left: 24px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        position: relative; overflow: hidden; transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    #btn-immersive svg { transition: opacity 0.3s ease; opacity: 1; }
+    .immersive-avatar { position: absolute; inset: 0; background-image: url('avatar.png'); background-size: cover; background-position: center; opacity: 0; transition: opacity 0.5s ease; }
+    
+    body.immersive #btn-immersive { opacity: 1; pointer-events: none; background-color: transparent; backdrop-filter: none; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 0 15px rgba(255,255,255,0.2); transform: scale(1.1); }
+    body.immersive #btn-immersive svg { opacity: 0; }
+    body.immersive .immersive-avatar { opacity: 1; }
+    body.immersive #lyrics-scroll-container::-webkit-scrollbar { display: none; }
+</style>
+</head>
+<body>
+
+<div class="bg-container"><div id="bg-layer"></div><div class="mask-dimmer"></div><div class="mask-vignette"></div><div class="mask-anchor"></div></div>
+<div class="app-viewport">
+    <div class="header-section">
+        <div id="book-cover"></div>
+        <div class="meta-info">
+            <div class="creator-pill"><div class="creator-avatar"></div><span class="creator-name">周末播客剧场</span></div>
+            <div class="main-title">Charlotte's Web</div>
+            <div class="sub-title">夏洛的网 | 第七集</div>
+            <div class="intro-text">Wilbur liked Charlotte better...</div>
+        </div>
+    </div>
+    <div id="lyrics-scroll-container"></div>
+    <div class="footer-section">
+        <div class="waveform-box" id="waveform"></div>
+        <div id="btn-immersive">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+            <div class="immersive-avatar"></div>
+        </div>
+    </div>
+</div>
+<audio id="main-audio" src="CW_Chapter_7.mp3" preload="auto"></audio>
+
+<script>
+    const RAW_JSON_DATA = [{"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Welcome back to Charlotte's Web.", "sentence_zh": "欢迎回到《夏洛的网》。", "start": 0.031, "end": 2.154, "words": [{"word": "Welcome", "start": 0.031, "end": 0.612}, {"word": "back", "start": 0.652, "end": 0.932}, {"word": "to", "start": 1.012, "end": 1.133}, {"word": "Charlotte's", "start": 1.253, "end": 1.733}, {"word": "Web.", "start": 1.794, "end": 2.154}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "In our last episode, summer arrived at the Zuckerman farm, bringing new life and lazy warm days.", "sentence_zh": "在上一集中，夏天降临了祖克曼的农场，带来了新的生机和慵懒温暖的日子。", "start": 2.995, "end": 10.446, "words": [{"word": "In", "start": 2.995, "end": 3.055}, {"word": "our", "start": 3.136, "end": 3.216}, {"word": "last", "start": 3.276, "end": 3.556}, {"word": "episode,", "start": 3.656, "end": 4.237}, {"word": "summer", "start": 4.638, "end": 4.978}, {"word": "arrived", "start": 5.038, "end": 5.619}, {"word": "at", "start": 5.699, "end": 5.739}, {"word": "the", "start": 5.779, "end": 5.879}, {"word": "Zuckerman", "start": 5.94, "end": 6.44}, {"word": "farm,", "start": 6.48, "end": 6.881}, {"word": "bringing", "start": 7.442, "end": 7.762}, {"word": "new", "start": 7.842, "end": 8.003}, {"word": "life", "start": 8.063, "end": 8.463}, {"word": "and", "start": 8.824, "end": 8.904}, {"word": "lazy", "start": 9.024, "end": 9.505}, {"word": "warm", "start": 9.605, "end": 9.985}, {"word": "days.", "start": 10.046, "end": 10.446}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Wilbur the pig has grown perfectly comfortable in his home, admiring his new friend Charlotte's clever ways.", "sentence_zh": "小猪韦伯在自己的新家里住得舒舒服服，对新朋友夏洛的聪明才智赞叹不已。", "start": 11.468, "end": 18.358, "words": [{"word": "Wilbur", "start": 11.468, "end": 11.888}, {"word": "the", "start": 11.928, "end": 11.988}, {"word": "pig", "start": 12.068, "end": 12.389}, {"word": "has", "start": 12.469, "end": 12.589}, {"word": "grown", "start": 12.629, "end": 12.89}, {"word": "perfectly", "start": 13.01, "end": 13.531}, {"word": "comfortable", "start": 13.631, "end": 14.152}, {"word": "in", "start": 14.212, "end": 14.252}, {"word": "his", "start": 14.312, "end": 14.432}, {"word": "home,", "start": 14.472, "end": 14.812}, {"word": "admiring", "start": 15.513, "end": 16.054}, {"word": "his", "start": 16.134, "end": 16.255}, {"word": "new", "start": 16.335, "end": 16.475}, {"word": "friend", "start": 16.555, "end": 16.835}, {"word": "Charlotte's", "start": 16.936, "end": 17.436}, {"word": "clever", "start": 17.536, "end": 17.877}, {"word": "ways.", "start": 17.957, "end": 18.358}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "But in a barnyard, comfort can be a very dangerous illusion.", "sentence_zh": "但在谷仓的院子里，安逸可能是一种非常危险的错觉。", "start": 19.359, "end": 23.826, "words": [{"word": "But", "start": 19.359, "end": 19.459}, {"word": "in", "start": 19.539, "end": 19.579}, {"word": "a", "start": 19.66, "end": 19.68}, {"word": "barnyard,", "start": 19.74, "end": 20.481}, {"word": "comfort", "start": 21.162, "end": 21.662}, {"word": "can", "start": 21.763, "end": 21.903}, {"word": "be", "start": 21.943, "end": 22.043}, {"word": "a", "start": 22.083, "end": 22.123}, {"word": "very", "start": 22.183, "end": 22.504}, {"word": "dangerous", "start": 22.644, "end": 23.245}, {"word": "illusion.", "start": 23.345, "end": 23.826}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "The chapter, bad news.", "sentence_zh": "本章，坏消息。", "start": 24.947, "end": 27.591, "words": [{"word": "The", "start": 24.947, "end": 25.047}, {"word": "chapter,", "start": 25.087, "end": 25.528}, {"word": "bad", "start": 26.429, "end": 26.79}, {"word": "news.", "start": 26.93, "end": 27.591}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_04", "sentence": "Wilbur liked Charlotte better and better each day.", "sentence_zh": "韦伯一天比一天更喜欢夏洛了。", "start": 28.347, "end": 30.85, "words": [{"word": "Wilbur", "start": 28.347, "end": 28.727}, {"word": "liked", "start": 28.747, "end": 28.968}, {"word": "Charlotte", "start": 29.028, "end": 29.408}, {"word": "better", "start": 29.448, "end": 29.728}, {"word": "and", "start": 29.789, "end": 29.869}, {"word": "better", "start": 29.949, "end": 30.229}, {"word": "each", "start": 30.249, "end": 30.509}, {"word": "day.", "start": 30.589, "end": 30.85}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_04", "sentence": "Her campaign against insects seemed sensible and useful.", "sentence_zh": "她消灭昆虫的行动似乎既明智又管用。", "start": 30.91, "end": 35.975, "words": [{"word": "Her", "start": 30.91, "end": 32.031}, {"word": "campaign", "start": 32.071, "end": 32.511}, {"word": "against", "start": 32.572, "end": 32.832}, {"word": "insects", "start": 32.952, "end": 33.432}, {"word": "seemed", "start": 33.873, "end": 34.153}, {"word": "sensible", "start": 34.293, "end": 34.794}, {"word": "and", "start": 35.234, "end": 35.334}, {"word": "useful.", "start": 35.595, "end": 35.975}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_04", "sentence": "Hardly anybody around the farm had a good word to say for a fly.", "sentence_zh": "农场周围几乎没有人对苍蝇有什么好话。", "start": 36.956, "end": 39.959, "words": [{"word": "Hardly", "start": 36.956, "end": 37.237}, {"word": "anybody", "start": 37.317, "end": 37.637}, {"word": "around", "start": 37.677, "end": 37.877}, {"word": "the", "start": 37.897, "end": 37.977}, {"word": "farm", "start": 38.017, "end": 38.298}, {"word": "had", "start": 38.358, "end": 38.458}, {"word": "a", "start": 38.478, "end": 38.498}, {"word": "good", "start": 38.538, "end": 38.678}, {"word": "word", "start": 38.718, "end": 38.898}, {"word": "to", "start": 38.938, "end": 38.998}, {"word": "say", "start": 39.078, "end": 39.239}, {"word": "for", "start": 39.319, "end": 39.419}, {"word": "a", "start": 39.459, "end": 39.499}, {"word": "fly.", "start": 39.579, "end": 39.959}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_04", "sentence": "Flies spent their time pestering others.", "sentence_zh": "苍蝇把时间都花在了烦扰别人上。", "start": 39.999, "end": 43.643, "words": [{"word": "Flies", "start": 39.999, "end": 41.201}, {"word": "spent", "start": 41.641, "end": 41.881}, {"word": "their", "start": 41.901, "end": 42.082}, {"word": "time", "start": 42.142, "end": 42.422}, {"word": "pestering", "start": 42.642, "end": 43.223}, {"word": "others.", "start": 43.243, "end": 43.643}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_04", "sentence": "The cows hated them.", "sentence_zh": "牛讨厌它们。", "start": 44.504, "end": 45.766, "words": [{"word": "The", "start": 44.504, "end": 44.604}, {"word": "cows", "start": 44.684, "end": 45.145}, {"word": "hated", "start": 45.265, "end": 45.585}, {"word": "them.", "start": 45.645, "end": 45.766}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_04", "sentence": "The horses detested them.", "sentence_zh": "马憎恶它们。", "start": 46.546, "end": 48.088, "words": [{"word": "The", "start": 46.546, "end": 46.667}, {"word": "horses", "start": 46.707, "end": 47.087}, {"word": "detested", "start": 47.107, "end": 47.868}, {"word": "them.", "start": 47.948, "end": 48.088}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_04", "sentence": "The sheep loathed them.", "sentence_zh": "羊厌恶它们。", "start": 48.909, "end": 50.951, "words": [{"word": "The", "start": 48.909, "end": 49.009}, {"word": "sheep", "start": 49.109, "end": 49.41}, {"word": "loathed", "start": 50.13, "end": 50.751}, {"word": "them.", "start": 50.831, "end": 50.951}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_04", "sentence": "Mr.", "sentence_zh": "祖克曼", "start": 51.892, "end": 52.192, "words": [{"word": "Mr.", "start": 51.892, "end": 52.192}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_04", "sentence": "and Mrs.", "sentence_zh": "先生和太太", "start": 52.233, "end": 52.553, "words": [{"word": "and", "start": 52.233, "end": 52.293}, {"word": "Mrs.", "start": 52.333, "end": 52.553}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_04", "sentence": "Zuckerman were always complaining about them and putting up screens.", "sentence_zh": "总是在抱怨它们，并忙着装纱窗。", "start": 52.633, "end": 57.358, "words": [{"word": "Zuckerman", "start": 52.633, "end": 53.033}, {"word": "were", "start": 53.374, "end": 53.494}, {"word": "always", "start": 53.594, "end": 53.874}, {"word": "complaining", "start": 53.934, "end": 54.495}, {"word": "about", "start": 54.555, "end": 54.795}, {"word": "them", "start": 54.835, "end": 54.955}, {"word": "and", "start": 54.995, "end": 55.556}, {"word": "putting", "start": 55.616, "end": 55.876}, {"word": "up", "start": 55.937, "end": 56.037}, {"word": "screens.", "start": 56.137, "end": 57.358}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_04", "sentence": "Wilbur admired the way Charlotte managed.", "sentence_zh": "韦伯很钦佩夏洛的处理方式。", "start": 57.541, "end": 60.045, "words": [{"word": "Wilbur", "start": 57.541, "end": 58.022}, {"word": "admired", "start": 58.102, "end": 58.563}, {"word": "the", "start": 58.603, "end": 58.683}, {"word": "way", "start": 58.743, "end": 58.963}, {"word": "Charlotte", "start": 59.084, "end": 59.484}, {"word": "managed.", "start": 59.564, "end": 60.045}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_04", "sentence": "He was particularly glad that she always put her victim to sleep before eating it.", "sentence_zh": "他特别高兴的是，她总是在吃掉猎物之前让它们先睡过去。", "start": 60.787, "end": 65.555, "words": [{"word": "He", "start": 60.787, "end": 60.867}, {"word": "was", "start": 60.907, "end": 61.007}, {"word": "particularly", "start": 61.067, "end": 61.608}, {"word": "glad", "start": 61.668, "end": 61.989}, {"word": "that", "start": 62.029, "end": 62.67}, {"word": "she", "start": 62.71, "end": 62.83}, {"word": "always", "start": 62.91, "end": 63.171}, {"word": "put", "start": 63.231, "end": 63.371}, {"word": "her", "start": 63.411, "end": 63.511}, {"word": "victim", "start": 63.571, "end": 63.852}, {"word": "to", "start": 63.912, "end": 63.992}, {"word": "sleep", "start": 64.072, "end": 64.333}, {"word": "before", "start": 64.693, "end": 65.014}, {"word": "eating", "start": 65.134, "end": 65.394}, {"word": "it.", "start": 65.475, "end": 65.555}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "It's real thoughtful of you to do that, Charlotte, he said.", "sentence_zh": "“你这么做真是太体贴了，夏洛，”他说。", "start": 66.496, "end": 69.762, "words": [{"word": "It's", "start": 66.496, "end": 66.596}, {"word": "real", "start": 66.657, "end": 66.837}, {"word": "thoughtful", "start": 66.897, "end": 67.318}, {"word": "of", "start": 67.358, "end": 67.398}, {"word": "you", "start": 67.438, "end": 67.558}, {"word": "to", "start": 67.598, "end": 67.678}, {"word": "do", "start": 67.718, "end": 67.859}, {"word": "that,", "start": 67.899, "end": 68.059}, {"word": "Charlotte,", "start": 68.119, "end": 68.5}, {"word": "he", "start": 69.341, "end": 69.441}, {"word": "said.", "start": 69.521, "end": 69.762}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_04", "sentence": "Yes.", "sentence_zh": "“是的。”", "start": 69.822, "end": 71.084, "words": [{"word": "Yes.", "start": 69.822, "end": 71.084}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_04", "sentence": "She replied in her sweet musical voice.", "sentence_zh": "她用那甜美悦耳的声音回答道。", "start": 72.627, "end": 75.371, "words": [{"word": "She", "start": 72.627, "end": 72.727}, {"word": "replied", "start": 72.787, "end": 73.288}, {"word": "in", "start": 73.308, "end": 73.428}, {"word": "her", "start": 73.528, "end": 73.648}, {"word": "sweet", "start": 73.688, "end": 74.129}, {"word": "musical", "start": 74.55, "end": 74.971}, {"word": "voice.", "start": 75.071, "end": 75.371}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_05", "sentence": "I always give them an anesthetic so they won't feel pain.", "sentence_zh": "“我总是给它们打麻醉药，这样它们就不会感到痛苦了。”", "start": 76.353, "end": 79.118, "words": [{"word": "I", "start": 76.353, "end": 76.413}, {"word": "always", "start": 76.493, "end": 76.774}, {"word": "give", "start": 76.854, "end": 76.994}, {"word": "them", "start": 77.034, "end": 77.154}, {"word": "an", "start": 77.214, "end": 77.255}, {"word": "anesthetic", "start": 77.355, "end": 77.956}, {"word": "so", "start": 78.036, "end": 78.156}, {"word": "they", "start": 78.196, "end": 78.296}, {"word": "won't", "start": 78.336, "end": 78.497}, {"word": "feel", "start": 78.557, "end": 78.737}, {"word": "pain.", "start": 78.797, "end": 79.118}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_05", "sentence": "It's a little service I throw in.", "sentence_zh": "“这是我附赠的一项小服务。”", "start": 79.158, "end": 81.642, "words": [{"word": "It's", "start": 79.158, "end": 80.079}, {"word": "a", "start": 80.119, "end": 80.139}, {"word": "little", "start": 80.18, "end": 80.36}, {"word": "service", "start": 80.42, "end": 80.781}, {"word": "I", "start": 80.861, "end": 80.901}, {"word": "throw", "start": 80.961, "end": 81.161}, {"word": "in.", "start": 81.261, "end": 81.642}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_04", "sentence": "As the days went by, Wilbur grew and grew.", "sentence_zh": "随着日子一天天过去，韦伯长得越来越大。", "start": 82.162, "end": 85.807, "words": [{"word": "As", "start": 82.162, "end": 82.282}, {"word": "the", "start": 82.342, "end": 82.402}, {"word": "days", "start": 82.462, "end": 82.663}, {"word": "went", "start": 82.723, "end": 82.883}, {"word": "by,", "start": 82.943, "end": 83.203}, {"word": "Wilbur", "start": 84.105, "end": 84.465}, {"word": "grew", "start": 84.505, "end": 84.806}, {"word": "and", "start": 84.826, "end": 84.886}, {"word": "grew.", "start": 85.347, "end": 85.807}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_04", "sentence": "He ate three big meals a day.", "sentence_zh": "他每天吃三顿大餐。", "start": 86.749, "end": 88.591, "words": [{"word": "He", "start": 86.749, "end": 86.829}, {"word": "ate", "start": 86.889, "end": 87.029}, {"word": "three", "start": 87.149, "end": 87.43}, {"word": "big", "start": 87.55, "end": 87.73}, {"word": "meals", "start": 87.81, "end": 88.151}, {"word": "a", "start": 88.231, "end": 88.251}, {"word": "day.", "start": 88.311, "end": 88.591}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_04", "sentence": "He spent long hours lying on his side, half asleep, dreaming pleasant dreams.", "sentence_zh": "他侧躺着度过漫长的时光，半梦半醒，做着美梦。", "start": 89.352, "end": 95.241, "words": [{"word": "He", "start": 89.352, "end": 89.432}, {"word": "spent", "start": 89.472, "end": 89.693}, {"word": "long", "start": 89.733, "end": 90.013}, {"word": "hours", "start": 90.093, "end": 90.434}, {"word": "lying", "start": 90.554, "end": 90.875}, {"word": "on", "start": 90.955, "end": 91.015}, {"word": "his", "start": 91.055, "end": 91.195}, {"word": "side,", "start": 91.255, "end": 91.656}, {"word": "half", "start": 92.196, "end": 92.437}, {"word": "asleep,", "start": 92.497, "end": 92.917}, {"word": "dreaming", "start": 93.518, "end": 94.039}, {"word": "pleasant", "start": 94.259, "end": 94.62}, {"word": "dreams.", "start": 94.68, "end": 95.241}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_04", "sentence": "He enjoyed good health and he gained a lot of weight.", "sentence_zh": "他身体健康，而且长胖了许多。", "start": 96.222, "end": 99.227, "words": [{"word": "He", "start": 96.222, "end": 96.302}, {"word": "enjoyed", "start": 96.362, "end": 96.703}, {"word": "good", "start": 96.763, "end": 96.943}, {"word": "health", "start": 96.983, "end": 97.244}, {"word": "and", "start": 98.045, "end": 98.125}, {"word": "he", "start": 98.165, "end": 98.225}, {"word": "gained", "start": 98.265, "end": 98.586}, {"word": "a", "start": 98.626, "end": 98.646}, {"word": "lot", "start": 98.706, "end": 98.826}, {"word": "of", "start": 98.866, "end": 98.906}, {"word": "weight.", "start": 98.926, "end": 99.227}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_04", "sentence": "One afternoon, when Fern was sitting on her stool, the oldest sheep walked into the barn and stopped to pay a call on Wilbur Hello, she", "sentence_zh": "一天下午，当芬恩坐在她的小板凳上时，那只最老的羊走进了谷仓，停下来和韦伯打招呼。“你好，”她", "start": 101.009, "end": 112.19, "words": [{"word": "One", "start": 101.009, "end": 101.089}, {"word": "afternoon,", "start": 101.189, "end": 101.67}, {"word": "when", "start": 101.71, "end": 102.431}, {"word": "Fern", "start": 102.511, "end": 102.852}, {"word": "was", "start": 102.892, "end": 102.992}, {"word": "sitting", "start": 103.052, "end": 103.292}, {"word": "on", "start": 103.352, "end": 103.413}, {"word": "her", "start": 103.453, "end": 103.573}, {"word": "stool,", "start": 103.633, "end": 103.973}, {"word": "the", "start": 104.634, "end": 104.734}, {"word": "oldest", "start": 104.855, "end": 105.115}, {"word": "sheep", "start": 105.195, "end": 105.455}, {"word": "walked", "start": 105.876, "end": 106.136}, {"word": "into", "start": 106.176, "end": 106.357}, {"word": "the", "start": 106.397, "end": 106.457}, {"word": "barn", "start": 106.497, "end": 106.857}, {"word": "and", "start": 107.779, "end": 107.859}, {"word": "stopped", "start": 107.939, "end": 108.239}, {"word": "to", "start": 108.259, "end": 108.32}, {"word": "pay", "start": 108.36, "end": 108.48}, {"word": "a", "start": 108.54, "end": 108.56}, {"word": "call", "start": 108.64, "end": 108.9}, {"word": "on", "start": 108.981, "end": 109.041}, {"word": "Wilbur", "start": 109.121, "end": 110.042}, {"word": "Hello,", "start": 110.208, "end": 110.849}, {"word": "she", "start": 111.95, "end": 112.19}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_03", "sentence": "said.", "sentence_zh": "说道。", "start": 112.29, "end": 112.591, "words": [{"word": "said.", "start": 112.29, "end": 112.591}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_03", "sentence": "Seems to me you're putting on weight.", "sentence_zh": "“在我看来，你长胖了。”", "start": 112.671, "end": 115.034, "words": [{"word": "Seems", "start": 112.671, "end": 113.732}, {"word": "to", "start": 113.772, "end": 113.852}, {"word": "me", "start": 113.892, "end": 113.992}, {"word": "you're", "start": 114.032, "end": 114.213}, {"word": "putting", "start": 114.233, "end": 114.473}, {"word": "on", "start": 114.593, "end": 114.673}, {"word": "weight.", "start": 114.753, "end": 115.034}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Yes, I guess I am, replied Wilbur.", "sentence_zh": "“是的，我想我是胖了，”韦伯回答道。", "start": 116.055, "end": 119.639, "words": [{"word": "Yes,", "start": 116.055, "end": 116.395}, {"word": "I", "start": 116.656, "end": 116.756}, {"word": "guess", "start": 117.036, "end": 117.276}, {"word": "I", "start": 117.376, "end": 117.436}, {"word": "am,", "start": 117.577, "end": 117.677}, {"word": "replied", "start": 118.678, "end": 119.118}, {"word": "Wilbur.", "start": 119.198, "end": 119.639}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "At my age, it's a good idea to keep gaining.", "sentence_zh": "“在我这个年纪，继续长胖是件好事。”", "start": 121.501, "end": 123.884, "words": [{"word": "At", "start": 121.501, "end": 121.581}, {"word": "my", "start": 121.641, "end": 121.822}, {"word": "age,", "start": 121.922, "end": 122.142}, {"word": "it's", "start": 122.422, "end": 122.522}, {"word": "a", "start": 122.582, "end": 122.602}, {"word": "good", "start": 122.642, "end": 122.803}, {"word": "idea", "start": 122.863, "end": 123.103}, {"word": "to", "start": 123.163, "end": 123.223}, {"word": "keep", "start": 123.263, "end": 123.463}, {"word": "gaining.", "start": 123.524, "end": 123.884}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_03", "sentence": "Just the same.", "sentence_zh": "“话虽如此。”", "start": 125.666, "end": 126.407, "words": [{"word": "Just", "start": 125.666, "end": 125.886}, {"word": "the", "start": 125.946, "end": 126.026}, {"word": "same.", "start": 126.086, "end": 126.407}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_03", "sentence": "I don't envy you, said the old sheep.", "sentence_zh": "“我可不羡慕你，”老羊说。", "start": 127.288, "end": 130.211, "words": [{"word": "I", "start": 127.288, "end": 127.348}, {"word": "don't", "start": 127.408, "end": 127.628}, {"word": "envy", "start": 127.748, "end": 127.969}, {"word": "you,", "start": 128.029, "end": 128.169}, {"word": "said", "start": 129.09, "end": 129.27}, {"word": "the", "start": 129.33, "end": 129.41}, {"word": "old", "start": 129.571, "end": 129.771}, {"word": "sheep.", "start": 129.891, "end": 130.211}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_03", "sentence": "You know why they're fattening you up, don't you?", "sentence_zh": "“你知道他们为什么要把你养肥，对吧？”", "start": 131.172, "end": 134.096, "words": [{"word": "You", "start": 131.172, "end": 131.293}, {"word": "know", "start": 131.333, "end": 131.473}, {"word": "why", "start": 131.513, "end": 131.633}, {"word": "they're", "start": 131.673, "end": 131.893}, {"word": "fattening", "start": 131.933, "end": 132.294}, {"word": "you", "start": 132.334, "end": 132.454}, {"word": "up,", "start": 132.574, "end": 132.654}, {"word": "don't", "start": 132.714, "end": 132.894}, {"word": "you?", "start": 132.954, "end": 134.096}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_03", "sentence": "No, said Wilbur.", "sentence_zh": "“不知道，”韦伯说。", "start": 134.116, "end": 136.018, "words": [{"word": "No,", "start": 134.116, "end": 134.316}, {"word": "said", "start": 135.237, "end": 135.417}, {"word": "Wilbur.", "start": 135.497, "end": 136.018}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_03", "sentence": "Well, I don't like to spread bad news.", "sentence_zh": "“嗯，我本不想散布坏消息的。”", "start": 136.839, "end": 139.422, "words": [{"word": "Well,", "start": 136.839, "end": 137.159}, {"word": "I", "start": 137.199, "end": 137.239}, {"word": "don't", "start": 137.28, "end": 137.46}, {"word": "like", "start": 137.5, "end": 137.66}, {"word": "to", "start": 137.7, "end": 137.76}, {"word": "spread", "start": 137.8, "end": 138.08}, {"word": "bad", "start": 138.141, "end": 138.421}, {"word": "news.", "start": 138.481, "end": 139.422}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_03", "sentence": "said the sheep.", "sentence_zh": "老羊说。", "start": 139.942, "end": 140.784, "words": [{"word": "said", "start": 139.942, "end": 140.243}, {"word": "the", "start": 140.303, "end": 140.383}, {"word": "sheep.", "start": 140.463, "end": 140.784}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_03", "sentence": "But they're fattening you up because they're going to kill you, that's why.", "sentence_zh": "“但他们把你养肥，是因为他们打算杀了你，这就是原因。”", "start": 141.605, "end": 144.932, "words": [{"word": "But", "start": 141.605, "end": 141.725}, {"word": "they're", "start": 141.745, "end": 141.966}, {"word": "fattening", "start": 142.026, "end": 142.467}, {"word": "you", "start": 142.527, "end": 142.647}, {"word": "up", "start": 142.807, "end": 142.888}, {"word": "because", "start": 142.948, "end": 143.208}, {"word": "they're", "start": 143.228, "end": 143.409}, {"word": "going", "start": 143.469, "end": 143.629}, {"word": "to", "start": 143.669, "end": 143.729}, {"word": "kill", "start": 143.809, "end": 144.09}, {"word": "you,", "start": 144.15, "end": 144.31}, {"word": "that's", "start": 144.37, "end": 144.631}, {"word": "why.", "start": 144.691, "end": 144.932}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_04", "sentence": "They're going to what?", "sentence_zh": "“他们打算干什么？”", "start": 147.897, "end": 148.979, "words": [{"word": "They're", "start": 147.897, "end": 148.118}, {"word": "going", "start": 148.158, "end": 148.398}, {"word": "to", "start": 148.438, "end": 148.538}, {"word": "what?", "start": 148.679, "end": 148.979}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_04", "sentence": "Screamed Wilbur.", "sentence_zh": "韦伯尖叫起来。", "start": 150.662, "end": 151.765, "words": [{"word": "Screamed", "start": 150.662, "end": 151.183}, {"word": "Wilbur.", "start": 151.284, "end": 151.765}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_04", "sentence": "Fern grew rigid on her stool.", "sentence_zh": "芬恩在小板凳上僵住了。", "start": 153.087, "end": 154.83, "words": [{"word": "Fern", "start": 153.087, "end": 153.428}, {"word": "grew", "start": 153.468, "end": 153.668}, {"word": "rigid", "start": 153.688, "end": 154.069}, {"word": "on", "start": 154.149, "end": 154.209}, {"word": "her", "start": 154.269, "end": 154.37}, {"word": "stool.", "start": 154.45, "end": 154.83}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_03", "sentence": "Kill you, turn you into smoked bacon and ham, continued the old sheep.", "sentence_zh": "“杀了你，把你变成熏培根和火腿，”老羊继续说道。", "start": 155.632, "end": 161.443, "words": [{"word": "Kill", "start": 155.632, "end": 155.892}, {"word": "you,", "start": 155.933, "end": 156.073}, {"word": "turn", "start": 156.834, "end": 157.055}, {"word": "you", "start": 157.095, "end": 157.195}, {"word": "into", "start": 157.255, "end": 157.415}, {"word": "smoked", "start": 157.475, "end": 157.796}, {"word": "bacon", "start": 157.896, "end": 158.237}, {"word": "and", "start": 158.297, "end": 158.377}, {"word": "ham,", "start": 158.457, "end": 158.878}, {"word": "continued", "start": 159.74, "end": 160.301}, {"word": "the", "start": 160.321, "end": 160.521}, {"word": "old", "start": 160.621, "end": 160.802}, {"word": "sheep.", "start": 160.902, "end": 161.443}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_03", "sentence": "Almost all young pigs get murdered by the farmer as soon as the real cold weather sets in.", "sentence_zh": "“一旦真正寒冷的天气降临，几乎所有的小猪都会被农夫杀掉。”", "start": 162.098, "end": 167.224, "words": [{"word": "Almost", "start": 162.098, "end": 162.559}, {"word": "all", "start": 162.579, "end": 162.939}, {"word": "young", "start": 163.019, "end": 163.259}, {"word": "pigs", "start": 163.32, "end": 163.64}, {"word": "get", "start": 163.68, "end": 163.86}, {"word": "murdered", "start": 163.94, "end": 164.281}, {"word": "by", "start": 164.321, "end": 164.441}, {"word": "the", "start": 164.461, "end": 164.561}, {"word": "farmer", "start": 164.621, "end": 165.002}, {"word": "as", "start": 165.062, "end": 165.122}, {"word": "soon", "start": 165.162, "end": 165.322}, {"word": "as", "start": 165.362, "end": 165.422}, {"word": "the", "start": 165.462, "end": 165.542}, {"word": "real", "start": 165.622, "end": 165.883}, {"word": "cold", "start": 165.983, "end": 166.303}, {"word": "weather", "start": 166.383, "end": 166.684}, {"word": "sets", "start": 166.744, "end": 167.004}, {"word": "in.", "start": 167.144, "end": 167.224}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_03", "sentence": "There's a regular conspiracy around here to kill you at Christmas time.", "sentence_zh": "“这附近有个惯例的阴谋，要在圣诞节前后杀了你。”", "start": 167.285, "end": 171.21, "words": [{"word": "There's", "start": 167.285, "end": 168.126}, {"word": "a", "start": 168.146, "end": 168.186}, {"word": "regular", "start": 168.246, "end": 168.606}, {"word": "conspiracy", "start": 168.666, "end": 169.347}, {"word": "around", "start": 169.407, "end": 169.648}, {"word": "here", "start": 169.688, "end": 169.808}, {"word": "to", "start": 169.848, "end": 169.908}, {"word": "kill", "start": 169.968, "end": 170.168}, {"word": "you", "start": 170.208, "end": 170.308}, {"word": "at", "start": 170.348, "end": 170.409}, {"word": "Christmas", "start": 170.469, "end": 170.869}, {"word": "time.", "start": 170.929, "end": 171.21}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_03", "sentence": "Everybody is in the plot.", "sentence_zh": "“每个人都参与了这个阴谋。”", "start": 171.87, "end": 173.252, "words": [{"word": "Everybody", "start": 171.87, "end": 172.491}, {"word": "is", "start": 172.551, "end": 172.611}, {"word": "in", "start": 172.671, "end": 172.731}, {"word": "the", "start": 172.792, "end": 172.852}, {"word": "plot.", "start": 172.912, "end": 173.252}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_03", "sentence": "Lurvie, Zuckerman, even John Arable.", "sentence_zh": "“勒维、祖克曼，甚至是约翰·阿拉贝尔。”", "start": 173.613, "end": 176.436, "words": [{"word": "Lurvie,", "start": 173.613, "end": 174.113}, {"word": "Zuckerman,", "start": 174.434, "end": 174.974}, {"word": "even", "start": 175.315, "end": 175.495}, {"word": "John", "start": 175.595, "end": 175.875}, {"word": "Arable.", "start": 175.996, "end": 176.436}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "Mr.", "sentence_zh": "阿拉贝尔", "start": 178.298, "end": 178.619, "words": [{"word": "Mr.", "start": 178.298, "end": 178.619}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "Arable?", "sentence_zh": "先生？", "start": 178.819, "end": 179.24, "words": [{"word": "Arable?", "start": 178.819, "end": 179.24}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "Sobbed Wilbur.", "sentence_zh": "韦伯抽泣着说。", "start": 180.421, "end": 181.362, "words": [{"word": "Sobbed", "start": 180.421, "end": 180.862}, {"word": "Wilbur.", "start": 180.922, "end": 181.362}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "Fern's father?", "sentence_zh": "“芬恩的父亲？”", "start": 182.404, "end": 183.465, "words": [{"word": "Fern's", "start": 182.404, "end": 182.744}, {"word": "father?", "start": 182.804, "end": 183.465}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_03", "sentence": "Certainly.", "sentence_zh": "“当然。”", "start": 184.508, "end": 185.069, "words": [{"word": "Certainly.", "start": 184.508, "end": 185.069}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_03", "sentence": "When a pig is to be butchered, everybody helps.", "sentence_zh": "“当要宰杀一头猪时，大家都会来帮忙。”", "start": 185.65, "end": 187.713, "words": [{"word": "When", "start": 185.65, "end": 185.77}, {"word": "a", "start": 185.83, "end": 185.85}, {"word": "pig", "start": 185.89, "end": 186.07}, {"word": "is", "start": 186.13, "end": 186.191}, {"word": "to", "start": 186.231, "end": 186.291}, {"word": "be", "start": 186.331, "end": 186.411}, {"word": "butchered,", "start": 186.491, "end": 186.831}, {"word": "everybody", "start": 186.912, "end": 187.352}, {"word": "helps.", "start": 187.392, "end": 187.713}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_03", "sentence": "I'm an old sheep and I see the same thing, same old business, year after year.", "sentence_zh": "“我是一只老羊了，年复一年，我看着同样的事情、同样的老把戏一再上演。”", "start": 188.434, "end": 192.961, "words": [{"word": "I'm", "start": 188.434, "end": 188.534}, {"word": "an", "start": 188.574, "end": 188.614}, {"word": "old", "start": 188.714, "end": 188.875}, {"word": "sheep", "start": 188.955, "end": 189.235}, {"word": "and", "start": 189.315, "end": 189.395}, {"word": "I", "start": 189.475, "end": 189.556}, {"word": "see", "start": 189.616, "end": 189.756}, {"word": "the", "start": 189.796, "end": 189.896}, {"word": "same", "start": 189.936, "end": 190.217}, {"word": "thing,", "start": 190.297, "end": 190.677}, {"word": "same", "start": 190.857, "end": 191.138}, {"word": "old", "start": 191.238, "end": 191.378}, {"word": "business,", "start": 191.458, "end": 191.899}, {"word": "year", "start": 191.999, "end": 192.24}, {"word": "after", "start": 192.38, "end": 192.6}, {"word": "year.", "start": 192.68, "end": 192.961}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_03", "sentence": "Arable arrives with his .22, shoots the- Stop.", "sentence_zh": "“阿拉贝尔带着他的.22口径步枪来，开枪打——停下。”", "start": 193.702, "end": 199.35, "words": [{"word": "Arable", "start": 193.702, "end": 194.082}, {"word": "arrives", "start": 194.142, "end": 194.583}, {"word": "with", "start": 194.623, "end": 194.743}, {"word": "his", "start": 194.783, "end": 194.904}, {"word": ".22,", "start": 194.924, "end": 195.284}, {"word": "shoots", "start": 196.406, "end": 196.706}, {"word": "the-", "start": 196.806, "end": 196.947}, {"word": "Stop.", "start": 198.849, "end": 199.35}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_03", "sentence": "Screamed Wilbur.", "sentence_zh": "韦伯尖叫着。", "start": 201.033, "end": 202.275, "words": [{"word": "Screamed", "start": 201.033, "end": 201.674}, {"word": "Wilbur.", "start": 201.794, "end": 202.275}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "I don't wanna die.", "sentence_zh": "“我不想死！”", "start": 203.236, "end": 204.197, "words": [{"word": "I", "start": 203.236, "end": 203.276}, {"word": "don't", "start": 203.316, "end": 203.436}, {"word": "wanna", "start": 203.476, "end": 203.757}, {"word": "die.", "start": 203.797, "end": 204.197}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_04", "sentence": "Save me somebody, save me.", "sentence_zh": "“谁来救救我，救救我！”", "start": 204.237, "end": 206.701, "words": [{"word": "Save", "start": 204.237, "end": 205.039}, {"word": "me", "start": 205.119, "end": 205.219}, {"word": "somebody,", "start": 205.299, "end": 205.76}, {"word": "save", "start": 205.8, "end": 206.461}, {"word": "me.", "start": 206.521, "end": 206.701}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_04", "sentence": "Fern was just about to jump up when a voice was heard.", "sentence_zh": "芬恩正要跳起来，这时传来了一个声音。", "start": 206.741, "end": 210.847, "words": [{"word": "Fern", "start": 206.741, "end": 206.821}, {"word": "was", "start": 208.103, "end": 208.203}, {"word": "just", "start": 208.263, "end": 208.424}, {"word": "about", "start": 208.484, "end": 208.664}, {"word": "to", "start": 208.704, "end": 208.764}, {"word": "jump", "start": 208.824, "end": 209.045}, {"word": "up", "start": 209.145, "end": 209.205}, {"word": "when", "start": 209.646, "end": 209.766}, {"word": "a", "start": 209.826, "end": 209.846}, {"word": "voice", "start": 209.926, "end": 210.226}, {"word": "was", "start": 210.306, "end": 210.427}, {"word": "heard.", "start": 210.507, "end": 210.847}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_05", "sentence": "Be quiet, Wilbur.", "sentence_zh": "“安静点，韦伯。”", "start": 211.809, "end": 213.351, "words": [{"word": "Be", "start": 211.809, "end": 211.929}, {"word": "quiet,", "start": 212.069, "end": 212.59}, {"word": "Wilbur.", "start": 212.67, "end": 213.351}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_04", "sentence": "said Charlotte, who had been listening to this awful conversation.", "sentence_zh": "夏洛说道，她一直在倾听这场可怕的对话。", "start": 213.972, "end": 217.857, "words": [{"word": "said", "start": 213.972, "end": 214.272}, {"word": "Charlotte,", "start": 214.393, "end": 214.833}, {"word": "who", "start": 215.514, "end": 215.614}, {"word": "had", "start": 215.654, "end": 215.754}, {"word": "been", "start": 215.774, "end": 215.914}, {"word": "listening", "start": 215.955, "end": 216.275}, {"word": "to", "start": 216.335, "end": 216.415}, {"word": "this", "start": 216.435, "end": 216.575}, {"word": "awful", "start": 216.796, "end": 217.056}, {"word": "conversation.", "start": 217.136, "end": 217.857}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_04", "sentence": "I can't be quiet, screamed Wilbur, racing up and down.", "sentence_zh": "“我安静不下来！”韦伯尖叫着，跑来跑去。", "start": 217.877, "end": 225.066, "words": [{"word": "I", "start": 217.877, "end": 217.897}, {"word": "can't", "start": 220.14, "end": 220.42}, {"word": "be", "start": 220.48, "end": 220.6}, {"word": "quiet,", "start": 220.701, "end": 221.221}, {"word": "screamed", "start": 222.323, "end": 222.843}, {"word": "Wilbur,", "start": 222.923, "end": 223.344}, {"word": "racing", "start": 223.825, "end": 224.285}, {"word": "up", "start": 224.325, "end": 224.545}, {"word": "and", "start": 224.606, "end": 224.686}, {"word": "down.", "start": 224.746, "end": 225.066}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "I don't want to be killed.", "sentence_zh": "“我不想被杀掉。”", "start": 225.086, "end": 228.31, "words": [{"word": "I", "start": 225.086, "end": 225.106}, {"word": "don't", "start": 225.146, "end": 227.429}, {"word": "want", "start": 227.489, "end": 227.609}, {"word": "to", "start": 227.629, "end": 227.709}, {"word": "be", "start": 227.75, "end": 227.85}, {"word": "killed.", "start": 227.91, "end": 228.31}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "I don't want to die.", "sentence_zh": "“我不想死。”", "start": 228.971, "end": 229.812, "words": [{"word": "I", "start": 228.971, "end": 229.011}, {"word": "don't", "start": 229.051, "end": 229.191}, {"word": "want", "start": 229.231, "end": 229.372}, {"word": "to", "start": 229.392, "end": 229.472}, {"word": "die.", "start": 229.512, "end": 229.812}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Is it true what the old sheep says, Charlotte?", "sentence_zh": "“老羊说的是真的吗，夏洛？”", "start": 229.852, "end": 232.676, "words": [{"word": "Is", "start": 229.852, "end": 230.793}, {"word": "it", "start": 230.853, "end": 230.894}, {"word": "true", "start": 230.954, "end": 231.154}, {"word": "what", "start": 231.194, "end": 231.294}, {"word": "the", "start": 231.314, "end": 231.414}, {"word": "old", "start": 231.494, "end": 231.634}, {"word": "sheep", "start": 231.675, "end": 231.915}, {"word": "says,", "start": 231.975, "end": 232.175}, {"word": "Charlotte?", "start": 232.255, "end": 232.676}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "Is it true they are going to kill me when the cold weather comes?", "sentence_zh": "“等天气变冷的时候，他们真的要杀了我吗？”", "start": 233.337, "end": 236.14, "words": [{"word": "Is", "start": 233.337, "end": 233.417}, {"word": "it", "start": 233.457, "end": 233.497}, {"word": "true", "start": 233.577, "end": 233.797}, {"word": "they", "start": 233.837, "end": 233.997}, {"word": "are", "start": 234.038, "end": 234.138}, {"word": "going", "start": 234.178, "end": 234.398}, {"word": "to", "start": 234.458, "end": 234.538}, {"word": "kill", "start": 234.598, "end": 234.819}, {"word": "me", "start": 234.859, "end": 234.959}, {"word": "when", "start": 235.019, "end": 235.119}, {"word": "the", "start": 235.159, "end": 235.219}, {"word": "cold", "start": 235.279, "end": 235.519}, {"word": "weather", "start": 235.579, "end": 235.82}, {"word": "comes?", "start": 235.88, "end": 236.14}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_04", "sentence": "Well, said the spider, plucking thoughtfully at her web, The old sheep has been around this barn a long time.", "sentence_zh": "“嗯，”蜘蛛若有所思地拨弄着她的网说道，“老羊在这个谷仓里待了很长时间了。”", "start": 237.682, "end": 245.659, "words": [{"word": "Well,", "start": 237.682, "end": 237.963}, {"word": "said", "start": 238.984, "end": 239.144}, {"word": "the", "start": 239.204, "end": 239.284}, {"word": "spider,", "start": 239.364, "end": 239.845}, {"word": "plucking", "start": 240.406, "end": 240.746}, {"word": "thoughtfully", "start": 240.786, "end": 241.447}, {"word": "at", "start": 241.507, "end": 241.547}, {"word": "her", "start": 241.627, "end": 241.727}, {"word": "web,", "start": 241.807, "end": 242.308}, {"word": "The", "start": 242.896, "end": 243.056}, {"word": "old", "start": 243.156, "end": 243.316}, {"word": "sheep", "start": 243.437, "end": 243.677}, {"word": "has", "start": 243.737, "end": 243.857}, {"word": "been", "start": 243.897, "end": 244.017}, {"word": "around", "start": 244.077, "end": 244.297}, {"word": "this", "start": 244.337, "end": 244.498}, {"word": "barn", "start": 244.578, "end": 244.858}, {"word": "a", "start": 244.938, "end": 244.958}, {"word": "long", "start": 245.018, "end": 245.278}, {"word": "time.", "start": 245.358, "end": 245.659}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_05", "sentence": "She has seen many a spring pig come and go.", "sentence_zh": "“她见过很多春猪来了又去。”", "start": 246.339, "end": 248.642, "words": [{"word": "She", "start": 246.339, "end": 246.46}, {"word": "has", "start": 246.48, "end": 246.58}, {"word": "seen", "start": 246.62, "end": 246.82}, {"word": "many", "start": 246.9, "end": 247.12}, {"word": "a", "start": 247.2, "end": 247.22}, {"word": "spring", "start": 247.3, "end": 247.641}, {"word": "pig", "start": 247.681, "end": 247.961}, {"word": "come", "start": 248.101, "end": 248.261}, {"word": "and", "start": 248.301, "end": 248.361}, {"word": "go.", "start": 248.402, "end": 248.642}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_05", "sentence": "If she says they plan to kill you, I'm sure it's true.", "sentence_zh": "“如果她说他们计划杀你，我相信那是真的。”", "start": 248.662, "end": 252.586, "words": [{"word": "If", "start": 248.662, "end": 249.603}, {"word": "she", "start": 249.663, "end": 249.803}, {"word": "says", "start": 249.883, "end": 250.103}, {"word": "they", "start": 250.183, "end": 250.343}, {"word": "plan", "start": 250.404, "end": 250.664}, {"word": "to", "start": 250.704, "end": 250.744}, {"word": "kill", "start": 250.804, "end": 251.004}, {"word": "you,", "start": 251.044, "end": 251.204}, {"word": "I'm", "start": 251.224, "end": 251.805}, {"word": "sure", "start": 251.905, "end": 252.105}, {"word": "it's", "start": 252.165, "end": 252.285}, {"word": "true.", "start": 252.345, "end": 252.586}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_05", "sentence": "It's also the dirtiest trick I ever heard of.", "sentence_zh": "“这也是我听说过的最卑劣的勾当。”", "start": 253.447, "end": 255.929, "words": [{"word": "It's", "start": 253.447, "end": 253.587}, {"word": "also", "start": 253.727, "end": 254.027}, {"word": "the", "start": 254.067, "end": 254.227}, {"word": "dirtiest", "start": 254.347, "end": 254.828}, {"word": "trick", "start": 254.908, "end": 255.088}, {"word": "I", "start": 255.168, "end": 255.248}, {"word": "ever", "start": 255.308, "end": 255.449}, {"word": "heard", "start": 255.509, "end": 255.709}, {"word": "of.", "start": 255.849, "end": 255.929}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_05", "sentence": "What people don't think of.", "sentence_zh": "“人类还有什么想不出来的呢。”", "start": 256.39, "end": 257.551, "words": [{"word": "What", "start": 256.39, "end": 256.51}, {"word": "people", "start": 256.55, "end": 256.79}, {"word": "don't", "start": 256.83, "end": 257.01}, {"word": "think", "start": 257.07, "end": 257.29}, {"word": "of.", "start": 257.471, "end": 257.551}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "Wilbur burst into tears.", "sentence_zh": "韦伯嚎啕大哭起来。", "start": 258.452, "end": 259.893, "words": [{"word": "Wilbur", "start": 258.452, "end": 258.812}, {"word": "burst", "start": 258.872, "end": 259.152}, {"word": "into", "start": 259.212, "end": 259.393}, {"word": "tears.", "start": 259.493, "end": 259.893}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "I don't want to die.", "sentence_zh": "“我不想死。”", "start": 263.737, "end": 264.678, "words": [{"word": "I", "start": 263.737, "end": 263.777}, {"word": "don't", "start": 263.837, "end": 263.997}, {"word": "want", "start": 264.037, "end": 264.197}, {"word": "to", "start": 264.217, "end": 264.297}, {"word": "die.", "start": 264.357, "end": 264.678}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "He moaned.", "sentence_zh": "他哀号道。", "start": 264.698, "end": 266.46, "words": [{"word": "He", "start": 264.698, "end": 264.738}, {"word": "moaned.", "start": 265.939, "end": 266.46}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "I want to stay alive right here in my comfortable manure pile with all my friends.", "sentence_zh": "“我想活下来，就在我舒服的粪堆里，和我的朋友们在一起。”", "start": 268.021, "end": 272.886, "words": [{"word": "I", "start": 268.021, "end": 268.081}, {"word": "want", "start": 268.121, "end": 268.241}, {"word": "to", "start": 268.261, "end": 268.321}, {"word": "stay", "start": 268.361, "end": 268.542}, {"word": "alive", "start": 268.602, "end": 268.942}, {"word": "right", "start": 268.982, "end": 269.763}, {"word": "here", "start": 269.823, "end": 270.063}, {"word": "in", "start": 270.083, "end": 270.283}, {"word": "my", "start": 270.323, "end": 270.424}, {"word": "comfortable", "start": 270.504, "end": 270.984}, {"word": "manure", "start": 271.044, "end": 271.385}, {"word": "pile", "start": 271.445, "end": 271.745}, {"word": "with", "start": 271.785, "end": 271.905}, {"word": "all", "start": 272.045, "end": 272.185}, {"word": "my", "start": 272.225, "end": 272.345}, {"word": "friends.", "start": 272.426, "end": 272.886}]}, {"speaker": "Male", "speaker_id": "SPEAKER_01", "sentence": "I wanna breathe the beautiful air and lie in the beautiful sun.", "sentence_zh": "“我想呼吸新鲜的空气，躺在美丽的阳光下。”", "start": 273.608, "end": 277.012, "words": [{"word": "I", "start": 273.608, "end": 273.688}, {"word": "wanna", "start": 273.748, "end": 273.968}, {"word": "breathe", "start": 274.028, "end": 274.289}, {"word": "the", "start": 274.329, "end": 274.409}, {"word": "beautiful", "start": 274.469, "end": 274.869}, {"word": "air", "start": 275.05, "end": 275.19}, {"word": "and", "start": 275.23, "end": 275.55}, {"word": "lie", "start": 275.63, "end": 275.951}, {"word": "in", "start": 276.091, "end": 276.151}, {"word": "the", "start": 276.191, "end": 276.251}, {"word": "beautiful", "start": 276.311, "end": 276.692}, {"word": "sun.", "start": 276.772, "end": 277.012}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_03", "sentence": "You're certainly making a beautiful noise.", "sentence_zh": "“你制造的噪音倒真是挺‘美丽’的。”", "start": 277.813, "end": 279.675, "words": [{"word": "You're", "start": 277.813, "end": 277.993}, {"word": "certainly", "start": 278.033, "end": 278.334}, {"word": "making", "start": 278.394, "end": 278.654}, {"word": "a", "start": 278.714, "end": 278.734}, {"word": "beautiful", "start": 278.794, "end": 279.175}, {"word": "noise.", "start": 279.275, "end": 279.675}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_04", "sentence": "Snapped the old sheep.", "sentence_zh": "老羊没好气地说。", "start": 280.897, "end": 282.138, "words": [{"word": "Snapped", "start": 280.897, "end": 281.277}, {"word": "the", "start": 281.357, "end": 281.457}, {"word": "old", "start": 281.557, "end": 281.718}, {"word": "sheep.", "start": 281.858, "end": 282.138}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_04", "sentence": "I don't wanna die.", "sentence_zh": "“我不想死！”", "start": 283.94, "end": 285.001, "words": [{"word": "I", "start": 283.94, "end": 283.98}, {"word": "don't", "start": 284.02, "end": 284.18}, {"word": "wanna", "start": 284.241, "end": 284.541}, {"word": "die.", "start": 284.621, "end": 285.001}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_04", "sentence": "Screamed Wilbur, throwing himself to the ground.", "sentence_zh": "韦伯尖叫着，扑倒在地上。", "start": 285.041, "end": 288.766, "words": [{"word": "Screamed", "start": 285.041, "end": 286.563}, {"word": "Wilbur,", "start": 286.663, "end": 287.084}, {"word": "throwing", "start": 287.444, "end": 287.785}, {"word": "himself", "start": 287.845, "end": 288.145}, {"word": "to", "start": 288.205, "end": 288.285}, {"word": "the", "start": 288.305, "end": 288.365}, {"word": "ground.", "start": 288.425, "end": 288.766}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "You shall not die, said Charlotte briskly.", "sentence_zh": "“你不会死的，”夏洛轻快地说。", "start": 289.867, "end": 293.411, "words": [{"word": "You", "start": 289.867, "end": 290.047}, {"word": "shall", "start": 290.168, "end": 290.448}, {"word": "not", "start": 290.508, "end": 290.708}, {"word": "die,", "start": 290.788, "end": 291.089}, {"word": "said", "start": 292.13, "end": 292.35}, {"word": "Charlotte", "start": 292.47, "end": 292.871}, {"word": "briskly.", "start": 292.971, "end": 293.411}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "What, really?", "sentence_zh": "“什么，真的吗？”", "start": 293.451, "end": 295.794, "words": [{"word": "What,", "start": 293.451, "end": 295.133}, {"word": "really?", "start": 295.514, "end": 295.794}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "Cried Wilbur.", "sentence_zh": "韦伯大声喊道。", "start": 297.216, "end": 297.937, "words": [{"word": "Cried", "start": 297.216, "end": 297.496}, {"word": "Wilbur.", "start": 297.556, "end": 297.937}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "Who's going to save me?", "sentence_zh": "“谁会来救我？”", "start": 298.838, "end": 300.179, "words": [{"word": "Who's", "start": 298.838, "end": 299.098}, {"word": "going", "start": 299.158, "end": 299.418}, {"word": "to", "start": 299.458, "end": 299.539}, {"word": "save", "start": 299.599, "end": 299.939}, {"word": "me?", "start": 300.019, "end": 300.179}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "I am.", "sentence_zh": "“我来。”", "start": 300.199, "end": 301.641, "words": [{"word": "I", "start": 300.199, "end": 300.219}, {"word": "am.", "start": 301.441, "end": 301.641}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "said Charlotte.", "sentence_zh": "夏洛说。", "start": 303.292, "end": 304.253, "words": [{"word": "said", "start": 303.292, "end": 303.632}, {"word": "Charlotte.", "start": 303.753, "end": 304.253}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "How?", "sentence_zh": "“怎么救？”", "start": 305.174, "end": 305.514, "words": [{"word": "How?", "start": 305.174, "end": 305.514}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_02", "sentence": "asked Wilbur.", "sentence_zh": "韦伯问。", "start": 307.977, "end": 308.778, "words": [{"word": "asked", "start": 307.977, "end": 308.238}, {"word": "Wilbur.", "start": 308.298, "end": 308.778}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_05", "sentence": "That remains to be seen, but I am going to save you and I want you to quiet down immediately.", "sentence_zh": "“这还有待观察，但我一定会救你，而且我要求你立刻安静下来。”", "start": 310.28, "end": 315.325, "words": [{"word": "That", "start": 310.28, "end": 310.44}, {"word": "remains", "start": 310.48, "end": 310.8}, {"word": "to", "start": 310.84, "end": 310.921}, {"word": "be", "start": 310.961, "end": 311.041}, {"word": "seen,", "start": 311.101, "end": 311.361}, {"word": "but", "start": 311.922, "end": 312.022}, {"word": "I", "start": 312.102, "end": 312.162}, {"word": "am", "start": 312.242, "end": 312.302}, {"word": "going", "start": 312.362, "end": 312.542}, {"word": "to", "start": 312.582, "end": 312.642}, {"word": "save", "start": 312.703, "end": 312.943}, {"word": "you", "start": 312.983, "end": 313.103}, {"word": "and", "start": 313.143, "end": 313.523}, {"word": "I", "start": 313.584, "end": 313.624}, {"word": "want", "start": 313.684, "end": 313.824}, {"word": "you", "start": 313.864, "end": 313.944}, {"word": "to", "start": 313.984, "end": 314.044}, {"word": "quiet", "start": 314.104, "end": 314.424}, {"word": "down", "start": 314.485, "end": 314.705}, {"word": "immediately.", "start": 314.765, "end": 315.325}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_05", "sentence": "You're carrying on in a childish way.", "sentence_zh": "“你这样大吵大闹太幼稚了。”", "start": 315.366, "end": 318.089, "words": [{"word": "You're", "start": 315.366, "end": 316.407}, {"word": "carrying", "start": 316.427, "end": 316.827}, {"word": "on", "start": 316.987, "end": 317.067}, {"word": "in", "start": 317.127, "end": 317.188}, {"word": "a", "start": 317.228, "end": 317.268}, {"word": "childish", "start": 317.348, "end": 317.828}, {"word": "way.", "start": 317.888, "end": 318.089}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_05", "sentence": "Stop your crying.", "sentence_zh": "“别哭了。”", "start": 318.149, "end": 319.49, "words": [{"word": "Stop", "start": 318.149, "end": 318.829}, {"word": "your", "start": 318.869, "end": 319.01}, {"word": "crying.", "start": 319.05, "end": 319.49}]}, {"speaker": "Unknown", "speaker_id": "SPEAKER_05", "sentence": "I can't stand hysterics.", "sentence_zh": "“我受不了歇斯底里。”", "start": 319.81, "end": 321.212, "words": [{"word": "I", "start": 319.81, "end": 319.851}, {"word": "can't", "start": 319.911, "end": 320.131}, {"word": "stand", "start": 320.211, "end": 320.531}, {"word": "hysterics.", "start": 320.571, "end": 321.212}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "The terrible truth is finally out.", "sentence_zh": "可怕的真相终于揭晓了。", "start": 322.313, "end": 324.756, "words": [{"word": "The", "start": 322.313, "end": 322.433}, {"word": "terrible", "start": 322.554, "end": 323.074}, {"word": "truth", "start": 323.194, "end": 323.575}, {"word": "is", "start": 323.615, "end": 323.835}, {"word": "finally", "start": 323.995, "end": 324.436}, {"word": "out.", "start": 324.596, "end": 324.756}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "The Zuckerman's hospitality is nothing but a countdown to Christmas time.", "sentence_zh": "祖克曼一家的热情款待，不过是圣诞节来临前的倒计时。", "start": 325.597, "end": 331.003, "words": [{"word": "The", "start": 325.597, "end": 325.717}, {"word": "Zuckerman's", "start": 325.797, "end": 326.398}, {"word": "hospitality", "start": 326.458, "end": 327.499}, {"word": "is", "start": 327.539, "end": 328.06}, {"word": "nothing", "start": 328.2, "end": 328.58}, {"word": "but", "start": 328.66, "end": 328.781}, {"word": "a", "start": 328.841, "end": 328.881}, {"word": "countdown", "start": 329.021, "end": 329.702}, {"word": "to", "start": 329.802, "end": 329.922}, {"word": "Christmas", "start": 329.982, "end": 330.422}, {"word": "time.", "start": 330.462, "end": 331.003}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Wilbur's worst nightmare has come true.", "sentence_zh": "韦伯最可怕的噩梦成真了。", "start": 332.063, "end": 334.99, "words": [{"word": "Wilbur's", "start": 332.063, "end": 332.664}, {"word": "worst", "start": 332.805, "end": 333.106}, {"word": "nightmare", "start": 333.266, "end": 333.827}, {"word": "has", "start": 334.128, "end": 334.268}, {"word": "come", "start": 334.369, "end": 334.589}, {"word": "true.", "start": 334.689, "end": 334.99}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "But high above in the rafters, a tiny spider has made an impossible promise.", "sentence_zh": "但在高高的屋梁上，一只小小的蜘蛛许下了一个不可能的承诺。", "start": 336.073, "end": 342.508, "words": [{"word": "But", "start": 336.073, "end": 336.193}, {"word": "high", "start": 336.273, "end": 336.554}, {"word": "above", "start": 336.654, "end": 337.035}, {"word": "in", "start": 337.075, "end": 337.195}, {"word": "the", "start": 337.235, "end": 337.296}, {"word": "rafters,", "start": 337.376, "end": 337.897}, {"word": "a", "start": 338.559, "end": 338.579}, {"word": "tiny", "start": 338.699, "end": 339.1}, {"word": "spider", "start": 339.22, "end": 339.721}, {"word": "has", "start": 339.742, "end": 340.022}, {"word": "made", "start": 340.122, "end": 340.423}, {"word": "an", "start": 340.463, "end": 341.085}, {"word": "impossible", "start": 341.165, "end": 341.867}, {"word": "promise.", "start": 341.907, "end": 342.508}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "You shall not die.", "sentence_zh": "“你不会死的。”", "start": 343.751, "end": 345.375, "words": [{"word": "You", "start": 343.751, "end": 344.072}, {"word": "shall", "start": 344.413, "end": 344.673}, {"word": "not", "start": 344.734, "end": 344.914}, {"word": "die.", "start": 344.994, "end": 345.375}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "How can a creature so small save a pig from the butcher's block?", "sentence_zh": "这么小的生物，怎么能把一头猪从屠夫的砧板上救下来呢？", "start": 345.415, "end": 350.989, "words": [{"word": "How", "start": 345.415, "end": 346.859}, {"word": "can", "start": 346.919, "end": 347.039}, {"word": "a", "start": 347.099, "end": 347.119}, {"word": "creature", "start": 347.18, "end": 347.56}, {"word": "so", "start": 347.661, "end": 347.841}, {"word": "small", "start": 347.941, "end": 348.362}, {"word": "save", "start": 348.603, "end": 348.884}, {"word": "a", "start": 348.964, "end": 348.984}, {"word": "pig", "start": 349.144, "end": 349.505}, {"word": "from", "start": 349.545, "end": 349.966}, {"word": "the", "start": 349.986, "end": 350.087}, {"word": "butcher's", "start": 350.147, "end": 350.588}, {"word": "block?", "start": 350.668, "end": 350.989}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Join us next time as Charlotte begins her work.", "sentence_zh": "敬请期待下集，看夏洛如何开始她的行动。", "start": 352.312, "end": 356.923, "words": [{"word": "Join", "start": 352.312, "end": 352.573}, {"word": "us", "start": 352.653, "end": 352.753}, {"word": "next", "start": 352.853, "end": 353.054}, {"word": "time", "start": 353.114, "end": 353.415}, {"word": "as", "start": 353.455, "end": 354.217}, {"word": "Charlotte", "start": 354.377, "end": 354.858}, {"word": "begins", "start": 355.119, "end": 355.58}, {"word": "her", "start": 355.68, "end": 355.84}, {"word": "work.", "start": 355.881, "end": 356.923}]}]; 
+    let linesData = []; let currentLineId = -1; let isPlaying = false;
+    const lyricsContainer = document.getElementById('lyrics-scroll-container');
+    const audioEl = document.getElementById('main-audio');
+    const waveformContainer = document.getElementById('waveform');
+
+    // 1. 数据合并初始化 (含中文翻译)
+    function initData() {
+        if (!Array.isArray(RAW_JSON_DATA)) return;
+        linesData = [];
+        let currentGroup = { id: 0, speaker: null, words: [], start: 0, end: 0, translation: "" };
+
+        RAW_JSON_DATA.forEach((sentence) => {
+            let sentenceWords = sentence.words || (sentence.word ? [sentence] : []);
+            if (sentenceWords.length === 0) return;
+            
+            const sStart = parseFloat(sentence.start || sentenceWords[0].start);
+            const sEnd = parseFloat(sentence.end || sentenceWords[sentenceWords.length-1].end);
+            const speaker = sentence.speaker_id || sentence.speaker || "unknown";
+            const zhText = sentence.sentence_zh || ""; // 读取中文翻译
+
+            const isSameSpeaker = (currentGroup.speaker === speaker) || (currentGroup.speaker === null);
+            const newDuration = sEnd - currentGroup.start;
+            const isShortEnough = newDuration < 7.0;
+
+            if (isSameSpeaker && isShortEnough) {
+                if (currentGroup.words.length === 0) { currentGroup.start = sStart; currentGroup.speaker = speaker; }
+                currentGroup.words = currentGroup.words.concat(sentenceWords);
+                currentGroup.end = sEnd;
+                // 拼接合并后的中文翻译
+                if (zhText) {
+                    currentGroup.translation = currentGroup.translation ? currentGroup.translation + " " + zhText : zhText;
+                }
+            } else {
+                if (currentGroup.words.length > 0) linesData.push({...currentGroup});
+                currentGroup = { id: linesData.length, speaker: speaker, words: [...sentenceWords], start: sStart, end: sEnd, translation: zhText };
+            }
+        });
+        if (currentGroup.words.length > 0) linesData.push({...currentGroup});
+        renderLyrics();
+    }
+
+    // 2. 渲染 DOM
+    function renderLyrics() {
+        lyricsContainer.innerHTML = '';
+        linesData.forEach(line => {
+            const div = document.createElement('div'); 
+            div.className = 'lyric-line'; 
+            div.id = `line-${line.id}`;
+            
+            // 渲染英文单词
+            line.words.forEach(w => {
+                const span = document.createElement('span'); 
+                span.className = 'word'; 
+                span.innerText = w.word + " ";
+                span.dataset.s = parseFloat(w.start); 
+                span.dataset.e = parseFloat(w.end);
+                div.appendChild(span);
+            });
+            
+            // 渲染中文翻译块 (如果存在)
+            if (line.translation) {
+                const zhDiv = document.createElement('div');
+                zhDiv.className = 'lyric-translation';
+                zhDiv.innerText = line.translation;
+                div.appendChild(zhDiv);
+            }
+
+            lyricsContainer.appendChild(div);
+        });
+        const spacer = document.createElement('div'); spacer.style.height = "50vh"; lyricsContainer.appendChild(spacer);
+    }
+
+    // 3. 核心 60帧 同步渲染
+    function renderLoop() {
+        if (!isPlaying) return;
+        const now = audioEl.currentTime;
+        syncLyrics(now);
+        if (Math.random() > 0.7) updateWaveform(); 
+        requestAnimationFrame(renderLoop);
+    }
+
+    function syncLyrics(time) {
+        const activeLine = linesData.find(l => time >= l.start && time < l.end + 0.2);
+        
+        // 切换行状态
+        if (activeLine && activeLine.id !== currentLineId) {
+            if (currentLineId !== -1) {
+                const old = document.getElementById(`line-${currentLineId}`);
+                if (old) { 
+                    old.classList.remove('active'); 
+                    old.querySelectorAll('.word').forEach(w => w.classList.remove('highlight')); 
+                }
+            }
+            currentLineId = activeLine.id;
+            const el = document.getElementById(`line-${activeLine.id}`);
+            if (el) { el.classList.add('active'); scrollToCenter(el); }
+        }
+
+        // 单词精确高亮
+        if (currentLineId !== -1) {
+            const lineEl = document.getElementById(`line-${currentLineId}`);
+            if (lineEl) {
+                // 使用 getElementsByClassName 避免选中中文翻译 div 中的元素
+                const spans = lineEl.getElementsByClassName('word');
+                for (let i = 0; i < spans.length; i++) {
+                    const span = spans[i];
+                    const s = parseFloat(span.dataset.s);
+                    const e = parseFloat(span.dataset.e);
+                    if (time >= s && time < e) span.classList.add('highlight');
+                    else span.classList.remove('highlight');
+                }
+            }
+        }
+    }
+
+    function scrollToCenter(el) {
+        // 利用 scroll 偏移量将元素强制居中，由于我们有中文行撑高 el.offsetHeight，因此居中计算极其精确
+        const target = el.offsetTop + el.offsetHeight / 2 - window.innerHeight / 2;
+        lyricsContainer.scrollTo({ top: target, behavior: 'smooth' });
+    }
+
+    // 波形逻辑
+    for(let i=0; i<40; i++) { let b = document.createElement('div'); b.className='wave-bar'; waveformContainer.appendChild(b); }
+    function updateWaveform() {
+        const bars = waveformContainer.children;
+        for (let i = 0; i < bars.length; i++) {
+            let h = 15 + Math.random() * 50; 
+            bars[i].style.height = h + '%';
+            if(h > 40) bars[i].classList.add('active'); else bars[i].classList.remove('active');
+        }
+    }
+
+    // 事件监听
+    audioEl.addEventListener('play', () => { isPlaying = true; renderLoop(); });
+    audioEl.addEventListener('pause', () => { isPlaying = false; });
+    audioEl.addEventListener('ended', () => { isPlaying = false; });
+
+    document.getElementById('btn-immersive').onclick = () => {
+        const el = document.documentElement;
+        if(el.requestFullscreen) el.requestFullscreen().catch(()=>{});
+        document.body.classList.add('immersive');
+        
+        // 5秒后自动播放
+        setTimeout(() => {
+            audioEl.currentTime = 0; 
+            audioEl.play().catch(e => console.error(e));
+        }, 5000);
+    };
+
+    initData();
+</script>
+</body>
+</html>
