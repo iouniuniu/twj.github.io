@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Shorts Pro - Custom Background Edition</title>
+    <style>
+        :root {
+            --word-active-color: #ccff00; 
+            --female-color: #ec4899; 
+            --male-color: #2dd4bf;   
+            --font-stack: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            margin: 0; padding: 0; background-color: #000;
+            font-family: var(--font-stack);
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; color: white; user-select: none;
+            overflow-x: hidden; overflow-y: auto; 
+        }
+
+        #stageScaler {
+            margin-top: 20px; width: 90vw; max-width: 450px; 
+            aspect-ratio: 9 / 16; display: flex; align-items: center;
+            justify-content: center; position: relative; z-index: 10;
+        }
+
+        #stageArea {
+            width: 1080px; height: 1920px;
+            position: absolute; 
+            background-image: url('{{BG_SRC}}'); /* 默认由 Python 填入，或手动选择 */
+            background-size: cover; background-position: center;
+            overflow: hidden; box-shadow: 0 10px 50px rgba(0,0,0,0.8);
+            transform-origin: center center;
+        }
+
+        .overlay-layer {
+            position: absolute; inset: 0;
+            background: rgba(0, 0, 0, 0.3); 
+            z-index: 1;
+        }
+
+        /* 顶部 Header */
+        .speaker-header {
+            position: absolute; top: 90px; left: 90px; right: 90px;
+            z-index: 5; display: flex; align-items: center;
+            justify-content: space-between; isolation: isolate;
+        }
+
+        .speaker-info { display: flex; align-items: center; gap: 25px; flex-shrink: 0; }
+        
+        .avatar {
+            width: 75px; height: 75px; border-radius: 50%;
+            background-size: cover; background-position: center;
+            border: 6px solid rgba(255,255,255,0.8);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            background-image: url('female.png'); /* 默认 Female */
+        }
+
+        .speaker-name {
+            font-size: 45px; font-weight: 900; text-transform: uppercase;
+            letter-spacing: 2px; color: #fff; mix-blend-mode: exclusion;
+        }
+
+        .speaker-state-female .avatar { border-color: var(--female-color); box-shadow: 0 0 20px var(--female-color); }
+        .speaker-state-male .avatar { border-color: var(--male-color); box-shadow: 0 0 20px var(--male-color); }
+
+        .progress-indicator { display: flex; align-items: center; justify-content: flex-end; width: 520px; }
+        #timerText { font-size: 32px; font-weight: 700; color: #fff; mix-blend-mode: exclusion; font-family: monospace; }
+        
+        .wave-container { 
+            display: flex; gap: 6px; height: 60px; margin-left: 25px; 
+            align-items: center; mix-blend-mode: exclusion;
+        }
+        .wave-bar { width: 5px; background: rgba(255,255,255,0.4); border-radius: 3px; transition: background-color 0.2s; }
+        .wave-bar.active { background: #fff; }
+
+        /* === 文字区域：同步顶部 240px 位置 === */
+        .text-block {
+            position: absolute;
+            top: 240px; 
+            left: 0; width: 100%;
+            padding: 0 100px; box-sizing: border-box;
+            z-index: 2;
+            display: flex; flex-direction: column; gap: 35px;
+            opacity: 0; transform: translateY(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .text-block.visible { opacity: 1; transform: translateY(0); }
+
+        .english-content {
+            font-size: 70px; 
+            line-height: 1.45; font-weight: 800;
+            text-align: left; color: #ffffff;
+            text-shadow: 0 4px 15px rgba(0,0,0,0.8), 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .chinese-content {
+            font-size: 40px; 
+            line-height: 1.5; font-weight: 500;
+            text-align: left; color: rgba(255, 255, 255, 0.6);
+            mix-blend-mode: exclusion;
+        }
+
+        .word { display: inline; transition: color 0.15s ease; }
+        .word.active { color: var(--word-active-color) !important; text-shadow: 0 0 15px rgba(204,255,0,0.6); }
+
+        /* 面板控制 */
+        body.recording-mode .controls-panel { display: none !important; }
+        body.recording-mode #stageScaler { position: fixed; inset: 0; width: 100vw; height: 100vh; max-width: none; margin: 0; }
+        
+        .controls-panel {
+            padding: 30px; display: flex; gap: 12px; flex-wrap: wrap;
+            justify-content: center; max-width: 500px; z-index: 20;
+            background: #121212; width: 100%; box-sizing: border-box;
+        }
+        .ctrl-btn {
+            padding: 12px 24px; background: #222; color: #fff;
+            border: 1px solid #444; border-radius: 12px; cursor: pointer;
+            font-size: 14px; font-weight: 600;
+        }
+        .record-btn { background: #ef4444; border: none; }
+    </style>
+</head>
+<body class="speaker-state-female">
+
+<div id="stageScaler">
+    <div id="stageArea">
+        <div class="overlay-layer"></div>
+
+        <div id="headerContainer" class="speaker-header speaker-state-female">
+            <div class="speaker-info">
+                <div id="avatarEl" class="avatar"></div>
+                <div id="nameEl" class="speaker-name">周末英语剧场</div>
+            </div>
+            <div class="progress-indicator">
+                <span id="timerText">00:00</span>
+                <div id="waveContainer" class="wave-container"></div>
+            </div>
+        </div>
+
+        <div id="textContainer" class="text-block">
+            <div id="englishArea" class="english-content"></div>
+            <div id="chineseArea" class="chinese-content"></div>
+        </div>
+    </div>
+</div>
+
+<div class="controls-panel">
+    <input type="file" id="bgInput" style="display:none;" accept="image/*">
+    <button class="ctrl-btn" onclick="document.getElementById('bgInput').click()">🖼️ 换背景</button>
+    <button class="ctrl-btn" onclick="toggleColor()">🎨 换颜色</button>
+    <button class="ctrl-btn" onclick="adjustFontSize(5)">A+</button>
+    <button class="ctrl-btn" onclick="adjustFontSize(-5)">A-</button>
+    <button class="ctrl-btn" id="playBtn">▶️ 播放预览</button>
+    <button class="ctrl-btn record-btn" id="mobileRecordBtn">📱 全屏录制</button>
+</div>
+
+<audio id="audioPlayer">
+    <source src="story-5.m4a" type="audio/mp4">
+</audio>
+
+<script>
+    const transcriptData = [{"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Hello, my name's Tim.", "sentence_zh": "大家好，我是蒂姆。", "start": 8.249, "end": 10.953, "words": [{"word": "Hello,", "start": 8.249, "end": 9.972}, {"word": "my", "start": 10.152, "end": 10.272}, {"word": "name's", "start": 10.312, "end": 10.573}, {"word": "Tim.", "start": 10.653, "end": 10.953}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Our story today is one of the first ghost stories ever written.", "sentence_zh": "我们今天的故事是有史以来最早的鬼故事之一。", "start": 11.474, "end": 15.761, "words": [{"word": "Our", "start": 11.474, "end": 11.594}, {"word": "story", "start": 11.634, "end": 12.055}, {"word": "today", "start": 12.115, "end": 12.516}, {"word": "is", "start": 12.556, "end": 12.756}, {"word": "one", "start": 12.876, "end": 12.956}, {"word": "of", "start": 12.996, "end": 13.036}, {"word": "the", "start": 13.097, "end": 13.177}, {"word": "first", "start": 13.317, "end": 13.738}, {"word": "ghost", "start": 13.878, "end": 14.278}, {"word": "stories", "start": 14.399, "end": 14.879}, {"word": "ever", "start": 15.18, "end": 15.36}, {"word": "written.", "start": 15.44, "end": 15.761}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "A tale so terrifying it could turn your hair white.", "sentence_zh": "这个故事恐怖至极，能吓得你头发发白。", "start": 16.722, "end": 20.448, "words": [{"word": "A", "start": 16.722, "end": 16.762}, {"word": "tale", "start": 16.842, "end": 17.183}, {"word": "so", "start": 17.283, "end": 17.483}, {"word": "terrifying", "start": 17.604, "end": 18.305}, {"word": "it", "start": 18.485, "end": 18.545}, {"word": "could", "start": 18.625, "end": 18.806}, {"word": "turn", "start": 18.886, "end": 19.246}, {"word": "your", "start": 19.346, "end": 19.587}, {"word": "hair", "start": 19.667, "end": 19.927}, {"word": "white.", "start": 19.967, "end": 20.448}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "This isn't a story to listen to alone, but if you're feeling brave, let's begin.", "sentence_zh": "这可不是一个适合独自聆听的故事，但如果你觉得自己足够勇敢，那我们这就开始。", "start": 21.69, "end": 27.439, "words": [{"word": "This", "start": 21.69, "end": 21.91}, {"word": "isn't", "start": 21.95, "end": 22.491}, {"word": "a", "start": 22.571, "end": 22.591}, {"word": "story", "start": 22.652, "end": 23.012}, {"word": "to", "start": 23.072, "end": 23.132}, {"word": "listen", "start": 23.192, "end": 23.433}, {"word": "to", "start": 23.493, "end": 23.613}, {"word": "alone,", "start": 23.713, "end": 24.034}, {"word": "but", "start": 24.494, "end": 24.615}, {"word": "if", "start": 24.675, "end": 24.715}, {"word": "you're", "start": 24.755, "end": 24.955}, {"word": "feeling", "start": 24.995, "end": 25.296}, {"word": "brave,", "start": 25.396, "end": 25.877}, {"word": "let's", "start": 26.658, "end": 26.938}, {"word": "begin.", "start": 27.018, "end": 27.439}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "We find ourselves at a dinner party one cold Christmas Eve, as the guests gather around the fireplace telling ghost stories.", "sentence_zh": "故事发生在一个寒冷的平安夜，一场晚宴上，客人们围聚在壁炉旁讲着鬼故事。", "start": 28.702, "end": 37.518, "words": [{"word": "We", "start": 28.702, "end": 28.862}, {"word": "find", "start": 28.942, "end": 29.183}, {"word": "ourselves", "start": 29.263, "end": 29.744}, {"word": "at", "start": 29.964, "end": 30.024}, {"word": "a", "start": 30.185, "end": 30.225}, {"word": "dinner", "start": 30.365, "end": 30.646}, {"word": "party", "start": 30.686, "end": 31.086}, {"word": "one", "start": 31.106, "end": 31.407}, {"word": "cold", "start": 31.567, "end": 32.028}, {"word": "Christmas", "start": 32.168, "end": 32.569}, {"word": "Eve,", "start": 32.729, "end": 32.91}, {"word": "as", "start": 33.551, "end": 33.631}, {"word": "the", "start": 33.711, "end": 33.791}, {"word": "guests", "start": 33.832, "end": 34.272}, {"word": "gather", "start": 34.473, "end": 34.813}, {"word": "around", "start": 34.894, "end": 35.134}, {"word": "the", "start": 35.174, "end": 35.254}, {"word": "fireplace", "start": 35.294, "end": 35.895}, {"word": "telling", "start": 36.196, "end": 36.497}, {"word": "ghost", "start": 36.617, "end": 36.997}, {"word": "stories.", "start": 37.078, "end": 37.518}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "In a low voice, one guest describes a young and idealistic governess, a kind of old-fashioned home tutor, whose name he does not recall.", "sentence_zh": "一位客人压低声音，描述了一位年轻且充满理想主义的家庭女教师（一种老式的家庭辅导教师），不过他记不起她的名字了。", "start": 38.5, "end": 49.14, "words": [{"word": "In", "start": 38.5, "end": 38.56}, {"word": "a", "start": 38.62, "end": 38.64}, {"word": "low", "start": 38.721, "end": 38.961}, {"word": "voice,", "start": 39.041, "end": 39.382}, {"word": "one", "start": 39.883, "end": 40.003}, {"word": "guest", "start": 40.103, "end": 40.424}, {"word": "describes", "start": 40.544, "end": 41.145}, {"word": "a", "start": 41.225, "end": 41.245}, {"word": "young", "start": 41.346, "end": 41.646}, {"word": "and", "start": 41.666, "end": 42.067}, {"word": "idealistic", "start": 42.267, "end": 42.888}, {"word": "governess,", "start": 42.969, "end": 43.409}, {"word": "a", "start": 44.031, "end": 44.071}, {"word": "kind", "start": 44.111, "end": 44.291}, {"word": "of", "start": 44.351, "end": 44.391}, {"word": "old-fashioned", "start": 44.431, "end": 45.353}, {"word": "home", "start": 45.373, "end": 45.974}, {"word": "tutor,", "start": 46.074, "end": 46.455}, {"word": "whose", "start": 47.076, "end": 47.277}, {"word": "name", "start": 47.317, "end": 47.697}, {"word": "he", "start": 47.737, "end": 47.978}, {"word": "does", "start": 48.018, "end": 48.178}, {"word": "not", "start": 48.278, "end": 48.439}, {"word": "recall.", "start": 48.519, "end": 49.14}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "One day, the governess meets a mysterious, well-turned-out man who persuades her to take up a job looking after his niece and nephew at Bly, a secluded", "sentence_zh": "有一天，这位女教师遇到了一位神秘且衣着考究的男士，他说服她接下一份工作，去布莱庄园照顾他的侄女和侄子，那是一座偏僻的", "start": 49.627, "end": 60.218, "words": [{"word": "One", "start": 49.627, "end": 49.947}, {"word": "day,", "start": 50.007, "end": 50.188}, {"word": "the", "start": 50.308, "end": 50.388}, {"word": "governess", "start": 50.448, "end": 50.868}, {"word": "meets", "start": 50.968, "end": 51.209}, {"word": "a", "start": 51.229, "end": 51.249}, {"word": "mysterious,", "start": 51.409, "end": 52.13}, {"word": "well-turned-out", "start": 52.37, "end": 53.291}, {"word": "man", "start": 53.371, "end": 53.691}, {"word": "who", "start": 54.132, "end": 54.232}, {"word": "persuades", "start": 54.292, "end": 54.752}, {"word": "her", "start": 54.792, "end": 54.912}, {"word": "to", "start": 54.973, "end": 55.033}, {"word": "take", "start": 55.093, "end": 55.293}, {"word": "up", "start": 55.373, "end": 55.433}, {"word": "a", "start": 55.513, "end": 55.533}, {"word": "job", "start": 55.593, "end": 55.833}, {"word": "looking", "start": 55.873, "end": 56.334}, {"word": "after", "start": 56.434, "end": 56.654}, {"word": "his", "start": 56.714, "end": 56.834}, {"word": "niece", "start": 56.995, "end": 57.295}, {"word": "and", "start": 57.515, "end": 57.595}, {"word": "nephew", "start": 57.715, "end": 58.136}, {"word": "at", "start": 58.376, "end": 58.436}, {"word": "Bly,", "start": 58.556, "end": 59.057}, {"word": "a", "start": 59.497, "end": 59.537}, {"word": "secluded", "start": 59.597, "end": 60.218}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "country house, after the previous governess died.", "sentence_zh": "乡间别墅，而前任女教师刚在那里去世。", "start": 60.298, "end": 63.581, "words": [{"word": "country", "start": 60.298, "end": 60.638}, {"word": "house,", "start": 60.699, "end": 60.979}, {"word": "after", "start": 61.66, "end": 61.84}, {"word": "the", "start": 61.9, "end": 61.98}, {"word": "previous", "start": 62.08, "end": 62.52}, {"word": "governess", "start": 62.58, "end": 62.981}, {"word": "died.", "start": 63.021, "end": 63.581}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "The man himself is to stay in London, and strict orders are given that he is never to be contacted.", "sentence_zh": "这位男士自己则要留在伦敦，并下达了严格的命令：绝不能主动联系他。", "start": 64.963, "end": 72.07, "words": [{"word": "The", "start": 64.963, "end": 65.063}, {"word": "man", "start": 65.103, "end": 65.323}, {"word": "himself", "start": 65.383, "end": 65.884}, {"word": "is", "start": 66.064, "end": 66.144}, {"word": "to", "start": 66.204, "end": 66.304}, {"word": "stay", "start": 66.344, "end": 66.605}, {"word": "in", "start": 66.645, "end": 66.845}, {"word": "London,", "start": 66.965, "end": 67.345}, {"word": "and", "start": 67.766, "end": 67.866}, {"word": "strict", "start": 67.906, "end": 68.627}, {"word": "orders", "start": 68.827, "end": 69.107}, {"word": "are", "start": 69.187, "end": 69.247}, {"word": "given", "start": 69.287, "end": 69.568}, {"word": "that", "start": 69.608, "end": 69.828}, {"word": "he", "start": 69.888, "end": 70.048}, {"word": "is", "start": 70.228, "end": 70.308}, {"word": "never", "start": 70.329, "end": 70.949}, {"word": "to", "start": 70.969, "end": 71.229}, {"word": "be", "start": 71.269, "end": 71.39}, {"word": "contacted.", "start": 71.47, "end": 72.07}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It all sounds a bit strange, doesn't it?", "sentence_zh": "这一切听起来有点奇怪，不是吗？", "start": 72.991, "end": 75.634, "words": [{"word": "It", "start": 72.991, "end": 73.051}, {"word": "all", "start": 73.131, "end": 73.292}, {"word": "sounds", "start": 73.412, "end": 73.852}, {"word": "a", "start": 73.932, "end": 73.972}, {"word": "bit", "start": 74.012, "end": 74.213}, {"word": "strange,", "start": 74.293, "end": 74.873}, {"word": "doesn't", "start": 74.973, "end": 75.274}, {"word": "it?", "start": 75.334, "end": 75.634}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "And as we'll see, things soon take a turn for the worse.", "sentence_zh": "而且正如我们接下来会看到的，事情很快就急转直下。", "start": 76.289, "end": 80.335, "words": [{"word": "And", "start": 76.289, "end": 76.469}, {"word": "as", "start": 76.549, "end": 76.63}, {"word": "we'll", "start": 76.69, "end": 76.87}, {"word": "see,", "start": 76.95, "end": 77.19}, {"word": "things", "start": 77.25, "end": 78.212}, {"word": "soon", "start": 78.252, "end": 78.793}, {"word": "take", "start": 78.913, "end": 79.133}, {"word": "a", "start": 79.173, "end": 79.214}, {"word": "turn", "start": 79.274, "end": 79.594}, {"word": "for", "start": 79.674, "end": 79.774}, {"word": "the", "start": 79.814, "end": 79.895}, {"word": "worse.", "start": 79.955, "end": 80.335}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Nervously, the governess arrives at Bly, where she meets the housekeeper, Mrs. Grose, and the niece, Flora.", "sentence_zh": "女教师怀着忐忑的心情抵达了布莱庄园，在那里她见到了管家格罗斯太太，以及侄女弗洛拉。", "start": 82.198, "end": 89.55, "words": [{"word": "Nervously,", "start": 82.198, "end": 82.779}, {"word": "the", "start": 82.819, "end": 83.14}, {"word": "governess", "start": 83.18, "end": 83.58}, {"word": "arrives", "start": 83.68, "end": 84.141}, {"word": "at", "start": 84.221, "end": 84.261}, {"word": "Bly,", "start": 84.321, "end": 84.702}, {"word": "where", "start": 84.822, "end": 84.982}, {"word": "she", "start": 85.043, "end": 85.143}, {"word": "meets", "start": 85.203, "end": 85.443}, {"word": "the", "start": 85.463, "end": 85.603}, {"word": "housekeeper,", "start": 85.644, "end": 86.284}, {"word": "Mrs", "start": 86.525, "end": 86.805}, {"word": "Grose,", "start": 86.905, "end": 87.286}, {"word": "and", "start": 87.767, "end": 87.887}, {"word": "the", "start": 87.927, "end": 88.067}, {"word": "niece,", "start": 88.147, "end": 88.448}, {"word": "Flora.", "start": 89.129, "end": 89.55}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Despite her worries, Flora turns out to be a beautiful and polite girl.", "sentence_zh": "尽管她有些担忧，但事实证明弗洛拉是个漂亮又懂事的小女孩。", "start": 90.591, "end": 95.198, "words": [{"word": "Despite", "start": 90.591, "end": 91.052}, {"word": "her", "start": 91.092, "end": 91.312}, {"word": "worries,", "start": 91.352, "end": 91.853}, {"word": "Flora", "start": 92.134, "end": 92.554}, {"word": "turns", "start": 92.614, "end": 92.895}, {"word": "out", "start": 93.015, "end": 93.135}, {"word": "to", "start": 93.195, "end": 93.255}, {"word": "be", "start": 93.315, "end": 93.416}, {"word": "a", "start": 93.456, "end": 93.496}, {"word": "beautiful", "start": 93.596, "end": 94.157}, {"word": "and", "start": 94.257, "end": 94.317}, {"word": "polite", "start": 94.417, "end": 94.838}, {"word": "girl.", "start": 94.918, "end": 95.198}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "With her charming nature, Flora soon has the governess wrapped around her little finger, but the next day there's a turn-up for the books.", "sentence_zh": "凭借迷人的天性，弗洛拉很快就把女教师哄得对她百依百顺，但第二天却发生了一件出乎意料的事。", "start": 95.919, "end": 104.693, "words": [{"word": "With", "start": 95.919, "end": 96.04}, {"word": "her", "start": 96.1, "end": 96.22}, {"word": "charming", "start": 96.32, "end": 96.781}, {"word": "nature,", "start": 96.861, "end": 97.221}, {"word": "Flora", "start": 97.702, "end": 98.063}, {"word": "soon", "start": 98.143, "end": 98.383}, {"word": "has", "start": 98.443, "end": 98.624}, {"word": "the", "start": 98.664, "end": 98.784}, {"word": "governess", "start": 98.824, "end": 99.305}, {"word": "wrapped", "start": 99.445, "end": 99.765}, {"word": "around", "start": 99.846, "end": 100.186}, {"word": "her", "start": 100.226, "end": 100.386}, {"word": "little", "start": 100.426, "end": 100.807}, {"word": "finger,", "start": 100.887, "end": 101.228}, {"word": "but", "start": 101.829, "end": 101.949}, {"word": "the", "start": 101.969, "end": 102.069}, {"word": "next", "start": 102.149, "end": 102.409}, {"word": "day", "start": 102.51, "end": 102.79}, {"word": "there's", "start": 102.83, "end": 103.271}, {"word": "a", "start": 103.351, "end": 103.371}, {"word": "turn-up", "start": 103.471, "end": 103.932}, {"word": "for", "start": 103.992, "end": 104.072}, {"word": "the", "start": 104.112, "end": 104.172}, {"word": "books.", "start": 104.232, "end": 104.693}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "when news arrives that the nephew, Miles, has been expelled from school.", "sentence_zh": "消息传来，侄子迈尔斯被学校开除了。", "start": 105.01, "end": 110.798, "words": [{"word": "when", "start": 105.01, "end": 105.21}, {"word": "news", "start": 105.25, "end": 105.611}, {"word": "arrives", "start": 105.671, "end": 106.152}, {"word": "that", "start": 106.172, "end": 106.352}, {"word": "the", "start": 106.372, "end": 106.492}, {"word": "nephew,", "start": 106.592, "end": 107.073}, {"word": "Miles,", "start": 107.454, "end": 107.914}, {"word": "has", "start": 108.335, "end": 108.535}, {"word": "been", "start": 108.575, "end": 108.856}, {"word": "expelled", "start": 108.896, "end": 109.817}, {"word": "from", "start": 109.857, "end": 110.178}, {"word": "school.", "start": 110.218, "end": 110.798}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "What did he do?", "sentence_zh": "他做了什么？", "start": 111.74, "end": 112.521, "words": [{"word": "What", "start": 111.74, "end": 111.88}, {"word": "did", "start": 111.92, "end": 112.04}, {"word": "he", "start": 112.1, "end": 112.18}, {"word": "do?", "start": 112.261, "end": 112.521}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "No one knows.", "sentence_zh": "没人知道。", "start": 112.581, "end": 114.163, "words": [{"word": "No", "start": 112.581, "end": 113.542}, {"word": "one", "start": 113.623, "end": 113.703}, {"word": "knows.", "start": 113.783, "end": 114.163}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "But the headmaster is adamant the boy will never be allowed back.", "sentence_zh": "但校长态度坚决，绝不允许这男孩再回学校。", "start": 114.764, "end": 128.284, "words": [{"word": "But", "start": 114.764, "end": 114.884}, {"word": "the", "start": 114.904, "end": 115.005}, {"word": "headmaster", "start": 115.045, "end": 115.686}, {"word": "is", "start": 115.706, "end": 115.926}, {"word": "adamant", "start": 115.946, "end": 116.587}, {"word": "the", "start": 116.767, "end": 116.887}, {"word": "boy", "start": 116.967, "end": 117.268}, {"word": "will", "start": 117.348, "end": 117.568}, {"word": "never", "start": 117.729, "end": 118.009}, {"word": "be", "start": 118.049, "end": 118.249}, {"word": "allowed", "start": 118.309, "end": 118.65}, {"word": "back.", "start": 118.75, "end": 128.284}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "When Miles arrives he's as handsome and charming as his sister.", "sentence_zh": "迈尔斯到了庄园，他和他妹妹一样英俊迷人。", "start": 129.445, "end": 133.491, "words": [{"word": "When", "start": 129.445, "end": 129.725}, {"word": "Miles", "start": 129.765, "end": 130.186}, {"word": "arrives", "start": 130.246, "end": 130.687}, {"word": "he's", "start": 130.807, "end": 131.087}, {"word": "as", "start": 131.148, "end": 131.228}, {"word": "handsome", "start": 131.348, "end": 131.889}, {"word": "and", "start": 131.969, "end": 132.049}, {"word": "charming", "start": 132.189, "end": 132.63}, {"word": "as", "start": 132.75, "end": 132.83}, {"word": "his", "start": 132.89, "end": 133.03}, {"word": "sister.", "start": 133.13, "end": 133.491}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Both children show an inquisitive turn of mind and learn their lessons perfectly.", "sentence_zh": "两个孩子都表现出了极强的好奇心，并且功课学得极好。", "start": 134.052, "end": 138.899, "words": [{"word": "Both", "start": 134.052, "end": 134.292}, {"word": "children", "start": 134.392, "end": 134.773}, {"word": "show", "start": 134.793, "end": 135.073}, {"word": "an", "start": 135.133, "end": 135.173}, {"word": "inquisitive", "start": 135.214, "end": 135.814}, {"word": "turn", "start": 135.895, "end": 136.155}, {"word": "of", "start": 136.215, "end": 136.255}, {"word": "mind", "start": 136.335, "end": 136.676}, {"word": "and", "start": 136.856, "end": 136.956}, {"word": "learn", "start": 136.976, "end": 137.417}, {"word": "their", "start": 137.457, "end": 137.617}, {"word": "lessons", "start": 137.677, "end": 138.118}, {"word": "perfectly.", "start": 138.318, "end": 138.899}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Yet the governess can't shake the feeling that there's something not quite right about these perfect children.", "sentence_zh": "然而，女教师总是挥之不去一种感觉：这对完美的孩子身上似乎有些不太对劲的地方。", "start": 139.8, "end": 146.31, "words": [{"word": "Yet", "start": 139.8, "end": 139.92}, {"word": "the", "start": 139.961, "end": 140.061}, {"word": "governess", "start": 140.121, "end": 140.561}, {"word": "can't", "start": 140.642, "end": 141.002}, {"word": "shake", "start": 141.062, "end": 141.282}, {"word": "the", "start": 141.303, "end": 141.403}, {"word": "feeling", "start": 141.483, "end": 141.823}, {"word": "that", "start": 141.863, "end": 141.984}, {"word": "there's", "start": 142.004, "end": 142.244}, {"word": "something", "start": 142.304, "end": 142.665}, {"word": "not", "start": 142.805, "end": 143.025}, {"word": "quite", "start": 143.185, "end": 143.466}, {"word": "right", "start": 143.626, "end": 143.926}, {"word": "about", "start": 144.007, "end": 144.227}, {"word": "these", "start": 144.267, "end": 144.527}, {"word": "perfect", "start": 145.068, "end": 145.689}, {"word": "children.", "start": 145.889, "end": 146.31}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "In the garden one evening she turns around to see a strange man in a tower.", "sentence_zh": "一天傍晚在花园里，她一转身，竟看到塔楼上站着一个陌生的男人。", "start": 147.752, "end": 153.44, "words": [{"word": "In", "start": 147.752, "end": 147.832}, {"word": "the", "start": 147.872, "end": 147.952}, {"word": "garden", "start": 148.012, "end": 148.393}, {"word": "one", "start": 148.433, "end": 148.713}, {"word": "evening", "start": 148.894, "end": 149.214}, {"word": "she", "start": 149.735, "end": 149.855}, {"word": "turns", "start": 149.975, "end": 150.336}, {"word": "around", "start": 150.416, "end": 150.797}, {"word": "to", "start": 150.837, "end": 151.157}, {"word": "see", "start": 151.217, "end": 151.357}, {"word": "a", "start": 151.417, "end": 151.437}, {"word": "strange", "start": 151.518, "end": 152.078}, {"word": "man", "start": 152.199, "end": 152.519}, {"word": "in", "start": 152.559, "end": 152.86}, {"word": "a", "start": 152.92, "end": 152.94}, {"word": "tower.", "start": 153.04, "end": 153.44}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Later, the man's ghostly face appears at the window, and frightened, the governess confides in Mrs. Grose, who identifies him as Peter", "sentence_zh": "后来，那男人如同鬼魅般的脸又出现在窗前，惊恐万分的女教师向格罗斯太太倾诉，格罗斯太太认出他就是彼得·", "start": 154.662, "end": 164.993, "words": [{"word": "Later", "start": 154.662, "end": 155.183}, {"word": "the", "start": 155.163, "end": 155.764}, {"word": "man's", "start": 155.824, "end": 156.184}, {"word": "ghostly", "start": 156.324, "end": 156.805}, {"word": "face", "start": 156.905, "end": 157.245}, {"word": "appears", "start": 157.505, "end": 158.026}, {"word": "at", "start": 158.046, "end": 158.306}, {"word": "the", "start": 158.346, "end": 158.446}, {"word": "window,", "start": 158.527, "end": 158.887}, {"word": "and", "start": 158.907, "end": 159.347}, {"word": "frightened,", "start": 159.668, "end": 160.148}, {"word": "the", "start": 160.429, "end": 160.529}, {"word": "governess", "start": 160.569, "end": 160.929}, {"word": "confides", "start": 160.989, "end": 161.55}, {"word": "in", "start": 161.63, "end": 161.67}, {"word": "Mrs", "start": 161.73, "end": 161.97}, {"word": "Grose,", "start": 162.03, "end": 162.431}, {"word": "who", "start": 162.871, "end": 162.991}, {"word": "identifies", "start": 163.091, "end": 163.772}, {"word": "him", "start": 163.792, "end": 163.992}, {"word": "as", "start": 164.353, "end": 164.433}, {"word": "Peter", "start": 164.613, "end": 164.993}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Quint, a former servant, who is now dead.", "sentence_zh": "昆特，一个以前在这儿干活的男仆，但他现在已经死了。", "start": 165.113, "end": 169.238, "words": [{"word": "Quint,", "start": 165.113, "end": 165.454}, {"word": "a", "start": 166.034, "end": 166.094}, {"word": "former", "start": 166.175, "end": 166.515}, {"word": "servant,", "start": 166.595, "end": 167.076}, {"word": "who", "start": 167.796, "end": 167.916}, {"word": "is", "start": 168.017, "end": 168.077}, {"word": "now", "start": 168.097, "end": 168.457}, {"word": "dead.", "start": 168.497, "end": 169.238}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "In class the next day, the governess is frightened again by a ghostly female figure, who she senses means harm.", "sentence_zh": "第二天上课时，女教师再次被一个幽灵般的女性身影吓坏了，她直觉这个身影来者不善。", "start": 170.079, "end": 177.627, "words": [{"word": "In", "start": 170.079, "end": 170.179}, {"word": "class", "start": 170.339, "end": 170.779}, {"word": "the", "start": 170.86, "end": 170.94}, {"word": "next", "start": 171.0, "end": 171.18}, {"word": "day,", "start": 171.26, "end": 171.5}, {"word": "the", "start": 171.56, "end": 171.921}, {"word": "governess", "start": 171.961, "end": 172.341}, {"word": "is", "start": 172.401, "end": 172.481}, {"word": "frightened", "start": 172.681, "end": 173.122}, {"word": "again", "start": 173.182, "end": 173.502}, {"word": "by", "start": 173.542, "end": 173.803}, {"word": "a", "start": 173.883, "end": 173.903}, {"word": "ghostly", "start": 173.963, "end": 174.403}, {"word": "female", "start": 174.603, "end": 175.084}, {"word": "figure,", "start": 175.184, "end": 175.464}, {"word": "who", "start": 175.945, "end": 176.065}, {"word": "she", "start": 176.125, "end": 176.245}, {"word": "senses", "start": 176.385, "end": 176.806}, {"word": "means", "start": 176.846, "end": 177.186}, {"word": "harm.", "start": 177.286, "end": 177.627}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Does Flora see the ghost too?", "sentence_zh": "弗洛拉也看到这个鬼魂了吗？", "start": 178.247, "end": 180.85, "words": [{"word": "Does", "start": 178.247, "end": 178.407}, {"word": "Flora", "start": 178.488, "end": 178.928}, {"word": "see", "start": 178.968, "end": 179.128}, {"word": "the", "start": 179.148, "end": 179.228}, {"word": "ghost", "start": 179.288, "end": 179.589}, {"word": "too?", "start": 179.749, "end": 180.85}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "If so, the girl turns a blind eye to the evil figure who, the governess discovers, resembles Miss Jessel, her dead predecessor.", "sentence_zh": "如果是的话，这女孩对这个邪恶的身影完全视而不见，而女教师发现，这个鬼魂长得像她已故的前任——杰塞尔小姐。", "start": 180.83, "end": 190.489, "words": [{"word": "If", "start": 180.83, "end": 181.07}, {"word": "so,", "start": 181.171, "end": 181.411}, {"word": "the", "start": 181.451, "end": 181.712}, {"word": "girl", "start": 181.752, "end": 182.052}, {"word": "turns", "start": 182.213, "end": 182.553}, {"word": "a", "start": 182.614, "end": 182.634}, {"word": "blind", "start": 182.674, "end": 183.014}, {"word": "eye", "start": 183.275, "end": 183.395}, {"word": "to", "start": 183.495, "end": 183.576}, {"word": "the", "start": 183.616, "end": 183.696}, {"word": "evil", "start": 183.876, "end": 184.117}, {"word": "figure", "start": 184.217, "end": 184.517}, {"word": "who,", "start": 184.598, "end": 184.778}, {"word": "the", "start": 185.279, "end": 185.379}, {"word": "governess", "start": 185.419, "end": 185.82}, {"word": "discovers,", "start": 185.84, "end": 186.361}, {"word": "resembles", "start": 186.942, "end": 187.483}, {"word": "Miss", "start": 187.604, "end": 187.844}, {"word": "Jessel,", "start": 187.984, "end": 188.445}, {"word": "her", "start": 188.986, "end": 189.207}, {"word": "dead", "start": 189.367, "end": 189.628}, {"word": "predecessor.", "start": 189.828, "end": 190.489}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Now things really turn nasty.", "sentence_zh": "现在事情变得真正险恶起来。", "start": 191.451, "end": 194.738, "words": [{"word": "Now", "start": 191.451, "end": 191.612}, {"word": "things", "start": 191.712, "end": 192.033}, {"word": "really", "start": 192.073, "end": 192.754}, {"word": "turn", "start": 192.854, "end": 193.155}, {"word": "nasty.", "start": 193.275, "end": 194.738}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "That evening, a noise disturbs the governess.", "sentence_zh": "那天晚上，一阵响动惊动了女教师。", "start": 194.887, "end": 197.933, "words": [{"word": "That", "start": 194.887, "end": 195.188}, {"word": "evening,", "start": 195.388, "end": 195.709}, {"word": "a", "start": 195.989, "end": 196.009}, {"word": "noise", "start": 196.129, "end": 196.55}, {"word": "disturbs", "start": 196.73, "end": 197.311}, {"word": "the", "start": 197.372, "end": 197.452}, {"word": "governess.", "start": 197.492, "end": 197.933}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Rushing upstairs to see what's wrong, Flora goes missing.", "sentence_zh": "她冲上楼想看看到底怎么回事，却发现弗洛拉不见了。", "start": 199.155, "end": 202.942, "words": [{"word": "Rushing", "start": 199.155, "end": 199.495}, {"word": "upstairs", "start": 199.596, "end": 200.077}, {"word": "to", "start": 200.157, "end": 200.237}, {"word": "see", "start": 200.297, "end": 200.457}, {"word": "what's", "start": 200.517, "end": 200.738}, {"word": "wrong,", "start": 200.838, "end": 201.118}, {"word": "Flora", "start": 201.619, "end": 202.06}, {"word": "goes", "start": 202.18, "end": 202.441}, {"word": "missing.", "start": 202.581, "end": 202.942}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "On the lawn outside, the girl is staring up at the window and a shadowy boy is seen running away.", "sentence_zh": "在外面的草坪上，这女孩正抬头盯着窗户，还可以看到一个模糊的男孩身影跑开了。", "start": 203.703, "end": 210.155, "words": [{"word": "On", "start": 203.703, "end": 203.763}, {"word": "the", "start": 203.783, "end": 203.863}, {"word": "lawn", "start": 203.924, "end": 204.264}, {"word": "outside,", "start": 204.284, "end": 205.086}, {"word": "the", "start": 205.186, "end": 205.266}, {"word": "girl", "start": 205.326, "end": 205.647}, {"word": "is", "start": 205.787, "end": 205.847}, {"word": "staring", "start": 205.947, "end": 206.408}, {"word": "up", "start": 206.548, "end": 206.649}, {"word": "at", "start": 206.749, "end": 206.789}, {"word": "the", "start": 206.829, "end": 206.909}, {"word": "window", "start": 206.989, "end": 207.35}, {"word": "and", "start": 207.731, "end": 207.791}, {"word": "a", "start": 207.851, "end": 207.871}, {"word": "shadowy", "start": 208.011, "end": 208.472}, {"word": "boy", "start": 208.532, "end": 208.813}, {"word": "is", "start": 208.913, "end": 208.973}, {"word": "seen", "start": 209.053, "end": 209.333}, {"word": "running", "start": 209.374, "end": 209.774}, {"word": "away.", "start": 209.854, "end": 210.155}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Turning around, the governess screams as once again the ghost of Peter Quint appears.", "sentence_zh": "女教师转过身，吓得尖叫起来，因为彼得·昆特的鬼魂再次出现了。", "start": 210.215, "end": 216.186, "words": [{"word": "Turning", "start": 210.215, "end": 211.337}, {"word": "around,", "start": 211.397, "end": 211.758}, {"word": "the", "start": 211.818, "end": 212.038}, {"word": "governess", "start": 212.079, "end": 212.459}, {"word": "screams", "start": 212.559, "end": 213.241}, {"word": "as", "start": 213.361, "end": 213.421}, {"word": "once", "start": 213.561, "end": 213.701}, {"word": "again", "start": 213.782, "end": 214.002}, {"word": "the", "start": 214.022, "end": 214.142}, {"word": "ghost", "start": 214.202, "end": 214.543}, {"word": "of", "start": 214.643, "end": 214.723}, {"word": "Peter", "start": 214.804, "end": 215.124}, {"word": "Quint", "start": 215.184, "end": 215.465}, {"word": "appears.", "start": 215.505, "end": 216.186}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "By now the governess's nerves are fraying and she has nowhere to turn.", "sentence_zh": "此时女教师的神经濒临崩溃，而且她已走投无路。", "start": 217.145, "end": 221.315, "words": [{"word": "By", "start": 217.145, "end": 217.366}, {"word": "now", "start": 217.446, "end": 217.666}, {"word": "the", "start": 217.686, "end": 217.847}, {"word": "governess's", "start": 217.887, "end": 218.428}, {"word": "nerves", "start": 218.448, "end": 218.889}, {"word": "are", "start": 219.03, "end": 219.11}, {"word": "fraying", "start": 219.21, "end": 219.611}, {"word": "and", "start": 219.631, "end": 220.032}, {"word": "she", "start": 220.092, "end": 220.193}, {"word": "has", "start": 220.233, "end": 220.353}, {"word": "nowhere", "start": 220.373, "end": 220.814}, {"word": "to", "start": 220.854, "end": 220.934}, {"word": "turn.", "start": 220.995, "end": 221.315}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Slowly the children turn against her.", "sentence_zh": "渐渐地，孩子们开始与她作对。", "start": 222.278, "end": 224.523, "words": [{"word": "Slowly", "start": 222.278, "end": 222.699}, {"word": "the", "start": 222.739, "end": 222.839}, {"word": "children", "start": 222.959, "end": 223.441}, {"word": "turn", "start": 223.461, "end": 223.882}, {"word": "against", "start": 223.942, "end": 224.303}, {"word": "her.", "start": 224.363, "end": 224.523}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "She believes there is a connection between these innocent children and the ghosts.", "sentence_zh": "她相信这些天真无邪的孩子和鬼魂之间存在某种联系。", "start": 225.285, "end": 230.077, "words": [{"word": "She", "start": 225.285, "end": 225.425}, {"word": "believes", "start": 225.445, "end": 225.867}, {"word": "there", "start": 225.927, "end": 226.067}, {"word": "is", "start": 226.127, "end": 226.207}, {"word": "a", "start": 226.227, "end": 226.268}, {"word": "connection", "start": 226.348, "end": 226.969}, {"word": "between", "start": 227.049, "end": 227.43}, {"word": "these", "start": 227.45, "end": 227.731}, {"word": "innocent", "start": 227.771, "end": 228.653}, {"word": "children", "start": 228.734, "end": 229.155}, {"word": "and", "start": 229.175, "end": 229.375}, {"word": "the", "start": 229.415, "end": 229.495}, {"word": "ghosts.", "start": 229.576, "end": 230.077}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "But what?", "sentence_zh": "但到底是什么联系呢？", "start": 230.638, "end": 231.34, "words": [{"word": "But", "start": 230.638, "end": 230.759}, {"word": "what?", "start": 230.859, "end": 231.34}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Walking to church that Sunday, Miles demands to return to school and insists the governess write a letter to his uncle.", "sentence_zh": "那个星期天在去教堂的路上，迈尔斯强烈要求回学校，并坚持让女教师给他叔叔写信。", "start": 232.602, "end": 240.116, "words": [{"word": "Walking", "start": 232.602, "end": 233.023}, {"word": "to", "start": 233.083, "end": 233.163}, {"word": "church", "start": 233.243, "end": 233.604}, {"word": "that", "start": 233.664, "end": 233.824}, {"word": "Sunday,", "start": 233.904, "end": 234.325}, {"word": "Miles", "start": 234.646, "end": 235.087}, {"word": "demands", "start": 235.187, "end": 235.908}, {"word": "to", "start": 235.968, "end": 236.048}, {"word": "return", "start": 236.109, "end": 236.449}, {"word": "to", "start": 236.489, "end": 236.569}, {"word": "school", "start": 236.629, "end": 236.91}, {"word": "and", "start": 237.07, "end": 237.15}, {"word": "insists", "start": 237.251, "end": 238.052}, {"word": "the", "start": 238.152, "end": 238.253}, {"word": "governess", "start": 238.293, "end": 238.673}, {"word": "write", "start": 238.733, "end": 238.954}, {"word": "a", "start": 238.994, "end": 239.014}, {"word": "letter", "start": 239.094, "end": 239.395}, {"word": "to", "start": 239.435, "end": 239.515}, {"word": "his", "start": 239.575, "end": 239.695}, {"word": "uncle.", "start": 239.835, "end": 240.116}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Upset, she runs to the classroom, only to find the ghostly Miss Jessel sitting at her desk.", "sentence_zh": "她心烦意乱地跑进教室，却发现幽灵般的杰塞尔小姐正坐在她的书桌前。", "start": 240.837, "end": 247.069, "words": [{"word": "Upset,", "start": 240.837, "end": 241.298}, {"word": "she", "start": 241.398, "end": 241.519}, {"word": "runs", "start": 241.559, "end": 241.979}, {"word": "to", "start": 242.04, "end": 242.14}, {"word": "the", "start": 242.18, "end": 242.26}, {"word": "classroom,", "start": 242.3, "end": 242.841}, {"word": "only", "start": 243.562, "end": 243.723}, {"word": "to", "start": 243.763, "end": 243.863}, {"word": "find", "start": 243.923, "end": 244.164}, {"word": "the", "start": 244.184, "end": 244.264}, {"word": "ghostly", "start": 244.364, "end": 244.805}, {"word": "Miss", "start": 244.885, "end": 245.145}, {"word": "Jessel", "start": 245.165, "end": 245.586}, {"word": "sitting", "start": 245.726, "end": 246.087}, {"word": "at", "start": 246.267, "end": 246.328}, {"word": "her", "start": 246.408, "end": 246.548}, {"word": "desk.", "start": 246.648, "end": 247.069}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "The governess breaks down, crying uncontrollably and vowing to leave the house forever.", "sentence_zh": "女教师彻底崩溃了，控制不住地大哭起来，并下定决心要永远离开这栋房子。", "start": 247.73, "end": 253.581, "words": [{"word": "The", "start": 247.73, "end": 247.81}, {"word": "governess", "start": 247.85, "end": 248.211}, {"word": "breaks", "start": 248.311, "end": 248.652}, {"word": "down,", "start": 248.712, "end": 248.992}, {"word": "crying", "start": 249.293, "end": 249.774}, {"word": "uncontrollably", "start": 249.934, "end": 250.716}, {"word": "and", "start": 251.056, "end": 251.136}, {"word": "vowing", "start": 251.237, "end": 251.657}, {"word": "to", "start": 251.698, "end": 251.898}, {"word": "leave", "start": 252.078, "end": 252.379}, {"word": "the", "start": 252.459, "end": 252.539}, {"word": "house", "start": 252.599, "end": 252.88}, {"word": "forever.", "start": 252.94, "end": 253.581}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "That night, the governess tosses and turns in bed, trying to sleep.", "sentence_zh": "那天夜里，女教师在床上辗转反侧，试图入睡。", "start": 262.083, "end": 268.333, "words": [{"word": "That", "start": 262.083, "end": 263.826}, {"word": "night,", "start": 263.926, "end": 264.186}, {"word": "the", "start": 264.667, "end": 264.767}, {"word": "governess", "start": 264.827, "end": 265.248}, {"word": "tosses", "start": 265.388, "end": 265.849}, {"word": "and", "start": 265.889, "end": 266.109}, {"word": "turns", "start": 266.229, "end": 266.73}, {"word": "in", "start": 266.83, "end": 266.89}, {"word": "bed,", "start": 266.971, "end": 267.191}, {"word": "trying", "start": 267.451, "end": 267.832}, {"word": "to", "start": 267.892, "end": 267.992}, {"word": "sleep.", "start": 268.032, "end": 268.333}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Is she seeing things, or are there really ghosts?", "sentence_zh": "是她产生了幻觉，还是真的有鬼魂存在？", "start": 269.314, "end": 272.479, "words": [{"word": "Is", "start": 269.314, "end": 269.394}, {"word": "she", "start": 269.454, "end": 269.595}, {"word": "seeing", "start": 269.635, "end": 270.095}, {"word": "things,", "start": 270.155, "end": 270.456}, {"word": "or", "start": 270.877, "end": 270.957}, {"word": "are", "start": 271.117, "end": 271.237}, {"word": "there", "start": 271.277, "end": 271.437}, {"word": "really", "start": 271.558, "end": 271.878}, {"word": "ghosts?", "start": 271.958, "end": 272.479}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "In the morning, Flora and Mrs. Grose leave Bly for London to meet the uncle, unaware that Miles has intercepted and burned the governess's letter.", "sentence_zh": "早晨，弗洛拉和格罗斯太太离开布莱庄园前往伦敦见叔叔，她们并不知道迈尔斯已经截获并烧毁了女教师的信。", "start": 273.521, "end": 282.995, "words": [{"word": "In", "start": 273.521, "end": 273.581}, {"word": "the", "start": 273.621, "end": 273.701}, {"word": "morning,", "start": 273.761, "end": 274.102}, {"word": "Flora", "start": 274.322, "end": 274.743}, {"word": "and", "start": 274.823, "end": 274.923}, {"word": "Mrs", "start": 275.003, "end": 275.263}, {"word": "Grose", "start": 275.323, "end": 275.684}, {"word": "leave", "start": 275.824, "end": 276.165}, {"word": "Bly", "start": 276.185, "end": 276.525}, {"word": "for", "start": 276.585, "end": 276.706}, {"word": "London", "start": 276.786, "end": 277.186}, {"word": "to", "start": 277.286, "end": 277.367}, {"word": "meet", "start": 277.407, "end": 277.587}, {"word": "the", "start": 277.627, "end": 277.707}, {"word": "uncle,", "start": 277.827, "end": 278.108}, {"word": "unaware", "start": 278.769, "end": 279.169}, {"word": "that", "start": 279.229, "end": 279.35}, {"word": "Miles", "start": 279.45, "end": 279.87}, {"word": "has", "start": 279.951, "end": 280.091}, {"word": "intercepted", "start": 280.251, "end": 280.892}, {"word": "and", "start": 280.932, "end": 281.333}, {"word": "burned", "start": 281.473, "end": 281.914}, {"word": "the", "start": 281.994, "end": 282.074}, {"word": "governess's", "start": 282.114, "end": 282.595}, {"word": "letter.", "start": 282.655, "end": 282.995}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "She confronts the boy, asking why he was expelled from school.", "sentence_zh": "她当面对质这个男孩，问他为什么被学校开除。", "start": 283.776, "end": 288.023, "words": [{"word": "She", "start": 283.776, "end": 283.877}, {"word": "confronts", "start": 283.957, "end": 284.478}, {"word": "the", "start": 284.538, "end": 284.598}, {"word": "boy,", "start": 284.638, "end": 284.838}, {"word": "asking", "start": 285.399, "end": 285.679}, {"word": "why", "start": 285.78, "end": 286.02}, {"word": "he", "start": 286.06, "end": 286.24}, {"word": "was", "start": 286.28, "end": 286.38}, {"word": "expelled", "start": 286.461, "end": 286.901}, {"word": "from", "start": 286.941, "end": 287.082}, {"word": "school.", "start": 287.122, "end": 288.023}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "He confesses only to burning the letter, and as the governess looks around in horror to see the ghostly, grinning face of Peter Quint, Miles", "sentence_zh": "他只承认烧了信，而当女教师惊恐地环顾四周，看到彼得·昆特那如同鬼魅般咧嘴笑的脸时，迈尔斯", "start": 288.509, "end": 298.975, "words": [{"word": "He", "start": 288.509, "end": 288.669}, {"word": "confesses", "start": 288.77, "end": 289.351}, {"word": "only", "start": 289.391, "end": 289.953}, {"word": "to", "start": 290.053, "end": 290.153}, {"word": "burning", "start": 290.233, "end": 290.574}, {"word": "the", "start": 290.634, "end": 290.694}, {"word": "letter,", "start": 290.755, "end": 291.115}, {"word": "and", "start": 291.797, "end": 291.877}, {"word": "as", "start": 291.938, "end": 291.998}, {"word": "the", "start": 292.058, "end": 292.138}, {"word": "governess", "start": 292.198, "end": 292.619}, {"word": "looks", "start": 292.679, "end": 292.92}, {"word": "around", "start": 293.0, "end": 293.381}, {"word": "in", "start": 293.742, "end": 293.802}, {"word": "horror", "start": 293.983, "end": 294.324}, {"word": "to", "start": 294.604, "end": 294.704}, {"word": "see", "start": 294.745, "end": 294.905}, {"word": "the", "start": 294.945, "end": 295.025}, {"word": "ghostly,", "start": 295.085, "end": 295.587}, {"word": "grinning", "start": 295.948, "end": 296.349}, {"word": "face", "start": 296.509, "end": 296.81}, {"word": "of", "start": 297.07, "end": 297.151}, {"word": "Peter", "start": 297.291, "end": 297.672}, {"word": "Quint,", "start": 297.772, "end": 298.153}, {"word": "Miles", "start": 298.594, "end": 298.975}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "cries out one last time, then falls down dead.", "sentence_zh": "最后大叫了一声，然后倒地身亡。", "start": 299.115, "end": 303.767, "words": [{"word": "cries", "start": 299.115, "end": 299.496}, {"word": "out", "start": 299.637, "end": 299.757}, {"word": "one", "start": 299.777, "end": 300.098}, {"word": "last", "start": 300.158, "end": 300.399}, {"word": "time,", "start": 300.499, "end": 300.8}, {"word": "then", "start": 300.84, "end": 301.902}, {"word": "falls", "start": 302.063, "end": 302.384}, {"word": "down", "start": 302.444, "end": 302.745}, {"word": "dead.", "start": 302.785, "end": 303.767}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "We end with many unanswered questions.", "sentence_zh": "故事结束了，却留下了许多未解之谜。", "start": 305.671, "end": 308.156, "words": [{"word": "We", "start": 305.671, "end": 305.871}, {"word": "end", "start": 305.972, "end": 306.192}, {"word": "with", "start": 306.352, "end": 306.493}, {"word": "many", "start": 306.653, "end": 306.913}, {"word": "unanswered", "start": 307.134, "end": 307.615}, {"word": "questions.", "start": 307.675, "end": 308.156}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Who was the mysterious uncle?", "sentence_zh": "那个神秘的叔叔是谁？", "start": 309.157, "end": 310.881, "words": [{"word": "Who", "start": 309.157, "end": 309.318}, {"word": "was", "start": 309.398, "end": 309.638}, {"word": "the", "start": 309.658, "end": 309.799}, {"word": "mysterious", "start": 309.839, "end": 310.42}, {"word": "uncle?", "start": 310.54, "end": 310.881}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Were the ghosts harming the children, or did they only exist in the governess's imagination?", "sentence_zh": "这些鬼魂是在伤害孩子们，还是仅仅存在于女教师的想象中？", "start": 311.922, "end": 317.292, "words": [{"word": "Were", "start": 311.922, "end": 312.163}, {"word": "the", "start": 312.203, "end": 312.283}, {"word": "ghosts", "start": 312.343, "end": 312.744}, {"word": "harming", "start": 312.864, "end": 313.225}, {"word": "the", "start": 313.245, "end": 313.325}, {"word": "children,", "start": 313.385, "end": 313.806}, {"word": "or", "start": 314.487, "end": 314.547}, {"word": "did", "start": 314.607, "end": 314.728}, {"word": "they", "start": 314.768, "end": 314.908}, {"word": "only", "start": 315.088, "end": 315.289}, {"word": "exist", "start": 315.369, "end": 315.709}, {"word": "in", "start": 315.79, "end": 315.83}, {"word": "the", "start": 315.87, "end": 315.93}, {"word": "governess's", "start": 315.99, "end": 316.491}, {"word": "imagination?", "start": 316.571, "end": 317.292}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "But one thing I do know is the tingle creeping up my spine.", "sentence_zh": "但我唯一清楚的，是那种顺着我的脊背爬上来的毛骨悚然的感觉。", "start": 318.454, "end": 322.883, "words": [{"word": "But", "start": 318.454, "end": 318.575}, {"word": "one", "start": 318.715, "end": 318.815}, {"word": "thing", "start": 318.855, "end": 319.015}, {"word": "I", "start": 319.096, "end": 319.176}, {"word": "do", "start": 319.216, "end": 319.476}, {"word": "know", "start": 319.516, "end": 319.737}, {"word": "is", "start": 319.777, "end": 320.498}, {"word": "the", "start": 320.578, "end": 320.699}, {"word": "tingle", "start": 320.779, "end": 321.24}, {"word": "creeping", "start": 321.38, "end": 321.801}, {"word": "up", "start": 321.981, "end": 322.081}, {"word": "my", "start": 322.141, "end": 322.322}, {"word": "spine.", "start": 322.422, "end": 322.883}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "I hope you weren't too frightened, and you'll join me again for another story soon.", "sentence_zh": "希望你没有被吓坏，期待你不久后能再来听我讲下一个故事。", "start": 324.205, "end": 328.573, "words": [{"word": "I", "start": 324.205, "end": 324.245}, {"word": "hope", "start": 324.305, "end": 324.445}, {"word": "you", "start": 324.465, "end": 324.566}, {"word": "weren't", "start": 324.606, "end": 324.806}, {"word": "too", "start": 324.866, "end": 325.047}, {"word": "frightened,", "start": 325.147, "end": 325.568}, {"word": "and", "start": 326.189, "end": 326.289}, {"word": "you'll", "start": 326.309, "end": 326.529}, {"word": "join", "start": 326.569, "end": 326.79}, {"word": "me", "start": 326.83, "end": 326.91}, {"word": "again", "start": 326.99, "end": 327.19}, {"word": "for", "start": 327.291, "end": 327.411}, {"word": "another", "start": 327.471, "end": 327.691}, {"word": "story", "start": 327.752, "end": 328.112}, {"word": "soon.", "start": 328.192, "end": 328.573}]}, {"speaker": "Unknown", "speaker_id": "UNKNOWN", "sentence": "Thank you.", "sentence_zh": "谢谢。", "start": 337.278, "end": 337.654, "words": [{"word": "you", "start": 337.278, "end": 337.654}]}];
+
+    const audio = document.getElementById('audioPlayer');
+    const stageArea = document.getElementById('stageArea');
+    const textContainer = document.getElementById('textContainer');
+    const englishArea = document.getElementById('englishArea');
+    const chineseArea = document.getElementById('chineseArea');
+    const timerText = document.getElementById('timerText');
+    const avatarEl = document.getElementById('avatarEl');
+    const waveContainer = document.getElementById('waveContainer');
+    const headerContainer = document.getElementById('headerContainer');
+    const bgInput = document.getElementById('bgInput');
+
+    let processedBlocks = []; 
+    let currentBlockIndex = -1;
+    let currentFontSize = 70; 
+    const WAVE_BAR_COUNT = 30;
+
+    // 处理本地背景更换
+    bgInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                stageArea.style.backgroundImage = `url('${event.target.result}')`;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // 智能拆分逻辑
+    function segmentData(data) {
+        const WORD_LIMIT = 20;
+        let blocks = [];
+        data.forEach(item => {
+            let words = item.words || [];
+            if (words.length <= WORD_LIMIT) {
+                blocks.push({...item});
+            } else {
+                let startIdx = 0;
+                while (startIdx < words.length) {
+                    let takeCount = Math.min(WORD_LIMIT, words.length - startIdx);
+                    if (startIdx + takeCount < words.length) {
+                        for (let j = startIdx + takeCount - 1; j > startIdx + 5; j--) {
+                            if (/[.,!?;]/.test(words[j].word)) { takeCount = j - startIdx + 1; break; }
+                        }
+                    }
+                    let chunk = words.slice(startIdx, startIdx + takeCount);
+                    blocks.push({
+                        speaker: item.speaker,
+                        start: chunk[0].start,
+                        end: chunk[chunk.length - 1].end,
+                        words: chunk,
+                        sentence_zh: item.sentence_zh
+                    });
+                    startIdx += takeCount;
+                }
+            }
+        });
+        return blocks;
+    }
+
+    function init() {
+        processedBlocks = segmentData(transcriptData);
+        waveContainer.innerHTML = '';
+        const h = [30, 50, 80, 60, 40, 70, 90, 100, 80, 50, 40, 60, 80, 90, 70, 50, 30, 40, 60, 80, 100, 90, 70, 50, 40, 60, 80, 60, 40, 30];
+        for(let i=0; i<WAVE_BAR_COUNT; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'wave-bar';
+            bar.style.height = h[i % h.length] + '%';
+            waveContainer.appendChild(bar);
+        }
+        updateScale();
+        audio.addEventListener('loadedmetadata', () => { timerText.innerText = formatTime(audio.duration); });
+    }
+
+    function updateScale() {
+        const scale = document.getElementById('stageScaler').offsetWidth / 1080;
+        document.getElementById('stageArea').style.transform = `scale(${scale})`;
+    }
+    window.addEventListener('resize', updateScale);
+
+    function renderLoop() {
+        if (!audio.paused) {
+            const t = audio.currentTime;
+            updateTimeline(t);
+            const pct = t / audio.duration;
+            const activeIdx = Math.floor(pct * WAVE_BAR_COUNT);
+            document.querySelectorAll('.wave-bar').forEach((b, i) => i <= activeIdx ? b.classList.add('active') : b.classList.remove('active'));
+            timerText.innerText = "-" + formatTime(audio.duration - t);
+            requestAnimationFrame(renderLoop);
+        }
+    }
+
+    function updateTimeline(t) {
+        let activeIdx = -1;
+        for (let i = 0; i < processedBlocks.length; i++) {
+            if (t >= processedBlocks[i].start && t < processedBlocks[i].end + 0.1) { activeIdx = i; break; }
+        }
+        if (activeIdx !== -1 && activeIdx !== currentBlockIndex) {
+            currentBlockIndex = activeIdx;
+            textContainer.classList.remove('visible');
+            setTimeout(() => { renderBlock(activeIdx); textContainer.classList.add('visible'); }, 50);
+        }
+        if (currentBlockIndex !== -1) {
+            const spans = englishArea.querySelectorAll('.word');
+            spans.forEach(span => {
+                const s = parseFloat(span.dataset.start), e = parseFloat(span.dataset.end);
+                if (t >= s && t < e) span.classList.add('active'); else span.classList.remove('active');
+            });
+        }
+    }
+
+    function renderBlock(index) {
+        const block = processedBlocks[index];
+        englishArea.innerHTML = '';
+        block.words.forEach(w => {
+            const span = document.createElement('span');
+            span.className = 'word'; span.innerText = w.word;
+            span.dataset.start = w.start; span.dataset.end = w.end;
+            englishArea.appendChild(span);
+            englishArea.appendChild(document.createTextNode(" "));
+        });
+        chineseArea.innerText = block.sentence_zh || "";
+        
+        // 📍 严谨 Speaker 逻辑判断
+        const lower = (block.speaker || "").toLowerCase();
+        headerContainer.classList.remove('speaker-state-female', 'speaker-state-male');
+        if (lower.includes('male') && !lower.includes('female')) {
+            headerContainer.classList.add('speaker-state-male');
+            avatarEl.style.backgroundImage = "url('male.png')";
+        } else {
+            headerContainer.classList.add('speaker-state-female');
+            avatarEl.style.backgroundImage = "url('female.png')";
+        }
+    }
+
+    function formatTime(s) { const m = Math.floor(s/60); const sec = Math.floor(s%60); return `${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`; }
+
+    document.getElementById('playBtn').addEventListener('click', () => { if(audio.paused) { audio.play(); renderLoop(); } else { audio.pause(); } });
+    document.getElementById('mobileRecordBtn').addEventListener('click', () => {
+        document.body.classList.add('recording-mode');
+        const scale = window.innerWidth / 1080;
+        document.getElementById('stageArea').style.transform = `scale(${scale})`;
+        setTimeout(() => { audio.currentTime = 0; audio.play(); renderLoop(); }, 5000);
+    });
+
+    window.adjustFontSize = function(delta) { 
+        currentFontSize += delta; 
+        englishArea.style.fontSize = currentFontSize + "px"; 
+        chineseArea.style.fontSize = (currentFontSize - 30) + "px"; 
+    }
+    
+    init();
+</script>
+</body>
+</html>

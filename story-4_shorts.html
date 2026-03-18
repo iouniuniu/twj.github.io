@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Shorts Pro - Custom Background Edition</title>
+    <style>
+        :root {
+            --word-active-color: #ccff00; 
+            --female-color: #ec4899; 
+            --male-color: #2dd4bf;   
+            --font-stack: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            margin: 0; padding: 0; background-color: #000;
+            font-family: var(--font-stack);
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; color: white; user-select: none;
+            overflow-x: hidden; overflow-y: auto; 
+        }
+
+        #stageScaler {
+            margin-top: 20px; width: 90vw; max-width: 450px; 
+            aspect-ratio: 9 / 16; display: flex; align-items: center;
+            justify-content: center; position: relative; z-index: 10;
+        }
+
+        #stageArea {
+            width: 1080px; height: 1920px;
+            position: absolute; 
+            background-image: url('{{BG_SRC}}'); /* 默认由 Python 填入，或手动选择 */
+            background-size: cover; background-position: center;
+            overflow: hidden; box-shadow: 0 10px 50px rgba(0,0,0,0.8);
+            transform-origin: center center;
+        }
+
+        .overlay-layer {
+            position: absolute; inset: 0;
+            background: rgba(0, 0, 0, 0.3); 
+            z-index: 1;
+        }
+
+        /* 顶部 Header */
+        .speaker-header {
+            position: absolute; top: 90px; left: 90px; right: 90px;
+            z-index: 5; display: flex; align-items: center;
+            justify-content: space-between; isolation: isolate;
+        }
+
+        .speaker-info { display: flex; align-items: center; gap: 25px; flex-shrink: 0; }
+        
+        .avatar {
+            width: 75px; height: 75px; border-radius: 50%;
+            background-size: cover; background-position: center;
+            border: 6px solid rgba(255,255,255,0.8);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            background-image: url('female.png'); /* 默认 Female */
+        }
+
+        .speaker-name {
+            font-size: 45px; font-weight: 900; text-transform: uppercase;
+            letter-spacing: 2px; color: #fff; mix-blend-mode: exclusion;
+        }
+
+        .speaker-state-female .avatar { border-color: var(--female-color); box-shadow: 0 0 20px var(--female-color); }
+        .speaker-state-male .avatar { border-color: var(--male-color); box-shadow: 0 0 20px var(--male-color); }
+
+        .progress-indicator { display: flex; align-items: center; justify-content: flex-end; width: 520px; }
+        #timerText { font-size: 32px; font-weight: 700; color: #fff; mix-blend-mode: exclusion; font-family: monospace; }
+        
+        .wave-container { 
+            display: flex; gap: 6px; height: 60px; margin-left: 25px; 
+            align-items: center; mix-blend-mode: exclusion;
+        }
+        .wave-bar { width: 5px; background: rgba(255,255,255,0.4); border-radius: 3px; transition: background-color 0.2s; }
+        .wave-bar.active { background: #fff; }
+
+        /* === 文字区域：同步顶部 240px 位置 === */
+        .text-block {
+            position: absolute;
+            top: 240px; 
+            left: 0; width: 100%;
+            padding: 0 100px; box-sizing: border-box;
+            z-index: 2;
+            display: flex; flex-direction: column; gap: 35px;
+            opacity: 0; transform: translateY(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .text-block.visible { opacity: 1; transform: translateY(0); }
+
+        .english-content {
+            font-size: 70px; 
+            line-height: 1.45; font-weight: 800;
+            text-align: left; color: #ffffff;
+            text-shadow: 0 4px 15px rgba(0,0,0,0.8), 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .chinese-content {
+            font-size: 40px; 
+            line-height: 1.5; font-weight: 500;
+            text-align: left; color: rgba(255, 255, 255, 0.6);
+            mix-blend-mode: exclusion;
+        }
+
+        .word { display: inline; transition: color 0.15s ease; }
+        .word.active { color: var(--word-active-color) !important; text-shadow: 0 0 15px rgba(204,255,0,0.6); }
+
+        /* 面板控制 */
+        body.recording-mode .controls-panel { display: none !important; }
+        body.recording-mode #stageScaler { position: fixed; inset: 0; width: 100vw; height: 100vh; max-width: none; margin: 0; }
+        
+        .controls-panel {
+            padding: 30px; display: flex; gap: 12px; flex-wrap: wrap;
+            justify-content: center; max-width: 500px; z-index: 20;
+            background: #121212; width: 100%; box-sizing: border-box;
+        }
+        .ctrl-btn {
+            padding: 12px 24px; background: #222; color: #fff;
+            border: 1px solid #444; border-radius: 12px; cursor: pointer;
+            font-size: 14px; font-weight: 600;
+        }
+        .record-btn { background: #ef4444; border: none; }
+    </style>
+</head>
+<body class="speaker-state-female">
+
+<div id="stageScaler">
+    <div id="stageArea">
+        <div class="overlay-layer"></div>
+
+        <div id="headerContainer" class="speaker-header speaker-state-female">
+            <div class="speaker-info">
+                <div id="avatarEl" class="avatar"></div>
+                <div id="nameEl" class="speaker-name">周末英语剧场</div>
+            </div>
+            <div class="progress-indicator">
+                <span id="timerText">00:00</span>
+                <div id="waveContainer" class="wave-container"></div>
+            </div>
+        </div>
+
+        <div id="textContainer" class="text-block">
+            <div id="englishArea" class="english-content"></div>
+            <div id="chineseArea" class="chinese-content"></div>
+        </div>
+    </div>
+</div>
+
+<div class="controls-panel">
+    <input type="file" id="bgInput" style="display:none;" accept="image/*">
+    <button class="ctrl-btn" onclick="document.getElementById('bgInput').click()">🖼️ 换背景</button>
+    <button class="ctrl-btn" onclick="toggleColor()">🎨 换颜色</button>
+    <button class="ctrl-btn" onclick="adjustFontSize(5)">A+</button>
+    <button class="ctrl-btn" onclick="adjustFontSize(-5)">A-</button>
+    <button class="ctrl-btn" id="playBtn">▶️ 播放预览</button>
+    <button class="ctrl-btn record-btn" id="mobileRecordBtn">📱 全屏录制</button>
+</div>
+
+<audio id="audioPlayer">
+    <source src="story-4.m4a" type="audio/mp4">
+</audio>
+
+<script>
+    const transcriptData = [{"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Hello, my name's Tim.", "sentence_zh": "大家好，我是蒂姆。", "start": 8.097, "end": 10.442, "words": [{"word": "Hello,", "start": 8.097, "end": 9.58}, {"word": "my", "start": 9.661, "end": 9.781}, {"word": "name's", "start": 9.821, "end": 10.061}, {"word": "Tim.", "start": 10.142, "end": 10.442}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "If you like bloodthirsty pirates and riches beyond your wildest dreams, then shiver my timbers.", "sentence_zh": "如果你喜欢嗜血的海盗和做梦都想不到的财富，那么“天哪”（shiver my timbers，海盗惊叹语），你一定会大呼过瘾。", "start": 10.964, "end": 17.458, "words": [{"word": "If", "start": 10.964, "end": 11.024}, {"word": "you", "start": 11.084, "end": 11.244}, {"word": "like", "start": 11.284, "end": 11.505}, {"word": "bloodthirsty", "start": 11.585, "end": 12.467}, {"word": "pirates", "start": 12.527, "end": 12.948}, {"word": "and", "start": 13.048, "end": 13.128}, {"word": "riches", "start": 13.349, "end": 13.77}, {"word": "beyond", "start": 13.89, "end": 14.211}, {"word": "your", "start": 14.271, "end": 14.452}, {"word": "wildest", "start": 14.552, "end": 15.113}, {"word": "dreams,", "start": 15.193, "end": 15.714}, {"word": "then", "start": 15.875, "end": 16.115}, {"word": "shiver", "start": 16.155, "end": 16.857}, {"word": "my", "start": 16.897, "end": 17.017}, {"word": "timbers.", "start": 17.037, "end": 17.458}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Today's story is spot on.", "sentence_zh": "今天的故事绝对是恰到好处（spot on，精准点题）。", "start": 17.939, "end": 20.385, "words": [{"word": "Today's", "start": 17.939, "end": 18.36}, {"word": "story", "start": 18.441, "end": 18.882}, {"word": "is", "start": 18.922, "end": 19.222}, {"word": "spot", "start": 19.423, "end": 19.804}, {"word": "on.", "start": 19.964, "end": 20.385}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "We begin one moonlit night as Jim Hawkins, a young boy working at a harbourside inn in Bristol, hears shouts from downstairs.", "sentence_zh": "故事开始于一个明月高悬的夜晚，在布里斯托尔一家海滨客栈打工的小男孩吉姆·霍金斯，听到了楼下传来的叫喊声。", "start": 21.243, "end": 30.34, "words": [{"word": "We", "start": 21.243, "end": 21.403}, {"word": "begin", "start": 21.463, "end": 21.824}, {"word": "one", "start": 21.864, "end": 22.245}, {"word": "moonlit", "start": 22.405, "end": 22.846}, {"word": "night", "start": 22.946, "end": 23.207}, {"word": "as", "start": 23.407, "end": 23.507}, {"word": "Jim", "start": 23.647, "end": 23.888}, {"word": "Hawkins,", "start": 23.968, "end": 24.469}, {"word": "a", "start": 24.709, "end": 24.749}, {"word": "young", "start": 24.81, "end": 25.03}, {"word": "boy", "start": 25.13, "end": 25.391}, {"word": "working", "start": 25.511, "end": 25.871}, {"word": "at", "start": 25.932, "end": 25.992}, {"word": "a", "start": 26.032, "end": 26.052}, {"word": "harbourside", "start": 26.152, "end": 26.793}, {"word": "inn", "start": 26.994, "end": 27.134}, {"word": "in", "start": 27.334, "end": 27.414}, {"word": "Bristol,", "start": 27.555, "end": 28.056}, {"word": "hears", "start": 28.456, "end": 28.717}, {"word": "shouts", "start": 28.857, "end": 29.258}, {"word": "from", "start": 29.378, "end": 29.518}, {"word": "downstairs.", "start": 29.598, "end": 30.34}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Yo ho ho and a bottle of rum!", "sentence_zh": "“哟吼吼，还有一瓶朗姆酒！”", "start": 31.201, "end": 33.626, "words": [{"word": "Yo", "start": 31.201, "end": 31.542}, {"word": "ho", "start": 31.622, "end": 31.903}, {"word": "ho", "start": 31.983, "end": 32.303}, {"word": "and", "start": 32.424, "end": 32.504}, {"word": "a", "start": 32.564, "end": 32.584}, {"word": "bottle", "start": 32.664, "end": 33.065}, {"word": "of", "start": 33.145, "end": 33.185}, {"word": "rum!", "start": 33.325, "end": 33.626}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "A salty old sea captain named Billy Bones is arguing with a rough-looking sailor who hands him a black spot.", "sentence_zh": "一个名叫比利·彭斯、饱经风霜的老船长正在和一个面目可憎的水手争吵，那个水手递给了他一张“黑券”（black spot，海盗的死亡通牒）。", "start": 33.946, "end": 42.101, "words": [{"word": "A", "start": 33.946, "end": 33.966}, {"word": "salty", "start": 34.087, "end": 34.487}, {"word": "old", "start": 34.648, "end": 34.808}, {"word": "sea", "start": 34.968, "end": 35.229}, {"word": "captain", "start": 35.309, "end": 35.77}, {"word": "named", "start": 36.03, "end": 36.231}, {"word": "Billy", "start": 36.271, "end": 36.631}, {"word": "Bones", "start": 36.691, "end": 37.172}, {"word": "is", "start": 37.272, "end": 37.353}, {"word": "arguing", "start": 37.373, "end": 38.074}, {"word": "with", "start": 38.114, "end": 38.214}, {"word": "a", "start": 38.294, "end": 38.314}, {"word": "rough-looking", "start": 38.435, "end": 39.036}, {"word": "sailor", "start": 39.136, "end": 39.497}, {"word": "who", "start": 39.857, "end": 39.997}, {"word": "hands", "start": 40.078, "end": 40.458}, {"word": "him", "start": 40.538, "end": 40.679}, {"word": "a", "start": 40.719, "end": 40.879}, {"word": "black", "start": 40.979, "end": 41.44}, {"word": "spot.", "start": 41.681, "end": 42.101}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "The next morning, Billy Bones is dead.", "sentence_zh": "第二天早上，比利·彭斯死了。", "start": 43.083, "end": 46.371, "words": [{"word": "The", "start": 43.083, "end": 43.183}, {"word": "next", "start": 43.223, "end": 43.484}, {"word": "morning,", "start": 43.584, "end": 44.145}, {"word": "Billy", "start": 44.648, "end": 44.969}, {"word": "Bones", "start": 45.029, "end": 45.49}, {"word": "is", "start": 45.73, "end": 45.83}, {"word": "dead.", "start": 46.071, "end": 46.371}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Opening his room, Jim spots an old wooden sea chest containing a compass, a ship's log book, and a stained, spotted piece of paper.", "sentence_zh": "打开他的房门后，吉姆发现（spots）了一个旧木制海员箱，里面有一个指南针、一本航海日志，还有一张布满污渍和斑点（spotted）的纸。", "start": 47.153, "end": 57.211, "words": [{"word": "Opening", "start": 47.153, "end": 47.473}, {"word": "his", "start": 47.513, "end": 47.633}, {"word": "room,", "start": 47.674, "end": 48.014}, {"word": "Jim", "start": 48.275, "end": 48.595}, {"word": "spots", "start": 48.695, "end": 49.116}, {"word": "an", "start": 49.256, "end": 49.317}, {"word": "old", "start": 49.577, "end": 49.797}, {"word": "wooden", "start": 49.998, "end": 50.358}, {"word": "sea", "start": 50.539, "end": 50.779}, {"word": "chest", "start": 50.859, "end": 51.24}, {"word": "containing", "start": 51.4, "end": 51.881}, {"word": "a", "start": 51.941, "end": 51.961}, {"word": "compass,", "start": 52.062, "end": 52.502}, {"word": "a", "start": 53.063, "end": 53.103}, {"word": "ship's", "start": 53.204, "end": 53.524}, {"word": "log", "start": 53.604, "end": 53.825}, {"word": "book,", "start": 53.865, "end": 54.125}, {"word": "and", "start": 54.766, "end": 54.867}, {"word": "a", "start": 54.947, "end": 54.967}, {"word": "stained,", "start": 55.047, "end": 55.608}, {"word": "spotted", "start": 55.909, "end": 56.329}, {"word": "piece", "start": 56.45, "end": 56.67}, {"word": "of", "start": 56.73, "end": 56.77}, {"word": "paper.", "start": 56.87, "end": 57.211}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Now whatever could that be?", "sentence_zh": "这到底会是什么呢？", "start": 57.972, "end": 59.395, "words": [{"word": "Now", "start": 57.972, "end": 58.173}, {"word": "whatever", "start": 58.233, "end": 58.654}, {"word": "could", "start": 58.734, "end": 58.894}, {"word": "that", "start": 58.974, "end": 59.175}, {"word": "be?", "start": 59.255, "end": 59.395}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "After a spot of lunch, Jim shows the paper to his friends, Dr Livesey and Squire Trelawney.", "sentence_zh": "简单吃了点午饭（a spot of lunch）后，吉姆把这张纸拿给他的朋友利夫西医生和特里劳尼乡绅看。", "start": 59.455, "end": 67.129, "words": [{"word": "After", "start": 59.455, "end": 60.697}, {"word": "a", "start": 60.717, "end": 60.737}, {"word": "spot", "start": 60.978, "end": 61.238}, {"word": "of", "start": 61.298, "end": 61.338}, {"word": "lunch,", "start": 61.379, "end": 61.719}, {"word": "Jim", "start": 62.06, "end": 62.32}, {"word": "shows", "start": 62.4, "end": 62.681}, {"word": "the", "start": 62.741, "end": 62.821}, {"word": "paper", "start": 62.881, "end": 63.182}, {"word": "to", "start": 63.242, "end": 63.342}, {"word": "his", "start": 63.382, "end": 63.502}, {"word": "friends,", "start": 63.603, "end": 64.023}, {"word": "Dr", "start": 64.264, "end": 64.604}, {"word": "Livesey", "start": 64.685, "end": 65.206}, {"word": "and", "start": 65.606, "end": 65.726}, {"word": "Squire", "start": 65.807, "end": 66.187}, {"word": "Trelawney.", "start": 66.227, "end": 67.129}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Straight away they spot that it's a treasure map.", "sentence_zh": "他们立刻认出（spot）这是一张藏宝图。", "start": 67.835, "end": 70.758, "words": [{"word": "Straight", "start": 67.835, "end": 68.296}, {"word": "away", "start": 68.316, "end": 68.496}, {"word": "they", "start": 68.516, "end": 68.696}, {"word": "spot", "start": 68.796, "end": 69.076}, {"word": "that", "start": 69.217, "end": 69.377}, {"word": "it's", "start": 69.537, "end": 69.717}, {"word": "a", "start": 69.877, "end": 69.917}, {"word": "treasure", "start": 70.058, "end": 70.478}, {"word": "map.", "start": 70.538, "end": 70.758}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "It must be the map made by notorious pirate Captain Flint when burying his stolen gold.", "sentence_zh": "这肯定是大名鼎鼎的海盗头子弗林特船长在埋藏他抢来的黄金时画的地图。", "start": 71.299, "end": 77.446, "words": [{"word": "It", "start": 71.299, "end": 71.379}, {"word": "must", "start": 71.459, "end": 71.659}, {"word": "be", "start": 71.719, "end": 71.82}, {"word": "the", "start": 71.86, "end": 71.92}, {"word": "map", "start": 71.98, "end": 72.2}, {"word": "made", "start": 72.3, "end": 72.5}, {"word": "by", "start": 72.56, "end": 72.681}, {"word": "notorious", "start": 72.721, "end": 73.662}, {"word": "pirate", "start": 73.762, "end": 74.162}, {"word": "Captain", "start": 74.202, "end": 74.663}, {"word": "Flint", "start": 74.843, "end": 75.183}, {"word": "when", "start": 75.504, "end": 75.644}, {"word": "burying", "start": 75.724, "end": 76.165}, {"word": "his", "start": 76.185, "end": 76.345}, {"word": "stolen", "start": 76.485, "end": 76.945}, {"word": "gold.", "start": 77.066, "end": 77.446}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "And there in the middle, a big X marking the spot.", "sentence_zh": "在地图的中央，有一个大大的“X”标记着藏宝地点（spot）。", "start": 78.347, "end": 82.352, "words": [{"word": "And", "start": 78.347, "end": 78.447}, {"word": "there", "start": 78.527, "end": 78.788}, {"word": "in", "start": 78.848, "end": 78.888}, {"word": "the", "start": 78.928, "end": 79.008}, {"word": "middle,", "start": 79.068, "end": 79.328}, {"word": "a", "start": 79.869, "end": 79.929}, {"word": "big", "start": 80.009, "end": 80.269}, {"word": "X", "start": 80.73, "end": 80.89}, {"word": "marking", "start": 81.27, "end": 81.751}, {"word": "the", "start": 81.771, "end": 81.931}, {"word": "spot.", "start": 82.031, "end": 82.352}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "On the spot, Jim, the Doctor and the Squire hurry to find a ship that will take them in search of the unknown island on the map.", "sentence_zh": "吉姆、医生和乡绅当场（On the spot）决定，赶紧去找一艘船带他们去寻找地图上那座未知的岛屿。", "start": 83.613, "end": 91.362, "words": [{"word": "On", "start": 83.613, "end": 83.693}, {"word": "the", "start": 83.733, "end": 83.813}, {"word": "spot,", "start": 83.913, "end": 84.234}, {"word": "Jim,", "start": 84.374, "end": 84.654}, {"word": "the", "start": 84.754, "end": 84.835}, {"word": "Doctor", "start": 84.875, "end": 85.195}, {"word": "and", "start": 85.275, "end": 85.335}, {"word": "the", "start": 85.375, "end": 85.475}, {"word": "Squire", "start": 85.535, "end": 85.936}, {"word": "hurry", "start": 85.976, "end": 86.496}, {"word": "to", "start": 86.557, "end": 86.657}, {"word": "find", "start": 86.737, "end": 86.977}, {"word": "a", "start": 87.057, "end": 87.077}, {"word": "ship", "start": 87.157, "end": 87.397}, {"word": "that", "start": 87.438, "end": 87.538}, {"word": "will", "start": 87.578, "end": 87.738}, {"word": "take", "start": 87.798, "end": 88.038}, {"word": "them", "start": 88.098, "end": 88.238}, {"word": "in", "start": 88.339, "end": 88.419}, {"word": "search", "start": 88.579, "end": 88.959}, {"word": "of", "start": 89.019, "end": 89.059}, {"word": "the", "start": 89.119, "end": 89.22}, {"word": "unknown", "start": 89.24, "end": 89.98}, {"word": "island", "start": 90.201, "end": 90.521}, {"word": "on", "start": 90.621, "end": 90.681}, {"word": "the", "start": 90.721, "end": 90.801}, {"word": "map.", "start": 90.861, "end": 91.362}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "If only they hadn't been so quick, it would have saved them a spot of bother.", "sentence_zh": "要是他们当初没那么仓促就好了，那样就能省去一点小麻烦（a spot of bother）。", "start": 92.067, "end": 96.893, "words": [{"word": "If", "start": 92.067, "end": 92.247}, {"word": "only", "start": 92.407, "end": 92.608}, {"word": "they", "start": 92.648, "end": 92.828}, {"word": "hadn't", "start": 92.868, "end": 93.188}, {"word": "been", "start": 93.228, "end": 93.429}, {"word": "so", "start": 93.509, "end": 93.689}, {"word": "quick,", "start": 93.849, "end": 94.149}, {"word": "it", "start": 94.35, "end": 94.41}, {"word": "would", "start": 94.49, "end": 94.65}, {"word": "have", "start": 94.71, "end": 94.83}, {"word": "saved", "start": 94.95, "end": 95.271}, {"word": "them", "start": 95.331, "end": 95.511}, {"word": "a", "start": 95.531, "end": 95.551}, {"word": "spot", "start": 95.952, "end": 96.272}, {"word": "of", "start": 96.352, "end": 96.432}, {"word": "bother.", "start": 96.512, "end": 96.893}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "But I'm jumping ahead of the story.", "sentence_zh": "不过我有点把故事说得太超前了。", "start": 97.473, "end": 99.155, "words": [{"word": "But", "start": 97.473, "end": 97.634}, {"word": "I'm", "start": 97.734, "end": 97.874}, {"word": "jumping", "start": 97.954, "end": 98.274}, {"word": "ahead", "start": 98.334, "end": 98.555}, {"word": "of", "start": 98.595, "end": 98.635}, {"word": "the", "start": 98.675, "end": 98.755}, {"word": "story.", "start": 98.795, "end": 99.155}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Let's return to the harbour side where Jim meets the trustworthy Captain Smollett and hires him and his ship, the Hispaniola.", "sentence_zh": "让我们回到海港边，吉姆在那里遇到了值得信赖的斯摩列特船长，并雇佣了他和他的船——“伊斯帕尼奥拉号”。", "start": 109.487, "end": 118.598, "words": [{"word": "Let's", "start": 109.487, "end": 109.748}, {"word": "return", "start": 109.828, "end": 110.328}, {"word": "to", "start": 110.408, "end": 110.489}, {"word": "the", "start": 110.529, "end": 110.609}, {"word": "harbour", "start": 110.669, "end": 110.989}, {"word": "side", "start": 111.009, "end": 111.289}, {"word": "where", "start": 111.37, "end": 111.57}, {"word": "Jim", "start": 111.73, "end": 112.01}, {"word": "meets", "start": 112.13, "end": 112.371}, {"word": "the", "start": 112.451, "end": 112.551}, {"word": "trustworthy", "start": 112.651, "end": 113.312}, {"word": "Captain", "start": 113.352, "end": 113.973}, {"word": "Smollett", "start": 114.113, "end": 114.533}, {"word": "and", "start": 114.974, "end": 115.054}, {"word": "hires", "start": 115.134, "end": 115.494}, {"word": "him", "start": 115.554, "end": 115.795}, {"word": "and", "start": 115.815, "end": 116.215}, {"word": "his", "start": 116.275, "end": 116.415}, {"word": "ship,", "start": 116.496, "end": 116.776}, {"word": "the", "start": 117.256, "end": 117.337}, {"word": "Hispaniola.", "start": 117.377, "end": 118.598}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Then Jim sees something which glues him to the spot.", "sentence_zh": "接着，吉姆看到了一个让他呆立当场（glues him to the spot）的画面。", "start": 119.202, "end": 122.687, "words": [{"word": "Then", "start": 119.202, "end": 119.482}, {"word": "Jim", "start": 119.663, "end": 119.963}, {"word": "sees", "start": 120.063, "end": 120.284}, {"word": "something", "start": 120.364, "end": 120.744}, {"word": "which", "start": 120.844, "end": 121.045}, {"word": "glues", "start": 121.185, "end": 121.586}, {"word": "him", "start": 121.646, "end": 121.806}, {"word": "to", "start": 121.966, "end": 122.086}, {"word": "the", "start": 122.126, "end": 122.246}, {"word": "spot.", "start": 122.327, "end": 122.687}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "A fearsome man with one leg, gold teeth, and a parrot on his shoulder squawking, pieces of eight!", "sentence_zh": "一个缺了一条腿、镶着金牙的可怕男人，肩膀上还停着一只鹦鹉，嘎嘎地叫着：“八个里亚尔（pieces of eight）！”", "start": 123.709, "end": 131.019, "words": [{"word": "A", "start": 123.709, "end": 123.769}, {"word": "fearsome", "start": 124.009, "end": 124.51}, {"word": "man", "start": 124.65, "end": 124.95}, {"word": "with", "start": 124.991, "end": 125.211}, {"word": "one", "start": 125.471, "end": 125.591}, {"word": "leg,", "start": 125.692, "end": 125.952}, {"word": "gold", "start": 126.232, "end": 126.673}, {"word": "teeth,", "start": 126.813, "end": 127.134}, {"word": "and", "start": 127.574, "end": 127.674}, {"word": "a", "start": 127.755, "end": 127.775}, {"word": "parrot", "start": 127.875, "end": 128.275}, {"word": "on", "start": 128.375, "end": 128.436}, {"word": "his", "start": 128.496, "end": 128.596}, {"word": "shoulder", "start": 128.676, "end": 129.097}, {"word": "squawking,", "start": 129.117, "end": 129.778}, {"word": "pieces", "start": 130.118, "end": 130.539}, {"word": "of", "start": 130.579, "end": 130.639}, {"word": "eight!", "start": 130.779, "end": 131.019}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "A pirate, if ever I saw one.", "sentence_zh": "怎么看这都是个海盗。", "start": 131.881, "end": 133.663, "words": [{"word": "A", "start": 131.881, "end": 131.921}, {"word": "pirate,", "start": 132.021, "end": 132.421}, {"word": "if", "start": 132.662, "end": 132.702}, {"word": "ever", "start": 132.862, "end": 133.022}, {"word": "I", "start": 133.122, "end": 133.163}, {"word": "saw", "start": 133.243, "end": 133.443}, {"word": "one.", "start": 133.563, "end": 133.663}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "But Jim greets the man, Long John Silver by name, who persuades the doctor and squire to hire him and his men as crew, which", "sentence_zh": "但吉姆还是去跟这个名叫高个子约翰·西尔弗的男人打了招呼，西尔弗说服了医生和乡绅雇佣他和他的手下做船员，而", "start": 134.344, "end": 144.519, "words": [{"word": "But", "start": 134.344, "end": 134.464}, {"word": "Jim", "start": 134.565, "end": 134.825}, {"word": "greets", "start": 135.045, "end": 135.406}, {"word": "the", "start": 135.506, "end": 135.586}, {"word": "man,", "start": 135.626, "end": 135.866}, {"word": "Long", "start": 136.247, "end": 136.547}, {"word": "John", "start": 136.608, "end": 136.908}, {"word": "Silver", "start": 137.028, "end": 137.409}, {"word": "by", "start": 137.489, "end": 137.669}, {"word": "name,", "start": 137.749, "end": 138.05}, {"word": "who", "start": 138.59, "end": 138.731}, {"word": "persuades", "start": 138.771, "end": 139.332}, {"word": "the", "start": 139.372, "end": 139.492}, {"word": "doctor", "start": 139.532, "end": 139.932}, {"word": "and", "start": 140.153, "end": 140.273}, {"word": "squire", "start": 140.373, "end": 140.854}, {"word": "to", "start": 140.934, "end": 141.054}, {"word": "hire", "start": 141.134, "end": 141.455}, {"word": "him", "start": 141.495, "end": 141.815}, {"word": "and", "start": 141.835, "end": 142.276}, {"word": "his", "start": 142.376, "end": 142.576}, {"word": "men", "start": 142.656, "end": 142.857}, {"word": "as", "start": 142.897, "end": 143.197}, {"word": "crew,", "start": 143.337, "end": 143.678}, {"word": "which", "start": 143.718, "end": 144.519}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "they foolishly agree to.", "sentence_zh": "他们竟然愚蠢地答应了。", "start": 144.599, "end": 146.442, "words": [{"word": "they", "start": 144.599, "end": 144.74}, {"word": "foolishly", "start": 144.78, "end": 145.501}, {"word": "agree", "start": 145.541, "end": 146.041}, {"word": "to.", "start": 146.081, "end": 146.442}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Only Captain Smollett is worried, believing Long John Silver and his men to be none other than the former pirate shipmates of Captain Flint.", "sentence_zh": "只有斯摩列特船长忧心忡忡，他认定高个子约翰·西尔弗和他的手下正是弗林特船长以前的海盗同伙。", "start": 147.434, "end": 157.446, "words": [{"word": "Only", "start": 147.434, "end": 147.915}, {"word": "Captain", "start": 148.035, "end": 148.435}, {"word": "Smollett", "start": 148.535, "end": 148.996}, {"word": "is", "start": 149.116, "end": 149.176}, {"word": "worried,", "start": 149.236, "end": 149.617}, {"word": "believing", "start": 149.917, "end": 150.337}, {"word": "Long", "start": 150.438, "end": 150.718}, {"word": "John", "start": 150.778, "end": 151.038}, {"word": "Silver", "start": 151.118, "end": 151.519}, {"word": "and", "start": 151.619, "end": 151.759}, {"word": "his", "start": 151.819, "end": 151.959}, {"word": "men", "start": 152.04, "end": 152.32}, {"word": "to", "start": 152.42, "end": 152.52}, {"word": "be", "start": 152.58, "end": 152.72}, {"word": "none", "start": 152.76, "end": 153.181}, {"word": "other", "start": 153.281, "end": 153.521}, {"word": "than", "start": 153.661, "end": 153.802}, {"word": "the", "start": 153.862, "end": 153.942}, {"word": "former", "start": 154.102, "end": 154.543}, {"word": "pirate", "start": 154.723, "end": 155.243}, {"word": "shipmates", "start": 155.323, "end": 155.944}, {"word": "of", "start": 156.225, "end": 156.285}, {"word": "Captain", "start": 156.405, "end": 156.865}, {"word": "Flint.", "start": 157.066, "end": 157.446}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Days pass as the Hispaniola sails the seven seas.", "sentence_zh": "随着“伊斯帕尼奥拉号”航行在七大洋上，日子一天天过去。", "start": 159.509, "end": 163.533, "words": [{"word": "Days", "start": 159.509, "end": 159.949}, {"word": "pass", "start": 160.069, "end": 160.59}, {"word": "as", "start": 160.71, "end": 160.77}, {"word": "the", "start": 160.81, "end": 160.89}, {"word": "Hispaniola", "start": 160.95, "end": 161.691}, {"word": "sails", "start": 161.831, "end": 162.272}, {"word": "the", "start": 162.312, "end": 162.492}, {"word": "seven", "start": 162.592, "end": 162.993}, {"word": "seas.", "start": 163.113, "end": 163.533}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "One night, Jim overhears Long John Silver plotting with the crew.", "sentence_zh": "一天晚上，吉姆无意中听到高个子约翰·西尔弗在和船员们密谋。", "start": 164.495, "end": 169.2, "words": [{"word": "One", "start": 164.495, "end": 164.595}, {"word": "night,", "start": 164.675, "end": 164.915}, {"word": "Jim", "start": 165.456, "end": 165.696}, {"word": "overhears", "start": 165.956, "end": 166.537}, {"word": "Long", "start": 166.577, "end": 166.937}, {"word": "John", "start": 166.998, "end": 167.258}, {"word": "Silver", "start": 167.338, "end": 167.718}, {"word": "plotting", "start": 167.859, "end": 168.399}, {"word": "with", "start": 168.459, "end": 168.619}, {"word": "the", "start": 168.68, "end": 168.78}, {"word": "crew.", "start": 168.86, "end": 169.2}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Mutiny.", "sentence_zh": "叛变。", "start": 170.281, "end": 170.862, "words": [{"word": "Mutiny.", "start": 170.281, "end": 170.862}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Kill Captain Smollett and take the top spot and the treasure for himself.", "sentence_zh": "杀掉斯摩列特船长，夺取最高统治权（top spot），把宝藏据为己有。", "start": 171.543, "end": 177.39, "words": [{"word": "Kill", "start": 171.543, "end": 171.963}, {"word": "Captain", "start": 172.124, "end": 172.524}, {"word": "Smollett", "start": 172.644, "end": 173.065}, {"word": "and", "start": 173.165, "end": 173.245}, {"word": "take", "start": 173.325, "end": 173.565}, {"word": "the", "start": 173.625, "end": 173.706}, {"word": "top", "start": 173.786, "end": 174.086}, {"word": "spot", "start": 174.146, "end": 174.487}, {"word": "and", "start": 174.927, "end": 175.047}, {"word": "the", "start": 175.087, "end": 175.227}, {"word": "treasure", "start": 175.368, "end": 175.748}, {"word": "for", "start": 175.788, "end": 176.469}, {"word": "himself.", "start": 176.589, "end": 177.39}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Things start to turn ugly when suddenly, with the cry, land ahoy!", "sentence_zh": "事情开始变得不妙，突然传来一声高呼：“看到陆地啦！”", "start": 178.332, "end": 182.817, "words": [{"word": "Things", "start": 178.332, "end": 178.632}, {"word": "start", "start": 178.692, "end": 178.973}, {"word": "to", "start": 178.993, "end": 179.053}, {"word": "turn", "start": 179.093, "end": 179.333}, {"word": "ugly", "start": 179.373, "end": 179.754}, {"word": "when", "start": 179.774, "end": 179.974}, {"word": "suddenly,", "start": 180.094, "end": 180.535}, {"word": "with", "start": 180.995, "end": 181.115}, {"word": "the", "start": 181.155, "end": 181.235}, {"word": "cry,", "start": 181.315, "end": 181.636}, {"word": "land", "start": 181.676, "end": 182.297}, {"word": "ahoy!", "start": 182.317, "end": 182.817}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "an island is spotted, and Silver and his mutinous crew row ashore.", "sentence_zh": "一座岛屿被发现了（spotted），西尔弗和他那些意图叛变的船员们划船上了岸。", "start": 183.218, "end": 187.823, "words": [{"word": "an", "start": 183.218, "end": 183.298}, {"word": "island", "start": 183.518, "end": 183.838}, {"word": "is", "start": 183.918, "end": 183.978}, {"word": "spotted,", "start": 184.059, "end": 184.499}, {"word": "and", "start": 185.04, "end": 185.12}, {"word": "Silver", "start": 185.24, "end": 185.64}, {"word": "and", "start": 185.781, "end": 185.861}, {"word": "his", "start": 185.921, "end": 186.041}, {"word": "mutinous", "start": 186.141, "end": 186.601}, {"word": "crew", "start": 186.682, "end": 186.962}, {"word": "row", "start": 187.002, "end": 187.362}, {"word": "ashore.", "start": 187.422, "end": 187.823}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Having a soft spot for Jim, Smollett allows him ashore too, with the plan to maroon the mutineers on the island.", "sentence_zh": "出于对吉姆的偏爱（soft spot），斯摩列特也允许他上了岸，并计划把那些叛变者放逐在岛上。", "start": 188.824, "end": 196.012, "words": [{"word": "Having", "start": 188.824, "end": 189.144}, {"word": "a", "start": 189.224, "end": 189.265}, {"word": "soft", "start": 189.365, "end": 189.685}, {"word": "spot", "start": 189.765, "end": 190.045}, {"word": "for", "start": 190.126, "end": 190.266}, {"word": "Jim,", "start": 190.306, "end": 190.566}, {"word": "Smollett", "start": 191.007, "end": 191.387}, {"word": "allows", "start": 191.507, "end": 191.948}, {"word": "him", "start": 191.968, "end": 192.168}, {"word": "ashore", "start": 192.208, "end": 192.548}, {"word": "too,", "start": 192.628, "end": 192.869}, {"word": "with", "start": 193.069, "end": 193.189}, {"word": "the", "start": 193.229, "end": 193.289}, {"word": "plan", "start": 193.369, "end": 193.69}, {"word": "to", "start": 193.75, "end": 193.83}, {"word": "maroon", "start": 193.89, "end": 194.41}, {"word": "the", "start": 194.45, "end": 194.531}, {"word": "mutineers", "start": 194.571, "end": 195.191}, {"word": "on", "start": 195.392, "end": 195.452}, {"word": "the", "start": 195.512, "end": 195.592}, {"word": "island.", "start": 195.752, "end": 196.012}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "But soon, Jim finds himself in a hot spot as the pirate's treasure-lust is released and he runs away scared.", "sentence_zh": "但很快，随着海盗们对宝藏的贪婪本性暴露无遗，吉姆发现自己陷入了险境（hot spot），吓得落荒而逃。", "start": 196.713, "end": 204.542, "words": [{"word": "But", "start": 196.713, "end": 196.813}, {"word": "soon,", "start": 196.913, "end": 197.214}, {"word": "Jim", "start": 197.734, "end": 197.974}, {"word": "finds", "start": 198.095, "end": 198.375}, {"word": "himself", "start": 198.435, "end": 198.835}, {"word": "in", "start": 198.976, "end": 199.036}, {"word": "a", "start": 199.096, "end": 199.136}, {"word": "hot", "start": 199.236, "end": 199.456}, {"word": "spot", "start": 199.516, "end": 199.797}, {"word": "as", "start": 200.157, "end": 200.217}, {"word": "the", "start": 200.277, "end": 200.357}, {"word": "pirate's", "start": 200.417, "end": 200.858}, {"word": "treasure-lust", "start": 200.978, "end": 201.599}, {"word": "is", "start": 201.779, "end": 201.839}, {"word": "released", "start": 201.939, "end": 202.46}, {"word": "and", "start": 202.62, "end": 202.7}, {"word": "he", "start": 202.74, "end": 202.8}, {"word": "runs", "start": 202.82, "end": 203.14}, {"word": "away", "start": 203.2, "end": 203.461}, {"word": "scared.", "start": 203.501, "end": 204.542}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "From his hiding spot in the jungle, Jim sees the ground spotted with blood.", "sentence_zh": "从丛林里的藏身之处（hiding spot），吉姆看到地上斑斑点点（spotted）都是血迹。", "start": 204.893, "end": 210.027, "words": [{"word": "From", "start": 204.893, "end": 205.073}, {"word": "his", "start": 205.134, "end": 205.254}, {"word": "hiding", "start": 205.374, "end": 205.735}, {"word": "spot", "start": 205.795, "end": 206.076}, {"word": "in", "start": 206.217, "end": 206.277}, {"word": "the", "start": 206.317, "end": 206.397}, {"word": "jungle,", "start": 206.477, "end": 206.878}, {"word": "Jim", "start": 207.38, "end": 207.701}, {"word": "sees", "start": 207.761, "end": 208.082}, {"word": "the", "start": 208.162, "end": 208.222}, {"word": "ground", "start": 208.282, "end": 208.663}, {"word": "spotted", "start": 208.864, "end": 209.345}, {"word": "with", "start": 209.385, "end": 209.606}, {"word": "blood.", "start": 209.706, "end": 210.027}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Long John Silver has murdered a sailor who refused to mutiny.", "sentence_zh": "高个子约翰·西尔弗谋杀了一名拒绝叛变的水手。", "start": 211.21, "end": 215.241, "words": [{"word": "Long", "start": 211.21, "end": 211.431}, {"word": "John", "start": 211.491, "end": 211.711}, {"word": "Silver", "start": 211.792, "end": 212.173}, {"word": "has", "start": 212.253, "end": 212.413}, {"word": "murdered", "start": 212.574, "end": 212.995}, {"word": "a", "start": 213.015, "end": 213.035}, {"word": "sailor", "start": 213.316, "end": 213.697}, {"word": "who", "start": 213.797, "end": 213.938}, {"word": "refused", "start": 213.998, "end": 214.499}, {"word": "to", "start": 214.539, "end": 214.7}, {"word": "mutiny.", "start": 214.78, "end": 215.241}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "and carnage breaks loose as the pirates fight amongst themselves to find Captain Flint's treasure.", "sentence_zh": "随后，海盗们为了寻找弗林特船长的宝藏开始内讧，引发了一场大屠杀。", "start": 215.677, "end": 220.903, "words": [{"word": "and", "start": 215.677, "end": 215.837}, {"word": "carnage", "start": 215.977, "end": 216.458}, {"word": "breaks", "start": 216.558, "end": 216.838}, {"word": "loose", "start": 216.918, "end": 217.179}, {"word": "as", "start": 217.259, "end": 217.339}, {"word": "the", "start": 217.359, "end": 217.479}, {"word": "pirates", "start": 217.519, "end": 217.94}, {"word": "fight", "start": 218.08, "end": 218.36}, {"word": "amongst", "start": 218.42, "end": 218.68}, {"word": "themselves", "start": 218.72, "end": 219.281}, {"word": "to", "start": 219.321, "end": 219.401}, {"word": "find", "start": 219.441, "end": 219.682}, {"word": "Captain", "start": 219.762, "end": 220.122}, {"word": "Flint's", "start": 220.202, "end": 220.482}, {"word": "treasure.", "start": 220.563, "end": 220.903}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Jim flees deeper into the jungle where he chances upon a wild, half-crazy man, Ben Gunn, who explains how Captain Flint abandoned", "sentence_zh": "吉姆逃向丛林深处，偶然遇到了一个像野人般半疯的男人本·冈恩，他向吉姆讲述了多年前弗林特船长在附近的一个秘密地点（secret spot）埋下宝藏后，", "start": 221.744, "end": 231.875, "words": [{"word": "Jim", "start": 221.744, "end": 222.004}, {"word": "flees", "start": 222.164, "end": 222.565}, {"word": "deeper", "start": 222.665, "end": 222.965}, {"word": "into", "start": 223.025, "end": 223.186}, {"word": "the", "start": 223.226, "end": 223.306}, {"word": "jungle", "start": 223.346, "end": 223.686}, {"word": "where", "start": 223.746, "end": 223.906}, {"word": "he", "start": 223.966, "end": 224.046}, {"word": "chances", "start": 224.147, "end": 224.567}, {"word": "upon", "start": 224.667, "end": 224.867}, {"word": "a", "start": 224.927, "end": 224.947}, {"word": "wild,", "start": 225.088, "end": 225.588}, {"word": "half-crazy", "start": 225.929, "end": 226.93}, {"word": "man,", "start": 227.01, "end": 227.35}, {"word": "Ben", "start": 227.37, "end": 227.43}, {"word": "Gunn,", "start": 228.071, "end": 228.391}, {"word": "who", "start": 228.832, "end": 228.952}, {"word": "explains", "start": 229.012, "end": 229.633}, {"word": "how", "start": 229.773, "end": 229.913}, {"word": "Captain", "start": 230.013, "end": 230.434}, {"word": "Flint", "start": 230.554, "end": 230.874}, {"word": "abandoned", "start": 231.094, "end": 231.875}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "him on the island years before, after burying the treasure in a secret spot nearby.", "sentence_zh": "是如何将他抛弃在这座岛上的。", "start": 231.935, "end": 238.663, "words": [{"word": "him", "start": 231.935, "end": 232.076}, {"word": "on", "start": 232.296, "end": 232.376}, {"word": "the", "start": 232.436, "end": 232.536}, {"word": "island", "start": 232.736, "end": 233.017}, {"word": "years", "start": 233.037, "end": 233.477}, {"word": "before,", "start": 233.557, "end": 234.018}, {"word": "after", "start": 234.638, "end": 234.879}, {"word": "burying", "start": 234.959, "end": 235.379}, {"word": "the", "start": 235.399, "end": 235.499}, {"word": "treasure", "start": 235.6, "end": 235.96}, {"word": "in", "start": 235.98, "end": 236.34}, {"word": "a", "start": 236.4, "end": 236.42}, {"word": "secret", "start": 236.541, "end": 236.961}, {"word": "spot", "start": 237.061, "end": 237.402}, {"word": "nearby.", "start": 237.622, "end": 238.663}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Meanwhile, the pirates have built a fort.", "sentence_zh": "与此同时，海盗们建起了一座堡垒。", "start": 247.3, "end": 251.806, "words": [{"word": "Meanwhile,", "start": 247.3, "end": 249.583}, {"word": "the", "start": 249.623, "end": 249.843}, {"word": "pirates", "start": 249.903, "end": 250.404}, {"word": "have", "start": 250.484, "end": 250.624}, {"word": "built", "start": 250.704, "end": 250.965}, {"word": "a", "start": 251.225, "end": 251.265}, {"word": "fort.", "start": 251.425, "end": 251.806}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "From the ship's mast, Captain Smollett spots the enemy's position and a terrible battle ensues.", "sentence_zh": "斯摩列特船长从船桅上发现了（spots）敌人的阵地，随后爆发了一场可怕的战斗。", "start": 252.406, "end": 258.634, "words": [{"word": "From", "start": 252.406, "end": 252.547}, {"word": "the", "start": 252.567, "end": 252.647}, {"word": "ship's", "start": 252.727, "end": 253.007}, {"word": "mast,", "start": 253.087, "end": 253.508}, {"word": "Captain", "start": 253.808, "end": 254.169}, {"word": "Smollett", "start": 254.269, "end": 254.669}, {"word": "spots", "start": 254.769, "end": 255.15}, {"word": "the", "start": 255.21, "end": 255.29}, {"word": "enemy's", "start": 255.39, "end": 255.711}, {"word": "position", "start": 255.791, "end": 256.271}, {"word": "and", "start": 256.692, "end": 256.792}, {"word": "a", "start": 256.872, "end": 256.892}, {"word": "terrible", "start": 256.992, "end": 257.473}, {"word": "battle", "start": 257.613, "end": 257.953}, {"word": "ensues.", "start": 258.074, "end": 258.634}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "In the fight, Long John Silver knocks spots off Jim, kidnaps him, and in a final attempt to control his cutthroat gang, shows them the treasure", "sentence_zh": "在混战中，高个子约翰·西尔弗轻易击败（knocks spots off）了吉姆，绑架了他，为了最终控制住那帮杀人不眨眼的亡命之徒，西尔弗向他们展示了那张藏宝", "start": 259.455, "end": 269.608, "words": [{"word": "In", "start": 259.455, "end": 259.515}, {"word": "the", "start": 259.575, "end": 259.656}, {"word": "fight,", "start": 259.736, "end": 259.996}, {"word": "Long", "start": 260.356, "end": 260.597}, {"word": "John", "start": 260.657, "end": 260.897}, {"word": "Silver", "start": 260.977, "end": 261.318}, {"word": "knocks", "start": 261.418, "end": 261.758}, {"word": "spots", "start": 261.999, "end": 262.419}, {"word": "off", "start": 262.519, "end": 262.659}, {"word": "Jim,", "start": 262.719, "end": 262.98}, {"word": "kidnaps", "start": 263.3, "end": 263.821}, {"word": "him,", "start": 263.861, "end": 264.021}, {"word": "and", "start": 264.422, "end": 264.522}, {"word": "in", "start": 264.662, "end": 264.722}, {"word": "a", "start": 264.782, "end": 264.802}, {"word": "final", "start": 264.942, "end": 265.303}, {"word": "attempt", "start": 265.343, "end": 265.743}, {"word": "to", "start": 265.823, "end": 265.903}, {"word": "control", "start": 265.964, "end": 266.464}, {"word": "his", "start": 266.504, "end": 266.684}, {"word": "cutthroat", "start": 266.805, "end": 267.345}, {"word": "gang,", "start": 267.445, "end": 267.806}, {"word": "shows", "start": 268.387, "end": 268.687}, {"word": "them", "start": 268.767, "end": 268.907}, {"word": "the", "start": 268.947, "end": 269.208}, {"word": "treasure", "start": 269.288, "end": 269.608}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "map.", "sentence_zh": "图。", "start": 269.648, "end": 269.868, "words": [{"word": "map.", "start": 269.648, "end": 269.868}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "But when they arrive at the right spot, they are shocked to find the treasure gone.", "sentence_zh": "但是当他们到达正确的地点（spot）时，却震惊地发现宝藏不见了。", "start": 270.77, "end": 275.856, "words": [{"word": "But", "start": 270.77, "end": 270.87}, {"word": "when", "start": 270.93, "end": 271.07}, {"word": "they", "start": 271.09, "end": 271.23}, {"word": "arrive", "start": 271.29, "end": 271.711}, {"word": "at", "start": 271.751, "end": 271.791}, {"word": "the", "start": 271.811, "end": 271.891}, {"word": "right", "start": 271.951, "end": 272.171}, {"word": "spot,", "start": 272.272, "end": 272.672}, {"word": "they", "start": 273.293, "end": 273.393}, {"word": "are", "start": 273.433, "end": 273.513}, {"word": "shocked", "start": 273.633, "end": 274.014}, {"word": "to", "start": 274.134, "end": 274.234}, {"word": "find", "start": 274.314, "end": 274.514}, {"word": "the", "start": 274.554, "end": 274.634}, {"word": "treasure", "start": 274.715, "end": 275.015}, {"word": "gone.", "start": 275.155, "end": 275.856}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "At that moment Smollett, Ben Gunn and the others open fire and the pirates scatter in fear.", "sentence_zh": "就在这时，斯摩列特、本·冈恩等人开了火，海盗们吓得四处逃窜。", "start": 276.41, "end": 282.159, "words": [{"word": "At", "start": 276.41, "end": 276.59}, {"word": "that", "start": 276.65, "end": 276.791}, {"word": "moment", "start": 276.871, "end": 277.191}, {"word": "Smollett,", "start": 277.412, "end": 277.872}, {"word": "Ben", "start": 278.053, "end": 278.293}, {"word": "Gunn", "start": 278.373, "end": 278.614}, {"word": "and", "start": 278.714, "end": 278.814}, {"word": "the", "start": 278.854, "end": 278.934}, {"word": "others", "start": 279.034, "end": 279.255}, {"word": "open", "start": 279.275, "end": 279.735}, {"word": "fire", "start": 279.816, "end": 280.136}, {"word": "and", "start": 280.256, "end": 280.336}, {"word": "the", "start": 280.377, "end": 280.457}, {"word": "pirates", "start": 280.517, "end": 280.957}, {"word": "scatter", "start": 281.098, "end": 281.619}, {"word": "in", "start": 281.699, "end": 281.779}, {"word": "fear.", "start": 281.879, "end": 282.159}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Long John Silver sees the error of his ways and helps Jim get back to the others who were waiting at Ben Gunn's cave where they find the treasure", "sentence_zh": "高个子约翰·西尔弗幡然悔悟，帮助吉姆回到了在本·冈恩的山洞里等候的其他人身边，在那里他们找到了那批宝藏——", "start": 283.221, "end": 293.538, "words": [{"word": "Long", "start": 283.221, "end": 283.462}, {"word": "John", "start": 283.542, "end": 283.782}, {"word": "Silver", "start": 283.902, "end": 284.283}, {"word": "sees", "start": 284.423, "end": 284.824}, {"word": "the", "start": 284.864, "end": 284.964}, {"word": "error", "start": 285.144, "end": 285.385}, {"word": "of", "start": 285.505, "end": 285.565}, {"word": "his", "start": 285.645, "end": 285.785}, {"word": "ways", "start": 285.886, "end": 286.266}, {"word": "and", "start": 286.627, "end": 286.707}, {"word": "helps", "start": 286.807, "end": 287.168}, {"word": "Jim", "start": 287.268, "end": 287.528}, {"word": "get", "start": 287.628, "end": 287.809}, {"word": "back", "start": 287.869, "end": 288.069}, {"word": "to", "start": 288.149, "end": 288.229}, {"word": "the", "start": 288.27, "end": 288.35}, {"word": "others", "start": 288.49, "end": 288.73}, {"word": "who", "start": 289.131, "end": 289.231}, {"word": "were", "start": 289.271, "end": 289.411}, {"word": "waiting", "start": 289.451, "end": 289.812}, {"word": "at", "start": 289.852, "end": 289.912}, {"word": "Ben", "start": 289.992, "end": 290.253}, {"word": "Gunn's", "start": 290.333, "end": 290.653}, {"word": "cave", "start": 290.754, "end": 291.174}, {"word": "where", "start": 291.715, "end": 291.956}, {"word": "they", "start": 291.996, "end": 292.156}, {"word": "find", "start": 292.196, "end": 292.657}, {"word": "the", "start": 292.757, "end": 292.897}, {"word": "treasure", "start": 293.057, "end": 293.538}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Ben had discovered months before.", "sentence_zh": "本·冈恩在几个月前就已经发现了。", "start": 293.578, "end": 296.022, "words": [{"word": "Ben", "start": 293.578, "end": 294.219}, {"word": "had", "start": 294.279, "end": 294.38}, {"word": "discovered", "start": 294.42, "end": 294.88}, {"word": "months", "start": 294.92, "end": 295.361}, {"word": "before.", "start": 295.441, "end": 296.022}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Gold and silver beyond their wildest dreams.", "sentence_zh": "那是远远超出他们最疯狂想象的金银财宝。", "start": 296.703, "end": 300.73, "words": [{"word": "Gold", "start": 296.703, "end": 297.124}, {"word": "and", "start": 297.405, "end": 297.505}, {"word": "silver", "start": 297.685, "end": 298.146}, {"word": "beyond", "start": 298.266, "end": 298.707}, {"word": "their", "start": 298.767, "end": 299.027}, {"word": "wildest", "start": 299.228, "end": 299.849}, {"word": "dreams.", "start": 300.009, "end": 300.73}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "Here we end our story, learning that a pirate, unlike a leopard, can change his spots after all.", "sentence_zh": "我们的故事到这里就结束了，我们认识到：海盗毕竟不像豹子，本性也是可以改变的（change his spots，反用“江山易改本性难移”的谚语）。", "start": 302.195, "end": 309.984, "words": [{"word": "Here", "start": 302.195, "end": 302.515}, {"word": "we", "start": 302.555, "end": 303.136}, {"word": "end", "start": 303.356, "end": 303.537}, {"word": "our", "start": 303.637, "end": 303.737}, {"word": "story,", "start": 303.797, "end": 304.177}, {"word": "learning", "start": 304.638, "end": 304.978}, {"word": "that", "start": 305.018, "end": 305.138}, {"word": "a", "start": 305.218, "end": 305.238}, {"word": "pirate,", "start": 305.319, "end": 305.819}, {"word": "unlike", "start": 306.42, "end": 306.76}, {"word": "a", "start": 306.82, "end": 306.84}, {"word": "leopard,", "start": 306.9, "end": 307.281}, {"word": "can", "start": 307.721, "end": 308.082}, {"word": "change", "start": 308.322, "end": 308.622}, {"word": "his", "start": 308.682, "end": 308.803}, {"word": "spots", "start": 308.883, "end": 309.223}, {"word": "after", "start": 309.503, "end": 309.724}, {"word": "all.", "start": 309.844, "end": 309.984}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "I hope you liked today's adventure on Treasure Island.", "sentence_zh": "希望你喜欢今天的《金银岛》冒险之旅。", "start": 311.225, "end": 313.768, "words": [{"word": "I", "start": 311.225, "end": 311.265}, {"word": "hope", "start": 311.325, "end": 311.466}, {"word": "you", "start": 311.486, "end": 311.626}, {"word": "liked", "start": 311.666, "end": 311.866}, {"word": "today's", "start": 311.906, "end": 312.247}, {"word": "adventure", "start": 312.287, "end": 312.747}, {"word": "on", "start": 312.847, "end": 312.907}, {"word": "Treasure", "start": 312.947, "end": 313.368}, {"word": "Island.", "start": 313.488, "end": 313.768}]}, {"speaker": "Female", "speaker_id": "SPEAKER_00", "sentence": "For me, the story really hit the spot, and I hope you'll join me for another one soon.", "sentence_zh": "对我来说，这个故事真是恰到好处（hit the spot），希望你不久后能再来听我讲下一个故事。", "start": 314.209, "end": 328.405, "words": [{"word": "For", "start": 314.209, "end": 314.329}, {"word": "me,", "start": 314.389, "end": 314.569}, {"word": "the", "start": 314.629, "end": 315.13}, {"word": "story", "start": 315.17, "end": 315.55}, {"word": "really", "start": 315.59, "end": 315.991}, {"word": "hit", "start": 316.051, "end": 316.231}, {"word": "the", "start": 316.251, "end": 316.351}, {"word": "spot,", "start": 316.391, "end": 316.672}, {"word": "and", "start": 317.052, "end": 317.132}, {"word": "I", "start": 317.192, "end": 317.232}, {"word": "hope", "start": 317.272, "end": 317.452}, {"word": "you'll", "start": 317.472, "end": 317.693}, {"word": "join", "start": 317.733, "end": 317.953}, {"word": "me", "start": 317.993, "end": 318.093}, {"word": "for", "start": 318.133, "end": 318.253}, {"word": "another", "start": 318.313, "end": 318.534}, {"word": "one", "start": 318.654, "end": 318.754}, {"word": "soon.", "start": 318.874, "end": 328.405}]}];
+
+    const audio = document.getElementById('audioPlayer');
+    const stageArea = document.getElementById('stageArea');
+    const textContainer = document.getElementById('textContainer');
+    const englishArea = document.getElementById('englishArea');
+    const chineseArea = document.getElementById('chineseArea');
+    const timerText = document.getElementById('timerText');
+    const avatarEl = document.getElementById('avatarEl');
+    const waveContainer = document.getElementById('waveContainer');
+    const headerContainer = document.getElementById('headerContainer');
+    const bgInput = document.getElementById('bgInput');
+
+    let processedBlocks = []; 
+    let currentBlockIndex = -1;
+    let currentFontSize = 70; 
+    const WAVE_BAR_COUNT = 30;
+
+    // 处理本地背景更换
+    bgInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                stageArea.style.backgroundImage = `url('${event.target.result}')`;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // 智能拆分逻辑
+    function segmentData(data) {
+        const WORD_LIMIT = 20;
+        let blocks = [];
+        data.forEach(item => {
+            let words = item.words || [];
+            if (words.length <= WORD_LIMIT) {
+                blocks.push({...item});
+            } else {
+                let startIdx = 0;
+                while (startIdx < words.length) {
+                    let takeCount = Math.min(WORD_LIMIT, words.length - startIdx);
+                    if (startIdx + takeCount < words.length) {
+                        for (let j = startIdx + takeCount - 1; j > startIdx + 5; j--) {
+                            if (/[.,!?;]/.test(words[j].word)) { takeCount = j - startIdx + 1; break; }
+                        }
+                    }
+                    let chunk = words.slice(startIdx, startIdx + takeCount);
+                    blocks.push({
+                        speaker: item.speaker,
+                        start: chunk[0].start,
+                        end: chunk[chunk.length - 1].end,
+                        words: chunk,
+                        sentence_zh: item.sentence_zh
+                    });
+                    startIdx += takeCount;
+                }
+            }
+        });
+        return blocks;
+    }
+
+    function init() {
+        processedBlocks = segmentData(transcriptData);
+        waveContainer.innerHTML = '';
+        const h = [30, 50, 80, 60, 40, 70, 90, 100, 80, 50, 40, 60, 80, 90, 70, 50, 30, 40, 60, 80, 100, 90, 70, 50, 40, 60, 80, 60, 40, 30];
+        for(let i=0; i<WAVE_BAR_COUNT; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'wave-bar';
+            bar.style.height = h[i % h.length] + '%';
+            waveContainer.appendChild(bar);
+        }
+        updateScale();
+        audio.addEventListener('loadedmetadata', () => { timerText.innerText = formatTime(audio.duration); });
+    }
+
+    function updateScale() {
+        const scale = document.getElementById('stageScaler').offsetWidth / 1080;
+        document.getElementById('stageArea').style.transform = `scale(${scale})`;
+    }
+    window.addEventListener('resize', updateScale);
+
+    function renderLoop() {
+        if (!audio.paused) {
+            const t = audio.currentTime;
+            updateTimeline(t);
+            const pct = t / audio.duration;
+            const activeIdx = Math.floor(pct * WAVE_BAR_COUNT);
+            document.querySelectorAll('.wave-bar').forEach((b, i) => i <= activeIdx ? b.classList.add('active') : b.classList.remove('active'));
+            timerText.innerText = "-" + formatTime(audio.duration - t);
+            requestAnimationFrame(renderLoop);
+        }
+    }
+
+    function updateTimeline(t) {
+        let activeIdx = -1;
+        for (let i = 0; i < processedBlocks.length; i++) {
+            if (t >= processedBlocks[i].start && t < processedBlocks[i].end + 0.1) { activeIdx = i; break; }
+        }
+        if (activeIdx !== -1 && activeIdx !== currentBlockIndex) {
+            currentBlockIndex = activeIdx;
+            textContainer.classList.remove('visible');
+            setTimeout(() => { renderBlock(activeIdx); textContainer.classList.add('visible'); }, 50);
+        }
+        if (currentBlockIndex !== -1) {
+            const spans = englishArea.querySelectorAll('.word');
+            spans.forEach(span => {
+                const s = parseFloat(span.dataset.start), e = parseFloat(span.dataset.end);
+                if (t >= s && t < e) span.classList.add('active'); else span.classList.remove('active');
+            });
+        }
+    }
+
+    function renderBlock(index) {
+        const block = processedBlocks[index];
+        englishArea.innerHTML = '';
+        block.words.forEach(w => {
+            const span = document.createElement('span');
+            span.className = 'word'; span.innerText = w.word;
+            span.dataset.start = w.start; span.dataset.end = w.end;
+            englishArea.appendChild(span);
+            englishArea.appendChild(document.createTextNode(" "));
+        });
+        chineseArea.innerText = block.sentence_zh || "";
+        
+        // 📍 严谨 Speaker 逻辑判断
+        const lower = (block.speaker || "").toLowerCase();
+        headerContainer.classList.remove('speaker-state-female', 'speaker-state-male');
+        if (lower.includes('male') && !lower.includes('female')) {
+            headerContainer.classList.add('speaker-state-male');
+            avatarEl.style.backgroundImage = "url('male.png')";
+        } else {
+            headerContainer.classList.add('speaker-state-female');
+            avatarEl.style.backgroundImage = "url('female.png')";
+        }
+    }
+
+    function formatTime(s) { const m = Math.floor(s/60); const sec = Math.floor(s%60); return `${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`; }
+
+    document.getElementById('playBtn').addEventListener('click', () => { if(audio.paused) { audio.play(); renderLoop(); } else { audio.pause(); } });
+    document.getElementById('mobileRecordBtn').addEventListener('click', () => {
+        document.body.classList.add('recording-mode');
+        const scale = window.innerWidth / 1080;
+        document.getElementById('stageArea').style.transform = `scale(${scale})`;
+        setTimeout(() => { audio.currentTime = 0; audio.play(); renderLoop(); }, 5000);
+    });
+
+    window.adjustFontSize = function(delta) { 
+        currentFontSize += delta; 
+        englishArea.style.fontSize = currentFontSize + "px"; 
+        chineseArea.style.fontSize = (currentFontSize - 30) + "px"; 
+    }
+    
+    init();
+</script>
+</body>
+</html>
